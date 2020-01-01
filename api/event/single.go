@@ -1,0 +1,168 @@
+package event
+
+import (
+	"errors"
+	"math"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"github.com/mailru/easyjson/jwriter"
+
+	"rothskeller.net/serv/model"
+	"rothskeller.net/serv/util"
+)
+
+// GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
+func GetEvent(r *util.Request, idstr string) error {
+	var (
+		event   *model.Event
+		teams   []*model.Team
+		canEdit bool
+		out     jwriter.Writer
+	)
+	teams = r.Person.SchedulableTeams()
+	if idstr == "NEW" {
+		canEdit = len(teams) != 0
+	} else {
+		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
+			return util.NotFound
+		}
+		if !r.Person.CanViewEvent(event) {
+			return util.Forbidden
+		}
+		canEdit = r.Person.CanManageEvent(event)
+	}
+	r.Tx.Commit()
+	out.RawString(`{"canEdit":`)
+	out.Bool(canEdit)
+	if event != nil {
+		out.RawString(`,"event":{"id":`)
+		out.Int(int(event.ID))
+		out.RawString(`,"date":`)
+		out.String(event.Date)
+		out.RawString(`,"name":`)
+		out.String(event.Name)
+		out.RawString(`,"hours":`)
+		out.Float64(event.Hours)
+		out.RawString(`,"type":`)
+		out.String(string(event.Type))
+		out.RawString(`,"teams":[`)
+		for i, t := range event.Teams {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.Int(int(t.ID))
+		}
+		out.RawString(`]}`)
+	} else {
+		out.RawString(`,"event":{"id":0,"date":"","name":"","hours":1.0,"type":"","teams":[]}`)
+	}
+	if canEdit {
+		out.RawString(`,"teams":[`)
+		for i, t := range teams {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(t.ID))
+			out.RawString(`,"name":`)
+			out.String(t.Name)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
+	out.RawByte('}')
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$`)
+var yearRE = regexp.MustCompile(`^20\d\d$`)
+
+// PostEvent handles POST /events/$id requests (where $id may be "NEW").
+func PostEvent(r *util.Request, idstr string) error {
+	var (
+		event *model.Event
+		teams []*model.Team
+		err   error
+	)
+	teams = r.Person.SchedulableTeams()
+	if idstr == "NEW" {
+		if teams == nil {
+			return util.Forbidden
+		}
+		event = new(model.Event)
+	} else {
+		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
+			return util.NotFound
+		}
+		if !r.Person.CanManageEvent(event) {
+			return util.Forbidden
+		}
+	}
+	if r.FormValue("delete") != "" && event.ID != 0 {
+		r.Tx.DeleteEvent(event)
+		r.Tx.Commit()
+		return nil
+	}
+	event.Date = r.FormValue("date")
+	if event.Date == "" {
+		return errors.New("missing date")
+	} else if !dateRE.MatchString(event.Date) {
+		return errors.New("invalid date (YYYY-MM-DD)")
+	}
+	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
+		return errors.New("missing name")
+	}
+	event.Hours, err = strconv.ParseFloat(r.FormValue("hours"), 64)
+	if err != nil || event.Hours < 0.0 || event.Hours > 24.0 || math.IsNaN(event.Hours) {
+		return errors.New("invalid hours")
+	}
+	event.Hours = math.Round(event.Hours*2.0) / 2.0
+	if event.Type = model.EventType(r.FormValue("type")); event.Type == "" {
+		return errors.New("missing type")
+	}
+	found := false
+	for _, t := range model.AllEventTypes {
+		if event.Type == t {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return errors.New("invalid type")
+	}
+	event.Teams = event.Teams[:0]
+	for _, idstr := range r.Form["team"] {
+		team := r.Tx.FetchTeam(model.TeamID(util.ParseID(idstr)))
+		if team == nil {
+			return errors.New("invalid team")
+		}
+		found := false
+		for _, t := range teams {
+			if t == team {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return util.Forbidden
+		}
+		event.Teams = append(event.Teams, team)
+	}
+	if len(event.Teams) == 0 {
+		return errors.New("missing team")
+	}
+	for _, e := range r.Tx.FetchEvents(event.Date, event.Date) {
+		if e.ID != event.ID && e.Name == event.Name {
+			r.Header().Set("Content-Type", "application/json; charset=utf-8")
+			r.Write([]byte(`{"nameError":"Another event on this date already has this name."}`))
+			return nil
+		}
+	}
+	r.Tx.SaveEvent(event)
+	r.Tx.Commit()
+	return nil
+}
