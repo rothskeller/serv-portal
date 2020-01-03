@@ -99,16 +99,6 @@ type Role struct {
 	PrivMap PrivilegeMap
 }
 
-// A RememberMeToken is a string that uniquely identifies a remember-me request.
-type RememberMeToken string
-
-// A RememberMe describes a remember-me request.
-type RememberMe struct {
-	Token   RememberMeToken
-	Person  *Person
-	Expires time.Time
-}
-
 // A SessionToken is a string that uniquely identifies a login session.
 type SessionToken string
 

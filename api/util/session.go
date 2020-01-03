@@ -24,22 +24,27 @@ func ValidateSession(r *Request) {
 		c   *http.Cookie
 		err error
 	)
-	if c, err = r.Cookie("auth"); err == nil {
-		r.Tx.DeleteExpiredSessions()
-		r.Person = r.Tx.FetchPersonBySessionToken(c.Value)
+	if c, err = r.Cookie("auth"); err != nil {
+		return
 	}
-	if r.Person == nil {
-		if c, err = r.Cookie("remember"); err == nil {
-			r.Tx.DeleteExpiredRememberMeTokens()
-			r.Person = r.Tx.FetchPersonByRememberMeToken(c.Value)
-			if r.Person != nil {
-				CreateSession(r)
-			}
-		}
+	r.Tx.DeleteExpiredSessions()
+	if r.Session = r.Tx.FetchSession(model.SessionToken(c.Value)); r.Session == nil {
+		return
 	}
-	if r.Person != nil {
-		r.Tx.SetUsername(r.Person.Email)
+	if r.Method != "GET" && r.Session.Token != model.SessionToken(r.Request.Header.Get("X-XSRF-TOKEN")) {
+		r.Session = nil
+		return
 	}
+	r.Person = r.Session.Person
+	r.Session.Expires = time.Now().Add(sessionExpiration)
+	r.Tx.UpdateSession(r.Session)
+	r.Tx.SetUsername(r.Person.Email)
+	http.SetCookie(r, &http.Cookie{
+		Name:    "auth",
+		Value:   string(r.Session.Token),
+		Path:    "/",
+		Expires: r.Session.Expires,
+	})
 }
 
 // RandomToken returns a random token string, used for various purposes.
@@ -57,16 +62,16 @@ func RandomToken() string {
 // CreateSession creates a session for the person in the request, and sets a
 // response cookie with the session token.
 func CreateSession(r *Request) {
-	session := &model.Session{
+	r.Session = &model.Session{
 		Token:   model.SessionToken(RandomToken()),
 		Person:  r.Person,
 		Expires: time.Now().Add(sessionExpiration),
 	}
-	r.Tx.CreateSession(session)
+	r.Tx.CreateSession(r.Session)
 	http.SetCookie(r, &http.Cookie{
 		Name:    "auth",
-		Value:   string(session.Token),
+		Value:   string(r.Session.Token),
 		Path:    "/",
-		Expires: session.Expires,
+		Expires: r.Session.Expires,
 	})
 }

@@ -26,18 +26,6 @@ func (tx *Tx) FetchPersonByPWResetToken(token string) *model.Person {
 	return tx.fetchPerson(`WHERE p.pwreset_token=?`, token)
 }
 
-// FetchPersonByRememberMeToken retrieves a single person from the database,
-// given a remember-me token.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByRememberMeToken(token string) *model.Person {
-	return tx.fetchPerson(`, remember_me r WHERE r.person=p.ID AND r.token=?`, token)
-}
-
-// FetchPersonBySessionToken retrieves a single person from the database, given
-// a session token.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonBySessionToken(token string) *model.Person {
-	return tx.fetchPerson(`, session s WHERE s.person=p.ID AND s.token=?`, token)
-}
-
 func (tx *Tx) fetchPerson(where string, args ...interface{}) (p *model.Person) {
 	var (
 		rows *sql.Rows
@@ -140,10 +128,33 @@ func (tx *Tx) SavePerson(p *model.Person) {
 	tx.audit(model.AuditRecord{Person: p})
 }
 
+// FetchSession fetches the session with the specified token.  It does not check
+// for session expiration.  It returns nil if no such session exists.
+func (tx *Tx) FetchSession(token model.SessionToken) (s *model.Session) {
+	var pid model.PersonID
+
+	s = &model.Session{Token: token}
+	switch err := tx.tx.QueryRow(`SELECT person, expires FROM session WHERE token=?`, token).Scan(&pid, (*Time)(&s.Expires)); err {
+	case nil:
+		s.Person = tx.FetchPerson(pid)
+		return s
+	case sql.ErrNoRows:
+		return nil
+	default:
+		panic(err)
+	}
+}
+
 // CreateSession creates a session in the database.
 func (tx *Tx) CreateSession(s *model.Session) {
 	panicOnExecError(tx.tx.Exec(`INSERT INTO session (token, person, expires) VALUES (?,?,?)`, s.Token, s.Person.ID, Time(s.Expires)))
 	tx.audit(model.AuditRecord{Session: s})
+}
+
+// UpdateSession updates a session in the database.
+func (tx *Tx) UpdateSession(s *model.Session) {
+	panicOnNoRows(tx.tx.Exec(`UPDATE session SET expires=? WHERE token=?`, Time(s.Expires), s.Token))
+	// deliberately not auditing
 }
 
 // DeleteSession deletes a session from the database.
@@ -161,30 +172,5 @@ func (tx *Tx) DeleteSessionsForPerson(p *model.Person) {
 // DeleteExpiredSessions deletes all expired sessions.
 func (tx *Tx) DeleteExpiredSessions() {
 	panicOnExecError(tx.tx.Exec(`DELETE FROM session WHERE expires<?`, Time(time.Now())))
-	// deliberately not auditing
-}
-
-// CreateRememberMe creates a remember-me request in the database.
-func (tx *Tx) CreateRememberMe(rm *model.RememberMe) {
-	panicOnExecError(tx.tx.Exec(`INSERT INTO remember_me (token, person, expires) VALUES (?,?,?)`, rm.Token, rm.Person.ID, Time(rm.Expires)))
-	tx.audit(model.AuditRecord{RememberMe: rm})
-}
-
-// DeleteRememberMe deletes a remember-me request in the database.
-func (tx *Tx) DeleteRememberMe(rm *model.RememberMe) {
-	panicOnExecError(tx.tx.Exec(`DELETE FROM remember_me WHERE token=?`, rm.Token))
-	tx.audit(model.AuditRecord{RememberMe: &model.RememberMe{Token: rm.Token, Person: rm.Person}})
-}
-
-// DeleteRememberMeForPerson deletes all remember-me requests for the specified
-// person.
-func (tx *Tx) DeleteRememberMeForPerson(p *model.Person) {
-	panicOnExecError(tx.tx.Exec(`DELETE FROM remember_me where person=?`, p.ID))
-	tx.audit(model.AuditRecord{RememberMe: &model.RememberMe{Person: p}})
-}
-
-// DeleteExpiredRememberMeTokens deletes all expired remember-me tokens.
-func (tx *Tx) DeleteExpiredRememberMeTokens() {
-	panicOnExecError(tx.tx.Exec(`DELETE FROM remember_me WHERE expires<?`, Time(time.Now())))
 	// deliberately not auditing
 }

@@ -135,16 +135,23 @@ func PostTeam(r *util.Request, idstr string) error {
 	for _, t := range r.Tx.FetchTeams() {
 		if t != team && t.Name == team.Name {
 			r.Header().Set("Content-Type", "application/json")
-			r.Write([]byte(`{"nameError":"Another team already has this name."}`))
+			r.Write([]byte(`{"duplicateName":true}`))
 			return nil
 		}
 	}
 	team.Email = strings.TrimSpace(r.FormValue("email"))
+	for _, t := range r.Tx.FetchTeams() {
+		if t != team && t.Email == team.Email && t.Email != "" {
+			r.Header().Set("Content-Type", "application/json")
+			r.Write([]byte(`{"duplicateEmail":true}`))
+			return nil
+		}
+	}
 	team.PrivMap = make(model.PrivilegeMap)
 	team.PrivMap.Set(team, model.PrivMember)
 	for _, t := range r.Tx.FetchTeams() {
 		tid := strconv.Itoa(int(t.ID))
-		if r.FormValue("a:member-"+tid) != "" {
+		if r.FormValue("a:member-"+tid) == "true" {
 			team.PrivMap.Add(t, model.PrivMember)
 		}
 		switch r.FormValue("a:access-" + tid) {
@@ -156,7 +163,7 @@ func PostTeam(r *util.Request, idstr string) error {
 			team.PrivMap.Add(t, model.PrivView)
 		}
 		if t != team {
-			if r.FormValue("t:member-"+tid) != "" {
+			if r.FormValue("t:member-"+tid) == "true" {
 				t.PrivMap.Set(team, model.PrivMember)
 			} else {
 				t.PrivMap.Set(team, 0)

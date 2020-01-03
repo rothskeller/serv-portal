@@ -23,9 +23,13 @@ func GetEventAttendance(r *util.Request, idstr string) error {
 		return util.Forbidden
 	}
 	attended = r.Tx.FetchAttendanceByEvent(event)
-	out.RawString(`{"year":`)
-	out.String(event.Date[:4])
-	out.RawString(`,"people":[`)
+	out.RawString(`{"event":{"id":`)
+	out.Int(int(event.ID))
+	out.RawString(`,"date":`)
+	out.String(event.Date)
+	out.RawString(`,"name":`)
+	out.String(event.Name)
+	out.RawString(`},"people":[`)
 	first := true
 	for _, p := range r.Tx.FetchPeople() {
 		if !p.CanViewEvent(event) {
@@ -44,7 +48,7 @@ func GetEventAttendance(r *util.Request, idstr string) error {
 		out.String(p.FirstName)
 		out.RawString(`,"attended":`)
 		out.Bool(attended[p.ID])
-		out.RawByte(',')
+		out.RawByte('}')
 	}
 	out.RawString(`]}`)
 	r.Tx.Commit()
@@ -66,7 +70,7 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	if !r.Person.CanRecordAttendanceAtEvent(event) {
 		return util.Forbidden
 	}
-	r.ParseForm()
+	r.ParseMultipartForm(1048576)
 	for _, idstr := range r.Form["person"] {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return errors.New("invalid person")

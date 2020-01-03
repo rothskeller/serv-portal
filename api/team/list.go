@@ -3,6 +3,7 @@ package team
 import (
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
 
@@ -29,8 +30,14 @@ func GetTeams(r *util.Request) error {
 		out.String(t.Name)
 		out.RawString(`,"email":`)
 		out.String(t.Email)
-		out.RawString(`,"type":`)
-		out.Int(int(t.Type))
+		switch t.Type {
+		case model.TeamNormal:
+			out.RawString(`,"type":"normal"`)
+		case model.TeamAncestor:
+			out.RawString(`,"type":"ancestor"`)
+		case model.TeamTiedRoles:
+			out.RawString(`,"type":"tiedRoles"`)
+		}
 		out.RawString(`,"roles":[`)
 		for j, r := range t.Roles {
 			if j != 0 {

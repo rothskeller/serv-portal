@@ -269,7 +269,7 @@ func renderAttendance(
 func attendanceJSON(r *util.Request, report attendanceReport) {
 	var out jwriter.Writer
 
-	out.RawString(`{header:[`)
+	out.RawString(`{"header":[`)
 	for i, h := range report.Header {
 		if i != 0 {
 			out.RawByte(',')

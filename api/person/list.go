@@ -49,18 +49,18 @@ func GetPeople(r *util.Request) error {
 			out.String(r.Name)
 			out.RawByte('}')
 		}
-		out.RawString(`],"viewableTeams":`)
-		for i, t := range r.Person.ViewableTeams() {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.RawString(`{"id":`)
-			out.Int(int(t.ID))
-			out.RawString(`,"name":`)
-			out.String(t.Name)
-			out.RawByte('}')
-		}
 		out.RawString(`]}`)
+	}
+	out.RawString(`],"viewableTeams":[`)
+	for i, t := range r.Person.ViewableTeams() {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(t.ID))
+		out.RawString(`,"name":`)
+		out.String(t.Name)
+		out.RawByte('}')
 	}
 	out.RawString(`],"canAdd":`)
 	out.Bool(r.Person.CanManageTeams())

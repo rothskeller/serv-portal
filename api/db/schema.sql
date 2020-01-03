@@ -59,14 +59,6 @@ CREATE TABLE person (
     pwreset_time    text    NOT NULL DEFAULT '' -- RFC3339
 );
 
--- The remember_me table tracks all "remember me" access tokens.
-CREATE TABLE remember_me (
-    token   text    PRIMARY KEY,
-    person  integer NOT NULL REFERENCES person ON DELETE CASCADE,
-    expires text    NOT NULL -- RFC3339
-);
-CREATE INDEX remember_me_person_index ON remember_me (person);
-
 -- The session table tracks all logged-in sessions.
 CREATE TABLE session (
     token   text    PRIMARY KEY,

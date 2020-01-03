@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mailru/easyjson/jwriter"
+
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -17,13 +19,29 @@ const badLoginThreshold = 20 * time.Minute
 // Lifetime of a remember-me request.  (A year, more or less.)
 const rememberMeExpiration = 365 * 24 * time.Hour
 
+// GetLogin handles GET /api/login requests.
+func GetLogin(r *util.Request) error {
+	var out jwriter.Writer
+	out.RawString(`{"id":`)
+	out.Int(int(r.Person.ID))
+	out.RawString(`,"firstName":`)
+	out.String(r.Person.FirstName)
+	out.RawString(`,"lastName":`)
+	out.String(r.Person.LastName)
+	out.RawString(`,"webmaster":`)
+	out.Bool(r.Person.IsWebmaster())
+	out.RawByte('}')
+	r.Header().Set("Content-Type", "application/json")
+	out.DumpTo(r)
+	return nil
+}
+
 // PostLogin handles POST /api/login requests.
 func PostLogin(r *util.Request) error {
 	var (
 		person   *model.Person
 		email    = r.FormValue("email")
 		password = r.FormValue("password")
-		remember = r.FormValue("remember") != ""
 	)
 	// Check that the login is valid.
 	if person = r.Tx.FetchPersonByEmail(email); person == nil {
@@ -48,22 +66,8 @@ func PostLogin(r *util.Request) error {
 		r.Tx.SavePerson(person)
 	}
 	util.CreateSession(r)
-	if remember {
-		var rm = &model.RememberMe{
-			Token:   model.RememberMeToken(util.RandomToken()),
-			Person:  person,
-			Expires: time.Now().Add(rememberMeExpiration),
-		}
-		r.Tx.CreateRememberMe(rm)
-		http.SetCookie(r, &http.Cookie{
-			Name:    "remember",
-			Value:   string(rm.Token),
-			Path:    "/",
-			Expires: rm.Expires,
-		})
-	}
 	r.Tx.Commit()
-	return nil
+	return GetLogin(r)
 
 FAIL:
 	if person != nil {
@@ -86,15 +90,6 @@ func PostLogout(r *util.Request) error {
 		r.Tx.DeleteSession(&model.Session{Token: model.SessionToken(c.Value), Person: r.Person})
 		http.SetCookie(r, &http.Cookie{
 			Name:   "auth",
-			Value:  c.Value,
-			Path:   "/",
-			MaxAge: -1,
-		})
-	}
-	if c, err := r.Cookie("remember"); err == nil {
-		r.Tx.DeleteRememberMe(&model.RememberMe{Token: model.RememberMeToken(c.Value), Person: r.Person})
-		http.SetCookie(r, &http.Cookie{
-			Name:   "remember",
 			Value:  c.Value,
 			Path:   "/",
 			MaxAge: -1,

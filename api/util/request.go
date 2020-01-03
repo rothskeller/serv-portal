@@ -121,10 +121,11 @@ func RunRequest(w http.ResponseWriter, r *http.Request, handler RequestHandler) 
 type Request struct {
 	*http.Request
 	Response
-	Person *model.Person
-	Start  time.Time
-	Path   string
-	Tx     *db.Tx
+	Session *model.Session
+	Person  *model.Person
+	Start   time.Time
+	Path    string
+	Tx      *db.Tx
 }
 
 // Header and Write on Request resolve the ambiguities between http.Request

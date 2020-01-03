@@ -1,0 +1,166 @@
+<!--
+Event displays the event viewing/editing page.
+-->
+
+<template lang="pug">
+Page(:title="title" :subtitle="subtitle" menuItem="events")
+  div.mt-3(v-if="loading")
+    b-spinner small
+  form.mt-3(v-else-if="canEdit" @submit.prevent="onSubmit")
+    b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
+      b-input#event-date(type="date" autofocus :state="dateError ? false : null" v-model="event.date")
+    b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="edit-label" :state="nameError ? false : null" :invalid-feedback="nameError")
+      b-input#event-name(:state="nameError ? false : null" trim v-model="event.name")
+    b-form-group(label="Event hours" label-for="event-hours" label-cols-sm="auto" label-class="edit-label" :state="hoursError ? false : null" :invalid-feedback="hoursError")
+      b-input#event-hours(type="number" min="0.0" max="24.0" step="0.5" number :state="hoursError ? false : null" v-model="event.hours")
+    b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
+      b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
+    b-form-group(label="Event is for these teams:" :state="teamsError ? false : null" :invalid-feedback="teamsError")
+      b-form-checkbox-group(stacked :options="teams" text-field="name" value-field="id" v-model="event.teams")
+    div.mt-3
+      b-btn(type="submit" variant="primary" :disabled="!valid" v-text="event.id ? 'Save Event' : 'Create Event'")
+      b-btn.ml-2(@click="onCancel") Cancel
+      b-btn.ml-5(v-if="event.id" variant="danger" @click="onDelete") Delete Event
+  div.mt-3(v-else)
+    b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="edit-label")
+      b-input#event-date(type="date" plaintext :value="event.date")
+    b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="edit-label")
+      b-input#event-name(plaintext :value="event.name")
+    b-form-group(label="Event hours" label-for="event-hours" label-cols-sm="auto" label-class="edit-label")
+      b-input#event-hours(type="number" plaintext :value="event.hours")
+    b-form-group(label="Event type" label-for="event-hours" label-cols-sm="auto" label-class="edit-label")
+      b-input#event-type(plaintext :value="eventTypes[event.type]")
+    b-form-group(label="Teams" label-for="event-teams" label-cols-sm="auto" label-class="edit-label")
+      b-textarea#event-teams(plaintext v-text="eventTeamList")
+    #event-buttons
+      b-btn(@click="onCancel") Back
+</template>
+
+<script>
+const eventTypes = {
+  'Train': 'Training',
+  'Drill': 'Drill',
+  'Civic': 'Civic Event',
+  'Incid': 'Incident',
+  'CE': 'Continuing Ed',
+  'Meeting': 'Meeting',
+  'Class': 'Class',
+}
+
+export default {
+  data: () => ({
+    loading: false,
+    title: 'Event',
+    canEdit: false,
+    event: null,
+    year: null,
+    teams: null,
+    eventTypes,
+    submitted: false,
+    dateError: null,
+    nameError: null,
+    duplicateName: null,
+    hoursError: null,
+    typeError: null,
+    teamsError: null,
+    valid: true,
+  }),
+  async created() {
+    this.loading = true
+    const data = (await this.$axios.get(`/api/events/${this.$route.params.id}`)).data
+    this.canEdit = data.canEdit
+    this.event = data.event
+    if (this.event.id) this.year = this.event.date.substr(0, 4)
+    this.title = data.event.id ? `${data.event.date} ${data.event.name}` : 'New Event'
+    this.teams = data.teams
+    this.loading = false
+  },
+  computed: {
+    cancelLink() { return this.year ? { path: '/events', params: { year: this.year } } : '/events' },
+    eventTeamList() {
+      const list = []
+      this.event.teams.forEach(tid => {
+        list.push(this.teams.find(t => t.id === tid).name)
+      })
+      return list.join('\n')
+    },
+    subtitle() { return this.$route.params.id ? 'Edit Event' : 'Create Event' },
+  },
+  watch: {
+    'event.date': 'validate',
+    'event.name': 'validate',
+    'event.hours': 'validate',
+    'event.type': 'validate',
+    'event.teams': 'validate',
+  },
+  methods: {
+    onCancel() { this.$router.go(-1) },
+    async onDelete() {
+      const resp = await this.$bvModal.msgBoxConfirm(
+        'Are you sure you want to delete this event?  All associated data, including attendance records, will be permanently lost.', {
+        title: 'Delete Event', headerBgVariant: 'danger', headerTextVariant: 'white',
+        okTitle: 'Delete', okVariant: 'danger', cancelTitle: 'Keep',
+      }).catch(err => { })
+      if (!resp) return
+      const body = new FormData
+      body.append('delete', 'true')
+      await this.$axios.post(`/api/events/${this.$route.params.id}`, body)
+      this.$router.push({ path: '/events', params: { year: this.event.date.substr(0, 4) } })
+    },
+    async onSubmit() {
+      this.submitted = true
+      this.validate()
+      if (!this.valid) return
+      const body = new FormData
+      body.append('date', this.event.date)
+      body.append('name', this.event.name)
+      body.append('hours', this.event.hours)
+      body.append('type', this.event.type)
+      this.event.teams.forEach(t => { body.append('team', t) })
+      const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
+      if (resp && resp.nameError)
+        this.duplicateName = { date: this.event.date, name: this.event.name }
+      else
+        this.$router.push({ path: '/events', params: { year: this.event.date.substr(0, 4) } })
+    },
+    validate() {
+      if (!this.submitted) return
+      if (!this.event.date)
+        this.dateError = 'The event date is required.'
+      else if (!this.event.date.match(/^20\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/))
+        this.dateError = 'This is not a valid date.'
+      else
+        this.dateError = null
+      if (!this.event.name)
+        this.nameError = 'The event name is required.'
+      else if (this.duplicateName && this.duplicateName.date === this.event.date && this.duplicateName.name === this.event.name)
+        this.nameError = 'Another event on this date has this name.'
+      else
+        this.nameError = this.duplicateName = null
+      if (this.event.hours === '')
+        this.hoursError = 'The event duration is required.'
+      else if (typeof this.event.hours !== 'number' || this.event.hours < 0.0 || this.event.hours > 24.0)
+        this.hoursError = 'The event duration must be between 0 and 24 hours.'
+      else
+        this.hoursError = null
+      if (!eventTypes[this.event.type])
+        this.typeError = 'The event type is required.'
+      else
+        this.typeError = null
+      if (!this.event.teams.length)
+        this.teamsError = 'At least one team must be selected.'
+      else
+        this.teamsError = null
+      this.valid = !this.dateError && !this.nameError && !this.hoursError && !this.typeError && !this.teamsError
+    },
+  },
+}
+</script>
+
+<style lang="stylus">
+.edit-label
+  width 7rem
+#event-date, #event-name, #event-hours, #event-type, #event-teams
+  min-width 14rem
+  max-width 20rem
+</style>

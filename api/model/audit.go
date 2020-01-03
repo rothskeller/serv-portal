@@ -9,15 +9,14 @@ import (
 // An AuditRecord contains the information to record in the audit log about a
 // change.
 type AuditRecord struct {
-	Timestamp  time.Time
-	Username   string
-	Request    string
-	Event      *Event
-	Person     *Person
-	Role       *Role
-	RememberMe *RememberMe
-	Session    *Session
-	Team       *Team
+	Timestamp time.Time
+	Username  string
+	Request   string
+	Event     *Event
+	Person    *Person
+	Role      *Role
+	Session   *Session
+	Team      *Team
 }
 
 func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
@@ -45,10 +44,6 @@ func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
 	if in.Role != nil {
 		out.RawString(`,"role":`)
 		in.Role.ToAudit(out)
-	}
-	if in.RememberMe != nil {
-		out.RawString(`,"rememberMe":`)
-		in.RememberMe.ToAudit(out)
 	}
 	if in.Session != nil {
 		out.RawString(`,"session":`)
@@ -134,26 +129,14 @@ func (in PrivilegeMap) ToAudit(out *jwriter.Writer) {
 func (in Role) ToAudit(out *jwriter.Writer) {
 	out.RawString(`{"id":`)
 	out.Int(int(in.ID))
-	out.RawString(`,"team":`)
-	out.Int(int(in.Team.ID))
+	if in.Team != nil {
+		out.RawString(`,"team":`)
+		out.Int(int(in.Team.ID))
+	}
 	out.RawString(`,"name":`)
 	out.String(in.Name)
 	out.RawString(`,"privileges":`)
 	in.PrivMap.ToAudit(out)
-	out.RawByte('}')
-}
-
-func (in RememberMe) ToAudit(out *jwriter.Writer) {
-	out.RawString(`{"token":`)
-	out.String(string(in.Token))
-	if in.Person != nil {
-		out.RawString(`,"person":`)
-		out.String(in.Person.Email)
-	}
-	if !in.Expires.IsZero() {
-		out.RawString(`,"expires":`)
-		out.Raw(in.Expires.MarshalJSON())
-	}
 	out.RawByte('}')
 }
 

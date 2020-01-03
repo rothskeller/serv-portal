@@ -76,6 +76,8 @@ func router(r *util.Request) error {
 		return auth.PostLogin(r)
 	case r.Person == nil:
 		return util.HTTPError(http.StatusUnauthorized, "401 Unauthorized")
+	case r.Method == "GET" && c[1] == "login" && c[2] == "":
+		return auth.GetLogin(r)
 	case r.Method == "POST" && c[1] == "logout" && c[2] == "":
 		return auth.PostLogout(r)
 	case r.Method == "GET" && c[1] == "events" && c[2] == "":

@@ -121,7 +121,7 @@ func PostRole(r *util.Request, tidstr, ridstr string) error {
 	for _, t := range team.Roles {
 		if t != role && t.Name == role.Name {
 			r.Header().Set("Content-Type", "application/json")
-			r.Write([]byte(`{"nameError":Another role already has this name."}`))
+			r.Write([]byte(`{"duplicateName":true}`))
 			return nil
 		}
 	}
@@ -129,7 +129,7 @@ func PostRole(r *util.Request, tidstr, ridstr string) error {
 	role.PrivMap.Set(team, model.PrivMember)
 	for _, t := range r.Tx.FetchTeams() {
 		tid := strconv.Itoa(int(t.ID))
-		if r.FormValue("member-"+tid) != "" {
+		if r.FormValue("member-"+tid) == "true" {
 			role.PrivMap.Add(t, model.PrivMember)
 		}
 		switch r.FormValue("access-" + tid) {
