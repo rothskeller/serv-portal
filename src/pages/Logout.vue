@@ -10,6 +10,7 @@ Page(title="Logout" subtitle="Logging out..." menuItem="logout")
 export default {
   async created() {
     await this.$axios.post('/api/logout')
+    this.$router.replace('/')
     this.$store.commit('login', null)
   },
 }

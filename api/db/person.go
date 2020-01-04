@@ -163,9 +163,10 @@ func (tx *Tx) DeleteSession(s *model.Session) {
 	tx.audit(model.AuditRecord{Session: &model.Session{Token: s.Token, Person: s.Person}})
 }
 
-// DeleteSessionsForPerson deletes all sessions for the specified person.
-func (tx *Tx) DeleteSessionsForPerson(p *model.Person) {
-	panicOnExecError(tx.tx.Exec(`DELETE FROM session where person=?`, p.ID))
+// DeleteSessionsForPerson deletes all sessions for the specified person, except
+// the supplied one if any.
+func (tx *Tx) DeleteSessionsForPerson(p *model.Person, except model.SessionToken) {
+	panicOnExecError(tx.tx.Exec(`DELETE FROM session where person=? AND token != ?`, p.ID, except))
 	tx.audit(model.AuditRecord{Session: &model.Session{Person: p}})
 }
 

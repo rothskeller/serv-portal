@@ -8,6 +8,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -49,6 +50,8 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`{"canEditInfo":`)
 	out.Bool(canEditInfo)
+	out.RawString(`,"allowBadPassword":`)
+	out.Bool(r.Person.IsWebmaster())
 	out.RawString(`,"person":{"id":`)
 	out.Int(int(person.ID))
 	out.RawString(`,"firstName":`)
@@ -97,6 +100,13 @@ func GetPerson(r *util.Request, idstr string) error {
 		}
 		out.RawString(`]}`)
 	}
+	out.RawString(`],"passwordHints":[`)
+	for i, h := range auth.SERVPasswordHints {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.String(h)
+	}
 	out.RawString(`]}`)
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
@@ -142,7 +152,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 			if p.FirstName == person.FirstName && p.LastName == person.LastName {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"nameError":"An account already exists for a person with this name."}`))
+				r.Write([]byte(`{"duplicateName":true}`))
 				return nil
 			}
 		}
@@ -152,7 +162,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			return errors.New("invalid email")
 		} else if emailInUse(r, person) {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")
-			r.Write([]byte(`{"emailError":"This email address is in use by a different person."}`))
+			r.Write([]byte(`{"duplicateEmail":true}`))
 			return nil
 		}
 		if person.Phone = strings.TrimSpace(r.FormValue("phone")); person.Phone != "" {
@@ -161,6 +171,16 @@ func PostPerson(r *util.Request, idstr string) error {
 				return errors.New("invalid phone")
 			}
 			person.Phone = ph[0:3] + "-" + ph[3:6] + "-" + ph[6:10]
+		}
+		if password := r.FormValue("password"); password != "" {
+			if !r.Person.IsWebmaster() {
+				if !auth.StrongPassword(r, person, password) {
+					r.Header().Set("Content-Type", "application/json; charset=utf-8")
+					r.Write([]byte(`{"weakPassword":true}`))
+					return nil
+				}
+			}
+			auth.SetPassword(r, person, password)
 		}
 	}
 	var rmap = make(map[*model.Team]*model.Role, len(person.Roles))

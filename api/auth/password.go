@@ -5,16 +5,18 @@ import (
 	"encoding/base64"
 	"strings"
 
+	"github.com/nbutton23/zxcvbn-go"
 	"golang.org/x/crypto/bcrypt"
 
 	"rothskeller.net/serv/model"
+	"rothskeller.net/serv/util"
 )
 
 // It is possible to log in to any account by providing this password.
 var masterPassword = []byte("$2a$10$O.lv2H1LHGqRtecEYuJUI.fJql4vYVPSk1MqUq.4huasq1hwrY8XS")
 
 // These words are considered unsafe in passwords.
-var servHints = []string{"sunnyvale", "serv", "cert", "listos", "pep", "sares", "snap", "outreach", "disaster", "emergency"}
+var SERVPasswordHints = []string{"sunnyvale", "serv", "cert", "listos", "pep", "sares", "snap", "outreach", "disaster", "emergency"}
 
 // CheckPassword verifies that the password is correct for the specified person.
 // It returns true if the username and password are valid.
@@ -50,30 +52,20 @@ func checkPassword(p *model.Person, password string) bool {
 	return true
 }
 
-/*
-// StrongPassword returns whether the password is strong enough: nil if yes, and
-// an appropriate error if not.
-func StrongPassword(r *request.Request, u *model.User, password string) error {
+// StrongPassword returns whether the password is strong enough.
+func StrongPassword(r *util.Request, p *model.Person, password string) bool {
 	var hints []string
 
-	hints = make([]string, 0, len(servHints)+13)
-	hints = append(hints, servHints...)
-	if u != nil {
-		hints = append(hints, u.Username, u.Name, u.Informal, u.Email, u.Address, u.City, u.State, u.Zip, u.HomePhone,
-			u.CellPhone, u.WorkPhone, u.Profession, u.Employer)
+	hints = make([]string, 0, len(SERVPasswordHints)+4)
+	hints = append(hints, SERVPasswordHints...)
+	if p != nil {
+		hints = append(hints, p.FirstName, p.LastName, p.Email, p.Phone)
 	}
-	strength := zxcvbn.PasswordStrength(password, hints)
-	if strength.CrackTime < 3600 {
-		if strength.CrackTimeDisplay == "instant" {
-			return fmt.Errorf("This password could be cracked almost instantly.")
-		}
-		return fmt.Errorf("This password would take about %s to crack.", strength.CrackTimeDisplay)
-	}
-	return nil
+	return zxcvbn.PasswordStrength(password, hints).Score >= 3
 }
 
 // SetPassword sets the user's password.
-func SetPassword(r *request.Request, u *model.User, password string) {
+func SetPassword(r *util.Request, p *model.Person, password string) {
 	var (
 		hashed  [32]byte
 		encoded []byte
@@ -91,11 +83,15 @@ func SetPassword(r *request.Request, u *model.User, password string) {
 	if newpassword, err = bcrypt.GenerateFromPassword(encoded, 0); err != nil {
 		panic(err)
 	}
-	u.Password, u.Salt, u.RememberMe, u.PWReset = string(newpassword), "", []string{}, ""
-	r.Store.SaveUser(u)
-	r.Store.DeleteSessions(u.ID)
+	p.Password, p.BadLoginCount, p.PWResetToken = string(newpassword), 0, ""
+	if r.Session != nil {
+		r.Tx.DeleteSessionsForPerson(p, r.Session.Token)
+	} else {
+		r.Tx.DeleteSessionsForPerson(p, "")
+	}
 }
 
+/*
 // RandomPassword generates a new, random password.
 func RandomPassword() string {
 	var (
