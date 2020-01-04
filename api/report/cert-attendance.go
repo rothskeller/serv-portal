@@ -14,7 +14,19 @@ import (
 	"rothskeller.net/serv/util"
 )
 
+type columnKey string
+type eventTypeAbbr string
+
 var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$`)
+var eventTypeAbbrs = map[model.EventType]eventTypeAbbr{
+	model.EventCivic:    "Civ",
+	model.EventClass:    "Cls",
+	model.EventContEd:   "CE",
+	model.EventDrill:    "Drl",
+	model.EventIncident: "Inc",
+	model.EventMeeting:  "Mtg",
+	model.EventTraining: "Trn",
+}
 
 // CERTAttendanceReport handles GET /api/reports/cert-attendance requests.
 func CERTAttendanceReport(r *util.Request) error {
@@ -23,7 +35,7 @@ func CERTAttendanceReport(r *util.Request) error {
 		events   []*model.Event
 		people   []*model.Person
 		rendered attendanceReport
-		data     = map[model.PersonID]map[string]map[model.EventType]int{}
+		data     = map[model.PersonID]map[columnKey]map[eventTypeAbbr]int{}
 		pmap     = map[model.PersonID]*model.Person{}
 		teamStr  = r.FormValue("team")
 		dateFrom = r.FormValue("dateFrom")
@@ -54,7 +66,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	if stats != "hours" {
 		stats = "count"
 	}
-	if detail != "event" && detail != "total" {
+	if detail != "date" && detail != "total" {
 		detail = "month"
 	}
 	// Get the events to which CERT was invited during the time range.
@@ -109,30 +121,29 @@ func CERTAttendanceReport(r *util.Request) error {
 }
 
 func addAttendance(
-	data map[model.PersonID]map[string]map[model.EventType]int, event *model.Event, pid model.PersonID, stats, detail string,
+	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, event *model.Event, pid model.PersonID, stats, detail string,
 ) {
 	if data[pid] == nil {
-		data[pid] = make(map[string]map[model.EventType]int)
+		data[pid] = make(map[columnKey]map[eventTypeAbbr]int)
 	}
 	switch detail {
-	case "event":
-		key := event.Date + " " + strconv.Itoa(int(event.ID))
-		addAttendance2(data[pid], key, event, stats)
+	case "date":
+		addAttendance2(data[pid], columnKey(event.Date), event, stats)
 	case "month":
-		addAttendance2(data[pid], event.Date[:7], event, stats)
+		addAttendance2(data[pid], columnKey(event.Date[:7]), event, stats)
 	default:
 	}
 	addAttendance2(data[pid], "TOTALS", event, stats)
 }
-func addAttendance2(data map[string]map[model.EventType]int, key string, event *model.Event, stats string) {
+func addAttendance2(data map[columnKey]map[eventTypeAbbr]int, key columnKey, event *model.Event, stats string) {
 	if data[key] == nil {
-		data[key] = make(map[model.EventType]int)
+		data[key] = make(map[eventTypeAbbr]int)
 	}
 	if stats == "hours" {
-		data[key][event.Type] += int(2 * event.Hours)
+		data[key][eventTypeAbbrs[event.Type]] += int(2 * event.Hours)
 		data[key]["ALL"] += int(2 * event.Hours)
 	} else {
-		data[key][event.Type]++
+		data[key][eventTypeAbbrs[event.Type]]++
 		data[key]["ALL"]++
 	}
 }
@@ -149,33 +160,33 @@ type attendanceReportHeadCell struct {
 }
 
 func renderAttendance(
-	data map[model.PersonID]map[string]map[model.EventType]int, people []*model.Person, stats, detail string,
+	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, people []*model.Person, stats, detail string,
 ) (report attendanceReport) {
 	var (
-		etypes []model.EventType
-		keys   []string
+		etypes []eventTypeAbbr
+		keys   []columnKey
 		col    int
 	)
 	// Get the sorted list of keys.
-	keys = make([]string, 0, len(data[-1])-1)
+	keys = make([]columnKey, 0, len(data[-1])-1)
 	for key := range data[-1] {
 		if key != "TOTALS" {
 			keys = append(keys, key)
 		}
 	}
-	sort.Strings(keys)
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	// Get the complete set of event types.
 	{
-		etmap := map[model.EventType]bool{}
+		etmap := map[eventTypeAbbr]bool{}
 		for et := range data[-1]["TOTALS"] {
 			if et != "ALL" {
 				etmap[et] = true
 			}
 		}
-		etypes = make([]model.EventType, 0, len(etmap))
+		etypes = make([]eventTypeAbbr, 0, len(etmap))
 		for _, et := range model.AllEventTypes {
-			if etmap[et] {
-				etypes = append(etypes, et)
+			if eta := eventTypeAbbrs[et]; etmap[eta] {
+				etypes = append(etypes, eta)
 			}
 		}
 	}
@@ -195,15 +206,28 @@ func renderAttendance(
 	report.SpanStarts = make(map[int]bool)
 	if detail != "total" {
 		for _, key := range keys {
-			// First row: key names, spanning.
-			text := key
-			if detail == "event" {
-				text = text[:10]
+			var ketypes []eventTypeAbbr
+			if detail == "month" {
+				// For month reports, show all of the etypes in
+				// the report every month, even if their totals
+				// are zero.
+				ketypes = etypes
+			} else {
+				// For date reports, show only the etypes
+				// actually used on that date.
+				for _, et := range etypes {
+					for used := range data[-1][key] {
+						if used == et {
+							ketypes = append(ketypes, et)
+						}
+					}
+				}
 			}
+			// First row: key names, spanning.
 			report.SpanStarts[col] = true
-			col += len(etypes)
-			report.Header[0] = append(report.Header[0], attendanceReportHeadCell{Span: len(etypes), Text: text})
-			for _, et := range etypes {
+			col += len(ketypes)
+			report.Header[0] = append(report.Header[0], attendanceReportHeadCell{Span: len(ketypes), Text: string(key)})
+			for _, et := range ketypes {
 				// Second row: event type.
 				report.Header[1] = append(report.Header[1], attendanceReportHeadCell{Text: string(et)})
 				if stats == "hours" {
@@ -347,7 +371,8 @@ func attendanceCSV(r *util.Request, report attendanceReport) {
 }
 
 func renderAttendanceValue(
-	data map[model.PersonID]map[string]map[model.EventType]int, pid model.PersonID, key string, etype model.EventType, stats string,
+	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, pid model.PersonID, key columnKey, etype eventTypeAbbr,
+	stats string,
 ) string {
 	var value int
 	if data[pid] != nil && data[pid][key] != nil {
@@ -363,7 +388,8 @@ func renderAttendanceValue(
 }
 
 func renderAttendanceTotal(
-	data map[model.PersonID]map[string]map[model.EventType]int, pid model.PersonID, key string, etype model.EventType, stats string,
+	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, pid model.PersonID, key columnKey, etype eventTypeAbbr,
+	stats string,
 ) string {
 	var value int
 	if data[pid] != nil && data[pid][key] != nil {

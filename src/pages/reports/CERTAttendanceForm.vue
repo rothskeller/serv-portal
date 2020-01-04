@@ -25,8 +25,8 @@ form#cert-att-form(@submit.prevent="onSubmit")
 const teamList = ['Alpha', 'Bravo', 'Both']
 const statsList = [{ value: 'count', text: 'Number of Events' }, { value: 'hours', text: 'Cumulative Hours' }]
 const detailList = [
-  { value: 'event', text: 'Show each event' },
-  { value: 'month', text: 'Show each month' },
+  { value: 'date', text: 'Show by date' },
+  { value: 'month', text: 'Show by month' },
   { value: 'total', text: 'Show totals only' },
 ]
 const dateRE = /^20\d\d-(?:0[1-9]|1[012])-(?:0[1-9]|[12][0-9]|3[01])$/

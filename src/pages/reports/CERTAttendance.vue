@@ -9,7 +9,7 @@ Page(title="CERT Attendance" subtitle="CERT Attendance" menuItem="reports")
   table#cert-att-table(v-else)
     thead
       tr(v-for="(row, rownum) in header" :key="rownum")
-        td(v-for="(cell, colnum) in row" :key="colnum" :colspan="cell.span || 1" :class="headerClass(rownum, colnum)" v-text="cell.text")
+        td(v-for="(cell, colnum) in row" :key="colnum" :colspan="cell.span || 1" :class="headerClass(rownum, colnum)" v-text="wrapText(cell)")
     tbody
       tr(v-for="(row, rownum) in body" :key="rownum")
         td(v-for="(cell, colnum) in row" :key="colnum" :class="spanStarts[colnum] ? 'cert-att-span' : null" v-text="cell")
@@ -62,6 +62,9 @@ export default {
       if ((row === 0 && col !== 0) || (row !== 0 && this.spanStarts[col])) return 'cert-att-span'
       else return null
     },
+    wrapText(cell) {
+      return cell.span > 1 ? cell.text : cell.text.replace('-', '\n')
+    },
   },
 }
 </script>
@@ -77,6 +80,7 @@ export default {
       border-left none
     tr:first-child td:not(:first-child)
       border-top 2px solid black
+      white-space pre
     tr:nth-child(2) td
       padding 6px 2px
       vertical-align bottom
@@ -90,6 +94,7 @@ export default {
     tr:nth-child(even)
       background-color #eee
   td
+    padding 2px 4px
     min-width 2rem
     border-top 1px solid #ccc
     border-left 1px solid #ccc
