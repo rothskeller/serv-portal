@@ -9,6 +9,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -17,21 +18,21 @@ import (
 func GetEvent(r *util.Request, idstr string) error {
 	var (
 		event   *model.Event
-		teams   []*model.Team
 		canEdit bool
 		out     jwriter.Writer
 	)
-	teams = r.Person.SchedulableTeams()
 	if idstr == "NEW" {
-		canEdit = len(teams) != 0
+		if !auth.CanCreateEvents(r) {
+			return util.Forbidden
+		}
 	} else {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		if !r.Person.CanViewEvent(event) {
+		if !auth.CanViewEvent(r, event) {
 			return util.Forbidden
 		}
-		canEdit = r.Person.CanManageEvent(event)
+		canEdit = auth.CanManageEvent(r, event)
 	}
 	r.Tx.Commit()
 	out.RawString(`{"canEdit":`)
@@ -47,20 +48,20 @@ func GetEvent(r *util.Request, idstr string) error {
 		out.Float64(event.Hours)
 		out.RawString(`,"type":`)
 		out.String(string(event.Type))
-		out.RawString(`,"teams":[`)
-		for i, t := range event.Teams {
+		out.RawString(`,"roles":[`)
+		for i, r := range event.Roles {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.Int(int(t.ID))
+			out.Int(int(r.ID))
 		}
 		out.RawString(`]}`)
 	} else {
-		out.RawString(`,"event":{"id":0,"date":"","name":"","hours":1.0,"type":"","teams":[]}`)
+		out.RawString(`,"event":{"id":0,"date":"","name":"","hours":1.0,"type":"","roles":[]}`)
 	}
 	if canEdit {
-		out.RawString(`,"teams":[`)
-		for i, t := range teams {
+		out.RawString(`,"roles":[`)
+		for i, t := range auth.RolesCanManageEvents(r) {
 			if i != 0 {
 				out.RawByte(',')
 			}
@@ -85,12 +86,10 @@ var yearRE = regexp.MustCompile(`^20\d\d$`)
 func PostEvent(r *util.Request, idstr string) error {
 	var (
 		event *model.Event
-		teams []*model.Team
 		err   error
 	)
-	teams = r.Person.SchedulableTeams()
 	if idstr == "NEW" {
-		if teams == nil {
+		if !auth.CanCreateEvents(r) {
 			return util.Forbidden
 		}
 		event = new(model.Event)
@@ -98,7 +97,7 @@ func PostEvent(r *util.Request, idstr string) error {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		if !r.Person.CanManageEvent(event) {
+		if !auth.CanManageEvent(r, event) {
 			return util.Forbidden
 		}
 	}
@@ -134,31 +133,24 @@ func PostEvent(r *util.Request, idstr string) error {
 	if !found {
 		return errors.New("invalid type")
 	}
-	event.Teams = event.Teams[:0]
-	for _, idstr := range r.Form["team"] {
-		team := r.Tx.FetchTeam(model.TeamID(util.ParseID(idstr)))
-		if team == nil {
-			return errors.New("invalid team")
+	event.Roles = event.Roles[:0]
+	for _, idstr := range r.Form["role"] {
+		role := r.Tx.FetchRole(model.RoleID(util.ParseID(idstr)))
+		if role == nil {
+			return errors.New("invalid role")
 		}
-		found := false
-		for _, t := range teams {
-			if t == team {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !auth.CanManageEvents(r, role) {
 			return util.Forbidden
 		}
-		event.Teams = append(event.Teams, team)
+		event.Roles = append(event.Roles, role)
 	}
-	if len(event.Teams) == 0 {
-		return errors.New("missing team")
+	if len(event.Roles) == 0 {
+		return errors.New("missing role")
 	}
 	for _, e := range r.Tx.FetchEvents(event.Date, event.Date) {
 		if e.ID != event.ID && e.Name == event.Name {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")
-			r.Write([]byte(`{"nameError":"Another event on this date already has this name."}`))
+			r.Write([]byte(`{"nameError":true}`))
 			return nil
 		}
 	}

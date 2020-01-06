@@ -116,14 +116,16 @@ func (id *IDStr) Scan(value interface{}) error {
 // Tx is a wrapper around sql.Tx that implements all of the database package
 // functions for access to our tables.
 type Tx struct {
-	tx       *sql.Tx
-	teams    map[model.TeamID]*model.Team
-	roles    map[model.RoleID]*model.Role
-	username string
-	request  string
+	tx        *sql.Tx
+	roles     map[model.RoleID]*model.Role
+	roleTags  map[model.RoleTag]*model.Role
+	roleList  []*model.Role
+	maxRoleID model.RoleID
+	username  string
+	request   string
 }
 
-// Begin  starts a transaction, returning our Tx wrapper instead of a raw sql.Tx.
+// Begin starts a transaction, returning our Tx wrapper instead of a raw sql.Tx.
 func Begin() (tx *Tx) {
 	var err error
 
@@ -131,7 +133,7 @@ func Begin() (tx *Tx) {
 	if tx.tx, err = dbh.Begin(); err != nil {
 		panic(err)
 	}
-	tx.cacheTeams()
+	tx.cacheRoles()
 	return tx
 }
 

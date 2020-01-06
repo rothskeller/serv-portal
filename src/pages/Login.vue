@@ -37,6 +37,8 @@ export default {
       } catch (err) {
         console.error(err)
         this.failed = true
+        this.password = ''
+        this.$refs.password.focus()
       }
     },
   },

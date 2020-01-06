@@ -19,16 +19,16 @@ Page(:title="title" :subtitle="subtitle" menuItem="people")
       div
         b-input#person-password1(type="password" :state="passwordState" v-model="password1")
         b-input.mt-2#person-password2(type="password" :state="passwordState" v-model="password2")
-        b-progress#person-password-score(v-if="passwordScore" height="0.5rem")
+        b-progress#person-password-score(v-if="passwordScore>=0" height="0.5rem")
           b-progress-bar(:value="100" :variant="passwordVariant")
           b-progress-bar(:value="passwordScore > 0 ? 100 : 0" :variant="passwordVariant")
           b-progress-bar(:value="passwordScore > 1 ? 100 : 0" :variant="passwordVariant")
           b-progress-bar(:value="passwordScore > 2 ? 100 : 0" :variant="passwordVariant")
           b-progress-bar(:value="passwordScore > 3 ? 100 : 0" :variant="passwordVariant")
-    div.mt-3(v-text="`${me ? 'You belong' : 'This person belongs'} to these teams:`")
-    table#person-team-table
-      PersonTeam(v-for="t in teams" :key="t.id" :manageAny="manageAny" :team="t" @change="onChangeTeam")
-    div.mt-3(v-if="adminAny")
+    b-form-group(:label="rolesLabel" :state="rolesError ? false : null" :invalid-feedback="rolesError")
+      div
+        b-checkbox(v-for="role in roles" :key="role.id" v-model="role.held" :disabled="!role.enabled") {{role.memberLabel || role.name}}
+    div.mt-3(v-if="canEditInfo")
       b-btn(type="submit" variant="primary" :disabled="!valid" v-text="submitLabel")
       b-btn.ml-2(@click="onCancel") Cancel
 </template>
@@ -40,13 +40,11 @@ export default {
   data: () => ({
     loading: false,
     person: null,
+    roles: null,
     password1: null,
     password2: null,
-    teams: null,
     canEditInfo: false,
     allowBadPassword: false,
-    manageAny: false,
-    adminAny: false,
     firstNameError: null,
     lastNameError: null,
     duplicateName: null,
@@ -56,11 +54,13 @@ export default {
     passwordHints: null,
     passwordError: null,
     passwordSuccess: null,
-    passwordScore: 0,
+    passwordScore: -1,
+    rolesError: null,
     submitted: false,
   }),
   computed: {
     me() { return this.$route.params.id == this.$store.state.me.id },
+    newp() { return this.$route.params.id === 'NEW' },
     passwordState() {
       return this.password1 && this.passwordScore < 2 && !this.allowBadPassword ? false : null
     },
@@ -69,20 +69,25 @@ export default {
       if (this.passwordScore === 2) return 'warning'
       return 'danger'
     },
+    rolesLabel() {
+      if (this.me) return 'You hold these roles:'
+      if (this.new) return 'This person will hold these roles:'
+      return 'This person holds these roles:'
+    },
     submitLabel() {
       if (this.me) return 'Save Changes'
-      return this.$route.params.id === 'NEW' ? 'Create Person' : 'Save Person'
+      return this.newp ? 'Create Person' : 'Save Person'
     },
     subtitle() {
       if (this.me) return 'Edit Profile'
-      return this.$route.params.id === 'NEW' ? 'New Person' : 'Edit Person'
+      return this.newp ? 'New Person' : 'Edit Person'
     },
     title() {
       if (this.person && this.person.id) return `${this.person.firstName} ${this.person.lastName}`
-      return this.$route.params.id === 'NEW' ? 'New Person' : 'Edit Person'
+      return this.newp ? 'New Person' : 'Edit Person'
     },
     valid() {
-      return !this.firstNameError && !this.lastNameError && !this.emailError && !this.phoneError &&
+      return !this.firstNameError && !this.lastNameError && !this.emailError && !this.phoneError && !this.rolesError &&
         ((!this.password1 && !this.password2) || (this.passwordScore >= (this.allowBadPassword ? 1 : 2)))
     },
   },
@@ -92,12 +97,8 @@ export default {
     this.canEditInfo = data.canEditInfo
     this.allowBadPassword = data.allowBadPassword
     this.person = data.person
-    this.teams = data.teams
-    this.teams.forEach(t => {
-      if (t.canManage) this.manageAny = true
-      if (t.canAdmin) this.adminAny = true
-    })
     this.passwordHints = data.passwordHints
+    this.roles = data.roles
     this.loading = false
   },
   watch: {
@@ -110,7 +111,6 @@ export default {
   },
   methods: {
     onCancel() { this.$router.go(-1) },
-    onChangeTeam({ team, role }) { team.role = role ? role.id : 0 },
     async onSubmit() {
       this.submitted = true
       this.validate()
@@ -121,9 +121,7 @@ export default {
       body.append('email', this.person.email)
       body.append('phone', this.person.phone)
       if (this.password1) body.append('password', this.password1)
-      this.teams.forEach(t => {
-        if (t.role) body.append('role', t.role)
-      })
+      this.roles.filter(role => role.held && role.enabled).forEach(role => { body.append('role', role.id) })
       const resp = (await this.$axios.post(`/api/people/${this.$route.params.id}`, body)).data
       if (resp) {
         if (resp.duplicateName) this.duplicateName = { firstName: this.person.firstName, lastName: this.person.lastName }
@@ -136,7 +134,7 @@ export default {
     },
     validate() {
       if ((this.submitted || this.password2) && this.password1 !== this.password2) {
-        this.passwordScore = 0
+        this.passwordScore = -1
         this.passwordError = 'These two password entries do not match.'
         this.passwordSuccess = null
       } else if (this.password1) {
@@ -162,7 +160,7 @@ export default {
           this.passwordError = this.passwordSuccess = null
         }
       } else {
-        this.passwordScore = 0
+        this.passwordScore = -1
         this.passwordError = this.passwordSuccess = null
       }
       if (!this.submitted) return
@@ -188,6 +186,10 @@ export default {
         this.phoneError = 'A valid phone number must have 10 digits.'
       else
         this.phoneError = null
+      if (this.newp && !this.roles.some(role => role.held))
+        this.rolesError = 'At least one role must be selected.'
+      else
+        this.rolesError = null
     },
   },
 }

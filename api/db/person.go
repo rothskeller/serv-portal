@@ -37,7 +37,6 @@ func (tx *Tx) fetchPerson(where string, args ...interface{}) (p *model.Person) {
 		return nil
 	}
 	panicOnError(err)
-	p.PrivMap = make(model.PrivilegeMap)
 	rows, err = tx.tx.Query(`SELECT role FROM person_role WHERE person=?`, p.ID)
 	panicOnError(err)
 	for rows.Next() {
@@ -45,12 +44,10 @@ func (tx *Tx) fetchPerson(where string, args ...interface{}) (p *model.Person) {
 		panicOnError(rows.Scan(&rid))
 		role := tx.FetchRole(rid)
 		p.Roles = append(p.Roles, role)
-		p.PrivMap.Merge(role.PrivMap)
 	}
 	panicOnError(rows.Err())
-	sort.Slice(p.Roles, func(i, j int) bool {
-		return roleLess(p.Roles[i], p.Roles[j])
-	})
+	sort.Sort(model.RoleSort(p.Roles))
+	tx.setPersonPrivileges(p)
 	return p
 }
 
@@ -67,7 +64,6 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 	for rows.Next() {
 		var p model.Person
 		panicOnError(rows.Scan(&p.ID, &p.FirstName, &p.LastName, &p.Email, &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime)))
-		p.PrivMap = make(model.PrivilegeMap)
 		pmap[p.ID] = &p
 		people = append(people, &p)
 	}
@@ -85,25 +81,19 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 		p = pmap[pid]
 		role = tx.FetchRole(rid)
 		p.Roles = append(p.Roles, role)
-		p.PrivMap.Merge(role.PrivMap)
 	}
 	panicOnError(rows.Err())
 	for _, p := range people {
-		sort.Slice(p.Roles, func(i, j int) bool {
-			return roleLess(p.Roles[i], p.Roles[j])
-		})
+		sort.Sort(model.RoleSort(p.Roles))
+		tx.setPersonPrivileges(p)
 	}
 	return people
 }
 
-func roleLess(i, j *model.Role) bool {
-	switch {
-	case i.Team.Name < j.Team.Name:
-		return true
-	case i.Team.Name > j.Team.Name:
-		return false
-	default:
-		return i.Name < j.Name
+func (tx *Tx) setPersonPrivileges(p *model.Person) {
+	p.PrivMap = make(model.PrivilegeMap, tx.maxRoleID+1)
+	for _, r := range p.Roles {
+		p.PrivMap = p.PrivMap.Merge(r.TransPrivs)
 	}
 }
 

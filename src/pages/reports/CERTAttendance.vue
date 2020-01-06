@@ -51,7 +51,6 @@ export default {
         format: 'JSON',
       }
     })).data
-    console.log(data)
     this.header = data.header
     this.body = data.body
     this.footer = data.footer

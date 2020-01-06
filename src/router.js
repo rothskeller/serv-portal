@@ -10,8 +10,7 @@ import People from './pages/People'
 import Person from './pages/Person'
 import Reports from './pages/Reports'
 import Role from './pages/Role'
-import Team from './pages/Team'
-import Teams from './pages/Teams'
+import Roles from './pages/Roles'
 
 Vue.use(Router)
 
@@ -28,8 +27,7 @@ export default new Router({
     { path: '/people/:id', component: Person },
     { path: '/reports', component: Reports },
     { path: '/reports/cert-attendance', component: CERTAttendance, props: route => route.query },
-    { path: '/teams', component: Teams },
-    { path: '/teams/:id', component: Team, props: route => ({ parent: route.query.parent }) },
-    { path: '/teams/:tid/roles/:rid', component: Role },
+    { path: '/roles', component: Roles },
+    { path: '/roles/:id', component: Role },
   ],
 })

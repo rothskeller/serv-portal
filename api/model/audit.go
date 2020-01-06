@@ -16,7 +16,6 @@ type AuditRecord struct {
 	Person    *Person
 	Role      *Role
 	Session   *Session
-	Team      *Team
 }
 
 func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
@@ -49,10 +48,6 @@ func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
 		out.RawString(`,"session":`)
 		in.Session.ToAudit(out)
 	}
-	if in.Team != nil {
-		out.RawString(`,"team":`)
-		in.Team.ToAudit(out)
-	}
 	out.RawString("}\n")
 }
 
@@ -67,8 +62,8 @@ func (in Event) ToAudit(out *jwriter.Writer) {
 	out.Float64(in.Hours)
 	out.RawString(`,"type":`)
 	out.String(string(in.Type))
-	out.RawString(`,"teams":[`)
-	for i, t := range in.Teams {
+	out.RawString(`,"roles":[`)
+	for i, t := range in.Roles {
 		if i != 0 {
 			out.RawByte(',')
 		}
@@ -113,13 +108,13 @@ func (in Person) ToAudit(out *jwriter.Writer) {
 func (in PrivilegeMap) ToAudit(out *jwriter.Writer) {
 	out.RawByte('{')
 	first := true
-	for t, p := range in {
+	for r, p := range in {
 		if first {
 			first = false
 		} else {
 			out.RawByte(',')
 		}
-		out.IntStr(int(t.ID))
+		out.IntStr(int(r))
 		out.RawByte(':')
 		out.Uint8(uint8(p))
 	}
@@ -129,12 +124,18 @@ func (in PrivilegeMap) ToAudit(out *jwriter.Writer) {
 func (in Role) ToAudit(out *jwriter.Writer) {
 	out.RawString(`{"id":`)
 	out.Int(int(in.ID))
-	if in.Team != nil {
-		out.RawString(`,"team":`)
-		out.Int(int(in.Team.ID))
+	if in.Tag != "" {
+		out.RawString(`,"tag":`)
+		out.String(string(in.Tag))
 	}
 	out.RawString(`,"name":`)
 	out.String(in.Name)
+	out.RawString(`,"memberLabel":`)
+	out.String(in.MemberLabel)
+	out.RawString(`,"implyOnly":`)
+	out.Bool(in.ImplyOnly)
+	out.RawString(`,"individual":`)
+	out.Bool(in.Individual)
 	out.RawString(`,"privileges":`)
 	in.PrivMap.ToAudit(out)
 	out.RawByte('}')
@@ -151,29 +152,5 @@ func (in Session) ToAudit(out *jwriter.Writer) {
 		out.RawString(`,"expires":`)
 		out.Raw(in.Expires.MarshalJSON())
 	}
-	out.RawByte('}')
-}
-
-func (in Team) ToAudit(out *jwriter.Writer) {
-	out.RawString(`{"id":`)
-	out.Int(int(in.ID))
-	if in.Parent != nil {
-		out.RawString(`,"parent":`)
-		out.Int(int(in.Parent.ID))
-	}
-	if in.Tag != "" {
-		out.RawString(`,"tag":`)
-		out.String(string(in.Tag))
-	}
-	out.RawString(`,"type":`)
-	out.Uint8(uint8(in.Type))
-	out.RawString(`,"name":`)
-	out.String(in.Name)
-	if in.Email != "" {
-		out.RawString(`,"email":`)
-		out.String(in.Email)
-	}
-	out.RawString(`,"privileges":`)
-	in.PrivMap.ToAudit(out)
 	out.RawByte('}')
 }

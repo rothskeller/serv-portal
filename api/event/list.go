@@ -7,6 +7,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -25,10 +26,10 @@ func GetEvents(r *util.Request) error {
 	events = r.Tx.FetchEvents(fmt.Sprintf("%d-01-01", year), fmt.Sprintf("%d-12-31", year))
 	r.Tx.Commit()
 	out.RawString(`{"canAdd":`)
-	out.Bool(r.Person.CanCreateEvents())
+	out.Bool(auth.CanCreateEvents(r))
 	out.RawString(`,"events":[`)
 	for _, e := range events {
-		if !r.Person.CanViewEvent(e) {
+		if !auth.CanViewEvent(r, e) {
 			continue
 		}
 		if first {
@@ -43,8 +44,15 @@ func GetEvents(r *util.Request) error {
 		out.RawString(`,"name":`)
 		out.String(e.Name)
 		out.RawString(`,"canAttendance":`)
-		out.Bool(r.Person.CanRecordAttendanceAtEvent(e))
-		out.RawByte('}')
+		out.Bool(auth.CanRecordAttendanceAtEvent(r, e))
+		out.RawString(`,"roles":[`)
+		for i, r := range e.Roles {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(r.Name)
+		}
+		out.RawString(`]}`)
 	}
 	out.RawString(`]}`)
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

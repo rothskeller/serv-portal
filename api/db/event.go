@@ -19,12 +19,12 @@ func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 		return nil
 	}
 	panicOnError(err)
-	rows, err = tx.tx.Query(`SELECT team FROM event_team WHERE event=?`, id)
+	rows, err = tx.tx.Query(`SELECT role FROM event_role WHERE event=?`, id)
 	panicOnError(err)
 	for rows.Next() {
-		var team model.TeamID
-		panicOnError(rows.Scan(&team))
-		e.Teams = append(e.Teams, tx.FetchTeam(team))
+		var role model.RoleID
+		panicOnError(rows.Scan(&role))
+		e.Roles = append(e.Roles, tx.FetchRole(role))
 	}
 	panicOnError(rows.Err())
 	return e
@@ -47,15 +47,15 @@ func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
 		events = append(events, &e)
 	}
 	panicOnError(rows.Err())
-	stmt, err = tx.tx.Prepare(`SELECT team FROM event_team WHERE event=?`)
+	stmt, err = tx.tx.Prepare(`SELECT role FROM event_role WHERE event=?`)
 	panicOnError(err)
 	for _, e := range events {
 		rows, err = stmt.Query(e.ID)
 		panicOnError(err)
 		for rows.Next() {
-			var team model.TeamID
-			panicOnError(rows.Scan(&team))
-			e.Teams = append(e.Teams, tx.FetchTeam(team))
+			var role model.RoleID
+			panicOnError(rows.Scan(&role))
+			e.Roles = append(e.Roles, tx.FetchRole(role))
 		}
 		panicOnError(rows.Err())
 	}
@@ -76,10 +76,10 @@ func (tx *Tx) SaveEvent(e *model.Event) {
 		e.ID = model.EventID(lastInsertID(result))
 	} else {
 		panicOnNoRows(tx.tx.Exec(`UPDATE event SET date=?, name=?, hours=?, type=? WHERE id=?`, e.Date, e.Name, e.Hours, e.Type, e.ID))
-		panicOnExecError(tx.tx.Exec(`DELETE FROM event_team WHERE event=?`, e.ID))
+		panicOnExecError(tx.tx.Exec(`DELETE FROM event_role WHERE event=?`, e.ID))
 	}
-	for _, t := range e.Teams {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO event_team (event, team) VALUES (?,?)`, e.ID, t.ID))
+	for _, r := range e.Roles {
+		panicOnExecError(tx.tx.Exec(`INSERT INTO event_role (event, role) VALUES (?,?)`, e.ID, r.ID))
 	}
 	tx.audit(model.AuditRecord{Event: e})
 }

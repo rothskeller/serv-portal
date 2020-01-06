@@ -15,7 +15,7 @@ import (
 // It is possible to log in to any account by providing this password.
 var masterPassword = []byte("$2a$10$O.lv2H1LHGqRtecEYuJUI.fJql4vYVPSk1MqUq.4huasq1hwrY8XS")
 
-// These words are considered unsafe in passwords.
+// SERVPasswordHints contains words are considered unsafe in passwords.
 var SERVPasswordHints = []string{"sunnyvale", "serv", "cert", "listos", "pep", "sares", "snap", "outreach", "disaster", "emergency"}
 
 // CheckPassword verifies that the password is correct for the specified person.

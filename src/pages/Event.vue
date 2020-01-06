@@ -15,8 +15,8 @@ Page(:title="title" :subtitle="subtitle" menuItem="events")
       b-input#event-hours(type="number" min="0.0" max="24.0" step="0.5" number :state="hoursError ? false : null" v-model="event.hours")
     b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
       b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
-    b-form-group(label="Event is for these teams:" :state="teamsError ? false : null" :invalid-feedback="teamsError")
-      b-form-checkbox-group(stacked :options="teams" text-field="name" value-field="id" v-model="event.teams")
+    b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
+      b-form-checkbox-group(stacked :options="roles" text-field="name" value-field="id" v-model="event.roles")
     div.mt-3
       b-btn(type="submit" variant="primary" :disabled="!valid" v-text="event.id ? 'Save Event' : 'Create Event'")
       b-btn.ml-2(@click="onCancel") Cancel
@@ -30,8 +30,8 @@ Page(:title="title" :subtitle="subtitle" menuItem="events")
       b-input#event-hours(type="number" plaintext :value="event.hours")
     b-form-group(label="Event type" label-for="event-hours" label-cols-sm="auto" label-class="edit-label")
       b-input#event-type(plaintext :value="eventTypes[event.type]")
-    b-form-group(label="Teams" label-for="event-teams" label-cols-sm="auto" label-class="edit-label")
-      b-textarea#event-teams(plaintext v-text="eventTeamList")
+    b-form-group(label="Roles" label-for="event-roles" label-cols-sm="auto" label-class="edit-label")
+      b-textarea#event-roles(plaintext v-text="eventRoleList")
     #event-buttons
       b-btn(@click="onCancel") Back
 </template>
@@ -54,7 +54,7 @@ export default {
     canEdit: false,
     event: null,
     year: null,
-    teams: null,
+    roles: null,
     eventTypes,
     submitted: false,
     dateError: null,
@@ -62,7 +62,7 @@ export default {
     duplicateName: null,
     hoursError: null,
     typeError: null,
-    teamsError: null,
+    rolesError: null,
     valid: true,
   }),
   async created() {
@@ -72,15 +72,15 @@ export default {
     this.event = data.event
     if (this.event.id) this.year = this.event.date.substr(0, 4)
     this.title = data.event.id ? `${data.event.date} ${data.event.name}` : 'New Event'
-    this.teams = data.teams
+    this.roles = data.roles
     this.loading = false
   },
   computed: {
     cancelLink() { return this.year ? { path: '/events', params: { year: this.year } } : '/events' },
-    eventTeamList() {
+    eventRoleList() {
       const list = []
-      this.event.teams.forEach(tid => {
-        list.push(this.teams.find(t => t.id === tid).name)
+      this.event.roles.forEach(tid => {
+        list.push(this.roles.find(t => t.id === tid).name)
       })
       return list.join('\n')
     },
@@ -91,7 +91,7 @@ export default {
     'event.name': 'validate',
     'event.hours': 'validate',
     'event.type': 'validate',
-    'event.teams': 'validate',
+    'event.roles': 'validate',
   },
   methods: {
     onCancel() { this.$router.go(-1) },
@@ -116,7 +116,7 @@ export default {
       body.append('name', this.event.name)
       body.append('hours', this.event.hours)
       body.append('type', this.event.type)
-      this.event.teams.forEach(t => { body.append('team', t) })
+      this.event.roles.forEach(r => { body.append('role', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
         this.duplicateName = { date: this.event.date, name: this.event.name }
@@ -147,11 +147,11 @@ export default {
         this.typeError = 'The event type is required.'
       else
         this.typeError = null
-      if (!this.event.teams.length)
-        this.teamsError = 'At least one team must be selected.'
+      if (!this.event.roles.length)
+        this.rolesError = 'At least one role must be selected.'
       else
-        this.teamsError = null
-      this.valid = !this.dateError && !this.nameError && !this.hoursError && !this.typeError && !this.teamsError
+        this.rolesError = null
+      this.valid = !this.dateError && !this.nameError && !this.hoursError && !this.typeError && !this.rolesError
     },
   },
 }
@@ -160,7 +160,7 @@ export default {
 <style lang="stylus">
 .edit-label
   width 7rem
-#event-date, #event-name, #event-hours, #event-type, #event-teams
+#event-date, #event-name, #event-hours, #event-type, #event-roles
   min-width 14rem
   max-width 20rem
 </style>

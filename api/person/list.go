@@ -3,6 +3,7 @@ package person
 import (
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -10,17 +11,21 @@ import (
 // GetPeople handles GET /api/people requests.
 func GetPeople(r *util.Request) error {
 	var (
-		focus *model.Team
+		focus *model.Role
 		out   jwriter.Writer
-		first = true
 	)
-	focus = r.Tx.FetchTeam(model.TeamID(util.ParseID(r.FormValue("team"))))
+	focus = r.Tx.FetchRole(model.RoleID(util.ParseID(r.FormValue("role"))))
 	out.RawString(`{"people":[`)
+	first := true
 	for _, p := range r.Tx.FetchPeople() {
-		if !r.Person.CanViewPerson(p) {
+		if !auth.CanViewPerson(r, p) {
 			continue
 		}
-		if focus != nil && !p.IsMember(focus) {
+		if focus != nil && focus.Tag == model.RoleDisabled && auth.IsEnabled(r, p) {
+			// Special case because the lack of *any* role also
+			// means disabled.
+			continue
+		} else if focus != nil && !auth.HasRole(p, focus) {
 			continue
 		}
 		if first {
@@ -39,31 +44,39 @@ func GetPeople(r *util.Request) error {
 		out.RawString(`,"phone":`)
 		out.String(p.Phone)
 		out.RawString(`,"roles":[`)
-		for i, r := range p.Roles {
-			if i != 0 {
+		first := true
+		for _, r := range p.Roles {
+			if r.MemberLabel == "" {
+				continue
+			}
+			if first {
+				first = false
+			} else {
 				out.RawByte(',')
 			}
-			out.RawString(`{"team":`)
-			out.String(r.Team.Name)
-			out.RawString(`,"role":`)
-			out.String(r.Name)
-			out.RawByte('}')
+			out.String(r.MemberLabel)
 		}
 		out.RawString(`]}`)
 	}
-	out.RawString(`],"viewableTeams":[`)
-	for i, t := range r.Person.ViewableTeams() {
-		if i != 0 {
+	out.RawString(`],"viewableRoles":[`)
+	first = true
+	for _, role := range r.Tx.FetchRoles() {
+		if role.Individual || !auth.CanViewRole(r, role) {
+			continue
+		}
+		if first {
+			first = false
+		} else {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
-		out.Int(int(t.ID))
+		out.Int(int(role.ID))
 		out.RawString(`,"name":`)
-		out.String(t.Name)
+		out.String(role.Name)
 		out.RawByte('}')
 	}
 	out.RawString(`],"canAdd":`)
-	out.Bool(r.Person.CanManageTeams())
+	out.Bool(auth.CanCreatePeople(r))
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

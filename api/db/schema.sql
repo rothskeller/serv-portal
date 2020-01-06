@@ -1,46 +1,31 @@
 -- Database schema for serve.rothskeller.net/portal.
 
--- The team table tracks all SERV teams (except for the implicit "All People"
--- team).
-CREATE TABLE team (
-    id          integer PRIMARY KEY, -- autoincrement
-    parent      integer NOT NULL REFERENCES team ON DELETE CASCADE,
-    tag         text    UNIQUE,
-    type        integer NOT NULL,
-    name        text    NOT NULL,
-    email       text    NOT NULL
+-- The role table tracks all SERV roles.
+CREATE TABLE role (
+    id           integer PRIMARY KEY,
+    tag          text    UNIQUE,
+    name         text    NOT NULL,
+    member_label text    NOT NULL,
+    imply_only   boolean NOT NULL,
+    individual   boolean NOT NULL,
+    privileges   blob    NOT NULL
 );
-CREATE INDEX team_parent_index ON team (parent);
+CREATE INDEX role_name_index ON role (name);
 
--- The team_privilege table tracks which teams have privileges on which other
--- teams.  Note that Webmasters implicitly has all privileges on all teams.
-CREATE TABLE team_privilege (
-    actor      integer NOT NULL REFERENCES team ON DELETE CASCADE,
-    target     integer NOT NULL REFERENCES team ON DELETE CASCADE,
+-- The role_privilege table tracks which actor roles have which privileges on
+-- which target roles.  It is redundant with the privileges column of the role
+-- table, but it is maintained so that the data are in a form usable in offline
+-- SQL queries, and so that the privileges blobs can be recalculated if
+-- necessary.  This table is written but never read by the portal server.  Note
+-- that role implications are also encoded here, as the LSB of each privileges
+-- bitmask.
+CREATE TABLE role_privilege (
+    actor      integer NOT NULL REFERENCES role ON DELETE CASCADE,
+    target     integer NOT NULL REFERENCES role ON DELETE CASCADE,
     privileges integer NOT NULL,
     PRIMARY KEY (actor, target)
 ) WITHOUT ROWID;
-CREATE INDEX team_privilege_target_index ON team_privilege (target);
-
--- The role table tracks all roles within the teams.
-CREATE TABLE role (
-    id    integer PRIMARY KEY, -- autoincrement
-    team  integer NOT NULL REFERENCES team ON DELETE CASCADE,
-    name  text    NOT NULL
-);
-CREATE INDEX role_team_index ON role (team);
-CREATE INDEX role_name_index ON role (name); -- for sorting
-
--- The role_privilege table tracks which roles have which privileges on which
--- teams.  Note that Webmaster roles implicitly have all privileges on all
--- teams.
-CREATE TABLE role_privilege (
-    role       integer NOT NULL REFERENCES role ON DELETE CASCADE,
-    team       integer NOT NULL REFERENCES team ON DELETE CASCADE,
-    privileges integer NOT NULL,
-    PRIMARY KEY (role, team)
-) WITHOUT ROWID;
-CREATE INDEX role_privilege_team_index ON role_privilege (team);
+CREATE INDEX role_privilege_target_index ON role_privilege (target);
 
 -- The person table tracks all people associated (or formerly associated) with
 -- SERV.  There is one row in this table for each such person.  Since each such
@@ -67,7 +52,8 @@ CREATE TABLE session (
 );
 CREATE INDEX session_person_index ON session (person);
 
--- The person_role table records which people have which roles.
+-- The person_role table records which people have which roles.  It includes
+-- only direct role membership, not transitive memberships.
 CREATE TABLE person_role (
     person integer NOT NULL REFERENCES person ON DELETE CASCADE,
     role   integer NOT NULL REFERENCES role ON DELETE CASCADE,
@@ -86,13 +72,13 @@ CREATE TABLE event (
     UNIQUE (date, name)
 );
 
--- The event_team table tracks which teams are invited to which events.
-CREATE TABLE event_team (
+-- The event_role table tracks which roles are invited to which events.
+CREATE TABLE event_role (
     event integer NOT NULL REFERENCES event ON DELETE CASCADE,
-    team  integer NOT NULL REFERENCES team ON DELETE CASCADE,
-    PRIMARY KEY (event, team)
+    role  integer NOT NULL REFERENCES role ON DELETE CASCADE,
+    PRIMARY KEY (event, role)
 ) WITHOUT ROWID;
-CREATE INDEX event_team_team_index ON event_team (team);
+CREATE INDEX event_role_role_index ON event_role (role);
 
 -- The attendance table tracks which people attended which events.
 CREATE TABLE attendance (

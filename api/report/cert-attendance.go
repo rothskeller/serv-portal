@@ -10,6 +10,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -31,7 +32,7 @@ var eventTypeAbbrs = map[model.EventType]eventTypeAbbr{
 // CERTAttendanceReport handles GET /api/reports/cert-attendance requests.
 func CERTAttendanceReport(r *util.Request) error {
 	var (
-		team     *model.Team
+		team     *model.Role
 		events   []*model.Event
 		people   []*model.Person
 		rendered attendanceReport
@@ -46,13 +47,13 @@ func CERTAttendanceReport(r *util.Request) error {
 	)
 	switch teamStr {
 	case "Alpha":
-		team = r.Tx.FetchTeamByTag("cert-team-alpha")
+		team = r.Tx.FetchRoleByTag("cert-team-alpha")
 	case "Bravo":
-		team = r.Tx.FetchTeamByTag("cert-team-bravo")
+		team = r.Tx.FetchRoleByTag("cert-team-bravo")
 	default:
-		team = r.Tx.FetchTeamByTag("cert-teams")
+		team = r.Tx.FetchRoleByTag("cert-teams")
 	}
-	if !r.Person.PrivMap.Has(team, model.PrivAdmin) {
+	if !auth.CanManageEvents(r, team) {
 		return util.Forbidden
 	}
 	if !dateRE.MatchString(dateFrom) {
@@ -74,7 +75,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	j := 0
 	for _, e := range events {
 		found := false
-		for _, t := range e.Teams {
+		for _, t := range e.Roles {
 			switch t.Tag {
 			case "cert-teams", "cert-team-alpha", "cert-team-bravo":
 				found = true
@@ -91,7 +92,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	people = r.Tx.FetchPeople()
 	j = 0
 	for _, p := range people {
-		if p.IsMember(team) {
+		if auth.HasRole(p, team) {
 			people[j] = p
 			j++
 			pmap[p.ID] = p

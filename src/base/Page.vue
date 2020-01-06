@@ -19,7 +19,7 @@ Page is the basic framework of all pages on the site.
         b(v-text="`${$store.state.me.firstName} ${$store.state.me.lastName}`")
       router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'events'}" to="/events") Events
       router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'people'}" to="/people") People
-      router-link.page-menu-item(v-if="$store.state.me.webmaster" :class="{'page-menu-item-active': menuItem === 'teams'}" to="/teams") Teams
+      router-link.page-menu-item(v-if="$store.state.me.webmaster" :class="{'page-menu-item-active': menuItem === 'roles'}" to="/roles") Roles
       router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'reports'}" to="/reports") Reports
       router-link.page-menu-item(:to="`/people/${$store.state.me.id}`") Profile
       router-link.page-menu-item(to="/logout") Logout

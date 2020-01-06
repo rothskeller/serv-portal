@@ -29,7 +29,7 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"lastName":`)
 	out.String(r.Person.LastName)
 	out.RawString(`,"webmaster":`)
-	out.Bool(r.Person.IsWebmaster())
+	out.Bool(IsWebmaster(r))
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)
@@ -47,8 +47,8 @@ func PostLogin(r *util.Request) error {
 	if person = r.Tx.FetchPersonByEmail(email); person == nil {
 		goto FAIL // no person with that email
 	}
-	if !person.CanLogIn() {
-		goto FAIL // person not a member of any team
+	if !IsEnabled(r, person) {
+		goto FAIL // person is disabled
 	}
 	if person.PWResetToken != "" {
 		goto FAIL // password reset in progress

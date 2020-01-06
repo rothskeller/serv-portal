@@ -34,7 +34,7 @@ type Event struct {
 	Name  string
 	Hours float64
 	Type  EventType
-	Teams []*Team
+	Roles []*Role
 }
 
 // A PersonID is a positive integer uniquely identifying a Person.
@@ -55,7 +55,7 @@ type Person struct {
 	PWResetToken  string
 	PWResetTime   time.Time
 	Roles         []*Role
-	PrivMap       PrivilegeMap // transient
+	PrivMap       PrivilegeMap // transient, transitive
 }
 
 // A Privilege is something members of an actor team get to do to a target team.
@@ -65,38 +65,51 @@ type Privilege uint8
 
 // Known privilege values.
 const (
-	// PrivMember isn't a privilege per se; it denotes membership in the
-	// target team.
-	PrivMember Privilege = 1 << iota
+	// PrivHoldsRole isn't a privilege per se; it denotes holding the target
+	// role.
+	PrivHoldsRole Privilege = 1 << iota
 
-	// PrivView denotes the ability to view the roster of the target team.
-	PrivView
+	// PrivViewHolders denotes the ability to view the list of people who
+	// hold the target role.
+	PrivViewHolders
 
-	// PrivAdmin denotes the ability to administer the target team, i.e.,
-	// change the roles its members have (but not add or remove members),
-	// and schedule events.
-	PrivAdmin
+	// PrivAssignRole denotes the ability to assign people to the target
+	// role or remove them from it.
+	PrivAssignRole
 
-	// PrivManage denotes the ability to manage the target team, i.e., add
-	// and remove members.
-	PrivManage
+	// PrivManageEvents denotes the ability to manage events to which the
+	// role is invited.
+	PrivManageEvents
 )
-
-// A PrivilegeMap expresses the privileges held by an acting Person, Role, or
-// Team.  It is a map from the target team to the privileges the actor has on
-// that target team.
-type PrivilegeMap map[*Team]Privilege
 
 // A RoleID is a positive integer uniquely identifying a Role.
 type RoleID int
 
-// A Role describes a role that a Person can hold in a team.  A Role hAS no
-// meaning outside the context of the team that defines it.
+// A RoleTag is a string that uniquely identifies some teams that are treated as
+// special cases by the web site code.
+type RoleTag string
+
+// Values for RoleTag.
+const (
+	// RoleDisabled identifies the role to which disabled users belong.
+	// Holding this role blocks logging into the web site.
+	RoleDisabled RoleTag = "disabled"
+
+	// RoleWebmaster identifies the role to which all webmasters belong.
+	// Webmasters have all privileges on all roles.
+	RoleWebmaster = "webmaster"
+)
+
+// A Role describes a role that a Person can hold.
 type Role struct {
-	ID      RoleID
-	Team    *Team
-	Name    string
-	PrivMap PrivilegeMap
+	ID          RoleID
+	Tag         RoleTag
+	Name        string
+	MemberLabel string
+	ImplyOnly   bool
+	Individual  bool
+	PrivMap     PrivilegeMap // persistent, non-transitive
+	TransPrivs  PrivilegeMap // transient, transitive
 }
 
 // A SessionToken is a string that uniquely identifies a login session.
@@ -107,53 +120,4 @@ type Session struct {
 	Token   SessionToken
 	Person  *Person
 	Expires time.Time
-}
-
-// A TeamID is an integer that uniquely identifies a team.
-type TeamID int
-
-// A TeamTag is a string that uniquely identifies some teams that are treated as
-// special cases by the web site code.
-type TeamTag string
-
-// Values for TeamTag.
-const (
-	// TeamLogin identifies the team to which all web site users belong.
-	// Membership in this team implies the right to log in to the web site.
-	TeamLogin TeamTag = "login"
-
-	// TeamWebmasters identifies the team to which all webmasters belong.
-	// Webmasters have all privileges on all teams.
-	TeamWebmasters = "webmaster"
-)
-
-// TeamType specifies how the team membership is constructed.
-type TeamType uint8
-
-// Values for TeamType.
-const (
-	// TeamExplicit states that team membership comprises normal (non-tied)
-	// roles defined on that team, and the people who hold them.
-	TeamNormal TeamType = iota
-
-	// TeamTiedRoles states that team membership comprises tied roles on
-	// that team, and the people who hold them.
-	TeamTiedRoles
-
-	// TeamAncestor states that team membership comprises the membership of
-	// child teams; the team has no explicit roles of its own.
-	TeamAncestor
-)
-
-// A Team is a group of people who are visible and/or mailable.
-type Team struct {
-	ID       TeamID
-	Parent   *Team
-	Tag      TeamTag
-	Type     TeamType
-	Name     string
-	Email    string
-	PrivMap  PrivilegeMap
-	Roles    []*Role // transient
-	Children []*Team // transient
 }

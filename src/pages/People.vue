@@ -6,8 +6,8 @@ People displays the list of people.
 Page(title="People" menuItem="people")
   #people-title
     | People
-    select#people-team(v-if="teams && teams.length > 1" v-model="team")
-      option(v-for="t in teams" :key="t.id" :value="t.id" v-text="t.name")
+    select#people-role(v-if="roles && roles.length > 1" v-model="role")
+      option(v-for="t in roles" :key="t.id" :value="t.id" v-text="t.name")
   div.mt-3(v-if="loading")
     b-spinner(small)
   table#people-table(v-else)
@@ -21,7 +21,7 @@ Page(title="People" menuItem="people")
         div: a(:href="`mailto:${p.email}`" v-text="p.email")
         div(v-if="p.phone"): a(:href="`tel:${p.phone}`" v-text="p.phone")
       td
-        div(v-for="r in p.roles" :key="r.team" v-text="r.role ? `${r.team}: ${r.role}` : r.team")
+        div(v-for="(r, i) in p.roles" :key="i" v-text="r")
         div(v-if="!p.roles.length") &mdash;
   div.mt-3(v-if="canAdd")
     b-btn(to="/people/NEW") Add Person
@@ -29,24 +29,24 @@ Page(title="People" menuItem="people")
 
 <script>
 export default {
-  data: () => ({ team: 0, teams: null, people: null, canAdd: false, loading: false }),
+  data: () => ({ role: 0, roles: null, people: null, canAdd: false, loading: false }),
   created() {
     this.load()
   },
   watch: {
-    team() {
+    role() {
       this.load()
     },
   },
   methods: {
     async load() {
       this.loading = true
-      const data = (await this.$axios.get('/api/people', { params: { team: this.team } })).data
+      const data = (await this.$axios.get('/api/people', { params: { role: this.role } })).data
       this.people = data.people
       this.canAdd = data.canAdd
-      if (data.viewableTeams.length > 1) {
-        data.viewableTeams.unshift({ id: 0, name: '(all)' })
-        this.teams = data.viewableTeams
+      if (data.viewableRoles.length > 1) {
+        data.viewableRoles.unshift({ id: 0, name: '(all)' })
+        this.roles = data.viewableRoles
       }
       this.loading = false
     },
@@ -59,7 +59,7 @@ export default {
   display flex
   align-items center
   font-size 1.5rem
-#people-team
+#people-role
   margin-left 1rem
   font-size 1rem
 #people-table

@@ -5,6 +5,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
+	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
@@ -19,7 +20,7 @@ func GetEventAttendance(r *util.Request, idstr string) error {
 	if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 		return util.NotFound
 	}
-	if !r.Person.CanRecordAttendanceAtEvent(event) {
+	if !auth.CanRecordAttendanceAtEvent(r, event) {
 		return util.Forbidden
 	}
 	attended = r.Tx.FetchAttendanceByEvent(event)
@@ -32,7 +33,7 @@ func GetEventAttendance(r *util.Request, idstr string) error {
 	out.RawString(`},"people":[`)
 	first := true
 	for _, p := range r.Tx.FetchPeople() {
-		if !p.CanViewEvent(event) {
+		if !auth.CanViewEventP(r, p, event) {
 			continue
 		}
 		if first {
@@ -67,7 +68,7 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 		return util.NotFound
 	}
-	if !r.Person.CanRecordAttendanceAtEvent(event) {
+	if !auth.CanRecordAttendanceAtEvent(r, event) {
 		return util.Forbidden
 	}
 	r.ParseMultipartForm(1048576)
@@ -75,7 +76,7 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return errors.New("invalid person")
 		}
-		if !person.CanViewEvent(event) {
+		if !auth.CanViewEventP(r, person, event) {
 			return errors.New("illegal person")
 		}
 		people = append(people, person)
