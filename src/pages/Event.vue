@@ -5,7 +5,7 @@ Event displays the event viewing/editing page.
 <template lang="pug">
 Page(:title="title" :subtitle="subtitle" menuItem="events")
   div.mt-3(v-if="loading")
-    b-spinner small
+    b-spinner(small)
   form.mt-3(v-else-if="canEdit" @submit.prevent="onSubmit")
     b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
       b-input#event-date(type="date" autofocus :state="dateError ? false : null" v-model="event.date")
