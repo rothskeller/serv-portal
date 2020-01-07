@@ -6,12 +6,12 @@ Page is the basic framework of all pages on the site.
 #page-top
   #page-heading
     #page-menu-trigger-box(@click="onMenuTrigger")
-      svg#page-menu-trigger.bi.bi-list(viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
+      svg#page-menu-trigger.bi.bi-list(v-if="$store.state.me" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
         path(fill-rule="evenodd" d="M4.5 13.5A.5.5 0 015 13h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 9h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 5h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5z" clip-rule="evenodd")
     #page-titlebox
       #page-title(v-text="title")
     #page-menu-spacer
-  #page-main(:class="{'page-has-menu': !!$store.state.me, 'page-menu-open': menuOpen}")
+  #page-main(:class="menuOpen ? 'page-menu-open' : null")
     #page-menu(v-if="$store.state.me")
       #page-menu-welcome
         | Welcome
@@ -45,10 +45,16 @@ export default {
 <style lang="stylus">
 titlebarHeight = 40px
 sidebarWidth = 6rem
+#page-top
+  display flex
+  flex-direction column
+  height 100vh
+  @media print
+    height auto
 #page-heading
-  position fixed
   z-index 1
   display flex
+  flex none
   justify-content space-between
   align-items center
   height titlebarHeight
@@ -79,25 +85,26 @@ sidebarWidth = 6rem
   font-size 1.5rem
 #page-main
   position relative
-  padding-top titlebarHeight
-  @media print
-    padding-top 0
-#page-menu
-  position fixed
-  z-index 1
-  overflow hidden
-  width 0
+  display flex
+  flex none
+  overflow-y auto
+  width 100vw
   height 'calc(100vh - %s)' % titlebarHeight
+  @media print
+    height auto
+#page-menu
+  display none
+  flex none
+  overflow visible
+  width sidebarWidth
+  border-right 1px solid #888
   background-color #ccc
-  transition width 0.5s ease-in-out
   .page-menu-open &
-    overflow visible
-    width sidebarWidth
-    border-right 1px solid #888
+    position absolute
+    display block
+    height 'calc(100vh - %s)' % titlebarHeight
   @media (min-width: 576px)
-    overflow visible
-    width sidebarWidth
-    border-right 1px solid #888
+    display block
   @media print
     display none
 #page-menu-welcome
@@ -118,20 +125,16 @@ sidebarWidth = 6rem
     color black
     text-decoration none
 .page-menu-item-active
-  border-top 1px solid #888
-  border-bottom 1px solid #888
-  background-color white
-#page-content
-  margin-left 0
-  padding 1.5rem 0.75rem
-  transition margin-left 0.5s ease-in-out
   .page-menu-open &
-    margin-left sidebarWidth
-  .page-has-menu &
-    @media (min-width: 576px)
-      margin-left sidebarWidth
-  @media print
-    margin-left 0
+    color #00f
+  @media (min-width: 576px)
+    border-top 1px solid #888
+    border-bottom 1px solid #888
+    background-color white
+#page-content
+  flex auto
+  overflow auto
+  padding 1.5rem 0.75rem
 #page-subtitle
   font-size 1.5rem
 </style>
