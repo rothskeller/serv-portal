@@ -8,7 +8,7 @@ Page(:title="title" subtitle="Event Attendance" menuItem="events")
     b-spinner(small)
   form.mt-3(v-else @submit.prevent="onSave")
     b-form-group(label="This event was attended by:")
-      b-form-checkbox-group(stacked :options="people" text-field="name" value-field="id" v-model="attendees")
+      b-form-checkbox-group#event-attend-group(stacked :options="people" text-field="name" value-field="id" v-model="attendees")
     div.mt-3
       b-btn(type="submit" variant="primary") Save Attendance
       b-btn.ml-2(@click="onCancel") Cancel
@@ -47,3 +47,16 @@ export default {
   },
 }
 </script>
+
+<style lang="stylus">
+@media (min-width: 576px)
+  #event-attend-group
+    display flex
+    flex-direction column
+    flex-wrap wrap
+    align-content flex-start
+    height calc(100vh - 40px - 3rem - 2.25rem - 2.5rem - (0.375rem + 1px) - 1rem - 2px - 0.75rem - 1.5rem)
+    // title bar, content pad top+bot, subtitle, label+margin, group padding, button margin, button border, button padding, button text
+    .custom-checkbox
+      margin-right 1.5rem
+</style>
