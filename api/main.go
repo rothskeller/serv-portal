@@ -74,6 +74,12 @@ func router(r *util.Request) error {
 	switch {
 	case r.Method == "POST" && c[1] == "login" && c[2] == "":
 		return auth.PostLogin(r)
+	case r.Method == "POST" && c[1] == "password-reset" && c[2] == "":
+		return auth.PostPasswordReset(r)
+	case r.Method == "GET" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
+		return auth.GetPasswordResetToken(r, c[2])
+	case r.Method == "POST" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
+		return auth.PostPasswordResetToken(r, c[2])
 	case r.Person == nil:
 		return util.HTTPError(http.StatusUnauthorized, "401 Unauthorized")
 	case r.Method == "GET" && c[1] == "login" && c[2] == "":

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"strings"
 
-	"github.com/nbutton23/zxcvbn-go"
+	"github.com/trustelem/zxcvbn"
 	"golang.org/x/crypto/bcrypt"
 
 	"rothskeller.net/serv/model"

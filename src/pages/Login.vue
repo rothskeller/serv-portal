@@ -18,8 +18,8 @@ Page(title="SERV Portal")
       #login-submit-row
         b-button(type="submit" variant="primary") Log in
       #login-failed(v-if="failed") Login incorrect. Please try again.
-    //-#login-reset
-      a.btn.btn-secondary(href="/login/reset") Reset my password
+    #login-reset
+      a.btn.btn-secondary(href="/password-reset") Reset my password
 </template>
 
 <script>
@@ -34,6 +34,7 @@ export default {
       try {
         const data = (await this.$axios.post('/api/login', body)).data
         this.$store.commit('login', data)
+        this.$router.replace(this.$route.query.redirect || '/events')
       } catch (err) {
         console.error(err)
         this.failed = true

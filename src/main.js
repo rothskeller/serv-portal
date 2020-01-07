@@ -20,16 +20,15 @@ toRequire.keys().forEach(fileName => {
   Vue.component(name, config.default || config)
 })
 
-// Create the Vue instance.
-const vue = new Vue({
-  store,
-  router,
-  render: h => h('Main')
-})
-
 // Find out if we're already logged in (via remember-me cookie), and if so, get
 // store the session data.
-vue.$axios.get('/api/login').then(resp => { store.commit('login', resp.data) }).catch(() => { store.commit('login', null) })
-
-// Mount and start the app.
-vue.$mount('#app')
+Vue.axios.get('/api/login')
+  .then(resp => { store.commit('login', resp.data) })
+  .catch(() => { store.commit('login', null) })
+  .finally(() => {
+    new Vue({
+      store,
+      router,
+      render: h => h('Main')
+    }).$mount('#app')
+  })
