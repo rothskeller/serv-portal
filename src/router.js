@@ -26,7 +26,7 @@ const router = new Router({
     { path: '/events', component: Events },
     { path: '/events/:id', component: Event },
     { path: '/events/:id/attendance', component: EventAttendance },
-    { path: '/login', component: Login, meta: { publicAccess: true } },
+    { path: '/login', component: Login, meta: { publicAccess: true, allow401: true } },
     { path: '/logout', component: Logout },
     { path: '/password-reset', component: PWReset, meta: { publicAccess: true } },
     { path: '/password-reset/:token', component: PWResetToken, meta: { publicAccess: true } },
