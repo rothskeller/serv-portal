@@ -134,7 +134,7 @@ sidebarWidth = 6rem
 #page-content
   flex auto
   overflow auto
-  padding 1.5rem 0.75rem
+  margin 1.5rem 0.75rem
 #page-subtitle
   font-size 1.5rem
 </style>
