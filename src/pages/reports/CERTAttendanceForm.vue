@@ -65,7 +65,15 @@ export default {
     },
     onSubmit() {
       if (this.dateError) return
-      this.$router.push(`/reports/cert-attendance?team=${this.team}&dateFrom=${this.dateFrom}&dateTo=${this.dateTo}&stats=${this.stats}&detail=${this.detail}`)
+      this.$router.push({
+        path: '/reports/cert-attendance', query: {
+          team: this.team,
+          dateFrom: this.dateFromI,
+          dateTo: this.dateToI,
+          stats: this.stats,
+          detail: this.detail,
+        }
+      })
     },
   },
 }
