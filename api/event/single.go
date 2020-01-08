@@ -25,6 +25,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		if !auth.CanCreateEvents(r) {
 			return util.Forbidden
 		}
+		canEdit = true
 	} else {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
