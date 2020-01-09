@@ -22,7 +22,7 @@ toRequire.keys().forEach(fileName => {
 
 // Find out if we're already logged in (via remember-me cookie), and if so, get
 // store the session data.
-Vue.axios.get('/api/login')
+Vue.axios.get('/api/login', { headers: { 'X-SERV-Startup': true } })
   .then(resp => { store.commit('login', resp.data) })
   .catch(() => { store.commit('login', null) })
   .finally(() => {

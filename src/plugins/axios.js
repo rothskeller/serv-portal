@@ -12,7 +12,7 @@ const _axios = axios.create(config);
 _axios.interceptors.response.use(
   response => response,
   error => {
-    if (router && router.currentRoute) {
+    if (router && router.currentRoute && !error.request.headers['X-SERV-Startup']) {
       if (!router.currentRoute.matched.some(record => record.meta.allow401)) {
         store.commit('login', null)
         router.replace({ path: '/login', query: { redirect: router.currentRoute.fullPath } })
