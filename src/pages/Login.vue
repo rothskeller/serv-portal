@@ -19,7 +19,7 @@ Page(title="SERV Portal")
         b-button(type="submit" variant="primary") Log in
       #login-failed(v-if="failed") Login incorrect. Please try again.
     #login-reset
-      a.btn.btn-secondary(href="/password-reset") Reset my password
+      b-btn(to="/password-reset") Reset my password
 </template>
 
 <script>
