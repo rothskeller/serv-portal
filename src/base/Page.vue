@@ -23,7 +23,7 @@ Page is the basic framework of all pages on the site.
       router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'reports'}" to="/reports") Reports
       router-link.page-menu-item(:to="`/people/${$store.state.me.id}`") Profile
       router-link.page-menu-item(to="/logout") Logout
-    #page-content
+    #page-content(:class="noPadding ? 'page-no-padding': null")
       #page-subtitle(v-if="subtitle" v-text="subtitle")
       slot
 </template>
@@ -34,6 +34,7 @@ export default {
     title: String,
     subtitle: String,
     menuItem: String,
+    noPadding: Boolean,
   },
   data: () => ({ menuOpen: false }),
   methods: {
@@ -134,7 +135,9 @@ sidebarWidth = 6rem
 #page-content
   flex auto
   overflow auto
-  margin 1.5rem 0.75rem
+  padding 1.5rem 0.75rem
+  &.page-no-padding
+    padding 0
 #page-subtitle
   font-size 1.5rem
 </style>

@@ -17,9 +17,10 @@ import (
 // GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
 func GetEvent(r *util.Request, idstr string) error {
 	var (
-		event   *model.Event
-		canEdit bool
-		out     jwriter.Writer
+		event         *model.Event
+		canEdit       bool
+		canAttendance bool
+		out           jwriter.Writer
 	)
 	if idstr == "NEW" {
 		if !auth.CanCreateEvents(r) {
@@ -34,10 +35,12 @@ func GetEvent(r *util.Request, idstr string) error {
 			return util.Forbidden
 		}
 		canEdit = auth.CanManageEvent(r, event)
+		canAttendance = auth.CanRecordAttendanceAtEvent(r, event)
 	}
-	r.Tx.Commit()
 	out.RawString(`{"canEdit":`)
 	out.Bool(canEdit)
+	out.RawString(`,"canAttendance":`)
+	out.Bool(canAttendance)
 	if event != nil {
 		out.RawString(`,"event":{"id":`)
 		out.Int(int(event.ID))
@@ -74,7 +77,35 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawByte(']')
 	}
+	if canAttendance {
+		var (
+			attended = r.Tx.FetchAttendanceByEvent(event)
+			first    = true
+		)
+		out.RawString(`,"people":[`)
+		for _, p := range r.Tx.FetchPeople() {
+			if !auth.CanViewEventP(r, p, event) {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(p.ID))
+			out.RawString(`,"lastName":`)
+			out.String(p.LastName)
+			out.RawString(`,"firstName":`)
+			out.String(p.FirstName)
+			out.RawString(`,"attended":`)
+			out.Bool(attended[p.ID])
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
 	out.RawByte('}')
+	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil

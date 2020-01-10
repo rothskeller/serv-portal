@@ -43,8 +43,6 @@ func GetEvents(r *util.Request) error {
 		out.String(e.Date)
 		out.RawString(`,"name":`)
 		out.String(e.Name)
-		out.RawString(`,"canAttendance":`)
-		out.Bool(auth.CanRecordAttendanceAtEvent(r, e))
 		out.RawString(`,"roles":[`)
 		for i, r := range e.Roles {
 			if i != 0 {

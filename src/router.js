@@ -4,7 +4,6 @@ import store from './store'
 
 import CERTAttendance from './pages/reports/CERTAttendance'
 import Event from './pages/Event'
-import EventAttendance from './pages/EventAttendance'
 import Events from './pages/Events'
 import Login from './pages/Login'
 import Logout from './pages/Logout'
@@ -25,7 +24,6 @@ const router = new Router({
     { path: '/', redirect: '/events' },
     { path: '/events', component: Events },
     { path: '/events/:id', component: Event },
-    { path: '/events/:id/attendance', component: EventAttendance },
     { path: '/login', component: Login, meta: { publicAccess: true, allow401: true } },
     { path: '/logout', component: Logout },
     { path: '/password-reset', component: PWReset, meta: { publicAccess: true } },

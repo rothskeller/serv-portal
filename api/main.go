@@ -92,8 +92,6 @@ func router(r *util.Request) error {
 		return event.GetEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "":
 		return event.PostEvent(r, c[2])
-	case r.Method == "GET" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
-		return event.GetEventAttendance(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
 		return event.PostEventAttendance(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] == "":

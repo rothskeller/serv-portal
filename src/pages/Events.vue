@@ -15,13 +15,11 @@ Page(title="Events" menuItem="events")
       th Date
       th Event
       th Invited
-      th
     tr(v-for="e in events" :key="e.id")
       td(v-text="e.date")
       td: router-link(:to="`/events/${e.id}`" v-text="e.name")
       td
         div(v-for="role in e.roles" v-text="role")
-      td: router-link(v-if="e.canAttendance" :to="`/events/${e.id}/attendance`") Attendance
   #events-buttons(v-if="canAdd && !loading")
     b-btn(:to="`/events/NEW?year=${year}`") Add Event
 </template>
