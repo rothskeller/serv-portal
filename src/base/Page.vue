@@ -16,13 +16,16 @@ Page is the basic framework of all pages on the site.
       #page-menu-welcome
         | Welcome
         br
-        b(v-text="`${$store.state.me.firstName} ${$store.state.me.lastName}`")
-      router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'events'}" to="/events") Events
-      router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'people'}" to="/people") People
-      router-link.page-menu-item(v-if="$store.state.me.webmaster" :class="{'page-menu-item-active': menuItem === 'roles'}" to="/roles") Roles
-      router-link.page-menu-item(:class="{'page-menu-item-active': menuItem === 'reports'}" to="/reports") Reports
-      router-link.page-menu-item(:to="`/people/${$store.state.me.id}`") Profile
-      router-link.page-menu-item(to="/logout") Logout
+        b(v-text="$store.state.me.firstName")
+        br
+        b(v-text="$store.state.me.lastName")
+      b-nav#page-nav(pills vertical)
+        b-nav-item(to="/events" :active="menuItem === 'events'") Events
+        b-nav-item(to="/people" :active="menuItem === 'people'") People
+        b-nav-item(v-if="$store.state.me.webmaster" to="/roles" :active="menuItem === 'roles'") Roles
+        b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
+        b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
+        b-nav-item(to="/logout") Logout
     #page-content(:class="noPadding ? 'page-no-padding': null")
       #page-subtitle(v-if="subtitle" v-text="subtitle")
       slot
@@ -45,7 +48,6 @@ export default {
 
 <style lang="stylus">
 titlebarHeight = 40px
-sidebarWidth = 6rem
 #page-top
   display flex
   flex-direction column
@@ -97,11 +99,11 @@ sidebarWidth = 6rem
   display none
   flex none
   overflow visible
-  width sidebarWidth
   border-right 1px solid #888
   background-color #ccc
   .page-menu-open &
     position absolute
+    z-index 1
     display block
     height 'calc(100vh - %s)' % titlebarHeight
   @media (min-width: 576px)
@@ -111,27 +113,18 @@ sidebarWidth = 6rem
 #page-menu-welcome
   margin-bottom 0.5rem
   padding 0.75rem
-  width 'calc(%s - 1px)' % sidebarWidth
   border-bottom 1px solid white
   text-align center
   white-space nowrap
   font-size 0.75rem
-.page-menu-item
-  display block
-  padding 0.5rem 0 0.5rem 0.75rem
-  width sidebarWidth
-  color black
+#page-nav
+  padding 0 0.5rem
   font-size 1.25rem
-  &:hover
+  .nav-link
+    padding 0.125rem 0.5rem
     color black
-    text-decoration none
-.page-menu-item-active
-  .page-menu-open &
-    color #00f
-  @media (min-width: 576px)
-    border-top 1px solid #888
-    border-bottom 1px solid #888
-    background-color white
+    &.active
+      color white
 #page-content
   flex auto
   overflow auto
