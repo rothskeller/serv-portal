@@ -2,9 +2,7 @@ package event
 
 import (
 	"errors"
-	"math"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -46,10 +44,12 @@ func GetEvent(r *util.Request, idstr string) error {
 		out.Int(int(event.ID))
 		out.RawString(`,"date":`)
 		out.String(event.Date)
+		out.RawString(`,"start":`)
+		out.String(event.Start)
+		out.RawString(`,"end":`)
+		out.String(event.End)
 		out.RawString(`,"name":`)
 		out.String(event.Name)
-		out.RawString(`,"hours":`)
-		out.Float64(event.Hours)
 		out.RawString(`,"type":`)
 		out.String(string(event.Type))
 		out.RawString(`,"roles":[`)
@@ -61,7 +61,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawString(`]}`)
 	} else {
-		out.RawString(`,"event":{"id":0,"date":"","name":"","hours":1.0,"type":"","roles":[]}`)
+		out.RawString(`,"event":{"id":0,"date":"","start":"","end":"","name":"","type":"","roles":[]}`)
 	}
 	if canEdit {
 		out.RawString(`,"roles":[`)
@@ -112,14 +112,13 @@ func GetEvent(r *util.Request, idstr string) error {
 }
 
 var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$`)
+var timeRE = regexp.MustCompile(`^(?:[01][0-9]|2[0-3]):[0-5][0-9]$`)
 var yearRE = regexp.MustCompile(`^20\d\d$`)
 
 // PostEvent handles POST /events/$id requests (where $id may be "NEW").
 func PostEvent(r *util.Request, idstr string) error {
-	var (
-		event *model.Event
-		err   error
-	)
+	var event *model.Event
+
 	if idstr == "NEW" {
 		if !auth.CanCreateEvents(r) {
 			return util.Forbidden
@@ -144,14 +143,22 @@ func PostEvent(r *util.Request, idstr string) error {
 	} else if !dateRE.MatchString(event.Date) {
 		return errors.New("invalid date (YYYY-MM-DD)")
 	}
+	if event.Start == "" {
+		return errors.New("missing start")
+	} else if !timeRE.MatchString(event.Start) {
+		return errors.New("invalid start (HH:MM)")
+	}
+	if event.End == "" {
+		return errors.New("missing end")
+	} else if !timeRE.MatchString(event.End) {
+		return errors.New("invalid end (HH:MM)")
+	}
+	if event.End < event.Start {
+		return errors.New("end before start")
+	}
 	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
 		return errors.New("missing name")
 	}
-	event.Hours, err = strconv.ParseFloat(r.FormValue("hours"), 64)
-	if err != nil || event.Hours < 0.0 || event.Hours > 24.0 || math.IsNaN(event.Hours) {
-		return errors.New("invalid hours")
-	}
-	event.Hours = math.Round(event.Hours*2.0) / 2.0
 	if event.Type = model.EventType(r.FormValue("type")); event.Type == "" {
 		return errors.New("missing type")
 	}

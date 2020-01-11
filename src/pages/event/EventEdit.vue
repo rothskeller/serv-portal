@@ -4,12 +4,15 @@ Event displays the event viewing/editing page.
 
 <template lang="pug">
 form#event-edit(@submit.prevent="onSubmit")
-  b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
-    b-input#event-date(type="date" autofocus :state="dateError ? false : null" v-model="event.date")
   b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="event-edit-label" :state="nameError ? false : null" :invalid-feedback="nameError")
     b-input#event-name(:state="nameError ? false : null" trim v-model="event.name")
-  b-form-group(label="Event hours" label-for="event-hours" label-cols-sm="auto" label-class="event-edit-label" :state="hoursError ? false : null" :invalid-feedback="hoursError")
-    b-input#event-hours(type="number" min="0.0" max="24.0" step="0.5" number :state="hoursError ? false : null" v-model="event.hours")
+  b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
+    b-input#event-date(type="date" autofocus :state="dateError ? false : null" v-model="event.date")
+  b-form-group(label="Event time" label-cols-sm="auto" label-class="event-edit-label" :state="timeError ? false : null" :invalid-feedback="timeError")
+    #event-time
+      b-input#event-start(type="time" :state="timeError ? false : null" v-model="event.start")
+      span to
+      b-input#event-end(type="time" :state="timeError ? false : null" v-model="event.end")
   b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
   b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
@@ -40,17 +43,18 @@ export default {
     eventTypes,
     submitted: false,
     dateError: null,
+    timeError: null,
     nameError: null,
     duplicateName: null,
-    hoursError: null,
     typeError: null,
     rolesError: null,
     valid: true,
   }),
   watch: {
     'event.date': 'validate',
+    'event.start': 'validate',
+    'event.end': 'validate',
     'event.name': 'validate',
-    'event.hours': 'validate',
     'event.type': 'validate',
     'event.roles': 'validate',
   },
@@ -74,8 +78,9 @@ export default {
       if (!this.valid) return
       const body = new FormData
       body.append('date', this.event.date)
+      body.append('start', this.event.start)
+      body.append('end', this.event.end)
       body.append('name', this.event.name)
-      body.append('hours', this.event.hours)
       body.append('type', this.event.type)
       this.event.roles.forEach(r => { body.append('role', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
@@ -92,18 +97,22 @@ export default {
         this.dateError = 'This is not a valid date.'
       else
         this.dateError = null
+      if (!this.event.start || !this.event.end)
+        this.timeError = 'The event times are required.'
+      else if (!this.event.start.match(/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/))
+        this.timeError = 'The start time is not valid.'
+      else if (!this.event.end.match(/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/))
+        this.timeError = 'The end time is not valid.'
+      else if (this.event.end < this.event.start)
+        this.timeError = 'The end time must come after the start time.'
+      else
+        this.timeError = null
       if (!this.event.name)
         this.nameError = 'The event name is required.'
       else if (this.duplicateName && this.duplicateName.date === this.event.date && this.duplicateName.name === this.event.name)
         this.nameError = 'Another event on this date has this name.'
       else
         this.nameError = this.duplicateName = null
-      if (this.event.hours === '')
-        this.hoursError = 'The event duration is required.'
-      else if (typeof this.event.hours !== 'number' || this.event.hours < 0.0 || this.event.hours > 24.0)
-        this.hoursError = 'The event duration must be between 0 and 24 hours.'
-      else
-        this.hoursError = null
       if (!eventTypes[this.event.type])
         this.typeError = 'The event type is required.'
       else
@@ -112,7 +121,7 @@ export default {
         this.rolesError = 'At least one role must be selected.'
       else
         this.rolesError = null
-      this.valid = !this.dateError && !this.nameError && !this.hoursError && !this.typeError && !this.rolesError
+      this.valid = !this.dateError && !this.timeError && !this.nameError && !this.typeError && !this.rolesError
     },
   },
 }
@@ -123,7 +132,14 @@ export default {
   margin 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-hours, #event-type, #event-roles
+#event-date, #event-name, #event-type, #event-roles
   min-width 14rem
   max-width 20rem
+#event-time
+  display flex
+  align-items baseline
+  min-width 14rem
+  max-width 20rem
+  span
+    padding 0 0.5rem
 </style>

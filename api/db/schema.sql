@@ -67,8 +67,9 @@ CREATE INDEX person_role_role_index ON person_role (role);
 CREATE TABLE event (
     id    integer PRIMARY KEY, -- autoincrement
     date  text    NOT NULL,
+    start text    NOT NULL,
+    end   text    NOT NULL,
     name  text    NOT NULL,
-    hours float   NOT NULL,
     type  text    NOT NULL,
     UNIQUE (date, name)
 );

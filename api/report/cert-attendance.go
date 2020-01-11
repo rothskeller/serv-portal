@@ -141,8 +141,8 @@ func addAttendance2(data map[columnKey]map[eventTypeAbbr]int, key columnKey, eve
 		data[key] = make(map[eventTypeAbbr]int)
 	}
 	if stats == "hours" {
-		data[key][eventTypeAbbrs[event.Type]] += int(2 * event.Hours)
-		data[key]["ALL"] += int(2 * event.Hours)
+		data[key][eventTypeAbbrs[event.Type]] += int(2 * event.Hours())
+		data[key]["ALL"] += int(2 * event.Hours())
 	} else {
 		data[key][eventTypeAbbrs[event.Type]]++
 		data[key]["ALL"]++

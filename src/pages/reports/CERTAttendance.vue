@@ -80,11 +80,6 @@ export default {
     tr:first-child td:not(:first-child)
       border-top 2px solid black
       white-space pre
-    tr:nth-child(2) td
-      padding 6px 2px
-      vertical-align bottom
-      text-align center
-      writing-mode tb-rl
     tr:first-child td
       padding 2px 6px
   tbody

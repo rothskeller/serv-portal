@@ -31,10 +31,18 @@ var AllEventTypes = []EventType{EventTraining, EventDrill, EventCivic, EventInci
 type Event struct {
 	ID    EventID
 	Date  string // 2006-01-02
+	Start string // 13:45
+	End   string // 14:45
 	Name  string
-	Hours float64
 	Type  EventType
 	Roles []*Role
+}
+
+// Hours returns the number of hours the event lasted.
+func (e *Event) Hours() float64 {
+	start, _ := time.Parse("15:04", e.Start)
+	end, _ := time.Parse("15:04", e.End)
+	return float64(end.Sub(start)) / float64(time.Hour)
 }
 
 // A PersonID is a positive integer uniquely identifying a Person.
