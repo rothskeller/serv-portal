@@ -21,8 +21,6 @@ EventsList displays the list of events.
       td: router-link(:to="`/events/${e.id}`" v-text="e.name")
       td
         div(v-for="role in e.roles" v-text="role")
-  #events-list-buttons(v-if="canAdd && !loading")
-    b-btn(:to="`/events/NEW?year=${year}`") Add Event
 </template>
 
 <script>
@@ -33,7 +31,6 @@ export default {
     year: null,
     years: range(2019, new Date().getFullYear() + 2),
     events: null,
-    canAdd: false,
     loading: true,
   }),
   created() {
@@ -49,7 +46,7 @@ export default {
     async load() {
       this.loading = true
       const data = (await this.$axios.get(`/api/events?year=${this.year}`)).data
-      this.canAdd = data.canAdd
+      if (data.canAdd) this.$emit('canAdd')
       this.events = data.events
       this.loading = false
     },
@@ -74,6 +71,4 @@ export default {
   th, td
     padding 0.75rem 1em 0 0
     vertical-align top
-#events-list-buttons
-  margin-top 1.5rem
 </style>

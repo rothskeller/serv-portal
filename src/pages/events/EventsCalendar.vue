@@ -57,7 +57,7 @@ export default {
     async newMonth() {
       if (!this.year || this.year != this.month.year()) {
         const data = (await this.$axios.get(`/api/events?year=${this.month.year()}`)).data
-        this.canAdd = data.canAdd
+        if (data.canAdd) this.$emit('canAdd')
         const events = {}
         data.events.forEach(e => {
           if (!events[e.date]) events[e.date] = []
