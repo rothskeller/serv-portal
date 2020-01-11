@@ -47,13 +47,22 @@ func GetRole(r *util.Request, idstr string) error {
 	out.String(role.Name)
 	out.RawString(`,"memberLabel":`)
 	out.String(role.MemberLabel)
+	out.RawString(`,"servGroup":`)
+	out.String(string(role.SERVGroup))
 	out.RawString(`,"implyOnly":`)
 	out.Bool(role.ImplyOnly)
 	out.RawString(`,"individual":`)
 	out.Bool(role.Individual)
 	out.RawString(`},"canDelete":`)
 	out.Bool(role.Tag == "")
-	out.RawString(`,"privs":`)
+	out.RawString(`,"servGroups":[`)
+	for i, g := range model.AllSERVGroups {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.String(string(g))
+	}
+	out.RawString(`],"privs":`)
 	emitRolePrivs(&out, role, allRoles, forced)
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
@@ -134,6 +143,17 @@ func PostRole(r *util.Request, idstr string) error {
 		}
 	}
 	role.MemberLabel = strings.TrimSpace(r.FormValue("memberLabel"))
+	role.SERVGroup = model.SERVGroup(r.FormValue("servGroup"))
+	found := false
+	for _, g := range model.AllSERVGroups {
+		if g == role.SERVGroup {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return errors.New("bad or missing servGroup")
+	}
 	role.ImplyOnly = r.FormValue("implyOnly") == "true"
 	role.Individual = r.FormValue("individual") == "true"
 	readPrivilegesFromRequest(r, role, allRoles)

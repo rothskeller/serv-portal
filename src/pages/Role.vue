@@ -15,6 +15,8 @@ Page(:title="title" :subtitle="subtitle" menuItem="roles")
       div
         b-checkbox(v-model="role.implyOnly") Role can only be implied, not assigned
         b-checkbox(v-model="role.individual") Role can only be held by one person
+    b-form-group(label="This role is associated with this SERV group:" label-cols-sm="auto" label-class="role-label pt-0" :state="groupError ? false : null" :invalid-feedback="groupError")
+      b-radio-group(v-model="role.servGroup" :options="servGroups")
     b-form-group(label="This role has the following privileges on other roles:")
       table#role-aprivs
         tr
@@ -56,9 +58,11 @@ export default {
     loading: false,
     origName: null,
     role: null,
+    servGroups: null,
     privs: null,
     nameError: null,
     duplicateName: null,
+    groupError: null,
     submitted: false,
     valid: true,
   }),
@@ -66,6 +70,7 @@ export default {
     this.loading = true
     const data = (await this.$axios.get(`/api/roles/${this.$route.params.id}`)).data
     this.role = data.role
+    this.servGroups = data.servGroups
     this.privs = data.privs
     this.origName = this.role.name
     this.loading = false
@@ -83,6 +88,7 @@ export default {
       if (this.role.memberLabel === o) this.role.memberLabel = n
       this.validate()
     },
+    'role.servGroup': 'validate',
   },
   methods: {
     onCancel() { this.$router.go(-1) },
@@ -114,6 +120,7 @@ export default {
       const body = new FormData
       body.append('name', this.role.name)
       body.append('memberLabel', this.role.memberLabel)
+      body.append('servGroup', this.role.servGroup)
       body.append('implyOnly', this.role.implyOnly)
       body.append('individual', this.role.individual)
       this.privs.forEach(r => {
@@ -141,7 +148,11 @@ export default {
         this.nameError = 'A different team has this name.'
       else
         this.nameError = null
-      this.valid = !this.nameError
+      if (!this.role.servGroup)
+        this.groupError = 'The SERV group is required.'
+      else
+        this.groupError = null
+      this.valid = !this.nameError && !this.groupError
     },
   },
 }

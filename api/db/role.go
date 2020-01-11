@@ -13,14 +13,14 @@ func (tx *Tx) cacheRoles() {
 		err  error
 	)
 	tx.roles = make(map[model.RoleID]*model.Role)
-	rows, err = tx.tx.Query(`SELECT id, tag, name, member_label, imply_only, individual, privileges FROM role`)
+	rows, err = tx.tx.Query(`SELECT id, tag, name, member_label, serv_group, imply_only, individual, privileges FROM role`)
 	panicOnError(err)
 	for rows.Next() {
 		var (
 			role model.Role
 			tag  sql.NullString
 		)
-		panicOnError(rows.Scan(&role.ID, &tag, &role.Name, &role.MemberLabel, &role.ImplyOnly, &role.Individual, &role.PrivMap))
+		panicOnError(rows.Scan(&role.ID, &tag, &role.Name, &role.MemberLabel, &role.SERVGroup, &role.ImplyOnly, &role.Individual, &role.PrivMap))
 		role.Tag = model.RoleTag(tag.String)
 		tx.roles[role.ID] = &role
 	}
@@ -79,9 +79,9 @@ func (tx *Tx) SaveRole(role *model.Role) {
 	var tag = sql.NullString{Valid: role.Tag != "", String: string(role.Tag)}
 
 	if tx.roles[role.ID] == nil {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO role (id, tag, name, member_label, imply_only, individual, privileges) VALUES (?,?,?,?,?,?,x'')`, role.ID, tag, role.Name, role.MemberLabel, role.ImplyOnly, role.Individual))
+		panicOnExecError(tx.tx.Exec(`INSERT INTO role (id, tag, name, member_label, serv_group, imply_only, individual, privileges) VALUES (?,?,?,?,?,?,?,x'')`, role.ID, tag, role.Name, role.MemberLabel, role.SERVGroup, role.ImplyOnly, role.Individual))
 	} else {
-		panicOnNoRows(tx.tx.Exec(`UPDATE role SET tag=?, name=?, member_label=?, imply_only=?, individual=? WHERE id=?`, tag, role.Name, role.MemberLabel, role.ImplyOnly, role.Individual, role.ID))
+		panicOnNoRows(tx.tx.Exec(`UPDATE role SET tag=?, name=?, member_label=?, serv_group=?, imply_only=?, individual=? WHERE id=?`, tag, role.Name, role.MemberLabel, role.SERVGroup, role.ImplyOnly, role.Individual, role.ID))
 	}
 	tx.roles[role.ID] = role
 	tx.recalcRoleCache()

@@ -3,7 +3,7 @@ Page is the basic framework of all pages on the site.
 -->
 
 <template lang="pug">
-#page-top
+#page-top(:class="$store.state.touch ? 'touch' : 'mouse'")
   #page-heading
     #page-menu-trigger-box(@click="onMenuTrigger")
       svg#page-menu-trigger.bi.bi-list(v-if="$store.state.me" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
@@ -99,6 +99,7 @@ titlebarHeight = 40px
   display none
   flex none
   overflow visible
+  width 7rem
   border-right 1px solid #888
   background-color #ccc
   .page-menu-open &

@@ -6,6 +6,7 @@ CREATE TABLE role (
     tag          text    UNIQUE,
     name         text    NOT NULL,
     member_label text    NOT NULL,
+    serv_group   text    NOT NULL,
     imply_only   boolean NOT NULL,
     individual   boolean NOT NULL,
     privileges   blob    NOT NULL

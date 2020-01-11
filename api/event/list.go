@@ -43,6 +43,8 @@ func GetEvents(r *util.Request) error {
 		out.String(e.Date)
 		out.RawString(`,"name":`)
 		out.String(e.Name)
+		out.RawString(`,"servGroup":`)
+		out.String(string(servGroupForEvent(e)))
 		out.RawString(`,"roles":[`)
 		for i, r := range e.Roles {
 			if i != 0 {
@@ -56,4 +58,15 @@ func GetEvents(r *util.Request) error {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
+}
+
+func servGroupForEvent(e *model.Event) (group model.SERVGroup) {
+	for _, role := range e.Roles {
+		if group == "" {
+			group = role.SERVGroup
+		} else if group != role.SERVGroup {
+			group = model.GroupSERV
+		}
+	}
+	return group
 }
