@@ -74,13 +74,14 @@ CREATE TABLE venue (
 -- The event table tracks all SERV events at which volunteer attendance is
 -- tracked.
 CREATE TABLE event (
-    id    integer PRIMARY KEY, -- autoincrement
-    name  text    NOT NULL,
-    date  text    NOT NULL,
-    start text    NOT NULL,
-    end   text    NOT NULL,
-    venue integer REFERENCES venue ON DELETE SET NULL,
-    type  text    NOT NULL,
+    id      integer PRIMARY KEY, -- autoincrement
+    name    text    NOT NULL,
+    date    text    NOT NULL,
+    start   text    NOT NULL,
+    end     text    NOT NULL,
+    venue   integer REFERENCES venue ON DELETE SET NULL,
+    details text    NOT NULL,
+    type    text    NOT NULL,
     UNIQUE (date, name)
 );
 

@@ -6,11 +6,19 @@ import (
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
+	"github.com/microcosm-cc/bluemonday"
 
 	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
+
+var htmlSanitizer = bluemonday.NewPolicy().
+	RequireParseableURLs(true).
+	AllowURLSchemes("http", "https").
+	RequireNoFollowOnLinks(true).
+	AllowAttrs("href").OnElements("a").
+	AddTargetBlankToFullyQualifiedLinks(true)
 
 // GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
 func GetEvent(r *util.Request, idstr string) error {
@@ -64,8 +72,10 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(event.Venue.URL)
 			out.RawByte('}')
 		} else {
-			out.RawString(`{"id":0,"name":"TBD","address":"","city":"","url":""}`)
+			out.RawString(`{"id":0,"name":"","address":"","city":"","url":""}`)
 		}
+		out.RawString(`,"details":`)
+		out.String(event.Details)
 		out.RawString(`,"type":`)
 		out.String(string(event.Type))
 		out.RawString(`,"roles":[`)
@@ -77,7 +87,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawString(`]}`)
 	} else {
-		out.RawString(`,"event":{"id":0,"name":"","date":"","start":"","end":"","venue":null,"type":"","roles":[]}`)
+		out.RawString(`,"event":{"id":0,"name":"","date":"","start":"","end":"","venue":null,"details":"","type":"","roles":[]}`)
 	}
 	if canEdit {
 		out.RawString(`,"roles":[`)
@@ -206,6 +216,7 @@ func PostEvent(r *util.Request, idstr string) error {
 	} else if event.Venue = r.Tx.FetchVenue(model.VenueID(util.ParseID(vidstr))); event.Venue == nil {
 		return errors.New("nonexistent venue")
 	}
+	event.Details = htmlSanitizer.Sanitize(strings.TrimSpace(r.FormValue("details")))
 	if event.Type = model.EventType(r.FormValue("type")); event.Type == "" {
 		return errors.New("missing type")
 	}

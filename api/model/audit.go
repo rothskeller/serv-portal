@@ -73,6 +73,8 @@ func (in Event) ToAudit(out *jwriter.Writer) {
 	} else {
 		out.RawString(`null`)
 	}
+	out.RawString(`,"details":`)
+	out.String(in.Details)
 	out.RawString(`,"type":`)
 	out.String(string(in.Type))
 	out.RawString(`,"roles":[`)

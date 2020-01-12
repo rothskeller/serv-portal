@@ -15,6 +15,7 @@ Event displays the event viewing/editing page.
         |  (
         a(target="_blank" :href="event.venue.url") map
         | )
+  #event-view-details(v-if="event.details" v-html="event.details")
 </template>
 
 <script>
@@ -44,10 +45,19 @@ export default {
 #event-view-name
   font-weight bold
   font-size 1.25rem
+  line-height 1.2
 #event-view-date-time
+  margin-top 0.75rem
   white-space pre-line
+  line-height 1.2
 #event-view-venue
-  margin-top 0.5rem
+  margin-top 0.75rem
+  line-height 1.2
 #event-view-venue-address
   font-size 0.875rem
+#event-view-details
+  margin-top 0.75rem
+  max-width 40rem
+  white-space pre-line
+  line-height 1.2
 </style>

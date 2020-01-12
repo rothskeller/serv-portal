@@ -29,14 +29,15 @@ var AllEventTypes = []EventType{EventTraining, EventDrill, EventCivic, EventInci
 // An Event structure contains the data describing an event at which SERV
 // volunteers may participate.
 type Event struct {
-	ID    EventID
-	Name  string
-	Date  string // 2006-01-02
-	Start string // 13:45
-	End   string // 14:45
-	Venue *Venue
-	Type  EventType
-	Roles []*Role
+	ID      EventID
+	Name    string
+	Date    string // 2006-01-02
+	Start   string // 13:45
+	End     string // 14:45
+	Venue   *Venue
+	Details string
+	Type    EventType
+	Roles   []*Role
 }
 
 // Hours returns the number of hours the event lasted.

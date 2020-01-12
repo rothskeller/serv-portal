@@ -5,9 +5,9 @@ Event displays the event viewing/editing page.
 <template lang="pug">
 form#event-edit(@submit.prevent="onSubmit")
   b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="event-edit-label" :state="nameError ? false : null" :invalid-feedback="nameError")
-    b-input#event-name(:state="nameError ? false : null" trim v-model="event.name")
+    b-input#event-name(autofocus :state="nameError ? false : null" trim v-model="event.name")
   b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
-    b-input#event-date(type="date" autofocus :state="dateError ? false : null" v-model="event.date")
+    b-input#event-date(type="date" :state="dateError ? false : null" v-model="event.date")
   b-form-group(label="Event time" label-cols-sm="auto" label-class="event-edit-label" :state="timeError ? false : null" :invalid-feedback="timeError")
     #event-time
       b-input#event-start(type="time" :state="timeError ? false : null" v-model="event.start")
@@ -35,6 +35,10 @@ form#event-edit(@submit.prevent="onSubmit")
         | nearest freeways are shown — enough to give the viewer an idea of
         | where in the Bay Area the venue is.  Copy the URL from the browser
         | address bar and paste it here.
+  b-form-group(label="Details" label-for="event-details" label-cols-sm="auto" label-class="event-edit-label")
+    b-textarea#event-details(v-model="event.details" rows="3")
+    b-form-text
+      | This may contain HTML &lt;a&gt; tags for links, but no other tags.
   b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
   b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
@@ -126,6 +130,7 @@ export default {
         body.append('venueCity', this.event.venue.city)
         body.append('venueURL', this.event.venue.url)
       }
+      body.append('details', this.event.details)
       body.append('type', this.event.type)
       this.event.roles.forEach(r => { body.append('role', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
@@ -197,7 +202,7 @@ export default {
   margin 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-type, #event-roles, #venue-name, #venue-address, #venue-city, #venue-url
+#event-date, #event-name, #event-type, #event-roles, #venue-name, #venue-address, #venue-city, #venue-url, #event-details
   min-width 14rem
   max-width 20rem
 #event-venue
