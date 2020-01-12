@@ -4,6 +4,7 @@ import (
 	"github.com/mailru/easyjson/jwriter"
 
 	"rothskeller.net/serv/auth"
+	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
 )
 
@@ -25,10 +26,33 @@ func GetRoles(r *util.Request) error {
 		out.Int(int(r.ID))
 		out.RawString(`,"name":`)
 		out.String(r.Name)
-		out.RawByte('}')
+		out.RawString(`,"servGroups":[`)
+		first := true
+		for _, g := range model.AllSERVGroups {
+			if r.SERVGroup&g != 0 {
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(servGroupNames[g])
+			}
+		}
+		out.RawString(`]}`)
 	}
 	out.RawByte(']')
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)
 	return nil
+}
+
+var servGroupNames = map[model.SERVGroup]string{
+	model.GroupSERVAdmin:      "Admin",
+	model.GroupCERTDeployment: "CERT-D",
+	model.GroupCERTTraining:   "CERT-T",
+	model.GroupListos:         "Listos",
+	model.GroupOutreach:       "Outreach",
+	model.GroupPEP:            "PEP",
+	model.GroupSARES:          "SARES",
+	model.GroupSNAP:           "SNAP",
 }

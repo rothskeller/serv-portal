@@ -128,26 +128,24 @@ type Role struct {
 	TransPrivs  PrivilegeMap // transient, transitive
 }
 
-// A SERVGroup identifies one of the main SERV groups.
-type SERVGroup string
+// A SERVGroup is a bitmask identifying one or more of the main SERV groups.
+type SERVGroup uint8
 
 // Values for SERVGroup.
 const (
-	GroupSERV           SERVGroup = "SERV"
-	GroupCERTDeployment           = "CERT-D"
-	GroupCERTTraining             = "CERT-T"
-	GroupListos                   = "Listos"
-	GroupOutreach                 = "Outreach"
-	GroupPEP                      = "PEP"
-	GroupSARES                    = "SARES"
-	GroupCountyARES               = "SCC ARES"
-	GroupSNAP                     = "SNAP"
+	GroupSERVAdmin SERVGroup = 1 << iota
+	GroupCERTDeployment
+	GroupCERTTraining
+	GroupListos
+	GroupOutreach
+	GroupPEP
+	GroupSARES
+	GroupSNAP
 )
 
 // AllSERVGroups is the list of all SERV groups.
 var AllSERVGroups = []SERVGroup{
-	GroupSERV, GroupCERTDeployment, GroupCERTTraining, GroupListos,
-	GroupOutreach, GroupPEP, GroupSARES, GroupCountyARES, GroupSNAP,
+	GroupSERVAdmin, GroupCERTDeployment, GroupCERTTraining, GroupListos, GroupOutreach, GroupPEP, GroupSARES, GroupSNAP,
 }
 
 // A SessionToken is a string that uniquely identifies a login session.

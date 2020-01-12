@@ -57,9 +57,14 @@ func GetEvents(r *util.Request) error {
 		} else {
 			out.RawString(`null`)
 		}
-		out.RawString(`,"servGroup":`)
-		out.String(string(servGroupForEvent(e)))
-		out.RawString(`,"roles":[`)
+		out.RawString(`,"servGroups":[`)
+		for i, g := range servGroupsForEvent(e) {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(g)
+		}
+		out.RawString(`],"roles":[`)
 		for i, r := range e.Roles {
 			if i != 0 {
 				out.RawByte(',')
@@ -74,13 +79,26 @@ func GetEvents(r *util.Request) error {
 	return nil
 }
 
-func servGroupForEvent(e *model.Event) (group model.SERVGroup) {
+func servGroupsForEvent(e *model.Event) (groups []string) {
+	var mask model.SERVGroup
 	for _, role := range e.Roles {
-		if group == "" {
-			group = role.SERVGroup
-		} else if group != role.SERVGroup {
-			group = model.GroupSERV
+		mask |= role.SERVGroup
+	}
+	for _, g := range model.AllSERVGroups {
+		if mask&g != 0 {
+			groups = append(groups, servGroupNames[g])
 		}
 	}
-	return group
+	return groups
+}
+
+var servGroupNames = map[model.SERVGroup]string{
+	model.GroupSERVAdmin:      "Admin",
+	model.GroupCERTDeployment: "CERT-D",
+	model.GroupCERTTraining:   "CERT-T",
+	model.GroupListos:         "Listos",
+	model.GroupOutreach:       "Outreach",
+	model.GroupPEP:            "PEP",
+	model.GroupSARES:          "SARES",
+	model.GroupSNAP:           "SNAP",
 }

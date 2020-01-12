@@ -18,7 +18,9 @@ EventsList displays the list of events.
       th Location
     tr(v-for="e in events" :key="e.id")
       td(v-text="`${e.date} ${e.start}`")
-      td: router-link(:to="`/events/${e.id}`" v-text="e.name")
+      td
+        SERVGroupDots.mr-1(:groups="e.servGroups")
+        router-link(:to="`/events/${e.id}`" v-text="e.name")
       td
         a(v-if="e.venue && e.venue.url" target="_blank" :href="e.venue.url" v-text="e.venue.name")
         span(v-else-if="e.venue" v-text="e.venue.name")

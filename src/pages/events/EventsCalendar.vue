@@ -22,15 +22,15 @@ EventsCalendar displays the events in a calendar form.
     .events-calendar-day(v-for="date in dates" :class="date ? null : 'empty'" @mouseover="onHoverDate(date)" @mouseout="onNoHoverDate" @click="onClickDate(date)")
       div(v-text="date ? date.date() : null")
       .events-calendar-day-dots
-        span.events-calendar-dot(v-for="event in eventsOn(date)" :key="event.id" :class="`events-calendar-${groupToClass(event.servGroup)}`")
+        SERVGroupDots(:groups="groupsOn(date)")
       .events-calendar-day-event(v-for="event in eventsOn(date)" :key="event.id")
-        span.events-calendar-dot.mr-1(:class="`events-calendar-${groupToClass(event.servGroup)}`")
+        SERVGroupDots.mr-1(:groups="event.servGroups")
         span(v-if="$store.state.touch" v-text="event.name")
         b-link(v-else :to="`/events/${event.id}`" :title="event.name" v-text="event.name")
   #events-calendar-footer(v-if="date")
     #events-calendar-date(v-text="date.format('dddd, MMMM D, YYYY')")
     .events-calendar-event(v-for="e in eventsOn(date)" :key="e.id")
-      span.events-calendar-dot.mr-1(:class="`events-calendar-${groupToClass(e.servGroup)}`")
+      SERVGroupDots.mr-1(:groups="e.servGroups")
       b-link(:to="`/events/${e.id}`" v-text="e.name")
     .events-calendar-event(v-if="!eventsOn(date).length") No events scheduled.
 </template>
@@ -53,6 +53,11 @@ export default {
   methods: {
     eventsOn(date) {
       return date ? this.events[date.format('YYYY-MM-DD')] || [] : []
+    },
+    groupsOn(date) {
+      const groups = {}
+      this.eventsOn(date).forEach(e => { e.servGroups.forEach(g => { groups[g] = true }) })
+      return Object.keys(groups)
     },
     async newMonth() {
       if (!this.year || this.year != this.month.year()) {

@@ -47,9 +47,19 @@ func GetRole(r *util.Request, idstr string) error {
 	out.String(role.Name)
 	out.RawString(`,"memberLabel":`)
 	out.String(role.MemberLabel)
-	out.RawString(`,"servGroup":`)
-	out.String(string(role.SERVGroup))
-	out.RawString(`,"implyOnly":`)
+	out.RawString(`,"servGroups":[`)
+	first := true
+	for _, g := range model.AllSERVGroups {
+		if role.SERVGroup&g != 0 {
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(servGroupNames[g])
+		}
+	}
+	out.RawString(`],"implyOnly":`)
 	out.Bool(role.ImplyOnly)
 	out.RawString(`,"individual":`)
 	out.Bool(role.Individual)
@@ -60,7 +70,7 @@ func GetRole(r *util.Request, idstr string) error {
 		if i != 0 {
 			out.RawByte(',')
 		}
-		out.String(string(g))
+		out.String(servGroupNames[g])
 	}
 	out.RawString(`],"privs":`)
 	emitRolePrivs(&out, role, allRoles, forced)
@@ -143,16 +153,13 @@ func PostRole(r *util.Request, idstr string) error {
 		}
 	}
 	role.MemberLabel = strings.TrimSpace(r.FormValue("memberLabel"))
-	role.SERVGroup = model.SERVGroup(r.FormValue("servGroup"))
-	found := false
+	role.SERVGroup = 0
 	for _, g := range model.AllSERVGroups {
-		if g == role.SERVGroup {
-			found = true
-			break
+		for _, v := range r.Form["servGroup"] {
+			if v == servGroupNames[g] {
+				role.SERVGroup |= g
+			}
 		}
-	}
-	if !found {
-		return errors.New("bad or missing servGroup")
 	}
 	role.ImplyOnly = r.FormValue("implyOnly") == "true"
 	role.Individual = r.FormValue("individual") == "true"

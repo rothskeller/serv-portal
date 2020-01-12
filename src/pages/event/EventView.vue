@@ -5,6 +5,7 @@ Event displays the event viewing/editing page.
 <template lang="pug">
 #event-view
   #event-view-name(v-text="event.name")
+  #event-view-groups(v-if="event.servGroups.length" v-text="event.servGroups.join(', ')")
   #event-view-date-time(v-text="dateTimeFmt")
   #event-view-venue
     #event-view-venue-name(v-text="event.venue ? event.venue.name : 'Location TBD'")
@@ -46,6 +47,8 @@ export default {
   font-weight bold
   font-size 1.25rem
   line-height 1.2
+#event-view-groups
+  color #888
 #event-view-date-time
   margin-top 0.75rem
   white-space pre-line

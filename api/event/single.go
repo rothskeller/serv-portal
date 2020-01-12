@@ -24,6 +24,7 @@ var htmlSanitizer = bluemonday.NewPolicy().
 func GetEvent(r *util.Request, idstr string) error {
 	var (
 		event         *model.Event
+		eventGroups   model.SERVGroup
 		canEdit       bool
 		canAttendance bool
 		out           jwriter.Writer
@@ -84,6 +85,19 @@ func GetEvent(r *util.Request, idstr string) error {
 				out.RawByte(',')
 			}
 			out.Int(int(r.ID))
+			eventGroups |= r.SERVGroup
+		}
+		out.RawString(`],"servGroups":[`)
+		first := true
+		for _, g := range model.AllSERVGroups {
+			if eventGroups&g != 0 {
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(servGroupNames[g])
+			}
 		}
 		out.RawString(`]}`)
 	} else {
