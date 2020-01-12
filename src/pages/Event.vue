@@ -9,17 +9,24 @@ Page(:title="title" menuItem="events" noPadding)
   b-card#event-card(v-else-if="canEdit && canAttendance" no-body)
     b-tabs(card)
       b-tab.event-tab-pane(title="Details" no-body)
-        EventEdit(:event="event" :roles="roles")
+        EventView(:event="event")
+      b-tab.event-tab-pane(title="Edit" no-body)
+        EventEdit(:event="event" :roles="roles" :venues="venues")
       b-tab.event-tab-pane(title="Attendance" no-body)
         EventAttendance(:event="event" :people="people")
   b-card#event-card(v-else-if="!canEdit && canAttendance" no-body)
     b-tabs(card)
       b-tab.event-tab-pane(title="Details" no-body)
-        EventView(:event="event" :roles="roles")
+        EventView(:event="event")
       b-tab.event-tab-pane(title="Attendance" no-body)
         EventAttendance(:event="event" :people="people")
-  EventEdit(v-else-if="canEdit" :event="event" :roles="roles")
-  EventView(v-else :event="event" :roles="roles")
+  b-card#event-card(v-else-if="canEdit" no-body)
+    b-tabs(card)
+      b-tab.event-tab-pane(title="Details" no-body)
+        EventView(:event="event")
+      b-tab.event-tab-pane(title="Edit" no-body)
+        EventEdit(:event="event" :roles="roles" :venues="venues")
+  EventView(v-else :event="event")
 </template>
 
 <script>
@@ -31,6 +38,7 @@ export default {
     canAttendance: false,
     event: null,
     roles: null,
+    venues: null,
     people: null,
   }),
   async created() {
@@ -41,6 +49,7 @@ export default {
     this.event = data.event
     this.title = data.event.id ? `${data.event.date} ${data.event.name}` : 'New Event'
     this.roles = data.roles
+    this.venues = data.venues
     this.people = data.people
     this.loading = false
   },

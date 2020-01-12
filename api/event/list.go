@@ -39,14 +39,24 @@ func GetEvents(r *util.Request) error {
 		}
 		out.RawString(`{"id":`)
 		out.Int(int(e.ID))
+		out.RawString(`,"name":`)
+		out.String(e.Name)
 		out.RawString(`,"date":`)
 		out.String(e.Date)
 		out.RawString(`,"start":`)
 		out.String(e.Start)
-		out.RawString(`,"end":`)
-		out.String(e.End)
-		out.RawString(`,"name":`)
-		out.String(e.Name)
+		out.RawString(`,"venue":`)
+		if e.Venue != nil {
+			out.RawString(`{"id":`)
+			out.Int(int(e.Venue.ID))
+			out.RawString(`,"name":`)
+			out.String(e.Venue.Name)
+			out.RawString(`,"url":`)
+			out.String(e.Venue.URL)
+			out.RawByte('}')
+		} else {
+			out.RawString(`null`)
+		}
 		out.RawString(`,"servGroup":`)
 		out.String(string(servGroupForEvent(e)))
 		out.RawString(`,"roles":[`)

@@ -4,44 +4,35 @@ Event displays the event viewing/editing page.
 
 <template lang="pug">
 #event-view
-  b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="event-edit-label")
-    b-input#event-name(plaintext :value="event.name")
-  b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label")
-    b-input#event-date(type="date" plaintext :value="event.date")
-  b-form-group(label="Event time" label-for="event-time" label-cols-sm="auto" label-class="event-edit-label")
-    b-input#event-time(plaintext :value="`${event.start} to ${event.end}`")
-  b-form-group(label="Event type" label-for="event-type" label-cols-sm="auto" label-class="event-edit-label")
-    b-input#event-type(plaintext :value="eventTypes[event.type]")
-  b-form-group(label="Roles" label-for="event-roles" label-cols-sm="auto" label-class="event-edit-label")
-    b-textarea#event-roles(plaintext v-text="eventRoleList")
+  #event-view-name(v-text="event.name")
+  #event-view-date-time(v-text="dateTimeFmt")
+  #event-view-venue
+    #event-view-venue-name(v-text="event.venue ? event.venue.name : 'Location TBD'")
+    #event-view-venue-address(v-if="event.venue")
+      span(v-text="event.venue.address")
+      span(v-if="event.venue.city" v-text="`, ${event.venue.city}`")
+      span#event-view-venue-map(v-if="event.venue.url")
+        |  (
+        a(target="_blank" :href="event.venue.url") map
+        | )
 </template>
 
 <script>
-const eventTypes = {
-  'Train': 'Training',
-  'Drill': 'Drill',
-  'Civic': 'Civic Event',
-  'Incid': 'Incident',
-  'CE': 'Continuing Ed',
-  'Meeting': 'Meeting',
-  'Class': 'Class',
-}
+import moment from 'moment'
 
 export default {
   props: {
     event: Object,
-    roles: Array,
   },
-  data: () => ({
-    eventTypes,
-  }),
   computed: {
-    eventRoleList() {
-      const list = []
-      this.event.roles.forEach(tid => {
-        list.push(this.roles.find(t => t.id === tid).name)
-      })
-      return list.join('\n')
+    dateTimeFmt() {
+      const date = moment(this.event.date, 'YYYY-MM-DD')
+      const start = moment(this.event.start, 'HH:mm')
+      const end = moment(this.event.end, 'HH:mm')
+      if (start.format('a') !== end.format('a'))
+        return `${date.format('dddd, MMMM D, YYYY')}\n${start.format('h:mma')} to ${end.format('h:mma')}`
+      else
+        return `${date.format('dddd, MMMM D, YYYY')}\n${start.format('h:mm')} to ${end.format('h:mma')}`
     },
   },
 }
@@ -50,4 +41,13 @@ export default {
 <style lang="stylus">
 #event-view
   margin 1.5rem 0.75rem
+#event-view-name
+  font-weight bold
+  font-size 1.25rem
+#event-view-date-time
+  white-space pre-line
+#event-view-venue
+  margin-top 0.5rem
+#event-view-venue-address
+  font-size 0.875rem
 </style>

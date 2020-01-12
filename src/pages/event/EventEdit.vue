@@ -13,6 +13,28 @@ form#event-edit(@submit.prevent="onSubmit")
       b-input#event-start(type="time" :state="timeError ? false : null" v-model="event.start")
       span to
       b-input#event-end(type="time" :state="timeError ? false : null" v-model="event.end")
+  b-form-group(label="Location" label-for="event-venue" label-cols-sm="auto" label-class="event-edit-label")
+    b-select#event-venue(v-model="event.venue.id" :options="venues" text-field="name" value-field="id")
+      template(v-slot:first)
+        b-select-option(value="0") TBD
+      b-select-option(value="NEW") (create a new venue)
+  template(v-if="event.venue.id === 'NEW'")
+    b-form-group(label="Venue name" label-for="venue-name" label-cols-sm="auto" label-class="event-edit-label" :state="venueNameError ? false : null" :invalid-feedback="venueNameError")
+      b-input#venue-name(ref="venueName" :state="venueNameError ? false : null" trim v-model="event.venue.name")
+    b-form-group(label="Address" label-for="venue-address" label-cols-sm="auto" label-class="event-edit-label" :state="venueAddressError ? false : null" :invalid-feedback="venueAddressError")
+      b-input#venue-address(:state="venueAddressError ? false : null" trim v-model="event.venue.address")
+    b-form-group(label="City" label-for="venue-city" label-cols-sm="auto" label-class="event-edit-label" :state="venueCityError ? false : null" :invalid-feedback="venueCityError")
+      b-input#venue-city(:state="venueCityError ? false : null" trim v-model="event.venue.city")
+    b-form-group(label="Map URL" label-for="venue-url" label-cols-sm="auto" label-class="event-edit-label" :state="venueURLError ? false : null" :invalid-feedback="venueURLError")
+      b-input#venue-url(:state="venueURLError ? false : null" trim v-model="event.venue.url")
+      b-form-text
+        | Generate this by opening Google Maps and searching for the venue.
+        | (Search by the venue’s name rather than its address, if it has a
+        | name, so that Google’s sidebar of information about the venue
+        | appears.)  Once the venue is found, zoom out a few steps until the
+        | nearest freeways are shown — enough to give the viewer an idea of
+        | where in the Bay Area the venue is.  Copy the URL from the browser
+        | address bar and paste it here.
   b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
   b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
@@ -38,6 +60,7 @@ export default {
   props: {
     event: null,
     roles: null,
+    venues: null,
   },
   data: () => ({
     eventTypes,
@@ -46,17 +69,32 @@ export default {
     timeError: null,
     nameError: null,
     duplicateName: null,
+    venueNameError: null,
+    venueAddressError: null,
+    venueCityError: null,
+    venueURLError: null,
     typeError: null,
     rolesError: null,
     valid: true,
   }),
   watch: {
+    'event.name': 'validate',
     'event.date': 'validate',
     'event.start': 'validate',
     'event.end': 'validate',
-    'event.name': 'validate',
+    'event.venue.name': 'validate',
+    'event.venue.address': 'validate',
+    'event.venue.city': 'validate',
+    'event.venue.url': 'validate',
     'event.type': 'validate',
     'event.roles': 'validate',
+    'event.venue.id'() {
+      if (this.event.venue.id === 'NEW') {
+        this.event.venue.name = this.event.venue.address = this.event.venue.city = this.event.venue.url = ''
+        this.validate()
+        this.$nextTick(() => { this.$refs.venueName.focus() })
+      }
+    },
   },
   methods: {
     onCancel() { this.$router.go(-1) },
@@ -77,10 +115,17 @@ export default {
       this.validate()
       if (!this.valid) return
       const body = new FormData
+      body.append('name', this.event.name)
       body.append('date', this.event.date)
       body.append('start', this.event.start)
       body.append('end', this.event.end)
-      body.append('name', this.event.name)
+      body.append('venue', this.event.venue.id)
+      if (this.event.venue.id === 'NEW') {
+        body.append('venueName', this.event.venue.name)
+        body.append('venueAddress', this.event.venue.address)
+        body.append('venueCity', this.event.venue.city)
+        body.append('venueURL', this.event.venue.url)
+      }
       body.append('type', this.event.type)
       this.event.roles.forEach(r => { body.append('role', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
@@ -91,6 +136,12 @@ export default {
     },
     validate() {
       if (!this.submitted) return
+      if (!this.event.name)
+        this.nameError = 'The event name is required.'
+      else if (this.duplicateName && this.duplicateName.date === this.event.date && this.duplicateName.name === this.event.name)
+        this.nameError = 'Another event on this date has this name.'
+      else
+        this.nameError = this.duplicateName = null
       if (!this.event.date)
         this.dateError = 'The event date is required.'
       else if (!this.event.date.match(/^20\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/))
@@ -107,12 +158,25 @@ export default {
         this.timeError = 'The end time must come after the start time.'
       else
         this.timeError = null
-      if (!this.event.name)
-        this.nameError = 'The event name is required.'
-      else if (this.duplicateName && this.duplicateName.date === this.event.date && this.duplicateName.name === this.event.name)
-        this.nameError = 'Another event on this date has this name.'
-      else
-        this.nameError = this.duplicateName = null
+      if (this.event.venue.id === 'NEW') {
+        if (!this.event.venue.name)
+          this.venueNameError = 'The venue name is required.'
+        else
+          this.venueNameError = null
+        if (!this.event.venue.address)
+          this.venueAddressError = 'The venue address is required.'
+        else
+          this.venueAddressError = null
+        if (!this.event.venue.city)
+          this.venueCityError = 'The venue city is required.'
+        else
+          this.venueCityError = null
+        if (this.event.venue.url && !this.event.venue.url.startsWith('https://www.google.com/maps/'))
+          this.venueURLError = 'The venue map URL must start with https://www.google.com/maps/.'
+        else
+          this.venueURLError = null
+      } else
+        this.venueNameError = this.venueAddressError = this.venueCityError = this.venueURLError = null
       if (!eventTypes[this.event.type])
         this.typeError = 'The event type is required.'
       else
@@ -121,7 +185,8 @@ export default {
         this.rolesError = 'At least one role must be selected.'
       else
         this.rolesError = null
-      this.valid = !this.dateError && !this.timeError && !this.nameError && !this.typeError && !this.rolesError
+      this.valid = !this.nameError && !this.dateError && !this.timeError && !this.venueNameError && !this.venueAddressError &&
+        !this.venueCityError && !this.venueURLError && !this.typeError && !this.rolesError
     },
   },
 }
@@ -132,9 +197,12 @@ export default {
   margin 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-type, #event-roles
+#event-date, #event-name, #event-type, #event-roles, #venue-name, #venue-address, #venue-city, #venue-url
   min-width 14rem
   max-width 20rem
+#event-venue
+  min-width 14rem
+  width auto
 #event-time
   display flex
   align-items baseline

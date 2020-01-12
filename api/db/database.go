@@ -120,6 +120,8 @@ type Tx struct {
 	roles     map[model.RoleID]*model.Role
 	roleTags  map[model.RoleTag]*model.Role
 	roleList  []*model.Role
+	venues    map[model.VenueID]*model.Venue
+	venueList []*model.Venue
 	maxRoleID model.RoleID
 	username  string
 	request   string

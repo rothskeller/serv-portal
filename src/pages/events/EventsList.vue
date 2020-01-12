@@ -15,12 +15,14 @@ EventsList displays the list of events.
     tr
       th Date
       th Event
-      th Invited
+      th Location
     tr(v-for="e in events" :key="e.id")
-      td(v-text="e.date")
+      td(v-text="`${e.date} ${e.start}`")
       td: router-link(:to="`/events/${e.id}`" v-text="e.name")
       td
-        div(v-for="role in e.roles" v-text="role")
+        a(v-if="e.venue && e.venue.url" target="_blank" :href="e.venue.url" v-text="e.venue.name")
+        span(v-else-if="e.venue" v-text="e.venue.name")
+        span(v-else) TBD
 </template>
 
 <script>

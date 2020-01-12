@@ -42,14 +42,30 @@ func GetEvent(r *util.Request, idstr string) error {
 	if event != nil {
 		out.RawString(`,"event":{"id":`)
 		out.Int(int(event.ID))
+		out.RawString(`,"name":`)
+		out.String(event.Name)
 		out.RawString(`,"date":`)
 		out.String(event.Date)
 		out.RawString(`,"start":`)
 		out.String(event.Start)
 		out.RawString(`,"end":`)
 		out.String(event.End)
-		out.RawString(`,"name":`)
-		out.String(event.Name)
+		out.RawString(`,"venue":`)
+		if event.Venue != nil {
+			out.RawString(`{"id":`)
+			out.Int(int(event.Venue.ID))
+			out.RawString(`,"name":`)
+			out.String(event.Venue.Name)
+			out.RawString(`,"address":`)
+			out.String(event.Venue.Address)
+			out.RawString(`,"city":`)
+			out.String(event.Venue.City)
+			out.RawString(`,"url":`)
+			out.String(event.Venue.URL)
+			out.RawByte('}')
+		} else {
+			out.RawString(`{"id":0,"name":"TBD","address":"","city":"","url":""}`)
+		}
 		out.RawString(`,"type":`)
 		out.String(string(event.Type))
 		out.RawString(`,"roles":[`)
@@ -61,7 +77,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawString(`]}`)
 	} else {
-		out.RawString(`,"event":{"id":0,"date":"","start":"","end":"","name":"","type":"","roles":[]}`)
+		out.RawString(`,"event":{"id":0,"name":"","date":"","start":"","end":"","venue":null,"type":"","roles":[]}`)
 	}
 	if canEdit {
 		out.RawString(`,"roles":[`)
@@ -73,6 +89,17 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.Int(int(t.ID))
 			out.RawString(`,"name":`)
 			out.String(t.Name)
+			out.RawByte('}')
+		}
+		out.RawString(`],"venues":[`)
+		for i, v := range r.Tx.FetchVenues() {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(v.ID))
+			out.RawString(`,"name":`)
+			out.String(v.Name)
 			out.RawByte('}')
 		}
 		out.RawByte(']')
@@ -137,6 +164,9 @@ func PostEvent(r *util.Request, idstr string) error {
 		r.Tx.Commit()
 		return nil
 	}
+	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
+		return errors.New("missing name")
+	}
 	event.Date = r.FormValue("date")
 	if event.Date == "" {
 		return errors.New("missing date")
@@ -156,8 +186,25 @@ func PostEvent(r *util.Request, idstr string) error {
 	if event.End < event.Start {
 		return errors.New("end before start")
 	}
-	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
-		return errors.New("missing name")
+	vidstr := r.FormValue("venue")
+	if vidstr == "NEW" {
+		event.Venue = &model.Venue{
+			Name:    strings.TrimSpace(r.FormValue("venueName")),
+			Address: strings.TrimSpace(r.FormValue("venueAddress")),
+			City:    strings.TrimSpace(r.FormValue("venueCity")),
+			URL:     strings.TrimSpace(r.FormValue("venueURL")),
+		}
+		if event.Venue.Name == "" || event.Venue.Address == "" || event.Venue.City == "" {
+			return errors.New("missing venue name, address, or city")
+		}
+		if event.Venue.URL != "" && !strings.HasPrefix(event.Venue.URL, "https://www.google.com/maps/") {
+			return errors.New("invalid venue URL")
+		}
+		r.Tx.SaveVenue(event.Venue)
+	} else if vidstr == "0" {
+		event.Venue = nil
+	} else if event.Venue = r.Tx.FetchVenue(model.VenueID(util.ParseID(vidstr))); event.Venue == nil {
+		return errors.New("nonexistent venue")
 	}
 	if event.Type = model.EventType(r.FormValue("type")); event.Type == "" {
 		return errors.New("missing type")

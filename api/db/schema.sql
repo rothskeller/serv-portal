@@ -62,14 +62,24 @@ CREATE TABLE person_role (
 ) WITHOUT ROWID;
 CREATE INDEX person_role_role_index ON person_role (role);
 
+-- The venue table tracks all venues at which SERV events are held.
+CREATE TABLE venue (
+    id      integer PRIMARY KEY, -- autoincrement
+    name    text    NOT NULL,
+    address text    NOT NULL,
+    city    text    NOT NULL,
+    url     text    NOT NULL
+);
+
 -- The event table tracks all SERV events at which volunteer attendance is
 -- tracked.
 CREATE TABLE event (
     id    integer PRIMARY KEY, -- autoincrement
+    name  text    NOT NULL,
     date  text    NOT NULL,
     start text    NOT NULL,
     end   text    NOT NULL,
-    name  text    NOT NULL,
+    venue integer REFERENCES venue ON DELETE SET NULL,
     type  text    NOT NULL,
     UNIQUE (date, name)
 );

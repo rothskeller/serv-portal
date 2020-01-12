@@ -16,6 +16,7 @@ type AuditRecord struct {
 	Person    *Person
 	Role      *Role
 	Session   *Session
+	Venue     *Venue
 }
 
 func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
@@ -48,20 +49,30 @@ func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
 		out.RawString(`,"session":`)
 		in.Session.ToAudit(out)
 	}
+	if in.Venue != nil {
+		out.RawString(`,"venue":`)
+		in.Venue.ToAudit(out)
+	}
 	out.RawString("}\n")
 }
 
 func (in Event) ToAudit(out *jwriter.Writer) {
 	out.RawString(`{"id":`)
 	out.Int(int(in.ID))
+	out.RawString(`,"name":`)
+	out.String(in.Name)
 	out.RawString(`,"date":`)
 	out.String(in.Date)
 	out.RawString(`,"start":`)
 	out.String(in.Start)
 	out.RawString(`,"end":`)
 	out.String(in.End)
-	out.RawString(`,"name":`)
-	out.String(in.Name)
+	out.RawString(`,"venue":`)
+	if in.Venue != nil {
+		out.Int(int(in.Venue.ID))
+	} else {
+		out.RawString(`null`)
+	}
 	out.RawString(`,"type":`)
 	out.String(string(in.Type))
 	out.RawString(`,"roles":[`)
@@ -153,6 +164,22 @@ func (in Session) ToAudit(out *jwriter.Writer) {
 	if !in.Expires.IsZero() {
 		out.RawString(`,"expires":`)
 		out.Raw(in.Expires.MarshalJSON())
+	}
+	out.RawByte('}')
+}
+
+func (in Venue) ToAudit(out *jwriter.Writer) {
+	out.RawString(`{"id":`)
+	out.Int(int(in.ID))
+	out.RawString(`,"name":`)
+	out.String(in.Name)
+	out.RawString(`,"address":`)
+	out.String(in.Address)
+	out.RawString(`,"city":`)
+	out.String(in.City)
+	if in.URL != "" {
+		out.RawString(`,"url":`)
+		out.String(in.URL)
 	}
 	out.RawByte('}')
 }

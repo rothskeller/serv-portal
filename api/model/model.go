@@ -30,10 +30,11 @@ var AllEventTypes = []EventType{EventTraining, EventDrill, EventCivic, EventInci
 // volunteers may participate.
 type Event struct {
 	ID    EventID
+	Name  string
 	Date  string // 2006-01-02
 	Start string // 13:45
 	End   string // 14:45
-	Name  string
+	Venue *Venue
 	Type  EventType
 	Roles []*Role
 }
@@ -151,4 +152,16 @@ type Session struct {
 	Token   SessionToken
 	Person  *Person
 	Expires time.Time
+}
+
+// A VenueID uniquely identifies an event Venue.
+type VenueID int
+
+// A Venue is a place where Events occur.
+type Venue struct {
+	ID      VenueID
+	Name    string
+	Address string
+	City    string
+	URL     string
 }

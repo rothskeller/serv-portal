@@ -10,15 +10,19 @@ import (
 // if no such event exists.
 func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 	var (
-		rows *sql.Rows
-		err  error
+		rows    *sql.Rows
+		venueID model.VenueID
+		err     error
 	)
 	e = &model.Event{ID: id}
-	err = tx.tx.QueryRow(`SELECT date, start, end, name, type FROM event WHERE id=?`, id).Scan(&e.Date, &e.Start, &e.End, &e.Name, &e.Type)
+	err = tx.tx.QueryRow(`SELECT name, date, start, end, venue, type FROM event WHERE id=?`, id).Scan(&e.Name, &e.Date, &e.Start, &e.End, (*ID)(&venueID), &e.Type)
 	if err == sql.ErrNoRows {
 		return nil
 	}
 	panicOnError(err)
+	if venueID != 0 {
+		e.Venue = tx.FetchVenue(venueID)
+	}
 	rows, err = tx.tx.Query(`SELECT role FROM event_role WHERE event=?`, id)
 	panicOnError(err)
 	for rows.Next() {
@@ -35,15 +39,19 @@ func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 // 2006-01-02 format.
 func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
 	var (
-		rows *sql.Rows
-		stmt *sql.Stmt
-		err  error
+		rows    *sql.Rows
+		stmt    *sql.Stmt
+		venueID model.VenueID
+		err     error
 	)
-	rows, err = tx.tx.Query(`SELECT id, date, start, end, name, type FROM event WHERE date>=? AND date<=? ORDER BY date, start, name`, from, to)
+	rows, err = tx.tx.Query(`SELECT id, name, date, start, end, venue, type FROM event WHERE date>=? AND date<=? ORDER BY date, start, name`, from, to)
 	panicOnError(err)
 	for rows.Next() {
 		var e model.Event
-		panicOnError(rows.Scan(&e.ID, &e.Date, &e.Start, &e.End, &e.Name, &e.Type))
+		panicOnError(rows.Scan(&e.ID, &e.Name, &e.Date, &e.Start, &e.End, (*ID)(&venueID), &e.Type))
+		if venueID != 0 {
+			e.Venue = tx.FetchVenue(venueID)
+		}
 		events = append(events, &e)
 	}
 	panicOnError(rows.Err())
@@ -67,15 +75,20 @@ func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
 // zero, a new event is added to the database; otherwise, the identified event
 // is updated.
 func (tx *Tx) SaveEvent(e *model.Event) {
-	var err error
-
+	var (
+		venueID model.VenueID
+		err     error
+	)
+	if e.Venue != nil {
+		venueID = e.Venue.ID
+	}
 	if e.ID == 0 {
 		var result sql.Result
-		result, err = tx.tx.Exec(`INSERT INTO event (date, start, end, name, type) VALUES (?,?,?,?,?)`, e.Date, e.Start, e.End, e.Name, e.Type)
+		result, err = tx.tx.Exec(`INSERT INTO event (name, date, start, end, venue, type) VALUES (?,?,?,?,?,?)`, e.Name, e.Date, e.Start, e.End, ID(venueID), e.Type)
 		panicOnError(err)
 		e.ID = model.EventID(lastInsertID(result))
 	} else {
-		panicOnNoRows(tx.tx.Exec(`UPDATE event SET date=?, start=?, end=?, name=?, type=? WHERE id=?`, e.Date, e.Start, e.End, e.Name, e.Type, e.ID))
+		panicOnNoRows(tx.tx.Exec(`UPDATE event SET name=?, date=?, start=?, end=?, venue=?, type=? WHERE id=?`, e.Name, e.Date, e.Start, e.End, ID(venueID), e.Type, e.ID))
 		panicOnExecError(tx.tx.Exec(`DELETE FROM event_role WHERE event=?`, e.ID))
 	}
 	for _, r := range e.Roles {
