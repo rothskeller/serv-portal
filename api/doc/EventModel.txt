@@ -1,0 +1,72 @@
+== Basic Information ==
+
+Events are uniquely identified by a positive integer ID.  Events have a name,
+date, start time, end time, and details.  The name is free form text, which must
+be unique among events on that date.  Dates are times are stored and manipulated
+as strings, not time.Time objects.  Dates are in YYYY-MM-DD format and times are
+in 24-hour HH:MM format (no seconds, always local time).  The details block is
+free-form text; it can have <a> tags for hyperlinks, but no other tags.  (It is
+sanitized of other tags on input.)
+
+== Venues ==
+
+Each event can have a venue, which is a reference to a separate Venue object.
+Venues are identified by a positive integer ID, and have a name, address, city,
+and map URL.  The address, city, and map URL are optional.  (We don't store a
+state because nothing we do is outside of California, and we don't store a zip
+code because we have no need for it.)  If an event does not have a venue, its
+location is displayed as "TBD".
+
+== Roles ==
+
+Each event has one or more roles "invited" to it, which means that holders of
+those roles can see the event in their calendar.  It also means that their names
+are listed as possibilities when recording attendance at the event.  Each role
+is associated with zero or more SERV groups (usually one).  The union of all
+SERV groups across all roles invited to the event gives the set of SERV groups
+for the event itself.
+
+== Classification: SERV Groups and Types ==
+
+Every event has a set of zero or more SERV groups (usually one), derived from
+the SERV groups of the invited roles as described above.  The calendar and event
+list pages display each different SERV group as a different-colored dot.  An
+event with multiple groups gets multiple dots.  In addition, the list of SERV
+groups for an event is displayed on the event's page.  The SERV groups for an
+event are not directly editable; you have to change the set of roles invited to
+the event, or the SERV groups associated with those roles.
+
+Every event also has a set of zero or more event types (usually one).  These are
+not visible on the calendar, but they are shown on the individual event pages,
+and they are used in report generation.
+
+A real-world data model would allow each invited role to have a different event
+type.  For example, a CERT Graduation is a class with respect to its students,
+but a drill with respect to SARES participants.  However, that complexity is
+unnecessary and unhelpful.  Listing all of the event types and all of the SERV
+groups for an event, without correlating them, is good enough and much simpler.
+Graduation, for example, might be shown as
+    Class, Drill, Party for CERT-D, CERT-T, SARES
+
+Report generation needs a single event type for each event.  The event types are
+implicitly ranked, and the highest-ranking event type for an event is used when
+reporting on that event.
+
+== Attendance ==
+
+The system tracks attendance at each event.  Only people holding the roles
+invited to the event are listed on the attendance tracking page.  The attendance
+data model is binary, not trinary: attendance not recorded is the same as
+absent.
+
+== SCC ARES Import ==
+
+In order to show the county ARES events on our calendar, we import them from
+the scc-ares-races web site.  That site does not have any API, so we have to
+screen-scrape it, but that's not too awful.  Daily at 2am, a cron job scans the
+scc-ares-races site and synchronizes our database with it.  There are mapping
+tables that allow mapping their name to our name, their location to our venues,
+and their event type to ours.  The imported events are not locally editable
+(since those edits would be lost next time the import happens).  The sccAresID
+field of the event holds the ID of the event on their web site; it is not shown
+to end users.

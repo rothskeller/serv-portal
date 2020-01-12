@@ -42,7 +42,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		if !auth.CanViewEvent(r, event) {
 			return util.Forbidden
 		}
-		canEdit = auth.CanManageEvent(r, event)
+		canEdit = auth.CanManageEvent(r, event) && event.SccAresID == ""
 		canAttendance = auth.CanRecordAttendanceAtEvent(r, event)
 	}
 	out.RawString(`{"canEdit":`)
