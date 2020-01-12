@@ -23,7 +23,7 @@ func main() {
 	var (
 		eventsResponse *http.Response
 		eventsBody     *html.Node
-		eventIDs       map[string]string
+		eventIDs       map[string]model.EventType
 		events         []*model.Event
 		err            error
 	)
@@ -48,8 +48,11 @@ func main() {
 	saveEvents(events)
 }
 
-func getEventIDs(node *html.Node) (ids map[string]string) {
-	ids = make(map[string]string)
+func getEventIDs(node *html.Node) (ids map[string]model.EventType) {
+	tx := db.Begin()
+	typemap := tx.FetchSccAresEventTypes()
+	tx.Commit()
+	ids = make(map[string]model.EventType)
 	node = expectNode(node, html.DocumentNode)
 	node = expectNode(node.FirstChild, html.DoctypeNode)
 	node = expectElement(node.NextSibling, atom.Html)
@@ -91,13 +94,18 @@ func getEventIDs(node *html.Node) (ids map[string]string) {
 		n = expectElement(n.NextSibling, atom.Td)
 		n = expectElement(n.NextSibling, atom.Td)
 		n = expectNode(n.FirstChild, html.TextNode)
-		ids[eventID] = n.Data
+		if et, ok := typemap[n.Data]; ok {
+			ids[eventID] = et
+		} else {
+			ids[eventID] = 0
+			fmt.Printf("WARNING: unmapped event type %q\n", n.Data)
+		}
 		node = expectElement(node.NextSibling, atom.Div)
 	}
 	return ids
 }
 
-func getEvent(eventID, eventType string) (event *model.Event) {
+func getEvent(eventID string, eventType model.EventType) (event *model.Event) {
 	var (
 		eventResponse *http.Response
 		node          *html.Node
@@ -106,7 +114,7 @@ func getEvent(eventID, eventType string) (event *model.Event) {
 	)
 	event = &model.Event{
 		SccAresID: eventID,
-		Type:      model.EventType(eventType),
+		Type:      eventType,
 		Details:   fmt.Sprintf(`For details and to register, visit <a href="https://www.scc-ares-races.org/activities/eventdetail.php?id=%s" target="_blank" rel="nofollow noopener">scc-ares-races.org</a>.`, eventID),
 	}
 	if eventResponse, err = http.Get(fmt.Sprintf("https://scc-ares-races.org/activities/eventdetail.php?id=%s", eventID)); err != nil {
@@ -177,12 +185,10 @@ func applyRewrites(events []*model.Event) {
 		roles []*model.Role
 		vmap  map[string]*model.Venue
 		nmap  map[string]string
-		tmap  map[string]model.EventType
 	)
 	tx = db.Begin()
 	nmap = tx.FetchSccAresEventNames()
 	vmap = tx.FetchSccAresEventVenues()
-	tmap = tx.FetchSccAresEventTypes()
 	roles = []*model.Role{tx.FetchRoleByTag(model.RoleSccAres)}
 	for _, e := range events {
 		if mapped, ok := vmap[e.Venue.Name]; ok {
@@ -197,14 +203,6 @@ func applyRewrites(events []*model.Event) {
 			e.Name = rw
 		}
 		e.Roles = roles
-		if mapped := tmap[string(e.Type)]; mapped != "" {
-			e.Type = mapped
-		} else if mapped := tmap[""]; mapped != "" {
-			fmt.Printf("WARNING: no mapping for type %q, recording as \"SCC ARES: Other\"\n", e.Type)
-			e.Type = mapped
-		} else {
-			panic("no fallback type in database")
-		}
 	}
 	tx.Commit()
 }

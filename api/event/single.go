@@ -77,9 +77,19 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawString(`,"details":`)
 		out.String(event.Details)
-		out.RawString(`,"type":`)
-		out.String(string(event.Type))
-		out.RawString(`,"roles":[`)
+		out.RawString(`,"types":[`)
+		first := true
+		for _, et := range model.AllEventTypes {
+			if event.Type&et != 0 {
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(model.EventTypeNames[et])
+			}
+		}
+		out.RawString(`],"roles":[`)
 		for i, r := range event.Roles {
 			if i != 0 {
 				out.RawByte(',')
@@ -88,7 +98,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			eventGroups |= r.SERVGroup
 		}
 		out.RawString(`],"servGroups":[`)
-		first := true
+		first = true
 		for _, g := range model.AllSERVGroups {
 			if eventGroups&g != 0 {
 				if first {
@@ -104,7 +114,14 @@ func GetEvent(r *util.Request, idstr string) error {
 		out.RawString(`,"event":{"id":0,"name":"","date":"","start":"","end":"","venue":null,"details":"","type":"","roles":[]}`)
 	}
 	if canEdit {
-		out.RawString(`,"roles":[`)
+		out.RawString(`,"types":[`)
+		for i, et := range model.AllEventTypes {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(model.EventTypeNames[et])
+		}
+		out.RawString(`],"roles":[`)
 		for i, t := range auth.RolesCanManageEvents(r) {
 			if i != 0 {
 				out.RawByte(',')
@@ -231,18 +248,13 @@ func PostEvent(r *util.Request, idstr string) error {
 		return errors.New("nonexistent venue")
 	}
 	event.Details = htmlSanitizer.Sanitize(strings.TrimSpace(r.FormValue("details")))
-	if event.Type = model.EventType(r.FormValue("type")); event.Type == "" {
-		return errors.New("missing type")
-	}
-	found := false
-	for _, t := range model.AllEventTypes {
-		if event.Type == t {
-			found = true
-			break
+	event.Type = 0
+	for _, et := range model.AllEventTypes {
+		for _, v := range r.Form["type"] {
+			if model.EventTypeNames[et] == v {
+				event.Type |= et
+			}
 		}
-	}
-	if !found {
-		return errors.New("invalid type")
 	}
 	event.Roles = event.Roles[:0]
 	for _, idstr := range r.Form["role"] {

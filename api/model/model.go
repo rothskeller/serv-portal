@@ -9,22 +9,48 @@ import (
 // An EventID is a positive integer uniquely identifying an Event.
 type EventID int
 
-// An EventType is a string identifying a type of Event.
-type EventType string
+// An EventType is a bitmask identifying the type(s) of an Event (usually only
+// one, but sometimes more).
+type EventType uint16
 
 // The known event types.
 const (
-	EventTraining EventType = "Train"
-	EventDrill              = "Drill"
-	EventCivic              = "Civic"
-	EventIncident           = "Incid"
-	EventContEd             = "CE"
-	EventMeeting            = "Meeting"
-	EventClass              = "Class"
+	EventCivic EventType = 1 << iota
+	EventClass
+	EventContEd
+	EventDrill
+	EventIncident
+	EventMeeting
+	EventParty
+	EventTraining
+	EventWork
 )
 
 // AllEventTypes is the list of all known event types.
-var AllEventTypes = []EventType{EventTraining, EventDrill, EventCivic, EventIncident, EventContEd, EventMeeting, EventClass}
+var AllEventTypes = []EventType{
+	EventCivic,
+	EventClass,
+	EventContEd,
+	EventDrill,
+	EventIncident,
+	EventMeeting,
+	EventParty,
+	EventTraining,
+	EventWork,
+}
+
+// EventTypeNames maps event types to their names.
+var EventTypeNames = map[EventType]string{
+	EventCivic:    "Civic Event",
+	EventClass:    "Class",
+	EventContEd:   "Continuing Education",
+	EventDrill:    "Drill",
+	EventIncident: "Incident",
+	EventMeeting:  "Meeting",
+	EventParty:    "Party",
+	EventTraining: "Training",
+	EventWork:     "Work Event",
+}
 
 // An Event structure contains the data describing an event at which SERV
 // volunteers may participate.

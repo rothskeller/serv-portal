@@ -11,7 +11,7 @@ Page(:title="title" menuItem="events" noPadding)
       b-tab.event-tab-pane(title="Details" no-body)
         EventView(:event="event")
       b-tab.event-tab-pane(title="Edit" no-body)
-        EventEdit(:event="event" :roles="roles" :venues="venues")
+        EventEdit(:event="event" :roles="roles" :venues="venues" :types="types")
       b-tab.event-tab-pane(title="Attendance" no-body)
         EventAttendance(:event="event" :people="people")
   b-card#event-card(v-else-if="!canEdit && canAttendance" no-body)
@@ -25,7 +25,7 @@ Page(:title="title" menuItem="events" noPadding)
       b-tab.event-tab-pane(title="Details" no-body)
         EventView(:event="event")
       b-tab.event-tab-pane(title="Edit" no-body)
-        EventEdit(:event="event" :roles="roles" :venues="venues")
+        EventEdit(:event="event" :roles="roles" :venues="venues" :types="types")
   EventView(v-else :event="event")
 </template>
 
@@ -38,6 +38,7 @@ export default {
     canAttendance: false,
     event: null,
     roles: null,
+    types: null,
     venues: null,
     people: null,
   }),
@@ -50,6 +51,7 @@ export default {
     this.title = data.event.id ? `${data.event.date} ${data.event.name}` : 'New Event'
     this.roles = data.roles
     this.venues = data.venues
+    this.types = data.types
     this.people = data.people
     this.loading = false
   },

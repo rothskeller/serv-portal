@@ -19,15 +19,6 @@ type columnKey string
 type eventTypeAbbr string
 
 var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$`)
-var eventTypeAbbrs = map[model.EventType]eventTypeAbbr{
-	model.EventCivic:    "Civ",
-	model.EventClass:    "Cls",
-	model.EventContEd:   "CE",
-	model.EventDrill:    "Drl",
-	model.EventIncident: "Inc",
-	model.EventMeeting:  "Mtg",
-	model.EventTraining: "Trn",
-}
 
 // CERTAttendanceReport handles GET /api/reports/cert-attendance requests.
 func CERTAttendanceReport(r *util.Request) error {
@@ -36,6 +27,7 @@ func CERTAttendanceReport(r *util.Request) error {
 		events   []*model.Event
 		people   []*model.Person
 		rendered attendanceReport
+		etabbr   eventTypeAbbr
 		data     = map[model.PersonID]map[columnKey]map[eventTypeAbbr]int{}
 		pmap     = map[model.PersonID]*model.Person{}
 		teamStr  = r.FormValue("team")
@@ -101,14 +93,17 @@ func CERTAttendanceReport(r *util.Request) error {
 	people = people[:j]
 	// Get the attendance data.
 	for _, e := range events {
+		if etabbr = getEventTypeAbbr(e.Type); etabbr == "" {
+			continue
+		}
 		for pid := range r.Tx.FetchAttendanceByEvent(e) {
 			if pmap[pid] == nil {
 				continue
 			}
-			addAttendance(data, e, pid, stats, detail)
-			addAttendance(data, e, 0, stats, detail)
+			addAttendance(data, e, pid, etabbr, stats, detail)
+			addAttendance(data, e, 0, etabbr, stats, detail)
 		}
-		addAttendance(data, e, -1, stats, detail)
+		addAttendance(data, e, -1, etabbr, stats, detail)
 	}
 	r.Tx.Commit()
 	// Convert the report into output-format-independent rows and columns.
@@ -121,30 +116,55 @@ func CERTAttendanceReport(r *util.Request) error {
 	return nil
 }
 
+func getEventTypeAbbr(et model.EventType) eventTypeAbbr {
+	switch {
+	case et&model.EventIncident != 0:
+		return "Inc"
+	case et&model.EventCivic != 0:
+		return "Civ"
+	case et&model.EventDrill != 0:
+		return "Drl"
+	case et&model.EventTraining != 0:
+		return "Trn"
+	case et&model.EventContEd != 0:
+		return "CE"
+	case et&model.EventClass != 0:
+		return "Cls"
+	case et&model.EventWork != 0:
+		return "Wrk"
+	case et&model.EventMeeting != 0:
+		return "Mtg"
+	}
+	return ""
+}
+
 func addAttendance(
-	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, event *model.Event, pid model.PersonID, stats, detail string,
+	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, event *model.Event, pid model.PersonID, etabbr eventTypeAbbr,
+	stats, detail string,
 ) {
 	if data[pid] == nil {
 		data[pid] = make(map[columnKey]map[eventTypeAbbr]int)
 	}
 	switch detail {
 	case "date":
-		addAttendance2(data[pid], columnKey(event.Date), event, stats)
+		addAttendance2(data[pid], columnKey(event.Date), event, etabbr, stats)
 	case "month":
-		addAttendance2(data[pid], columnKey(event.Date[:7]), event, stats)
+		addAttendance2(data[pid], columnKey(event.Date[:7]), event, etabbr, stats)
 	default:
 	}
-	addAttendance2(data[pid], "TOTALS", event, stats)
+	addAttendance2(data[pid], "TOTALS", event, etabbr, stats)
 }
-func addAttendance2(data map[columnKey]map[eventTypeAbbr]int, key columnKey, event *model.Event, stats string) {
+func addAttendance2(
+	data map[columnKey]map[eventTypeAbbr]int, key columnKey, event *model.Event, etabbr eventTypeAbbr, stats string,
+) {
 	if data[key] == nil {
 		data[key] = make(map[eventTypeAbbr]int)
 	}
 	if stats == "hours" {
-		data[key][eventTypeAbbrs[event.Type]] += int(2 * event.Hours())
+		data[key][etabbr] += int(2 * event.Hours())
 		data[key]["ALL"] += int(2 * event.Hours())
 	} else {
-		data[key][eventTypeAbbrs[event.Type]]++
+		data[key][etabbr]++
 		data[key]["ALL"]++
 	}
 }
@@ -186,7 +206,7 @@ func renderAttendance(
 		}
 		etypes = make([]eventTypeAbbr, 0, len(etmap))
 		for _, et := range model.AllEventTypes {
-			if eta := eventTypeAbbrs[et]; etmap[eta] {
+			if eta := getEventTypeAbbr(et); etmap[eta] {
 				etypes = append(etypes, eta)
 			}
 		}

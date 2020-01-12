@@ -39,8 +39,8 @@ form#event-edit(@submit.prevent="onSubmit")
     b-textarea#event-details(v-model="event.details" rows="3")
     b-form-text
       | This may contain HTML &lt;a&gt; tags for links, but no other tags.
-  b-form-group(label="Event type:" :state="typeError ? false : null" :invalid-feedback="typeError")
-    b-form-radio-group(stacked :options="eventTypes" v-model="event.type")
+  b-form-group(label="Event has these types:" :state="typeError ? false : null" :invalid-feedback="typeError")
+    b-form-checkbox-group(stacked :options="types" v-model="event.types")
   b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
     b-form-checkbox-group(stacked :options="roles" text-field="name" value-field="id" v-model="event.roles")
   div.mt-3
@@ -50,24 +50,14 @@ form#event-edit(@submit.prevent="onSubmit")
 </template>
 
 <script>
-const eventTypes = {
-  'Train': 'Training',
-  'Drill': 'Drill',
-  'Civic': 'Civic Event',
-  'Incid': 'Incident',
-  'CE': 'Continuing Ed',
-  'Meeting': 'Meeting',
-  'Class': 'Class',
-}
-
 export default {
   props: {
     event: null,
     roles: null,
     venues: null,
+    types: null,
   },
   data: () => ({
-    eventTypes,
     submitted: false,
     dateError: null,
     timeError: null,
@@ -90,7 +80,7 @@ export default {
     'event.venue.address': 'validate',
     'event.venue.city': 'validate',
     'event.venue.url': 'validate',
-    'event.type': 'validate',
+    'event.types': 'validate',
     'event.roles': 'validate',
     'event.venue.id'() {
       if (this.event.venue.id === 'NEW') {
@@ -131,7 +121,7 @@ export default {
         body.append('venueURL', this.event.venue.url)
       }
       body.append('details', this.event.details)
-      body.append('type', this.event.type)
+      this.event.types.forEach(t => { body.append('type', t) })
       this.event.roles.forEach(r => { body.append('role', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
@@ -182,8 +172,8 @@ export default {
           this.venueURLError = null
       } else
         this.venueNameError = this.venueAddressError = this.venueCityError = this.venueURLError = null
-      if (!eventTypes[this.event.type])
-        this.typeError = 'The event type is required.'
+      if (!this.event.types.length)
+        this.typeError = 'At least one event type is required.'
       else
         this.typeError = null
       if (!this.event.roles.length)

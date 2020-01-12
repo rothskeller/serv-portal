@@ -76,7 +76,7 @@ func (in Event) ToAudit(out *jwriter.Writer) {
 	out.RawString(`,"details":`)
 	out.String(in.Details)
 	out.RawString(`,"type":`)
-	out.String(string(in.Type))
+	out.Uint16(uint16(in.Type))
 	if in.SccAresID != "" {
 		out.RawString(`,"sccAresID":`)
 		out.String(in.SccAresID)
