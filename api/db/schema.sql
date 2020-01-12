@@ -74,16 +74,18 @@ CREATE TABLE venue (
 -- The event table tracks all SERV events at which volunteer attendance is
 -- tracked.
 CREATE TABLE event (
-    id      integer PRIMARY KEY, -- autoincrement
-    name    text    NOT NULL,
-    date    text    NOT NULL,
-    start   text    NOT NULL,
-    end     text    NOT NULL,
-    venue   integer REFERENCES venue ON DELETE SET NULL,
-    details text    NOT NULL,
-    type    text    NOT NULL,
+    id          integer PRIMARY KEY, -- autoincrement
+    name        text    NOT NULL,
+    date        text    NOT NULL,
+    start       text    NOT NULL,
+    end         text    NOT NULL,
+    venue       integer REFERENCES venue ON DELETE SET NULL,
+    details     text    NOT NULL,
+    type        text    NOT NULL,
+    scc_ares_id text    UNIQUE,
     UNIQUE (date, name)
 );
+CREATE INDEX event_venue_index ON event (venue);
 
 -- The event_role table tracks which roles are invited to which events.
 CREATE TABLE event_role (
@@ -100,3 +102,32 @@ CREATE TABLE attendance (
     PRIMARY KEY (event, person)
 ) WITHOUT ROWID;
 CREATE INDEX attendance_person_index ON attendance (person);
+
+-- The scc_ares_event_name table allows renaming and deleting of events imported
+-- from the scc-ares-races.org site.  The event name from that site is looked up
+-- in the 'scc' column.  Those whose 'serv' column is empty are not imported.
+-- Those whose 'serv' column is non-empty are renamed accordingly.  Those whose
+-- name is not found in this table are imported unchanged.
+CREATE TABLE scc_ares_event_name (
+    scc  text PRIMARY KEY,
+    serv text NOT NULL
+);
+
+-- The scc_ares_event_location table maps locations of events imported from the
+-- scc-ares-races.org site into venues in our database.  Any location in their
+-- database which doesn't have an entry here is mapped according to the entry
+-- here for scc='' (which must exist).
+CREATE TABLE scc_ares_event_location (
+    scc  text    PRIMARY KEY,
+    serv integer REFERENCES venue ON DELETE CASCADE
+);
+CREATE INDEX scc_ares_event_location_serv_index ON scc_ares_event_location (serv);
+
+-- The scc_ares_event_type table maps types of events imported from the
+-- scc-ares-races.org site into our event types.  Any event type in their
+-- database which doesn't have an entry here is mapped according to the entry
+-- here for scc='' (which must exist).
+CREATE TABLE scc_ares_event_type (
+    scc  text PRIMARY KEY,
+    serv text NOT NULL
+);

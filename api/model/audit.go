@@ -77,6 +77,10 @@ func (in Event) ToAudit(out *jwriter.Writer) {
 	out.String(in.Details)
 	out.RawString(`,"type":`)
 	out.String(string(in.Type))
+	if in.SccAresID != "" {
+		out.RawString(`,"sccAresID":`)
+		out.String(in.SccAresID)
+	}
 	out.RawString(`,"roles":[`)
 	for i, t := range in.Roles {
 		if i != 0 {

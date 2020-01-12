@@ -68,6 +68,13 @@ func (tx *Tx) FetchRoles() []*model.Role {
 func (tx *Tx) UnusedRoleID() (roleID model.RoleID) {
 	for roleID = 1; tx.roles[roleID] != nil; roleID++ {
 	}
+	// Since this may be a re-used ID, we need to make sure none of the
+	// other roles have this in their map.  This will also enlarge their
+	// maps for the new role if needed.
+	for _, r := range tx.roles {
+		r.PrivMap.Set(roleID, 0)
+		r.TransPrivs.Set(roleID, 0)
+	}
 	return roleID
 }
 
