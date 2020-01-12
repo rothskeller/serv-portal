@@ -6,26 +6,15 @@ Event displays the event viewing/editing page.
 Page(:title="title" menuItem="events" noPadding)
   div.mt-3(v-if="loading")
     b-spinner(small)
-  b-card#event-card(v-else-if="canEdit && canAttendance" no-body)
+  b-card#event-card(v-else-if="tabs" no-body)
     b-tabs(card)
-      b-tab.event-tab-pane(title="Details" no-body)
+      b-tab.event-tab-pane(v-if="!newe" title="Details" no-body)
         EventView(:event="event")
-      b-tab.event-tab-pane(title="Edit" no-body)
+      b-tab.event-tab-pane(v-if="canEdit" title="Edit" no-body)
         EventEdit(:event="event" :roles="roles" :venues="venues" :types="types")
-      b-tab.event-tab-pane(title="Attendance" no-body)
+      b-tab.event-tab-pane(v-if="canAttendance" title="Attendance" no-body)
         EventAttendance(:event="event" :people="people")
-  b-card#event-card(v-else-if="!canEdit && canAttendance" no-body)
-    b-tabs(card)
-      b-tab.event-tab-pane(title="Details" no-body)
-        EventView(:event="event")
-      b-tab.event-tab-pane(title="Attendance" no-body)
-        EventAttendance(:event="event" :people="people")
-  b-card#event-card(v-else-if="canEdit" no-body)
-    b-tabs(card)
-      b-tab.event-tab-pane(title="Details" no-body)
-        EventView(:event="event")
-      b-tab.event-tab-pane(title="Edit" no-body)
-        EventEdit(:event="event" :roles="roles" :venues="venues" :types="types")
+  EventEdit(v-else-if="canEdit" :event="event" :roles="roles" :venues="venues" :types="types")
   EventView(v-else :event="event")
 </template>
 
@@ -42,6 +31,12 @@ export default {
     venues: null,
     people: null,
   }),
+  computed: {
+    newe() { return this.$route.params.id === 'NEW' },
+    tabs() {
+      return (this.newe ? 0 : 1) + (this.canEdit ? 1 : 0) + (this.canAttendance ? 1 : 0) > 1
+    },
+  },
   async created() {
     this.loading = true
     const data = (await this.$axios.get(`/api/events/${this.$route.params.id}`)).data

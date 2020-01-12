@@ -33,6 +33,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		if !auth.CanCreateEvents(r) {
 			return util.Forbidden
 		}
+		event = new(model.Event)
 		canEdit = true
 	} else {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
@@ -48,71 +49,67 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.Bool(canEdit)
 	out.RawString(`,"canAttendance":`)
 	out.Bool(canAttendance)
-	if event != nil {
-		out.RawString(`,"event":{"id":`)
-		out.Int(int(event.ID))
+	out.RawString(`,"event":{"id":`)
+	out.Int(int(event.ID))
+	out.RawString(`,"name":`)
+	out.String(event.Name)
+	out.RawString(`,"date":`)
+	out.String(event.Date)
+	out.RawString(`,"start":`)
+	out.String(event.Start)
+	out.RawString(`,"end":`)
+	out.String(event.End)
+	out.RawString(`,"venue":`)
+	if event.Venue != nil {
+		out.RawString(`{"id":`)
+		out.Int(int(event.Venue.ID))
 		out.RawString(`,"name":`)
-		out.String(event.Name)
-		out.RawString(`,"date":`)
-		out.String(event.Date)
-		out.RawString(`,"start":`)
-		out.String(event.Start)
-		out.RawString(`,"end":`)
-		out.String(event.End)
-		out.RawString(`,"venue":`)
-		if event.Venue != nil {
-			out.RawString(`{"id":`)
-			out.Int(int(event.Venue.ID))
-			out.RawString(`,"name":`)
-			out.String(event.Venue.Name)
-			out.RawString(`,"address":`)
-			out.String(event.Venue.Address)
-			out.RawString(`,"city":`)
-			out.String(event.Venue.City)
-			out.RawString(`,"url":`)
-			out.String(event.Venue.URL)
-			out.RawByte('}')
-		} else {
-			out.RawString(`{"id":0,"name":"","address":"","city":"","url":""}`)
-		}
-		out.RawString(`,"details":`)
-		out.String(event.Details)
-		out.RawString(`,"types":[`)
-		first := true
-		for _, et := range model.AllEventTypes {
-			if event.Type&et != 0 {
-				if first {
-					first = false
-				} else {
-					out.RawByte(',')
-				}
-				out.String(model.EventTypeNames[et])
-			}
-		}
-		out.RawString(`],"roles":[`)
-		for i, r := range event.Roles {
-			if i != 0 {
+		out.String(event.Venue.Name)
+		out.RawString(`,"address":`)
+		out.String(event.Venue.Address)
+		out.RawString(`,"city":`)
+		out.String(event.Venue.City)
+		out.RawString(`,"url":`)
+		out.String(event.Venue.URL)
+		out.RawByte('}')
+	} else {
+		out.RawString(`{"id":0,"name":"","address":"","city":"","url":""}`)
+	}
+	out.RawString(`,"details":`)
+	out.String(event.Details)
+	out.RawString(`,"types":[`)
+	first := true
+	for _, et := range model.AllEventTypes {
+		if event.Type&et != 0 {
+			if first {
+				first = false
+			} else {
 				out.RawByte(',')
 			}
-			out.Int(int(r.ID))
-			eventGroups |= r.SERVGroup
+			out.String(model.EventTypeNames[et])
 		}
-		out.RawString(`],"servGroups":[`)
-		first = true
-		for _, g := range model.AllSERVGroups {
-			if eventGroups&g != 0 {
-				if first {
-					first = false
-				} else {
-					out.RawByte(',')
-				}
-				out.String(servGroupNames[g])
-			}
-		}
-		out.RawString(`]}`)
-	} else {
-		out.RawString(`,"event":{"id":0,"name":"","date":"","start":"","end":"","venue":null,"details":"","type":"","roles":[]}`)
 	}
+	out.RawString(`],"roles":[`)
+	for i, r := range event.Roles {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.Int(int(r.ID))
+		eventGroups |= r.SERVGroup
+	}
+	out.RawString(`],"servGroups":[`)
+	first = true
+	for _, g := range model.AllSERVGroups {
+		if eventGroups&g != 0 {
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(servGroupNames[g])
+		}
+	}
+	out.RawString(`]}`)
 	if canEdit {
 		out.RawString(`,"types":[`)
 		for i, et := range model.AllEventTypes {
@@ -208,18 +205,17 @@ func PostEvent(r *util.Request, idstr string) error {
 	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
 		return errors.New("missing name")
 	}
-	event.Date = r.FormValue("date")
-	if event.Date == "" {
+	if event.Date = r.FormValue("date"); event.Date == "" {
 		return errors.New("missing date")
 	} else if !dateRE.MatchString(event.Date) {
 		return errors.New("invalid date (YYYY-MM-DD)")
 	}
-	if event.Start == "" {
+	if event.Start = r.FormValue("start"); event.Start == "" {
 		return errors.New("missing start")
 	} else if !timeRE.MatchString(event.Start) {
 		return errors.New("invalid start (HH:MM)")
 	}
-	if event.End == "" {
+	if event.End = r.FormValue("end"); event.End == "" {
 		return errors.New("missing end")
 	} else if !timeRE.MatchString(event.End) {
 		return errors.New("invalid end (HH:MM)")

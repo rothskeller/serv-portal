@@ -58,7 +58,7 @@ func CanManageEvent(r *util.Request, event *model.Event) bool {
 // CanManageEvents returns whether the caller is allowed to edit or delete
 // events to which the specified Role is invited.
 func CanManageEvents(r *util.Request, role *model.Role) bool {
-	if r.Person == nil || role.Individual {
+	if r.Person == nil {
 		return false
 	}
 	return r.Person.PrivMap.Has(role.ID, model.PrivManageEvents)
@@ -157,7 +157,7 @@ func RolesCanManageEvents(r *util.Request) (roles []*model.Role) {
 		return nil
 	}
 	for _, role := range r.Tx.FetchRoles() {
-		if !role.Individual && r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
+		if r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
 			roles = append(roles, role)
 		}
 	}

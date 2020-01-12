@@ -61,7 +61,7 @@ func GetPeople(r *util.Request) error {
 	out.RawString(`],"viewableRoles":[`)
 	first = true
 	for _, role := range r.Tx.FetchRoles() {
-		if role.Individual || !auth.CanViewRole(r, role) {
+		if !auth.CanViewRole(r, role) {
 			continue
 		}
 		if first {
