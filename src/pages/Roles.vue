@@ -9,10 +9,8 @@ Page(title="Roles" subtitle="Roles" menuItem="roles")
   table#roles-table(v-else)
     tr
       th Role
-      th SERV Groups
     tr(v-for="role in roles" :key="role.id")
       td: b-link(:to="`/roles/${role.id}`" v-text="role.name")
-      td(v-text="role.servGroups.join(', ')")
   div.mt-3
     b-btn(to="/roles/NEW") Add Role
 </template>

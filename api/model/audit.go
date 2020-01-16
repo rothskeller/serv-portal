@@ -151,8 +151,6 @@ func (in Role) ToAudit(out *jwriter.Writer) {
 	out.String(in.Name)
 	out.RawString(`,"memberLabel":`)
 	out.String(in.MemberLabel)
-	out.RawString(`,"servGroup":`)
-	out.Uint8(uint8(in.SERVGroup))
 	out.RawString(`,"implyOnly":`)
 	out.Bool(in.ImplyOnly)
 	out.RawString(`,"individual":`)

@@ -19,7 +19,7 @@ EventsList displays the list of events.
     tr(v-for="e in events" :key="e.id")
       td(v-text="`${e.date} ${e.start}`")
       td
-        SERVGroupDots.mr-1(:groups="e.servGroups")
+        EventTypeDots.mr-1(:types="e.types")
         router-link(:to="`/events/${e.id}`" v-text="e.name")
       td
         a(v-if="e.venue && e.venue.url" target="_blank" :href="e.venue.url" v-text="e.venue.name")
@@ -33,7 +33,7 @@ import range from 'lodash/range'
 export default {
   data: () => ({
     year: null,
-    years: range(2019, new Date().getFullYear() + 2),
+    years: range(2013, new Date().getFullYear() + 2),
     events: null,
     loading: true,
   }),

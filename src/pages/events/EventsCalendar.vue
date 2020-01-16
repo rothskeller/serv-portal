@@ -22,15 +22,15 @@ EventsCalendar displays the events in a calendar form.
     .events-calendar-day(v-for="date in dates" :class="date ? null : 'empty'" @mouseover="onHoverDate(date)" @mouseout="onNoHoverDate" @click="onClickDate(date)")
       div(v-text="date ? date.date() : null")
       .events-calendar-day-dots
-        SERVGroupDots(:groups="groupsOn(date)")
+        EventTypeDots(:types="typesOn(date)")
       .events-calendar-day-event(v-for="event in eventsOn(date)" :key="event.id")
-        SERVGroupDots.mr-1(:groups="event.servGroups")
+        EventTypeDots.mr-1(:types="event.types")
         span(v-if="$store.state.touch" v-text="event.name")
         b-link(v-else :to="`/events/${event.id}`" :title="event.name" v-text="event.name")
   #events-calendar-footer(v-if="date")
     #events-calendar-date(v-text="date.format('dddd, MMMM D, YYYY')")
     .events-calendar-event(v-for="e in eventsOn(date)" :key="e.id")
-      SERVGroupDots.mr-1(:groups="e.servGroups")
+      EventTypeDots.mr-1(:types="e.types")
       b-link(:to="`/events/${e.id}`" v-text="e.name")
     .events-calendar-event(v-if="!eventsOn(date).length") No events scheduled.
 </template>
@@ -54,10 +54,10 @@ export default {
     eventsOn(date) {
       return date ? this.events[date.format('YYYY-MM-DD')] || [] : []
     },
-    groupsOn(date) {
-      const groups = {}
-      this.eventsOn(date).forEach(e => { e.servGroups.forEach(g => { groups[g] = true }) })
-      return Object.keys(groups)
+    typesOn(date) {
+      const types = {}
+      this.eventsOn(date).forEach(e => { e.types.forEach(t => { types[t] = true }) })
+      return Object.keys(types)
     },
     async newMonth() {
       if (!this.year || this.year != this.month.year()) {

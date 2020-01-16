@@ -6,7 +6,6 @@ CREATE TABLE role (
     tag          text    UNIQUE,
     name         text    NOT NULL,
     member_label text    NOT NULL,
-    serv_group   integer NOT NULL,
     imply_only   boolean NOT NULL,
     individual   boolean NOT NULL,
     privileges   blob    NOT NULL
@@ -36,7 +35,7 @@ CREATE TABLE person (
     id              integer PRIMARY KEY, -- autoincrement
     first_name      text    NOT NULL,
     last_name       text    NOT NULL,
-    email           text    NOT NULL UNIQUE,
+    email           text    UNIQUE,
     phone           text    NOT NULL,
     password        text    NOT NULL,
     bad_login_count integer NOT NULL DEFAULT 0,

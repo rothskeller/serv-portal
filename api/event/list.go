@@ -57,12 +57,17 @@ func GetEvents(r *util.Request) error {
 		} else {
 			out.RawString(`null`)
 		}
-		out.RawString(`,"servGroups":[`)
-		for i, g := range servGroupsForEvent(e) {
-			if i != 0 {
-				out.RawByte(',')
+		out.RawString(`,"types":[`)
+		innerFirst := true
+		for _, t := range model.AllEventTypes {
+			if e.Type&t != 0 {
+				if innerFirst {
+					innerFirst = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(model.EventTypeNames[t])
 			}
-			out.String(g)
 		}
 		out.RawString(`],"roles":[`)
 		for i, r := range e.Roles {
@@ -77,28 +82,4 @@ func GetEvents(r *util.Request) error {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
-}
-
-func servGroupsForEvent(e *model.Event) (groups []string) {
-	var mask model.SERVGroup
-	for _, role := range e.Roles {
-		mask |= role.SERVGroup
-	}
-	for _, g := range model.AllSERVGroups {
-		if mask&g != 0 {
-			groups = append(groups, servGroupNames[g])
-		}
-	}
-	return groups
-}
-
-var servGroupNames = map[model.SERVGroup]string{
-	model.GroupSERVAdmin:      "Admin",
-	model.GroupCERTDeployment: "CERT-D",
-	model.GroupCERTTraining:   "CERT-T",
-	model.GroupListos:         "Listos",
-	model.GroupOutreach:       "Outreach",
-	model.GroupPEP:            "PEP",
-	model.GroupSARES:          "SARES",
-	model.GroupSNAP:           "SNAP",
 }

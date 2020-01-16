@@ -5,7 +5,7 @@ Event displays the event viewing/editing page.
 <template lang="pug">
 #event-view
   #event-view-name(v-text="event.name")
-  #event-view-types-groups(v-if="typesGroups" v-text="typesGroups")
+  #event-view-types(v-if="types" v-text="types")
   #event-view-date-time(v-text="dateTimeFmt")
   #event-view-venue
     #event-view-venue-name(v-text="event.venue ? event.venue.name : 'Location TBD'")
@@ -36,12 +36,8 @@ export default {
       else
         return `${date.format('dddd, MMMM D, YYYY')}\n${start.format('h:mm')} to ${end.format('h:mma')}`
     },
-    typesGroups() {
-      if (this.event.types.length && this.event.servGroups.length)
-        return `${this.event.types.join(', ')} for ${this.event.servGroups.join(', ')}`
-      else if (this.event.servGroups.length)
-        return this.event.servGroups.join(', ')
-      else if (this.event.types.length)
+    types() {
+      if (this.event.types.length)
         return this.event.types.join(', ')
       else
         return null
@@ -57,7 +53,7 @@ export default {
   font-weight bold
   font-size 1.25rem
   line-height 1.2
-#event-view-types-groups
+#event-view-types
   color #888
 #event-view-date-time
   margin-top 0.75rem

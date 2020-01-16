@@ -147,31 +147,10 @@ type Role struct {
 	Tag         RoleTag
 	Name        string
 	MemberLabel string
-	SERVGroup   SERVGroup
 	ImplyOnly   bool
 	Individual  bool
 	PrivMap     PrivilegeMap // persistent, non-transitive
 	TransPrivs  PrivilegeMap // transient, transitive
-}
-
-// A SERVGroup is a bitmask identifying one or more of the main SERV groups.
-type SERVGroup uint8
-
-// Values for SERVGroup.
-const (
-	GroupSERVAdmin SERVGroup = 1 << iota
-	GroupCERTDeployment
-	GroupCERTTraining
-	GroupListos
-	GroupOutreach
-	GroupPEP
-	GroupSARES
-	GroupSNAP
-)
-
-// AllSERVGroups is the list of all SERV groups.
-var AllSERVGroups = []SERVGroup{
-	GroupSERVAdmin, GroupCERTDeployment, GroupCERTTraining, GroupListos, GroupOutreach, GroupPEP, GroupSARES, GroupSNAP,
 }
 
 // A SessionToken is a string that uniquely identifies a login session.

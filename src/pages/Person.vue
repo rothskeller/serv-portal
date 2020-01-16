@@ -130,7 +130,7 @@ export default {
       else
         this.lastNameError = null
       if (!this.person.email)
-        this.emailError = 'An email address is required.'
+        this.emailError = null
       else if (!this.person.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
         this.emailError = 'This is not a valid email address.'
       else if (this.person.email === this.duplicateEmail)

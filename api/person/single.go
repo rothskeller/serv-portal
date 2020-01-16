@@ -144,7 +144,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 		}
 		if person.Email = strings.TrimSpace(r.FormValue("email")); person.Email == "" {
-			return errors.New("missing email")
+			// OK
 		} else if !emailRE.MatchString(person.Email) {
 			return errors.New("invalid email")
 		} else if emailInUse(r, person) {

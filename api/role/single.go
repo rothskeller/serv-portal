@@ -47,32 +47,13 @@ func GetRole(r *util.Request, idstr string) error {
 	out.String(role.Name)
 	out.RawString(`,"memberLabel":`)
 	out.String(role.MemberLabel)
-	out.RawString(`,"servGroups":[`)
-	first := true
-	for _, g := range model.AllSERVGroups {
-		if role.SERVGroup&g != 0 {
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.String(servGroupNames[g])
-		}
-	}
-	out.RawString(`],"implyOnly":`)
+	out.RawString(`,"implyOnly":`)
 	out.Bool(role.ImplyOnly)
 	out.RawString(`,"individual":`)
 	out.Bool(role.Individual)
 	out.RawString(`},"canDelete":`)
 	out.Bool(role.Tag == "")
-	out.RawString(`,"servGroups":[`)
-	for i, g := range model.AllSERVGroups {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.String(servGroupNames[g])
-	}
-	out.RawString(`],"privs":`)
+	out.RawString(`,"privs":`)
 	emitRolePrivs(&out, role, allRoles, forced)
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
@@ -153,14 +134,6 @@ func PostRole(r *util.Request, idstr string) error {
 		}
 	}
 	role.MemberLabel = strings.TrimSpace(r.FormValue("memberLabel"))
-	role.SERVGroup = 0
-	for _, g := range model.AllSERVGroups {
-		for _, v := range r.Form["servGroup"] {
-			if v == servGroupNames[g] {
-				role.SERVGroup |= g
-			}
-		}
-	}
 	role.ImplyOnly = r.FormValue("implyOnly") == "true"
 	role.Individual = r.FormValue("individual") == "true"
 	readPrivilegesFromRequest(r, role, allRoles)

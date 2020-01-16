@@ -15,8 +15,6 @@ Page(:title="title" :subtitle="subtitle" menuItem="roles")
       div
         b-checkbox(v-model="role.implyOnly") Role can only be implied, not assigned
         b-checkbox(v-model="role.individual") Role can only be held by one person
-    b-form-group(label="This role is associated with these SERV groups:")
-      b-checkbox-group(stacked v-model="role.servGroups" :options="servGroups")
     b-form-group(label="This role has the following privileges on other roles:")
       table#role-aprivs
         tr
@@ -58,7 +56,6 @@ export default {
     loading: false,
     origName: null,
     role: null,
-    servGroups: null,
     privs: null,
     nameError: null,
     duplicateName: null,
@@ -69,7 +66,6 @@ export default {
     this.loading = true
     const data = (await this.$axios.get(`/api/roles/${this.$route.params.id}`)).data
     this.role = data.role
-    this.servGroups = data.servGroups
     this.privs = data.privs
     this.origName = this.role.name
     this.loading = false
@@ -119,7 +115,6 @@ export default {
       const body = new FormData
       body.append('name', this.role.name)
       body.append('memberLabel', this.role.memberLabel)
-      this.role.servGroups.forEach(g => { body.append('servGroup', g) })
       body.append('implyOnly', this.role.implyOnly)
       body.append('individual', this.role.individual)
       this.privs.forEach(r => {

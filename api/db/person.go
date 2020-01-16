@@ -32,7 +32,7 @@ func (tx *Tx) fetchPerson(where string, args ...interface{}) (p *model.Person) {
 		err  error
 	)
 	p = new(model.Person)
-	err = tx.tx.QueryRow(`SELECT p.id, p.first_name, p.last_name, p.email, p.phone, p.password, p.bad_login_count, p.bad_login_time, p.pwreset_token, p.pwreset_time FROM person p `+where, args...).Scan(&p.ID, &p.FirstName, &p.LastName, &p.Email, &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime))
+	err = tx.tx.QueryRow(`SELECT p.id, p.first_name, p.last_name, p.email, p.phone, p.password, p.bad_login_count, p.bad_login_time, p.pwreset_token, p.pwreset_time FROM person p `+where, args...).Scan(&p.ID, &p.FirstName, &p.LastName, (*IDStr)(&p.Email), &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime))
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -63,7 +63,7 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 	panicOnError(err)
 	for rows.Next() {
 		var p model.Person
-		panicOnError(rows.Scan(&p.ID, &p.FirstName, &p.LastName, &p.Email, &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime)))
+		panicOnError(rows.Scan(&p.ID, &p.FirstName, &p.LastName, (*IDStr)(&p.Email), &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime)))
 		pmap[p.ID] = &p
 		people = append(people, &p)
 	}
@@ -105,11 +105,11 @@ func (tx *Tx) SavePerson(p *model.Person) {
 
 	if p.ID == 0 {
 		var result sql.Result
-		result, err = tx.tx.Exec(`INSERT INTO person (first_name, last_name, email, phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time) VALUES (?,?,?,?,?,?,?,?,?)`, p.FirstName, p.LastName, p.Email, p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime))
+		result, err = tx.tx.Exec(`INSERT INTO person (first_name, last_name, email, phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time) VALUES (?,?,?,?,?,?,?,?,?)`, p.FirstName, p.LastName, IDStr(p.Email), p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime))
 		panicOnError(err)
 		p.ID = model.PersonID(lastInsertID(result))
 	} else {
-		panicOnNoRows(tx.tx.Exec(`UPDATE person SET first_name=?, last_name=?, email=?, phone=?, password=?, bad_login_count=?, bad_login_time=?, pwreset_token=?, pwreset_time=? WHERE id=?`, p.FirstName, p.LastName, p.Email, p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime), p.ID))
+		panicOnNoRows(tx.tx.Exec(`UPDATE person SET first_name=?, last_name=?, email=?, phone=?, password=?, bad_login_count=?, bad_login_time=?, pwreset_token=?, pwreset_time=? WHERE id=?`, p.FirstName, p.LastName, IDStr(p.Email), p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime), p.ID))
 		panicOnExecError(tx.tx.Exec(`DELETE FROM person_role WHERE person=?`, p.ID))
 	}
 	for _, role := range p.Roles {
