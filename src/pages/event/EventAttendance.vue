@@ -21,7 +21,7 @@ export default {
   mounted() {
     const attendees = []
     this.people.forEach(p => {
-      this.$set(p, 'name', `${p.lastName}, ${p.firstName}`)
+      this.$set(p, 'name', `${p.lastName}, ${p.nickname}`)
       if (p.attended) attendees.push(p.id)
     })
     this.attendees = attendees

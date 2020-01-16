@@ -35,13 +35,16 @@ CREATE TABLE person (
     id              integer PRIMARY KEY, -- autoincrement
     first_name      text    NOT NULL,
     last_name       text    NOT NULL,
+    nickname        text    NOT NULL,
+    suffix          text    NOT NULL,
     email           text    UNIQUE,
     phone           text    NOT NULL,
     password        text    NOT NULL,
     bad_login_count integer NOT NULL DEFAULT 0,
     bad_login_time  text    NOT NULL DEFAULT '', -- RFC3339
     pwreset_token   text    UNIQUE,
-    pwreset_time    text    NOT NULL DEFAULT '' -- RFC3339
+    pwreset_time    text    NOT NULL DEFAULT '', -- RFC3339
+    UNIQUE (last_name, first_name)
 );
 
 -- The session table tracks all logged-in sessions.

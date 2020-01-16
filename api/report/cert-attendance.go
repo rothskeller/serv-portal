@@ -220,7 +220,7 @@ func renderAttendance(
 	}
 	report.Body = make([][]string, len(people))
 	for i, p := range people {
-		report.Body[i] = []string{fmt.Sprintf("%s, %s", p.LastName, p.FirstName)}
+		report.Body[i] = []string{fmt.Sprintf("%s, %s", p.LastName, p.Nickname)}
 	}
 	report.Footer = [][]string{{"TOTALS"}}
 	// Create and fill the non-total columns.

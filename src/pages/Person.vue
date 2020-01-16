@@ -9,8 +9,12 @@ Page(:title="title" :subtitle="subtitle" menuItem="people")
   form.mt-3(v-else @submit.prevent="onSubmit")
     b-form-group(label="First name" label-for="person-firstName" label-cols-sm="auto" label-class="person-label" :state="firstNameError ? false : null" :invalid-feedback="firstNameError")
       b-input#person-firstName(autofocus :plaintext="!canEditInfo" :state="firstNameError ? false : null" trim v-model="person.firstName")
+    b-form-group(label="Nickname" label-for="person-nickname" label-cols-sm="auto" label-class="person-label" :state="nicknameError ? false : null" :invalid-feedback="nicknameError")
+      b-input#person-nickname(:plaintext="!canEditInfo" :state="nicknameError ? false : null" trim v-model="person.nickname")
     b-form-group(label="Last name" label-for="person-lastName" label-cols-sm="auto" label-class="person-label" :state="lastNameError ? false : null" :invalid-feedback="lastNameError")
       b-input#person-lastName(:plaintext="!canEditInfo" :state="lastNameError ? false : null" trim v-model="person.lastName")
+    b-form-group(label="Suffix" label-for="person-suffix" label-cols-sm="auto" label-class="person-label")
+      b-input#person-suffix(:plaintext="!canEditInfo" trim v-model="person.suffix")
     b-form-group(label="Email address" label-for="person-email" label-cols-sm="auto" label-class="person-label" :state="emailError ? false : null" :invalid-feedback="emailError")
       b-input#person-email(:plaintext="!canEditInfo" :state="emailError ? false : null" trim v-model="person.email")
     b-form-group(label="Phone number" label-for="person-phone" label-cols-sm="auto" label-class="person-label" :state="phoneError ? false : null" :invalid-feedback="phoneError")
@@ -36,6 +40,7 @@ export default {
     canEditInfo: false,
     allowBadPassword: false,
     firstNameError: null,
+    nicknameError: null,
     lastNameError: null,
     duplicateName: null,
     emailError: null,
@@ -74,7 +79,7 @@ export default {
       return this.newp ? 'New Person' : 'Edit Person'
     },
     valid() {
-      return !this.firstNameError && !this.lastNameError && !this.emailError && !this.phoneError && !this.rolesError && this.password !== null
+      return !this.firstNameError && !this.nicknameError && !this.lastNameError && !this.emailError && !this.phoneError && !this.rolesError && this.password !== null
     },
   },
   async created() {
@@ -88,8 +93,12 @@ export default {
     this.loading = false
   },
   watch: {
-    'person.firstName': 'validate',
+    'person.firstName'(n, o) {
+      if (this.person.nickname === o) this.person.nickname = n
+      this.validate()
+    },
     'person.lastName': 'validate',
+    'person.nickname': 'validate',
     'person.email': 'validate',
     'person.phone': 'validate',
   },
@@ -102,7 +111,9 @@ export default {
       if (!this.valid) return
       const body = new FormData
       body.append('firstName', this.person.firstName)
+      body.append('nickname', this.person.nickname)
       body.append('lastName', this.person.lastName)
+      body.append('suffix', this.person.suffix)
       body.append('email', this.person.email)
       body.append('phone', this.person.phone)
       if (this.password) body.append('password', this.password)
@@ -123,6 +134,10 @@ export default {
         this.firstNameError = 'A first name is required.'
       else
         this.firstNameError = null
+      if (!this.person.nickname)
+        this.nicknameError = 'A nickname is required.  (It can be the same as the first name.)'
+      else
+        this.nicknameError = null
       if (!this.person.lastName)
         this.lastNameError = 'A last name is required.'
       else if (this.duplicateName && this.person.firstName == this.duplicateName.firstName && this.person.lastName == this.duplicateName.lastName)
@@ -153,6 +168,6 @@ export default {
 <style lang="stylus">
 .person-label
   width 9em
-#person-firstName, #person-lastName, #person-email, #person-phone
+#person-firstName, #person-nickname, #person-lastName, #person-suffix, #person-email, #person-phone
   max-width 20em
 </style>

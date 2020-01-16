@@ -84,6 +84,8 @@ type Person struct {
 	ID            PersonID
 	FirstName     string
 	LastName      string
+	Nickname      string
+	Suffix        string
 	Email         string
 	Phone         string
 	Password      string

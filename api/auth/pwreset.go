@@ -36,9 +36,9 @@ func PostPasswordReset(r *util.Request) error {
 	person.PWResetTime = time.Now()
 	r.Tx.SavePerson(person)
 	r.Tx.Commit()
-	fmt.Fprintf(&body, "From: %s\r\nTo: %s %s <%s>\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email.\r\n",
-		config.Get("fromEmail"), person.FirstName, person.LastName,
-		person.Email, person.FirstName, config.Get("siteURL"),
+	fmt.Fprintf(&body, "From: %s\r\nTo: %s %s%s <%s>\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email.\r\n",
+		config.Get("fromEmail"), person.FirstName, person.LastName, person.Suffix,
+		person.Email, person.Nickname, config.Get("siteURL"),
 		person.PWResetToken)
 	if err := smtp.SendMail(
 		config.Get("smtpServer"),

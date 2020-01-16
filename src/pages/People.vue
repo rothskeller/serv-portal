@@ -16,7 +16,7 @@ Page(title="People" menuItem="people")
       th Contact Info
       th Roles
     tr(v-for="p in people" :key="p.id")
-      td: router-link(:to="`/people/${p.id}`" v-text="`${p.lastName}, ${p.firstName}`")
+      td: router-link(:to="`/people/${p.id}`" v-text="`${p.lastName}, ${p.nickname}`")
       td
         div: a(:href="`mailto:${p.email}`" v-text="p.email")
         div(v-if="p.phone"): a(:href="`tel:${p.phone}`" v-text="p.phone")

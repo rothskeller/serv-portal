@@ -59,7 +59,7 @@ func StrongPassword(r *util.Request, p *model.Person, password string) bool {
 	hints = make([]string, 0, len(SERVPasswordHints)+4)
 	hints = append(hints, SERVPasswordHints...)
 	if p != nil {
-		hints = append(hints, p.FirstName, p.LastName, p.Email, p.Phone)
+		hints = append(hints, p.FirstName, p.LastName, p.Nickname, p.Suffix, p.Email, p.Phone)
 	}
 	return zxcvbn.PasswordStrength(password, hints).Score >= 3
 }

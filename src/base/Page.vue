@@ -16,7 +16,7 @@ Page is the basic framework of all pages on the site.
       #page-menu-welcome
         | Welcome
         br
-        b(v-text="$store.state.me.firstName")
+        b(v-text="$store.state.me.nickname")
         br
         b(v-text="$store.state.me.lastName")
       b-nav#page-nav(pills vertical)

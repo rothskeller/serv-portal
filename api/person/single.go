@@ -47,6 +47,10 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.String(person.FirstName)
 	out.RawString(`,"lastName":`)
 	out.String(person.LastName)
+	out.RawString(`,"nickname":`)
+	out.String(person.Nickname)
+	out.RawString(`,"suffix":`)
+	out.String(person.Suffix)
 	out.RawString(`,"email":`)
 	out.String(person.Email)
 	out.RawString(`,"phone":`)
@@ -133,6 +137,10 @@ func PostPerson(r *util.Request, idstr string) error {
 		if person.LastName = strings.TrimSpace(r.FormValue("lastName")); person.LastName == "" {
 			return errors.New("missing lastName")
 		}
+		if person.Nickname = strings.TrimSpace(r.FormValue("nickname")); person.Nickname == "" {
+			return errors.New("missing nickname")
+		}
+		person.Suffix = strings.TrimSpace(r.FormValue("suffix"))
 		for _, p := range r.Tx.FetchPeople() {
 			if p.ID == person.ID {
 				continue
