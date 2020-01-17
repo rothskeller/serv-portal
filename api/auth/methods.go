@@ -113,6 +113,9 @@ func CanViewPerson(r *util.Request, p *model.Person) bool {
 			return true
 		}
 	}
+	if IsWebmaster(r) {
+		return true // in case the target person has no roles
+	}
 	return false
 }
 
