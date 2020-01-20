@@ -153,13 +153,11 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 			os.Exit(1)
 		}
 	}
-	if person.Username == "" {
-		fmt.Fprintf(os.Stderr, "ERROR: username is required.\n")
-		os.Exit(1)
-	}
-	if p := tx.FetchPersonByUsername(person.Username); p != nil && p.ID != person.ID {
-		fmt.Fprintf(os.Stderr, "ERROR: another person has this username.\n")
-		os.Exit(1)
+	if person.Username != "" {
+		if p := tx.FetchPersonByUsername(person.Username); p != nil && p.ID != person.ID {
+			fmt.Fprintf(os.Stderr, "ERROR: another person has this username.\n")
+			os.Exit(1)
+		}
 	}
 	if person.FullName == "" {
 		fmt.Fprintf(os.Stderr, "ERROR: full_name is required.\n")
