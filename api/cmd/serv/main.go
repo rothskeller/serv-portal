@@ -212,6 +212,9 @@ func matchCommand(c command, args []string) (match bool, argslice []string, argm
 	if len(cmd) == 1 && cmd[0] == "list" && len(args) == 0 {
 		return true, argslice, argmap
 	}
+	if len(cmd) == 1 && cmd[0] == "=" && len(args) == 0 {
+		return true, argslice, argmap
+	}
 	if len(cmd) == 0 && len(args) == 0 {
 		return true, argslice, argmap
 	}
