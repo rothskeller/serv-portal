@@ -6,7 +6,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"rothskeller.net/serv/model"
 )
@@ -40,10 +39,10 @@ func addPersonAddress(args []string, fields map[string]string) {
 		os.Exit(1)
 	}
 	var address model.PersonAddress
-	address.Address = strings.ToLower(args[1])
-	address.City = strings.ToLower(args[2])
-	address.State = strings.ToLower(args[3])
-	address.Zip = strings.ToLower(args[4])
+	address.Address = args[1]
+	address.City = args[2]
+	address.State = args[3]
+	address.Zip = args[4]
 	applyPersonAddressFields(&address, fields)
 	for _, e := range people[0].Addresses {
 		if e.Address == address.Address && e.City == address.City && e.State == address.State && e.Zip == address.Zip {
