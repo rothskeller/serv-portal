@@ -11,21 +11,21 @@ import (
 // GetPeople handles GET /api/people requests.
 func GetPeople(r *util.Request) error {
 	var (
-		focus *model.Role
+		focus *model.Group
 		out   jwriter.Writer
 	)
-	focus = r.Tx.FetchRole(model.RoleID(util.ParseID(r.FormValue("role"))))
+	focus = r.Tx.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
 	out.RawString(`{"people":[`)
 	first := true
 	for _, p := range r.Tx.FetchPeople() {
 		if !auth.CanViewPerson(r, p) {
 			continue
 		}
-		if focus != nil && focus.Tag == model.RoleDisabled && auth.IsEnabled(r, p) {
+		if focus != nil && focus.Tag == model.GroupDisabled && auth.IsEnabled(r, p) {
 			// Special case because the lack of *any* role also
 			// means disabled.
 			continue
-		} else if focus != nil && !auth.HasRole(p, focus) {
+		} else if focus != nil && !auth.IsMember(p, focus) {
 			continue
 		}
 		if first {
@@ -35,37 +35,47 @@ func GetPeople(r *util.Request) error {
 		}
 		out.RawString(`{"id":`)
 		out.Int(int(p.ID))
-		out.RawString(`,"firstName":`)
-		out.String(p.FirstName)
-		out.RawString(`,"lastName":`)
-		out.String(p.LastName)
-		out.RawString(`,"nickname":`)
-		out.String(p.Nickname)
-		out.RawString(`,"suffix":`)
-		out.String(p.Suffix)
-		out.RawString(`,"email":`)
-		out.String(p.Email)
-		out.RawString(`,"phone":`)
-		out.String(p.Phone)
-		out.RawString(`,"roles":[`)
-		first := true
-		for _, r := range p.Roles {
-			if r.MemberLabel == "" {
-				continue
+		out.RawString(`,"sortName":`)
+		out.String(p.SortName)
+		out.RawString(`,"callSign":`)
+		out.String(p.CallSign)
+		if auth.CanViewContactInfo(r, p) {
+			out.RawString(`,"emails":[`)
+			for i, e := range p.Emails {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				e.MarshalEasyJSON(&out)
 			}
-			if first {
-				first = false
-			} else {
+			out.RawString(`],"addresses":[`)
+			for i, a := range p.Addresses {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				a.MarshalEasyJSON(&out)
+			}
+			out.RawString(`],"phones":[`)
+			for i, p := range p.Phones {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				p.MarshalEasyJSON(&out)
+			}
+			out.RawByte(']')
+		}
+		out.RawString(`,"roles":[`)
+		for i, role := range p.Roles {
+			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.MemberLabel)
+			out.String(r.Tx.FetchRole(role).Name)
 		}
 		out.RawString(`]}`)
 	}
-	out.RawString(`],"viewableRoles":[`)
+	out.RawString(`],"viewableGroups":[`)
 	first = true
-	for _, role := range r.Tx.FetchRoles() {
-		if !auth.CanViewRole(r, role) {
+	for _, group := range r.Tx.FetchGroups() {
+		if !auth.CanViewGroup(r, group) {
 			continue
 		}
 		if first {
@@ -74,9 +84,9 @@ func GetPeople(r *util.Request) error {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
-		out.Int(int(role.ID))
+		out.Int(int(group.ID))
 		out.RawString(`,"name":`)
-		out.String(role.Name)
+		out.String(group.Name)
 		out.RawByte('}')
 	}
 	out.RawString(`],"canAdd":`)

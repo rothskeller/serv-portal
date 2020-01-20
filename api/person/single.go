@@ -1,12 +1,10 @@
 package person
 
 import (
-	"errors"
-	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
-
 	"rothskeller.net/serv/auth"
 	"rothskeller.net/serv/model"
 	"rothskeller.net/serv/util"
@@ -17,8 +15,11 @@ func GetPerson(r *util.Request, idstr string) error {
 	var (
 		person         *model.Person
 		canEditInfo    bool
+		canViewContact bool
 		out            jwriter.Writer
-		individualHeld map[*model.Role]bool
+		roles          []*model.Role
+		attendmap      map[model.EventID]bool
+		attended       []*model.Event
 	)
 	if idstr == "NEW" {
 		if !auth.CanCreatePeople(r) {
@@ -26,6 +27,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		}
 		person = new(model.Person)
 		canEditInfo = true
+		canViewContact = true
 	} else {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
@@ -34,75 +36,97 @@ func GetPerson(r *util.Request, idstr string) error {
 			return util.Forbidden
 		}
 		canEditInfo = r.Person == person || auth.IsWebmaster(r)
+		canViewContact = canEditInfo || auth.CanViewContactInfo(r, person)
 	}
-	individualHeld = cacheIndividuallyHeldRoles(r, person)
-	r.Tx.Commit()
 	out.RawString(`{"canEditInfo":`)
 	out.Bool(canEditInfo)
 	out.RawString(`,"allowBadPassword":`)
 	out.Bool(auth.IsWebmaster(r))
 	out.RawString(`,"person":{"id":`)
 	out.Int(int(person.ID))
-	out.RawString(`,"firstName":`)
-	out.String(person.FirstName)
-	out.RawString(`,"lastName":`)
-	out.String(person.LastName)
+	out.RawString(`,"username":`)
+	out.String(person.Username)
+	out.RawString(`,"fullName":`)
+	out.String(person.FullName)
+	out.RawString(`,"sortName":`)
+	out.String(person.SortName)
 	out.RawString(`,"nickname":`)
 	out.String(person.Nickname)
-	out.RawString(`,"suffix":`)
-	out.String(person.Suffix)
-	out.RawString(`,"email":`)
-	out.String(person.Email)
-	out.RawString(`,"phone":`)
-	out.String(person.Phone)
-	out.RawString(`},"roles":[`)
-	first := true
-	for _, role := range r.Tx.FetchRoles() {
-		var enabled = true
-		if !auth.CanAssignRole(r, role) || individualHeld[role] || role.ImplyOnly {
-			enabled = false
-		}
-		if !enabled {
-			var found bool
-			for _, r := range person.Roles {
-				if role == r {
-					found = true
-				}
+	out.RawString(`,"callSign":`)
+	out.String(person.CallSign)
+	if canViewContact {
+		out.RawString(`,"emails":[`)
+		for i, e := range person.Emails {
+			if i != 0 {
+				out.RawByte(',')
 			}
-			if !found {
-				continue
-			}
+			e.MarshalEasyJSON(&out)
 		}
-		if first {
-			first = false
-		} else {
+		out.RawString(`],"addresses":[`)
+		for i, a := range person.Addresses {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			a.MarshalEasyJSON(&out)
+		}
+		out.RawString(`],"phones":[`)
+		for i, p := range person.Phones {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			p.MarshalEasyJSON(&out)
+		}
+		out.RawByte(']')
+	}
+	for _, role := range person.Roles {
+		roles = append(roles, r.Tx.FetchRole(role))
+	}
+	sort.Sort(model.RoleSort(roles))
+	out.RawString(`,"roles":[`)
+	for i, role := range roles {
+		if i != 0 {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
 		out.Int(int(role.ID))
 		out.RawString(`,"name":`)
 		out.String(role.Name)
-		out.RawString(`,"memberLabel":`)
-		out.String(role.MemberLabel)
-		out.RawString(`,"held":`)
-		out.Bool(auth.HasRole(person, role))
-		out.RawString(`,"enabled":`)
-		out.Bool(enabled)
 		out.RawByte('}')
 	}
-	out.RawString(`],"passwordHints":[`)
-	for i, h := range auth.SERVPasswordHints {
-		if i != 0 {
-			out.RawByte(',')
+	out.RawByte(']')
+	attendmap = r.Tx.FetchAttendanceByPerson(person)
+	for eid := range attendmap {
+		event := r.Tx.FetchEvent(eid)
+		if r.Person == person || auth.CanRecordAttendanceAtEvent(r, event) {
+			attended = append(attended, event)
 		}
-		out.String(h)
 	}
-	out.RawString(`]}`)
+	if len(attended) > 0 {
+		sort.Sort(model.EventSort(attended))
+		out.RawString(`,"attended":[`)
+		for i := len(attended) - 1; i >= 0; i-- {
+			if i != len(attended)-1 {
+				out.RawByte(',')
+			}
+			e := attended[i]
+			out.RawString(`{"id":`)
+			out.Int(int(e.ID))
+			out.RawString(`,"date":`)
+			out.String(e.Date)
+			out.RawString(`,"name":`)
+			out.String(e.Name)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
+	out.RawString(`}}`)
+	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
 }
 
+/*
 var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 // PostPerson handles POST /api/people/$id requests (where $id may be "NEW").
@@ -208,6 +232,7 @@ func PostPerson(r *util.Request, idstr string) error {
 	return nil
 }
 
+*/
 func cacheIndividuallyHeldRoles(r *util.Request, except *model.Person) (held map[*model.Role]bool) {
 	held = make(map[*model.Role]bool)
 	for _, p := range r.Tx.FetchPeople() {
@@ -218,7 +243,7 @@ func cacheIndividuallyHeldRoles(r *util.Request, except *model.Person) (held map
 			if !role.Individual {
 				continue
 			}
-			if p.PrivMap.Has(role.ID, model.PrivHoldsRole) {
+			if auth.HasRole(p, role) {
 				held[role] = true
 			}
 		}
@@ -226,12 +251,12 @@ func cacheIndividuallyHeldRoles(r *util.Request, except *model.Person) (held map
 	return held
 }
 
-func emailInUse(r *util.Request, person *model.Person) bool {
+func usernameInUse(r *util.Request, person *model.Person) bool {
 	for _, p := range r.Tx.FetchPeople() {
 		if p.ID == person.ID {
 			continue
 		}
-		if strings.EqualFold(p.Email, person.Email) {
+		if strings.EqualFold(p.Username, person.Username) {
 			return true
 		}
 	}

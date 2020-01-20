@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
-	"strings"
 
 	"github.com/trustelem/zxcvbn"
 	"golang.org/x/crypto/bcrypt"
@@ -41,9 +41,9 @@ func checkPassword(p *model.Person, password string) bool {
 
 	// Try the various password encryption schemes.
 	switch {
-	case strings.HasPrefix(p.Password, "$2a$"):
+	case bytes.HasPrefix(p.Password, []byte("$2a$")):
 		// bcrypt hash.
-		if bcrypt.CompareHashAndPassword([]byte(p.Password), encoded) != nil {
+		if bcrypt.CompareHashAndPassword(p.Password, encoded) != nil {
 			return false
 		}
 	default:
@@ -59,19 +59,27 @@ func StrongPassword(r *util.Request, p *model.Person, password string) bool {
 	hints = make([]string, 0, len(SERVPasswordHints)+4)
 	hints = append(hints, SERVPasswordHints...)
 	if p != nil {
-		hints = append(hints, p.FirstName, p.LastName, p.Nickname, p.Suffix, p.Email, p.Phone)
+		hints = append(hints, p.FullName, p.Nickname, p.CallSign, p.Username)
+		for _, a := range p.Addresses {
+			hints = append(hints, a.Address, a.City, a.State, a.Zip)
+		}
+		for _, e := range p.Emails {
+			hints = append(hints, e.Email)
+		}
+		for _, p := range p.Phones {
+			hints = append(hints, p.Phone)
+		}
 	}
 	return zxcvbn.PasswordStrength(password, hints).Score >= 3
 }
 
-// SetPassword sets the user's password.
-func SetPassword(r *util.Request, p *model.Person, password string) {
+// EncryptPassword encrypts a password.
+func EncryptPassword(password string) []byte {
 	var (
 		hashed  [32]byte
 		encoded []byte
 		err     error
 	)
-
 	// Prepare the password for bcrypt.  Raw bcrypt has a 72 character
 	// maximum (bad for pass-phrases) and doesn't allow NUL characters (bad
 	// for binary).  So we start by hashing and base64-encoding the result.
@@ -83,7 +91,12 @@ func SetPassword(r *util.Request, p *model.Person, password string) {
 	if newpassword, err = bcrypt.GenerateFromPassword(encoded, 0); err != nil {
 		panic(err)
 	}
-	p.Password, p.BadLoginCount, p.PWResetToken = string(newpassword), 0, ""
+	return newpassword
+}
+
+// SetPassword sets the user's password.
+func SetPassword(r *util.Request, p *model.Person, password string) {
+	p.Password, p.BadLoginCount, p.PWResetToken = EncryptPassword(password), 0, ""
 	if r.Session != nil {
 		r.Tx.DeleteSessionsForPerson(p, r.Session.Token)
 	} else {

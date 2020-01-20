@@ -14,12 +14,11 @@ _axios.interceptors.response.use(
   error => {
     if (
       (error.response && error.response.status === 401) &&
-      (router && router.currentRoute) &&
-      (!error.request.headers || !error.request.headers['X-SERV-Startup'])) {
-      if (!router.currentRoute.matched.some(record => record.meta.allow401)) {
-        store.commit('login', null)
-        router.replace({ path: '/login', query: { redirect: router.currentRoute.fullPath } })
-      }
+      (router && router.currentRoute && !router.currentRoute.matched.some(record => record.meta.allow401)) &&
+      (store.state.started)) {
+      store.commit('login', null)
+      console.log(error.response && error.response.status, router && router.currentRoute, error.request)
+      router.replace({ path: '/login', query: { redirect: router.currentRoute.fullPath } })
     }
     return Promise.reject(error);
   }

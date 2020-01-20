@@ -1,17 +1,17 @@
 package auth
 
-import (
-	"rothskeller.net/serv/model"
-	"rothskeller.net/serv/util"
-)
+import "rothskeller.net/serv/util"
 
+import "rothskeller.net/serv/model"
+
+/*
 // CanAssignAnyRole returns whether the caller is allowed to assign people to
 // (or unassign them from) any Role.
 func CanAssignAnyRole(r *util.Request) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.HasAny(model.PrivAssignRole)
+	return r.Person.Privileges.HasAny(model.PrivAssignRole)
 }
 
 // CanAssignRole returns whether the caller is allowed to assign people to (or
@@ -20,8 +20,9 @@ func CanAssignRole(r *util.Request, role *model.Role) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.Has(role.ID, model.PrivAssignRole)
+	return r.Person.Privileges.Has(role.ID, model.PrivAssignRole)
 }
+*/
 
 // CanCreateEvents returns whether the caller is allowed to create new Event
 // entries.
@@ -29,7 +30,7 @@ func CanCreateEvents(r *util.Request) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.HasAny(model.PrivManageEvents)
+	return r.Person.Privileges.HasAny(model.PrivManageEvents) || IsWebmaster(r)
 }
 
 // CanCreatePeople returns whether the caller is allowed to create new Person
@@ -38,7 +39,7 @@ func CanCreatePeople(r *util.Request) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.HasAny(model.PrivAssignRole)
+	return r.Person.Privileges.HasAny(model.PrivManageMembers) || IsWebmaster(r)
 }
 
 // CanManageEvent returns whether the caller is allowed to edit or delete the
@@ -47,8 +48,11 @@ func CanManageEvent(r *util.Request, event *model.Event) bool {
 	if r.Person == nil {
 		return false
 	}
-	for _, role := range event.Roles {
-		if !r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
+	if IsWebmaster(r) {
+		return true
+	}
+	for _, gid := range event.Groups {
+		if !r.Person.Privileges.Has(r.Tx.FetchGroup(gid), model.PrivManageEvents) {
 			return false
 		}
 	}
@@ -56,12 +60,12 @@ func CanManageEvent(r *util.Request, event *model.Event) bool {
 }
 
 // CanManageEvents returns whether the caller is allowed to edit or delete
-// events to which the specified Role is invited.
-func CanManageEvents(r *util.Request, role *model.Role) bool {
+// events to which the specified Group is invited.
+func CanManageEvents(r *util.Request, group *model.Group) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.Has(role.ID, model.PrivManageEvents)
+	return r.Person.Privileges.Has(group, model.PrivManageEvents) || IsWebmaster(r)
 }
 
 // CanRecordAttendanceAtEvent returns whether the caller is allowed to record
@@ -70,12 +74,26 @@ func CanRecordAttendanceAtEvent(r *util.Request, event *model.Event) bool {
 	if r.Person == nil {
 		return false
 	}
-	for _, role := range event.Roles {
-		if r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
+	for _, gid := range event.Groups {
+		if r.Person.Privileges.Has(r.Tx.FetchGroup(gid), model.PrivManageEvents) {
 			return true
 		}
 	}
-	return false
+	return IsWebmaster(r)
+}
+
+// CanViewContactInfo returns whether the caller can view contact information
+// for the argument Person.
+func CanViewContactInfo(r *util.Request, p *model.Person) bool {
+	if r.Person == nil {
+		return false
+	}
+	for _, group := range r.Tx.FetchGroups() {
+		if p.Privileges.Has(group, model.PrivMember) && r.Person.Privileges.Has(group, model.PrivViewContactInfo) {
+			return true
+		}
+	}
+	return IsWebmaster(r)
 }
 
 // CanViewEvent returns whether the caller is allowed to see the specified
@@ -84,23 +102,34 @@ func CanViewEvent(r *util.Request, event *model.Event) bool {
 	if r.Person == nil {
 		return false
 	}
-	for _, role := range event.Roles {
-		if r.Person.PrivMap.Has(role.ID, model.PrivHoldsRole) || r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
+	for _, gid := range event.Groups {
+		group := r.Tx.FetchGroup(gid)
+		if r.Person.Privileges.Has(group, model.PrivMember) || r.Person.Privileges.Has(group, model.PrivManageEvents) {
+			return true
+		}
+	}
+	return IsWebmaster(r)
+}
+
+// CanViewEventP returns whether the specified Person is allowed to see the
+// specified Event.
+func CanViewEventP(r *util.Request, person *model.Person, event *model.Event) bool {
+	for _, gid := range event.Groups {
+		group := r.Tx.FetchGroup(gid)
+		if person.Privileges.Has(group, model.PrivMember) || person.Privileges.Has(group, model.PrivManageEvents) {
 			return true
 		}
 	}
 	return false
 }
 
-// CanViewEventP returns whether the specified Person is allowed to see the
-// specified Event.
-func CanViewEventP(r *util.Request, person *model.Person, event *model.Event) bool {
-	for _, role := range event.Roles {
-		if person.PrivMap.Has(role.ID, model.PrivHoldsRole) || person.PrivMap.Has(role.ID, model.PrivManageEvents) {
-			return true
-		}
+// CanViewGroup returns whether the caller can view the roster of the argument
+// Group.
+func CanViewGroup(r *util.Request, g *model.Group) bool {
+	if r.Person == nil {
+		return false
 	}
-	return false
+	return r.Person.Privileges.Has(g, model.PrivViewMembers) || IsWebmaster(r)
 }
 
 // CanViewPerson returns whether the caller can view the argument Person.
@@ -108,41 +137,71 @@ func CanViewPerson(r *util.Request, p *model.Person) bool {
 	if r.Person == nil {
 		return false
 	}
-	for _, role := range p.Roles {
-		if r.Person.PrivMap.Has(role.ID, model.PrivViewHolders) || r.Person.PrivMap.Has(role.ID, model.PrivAssignRole) {
+	for _, group := range r.Tx.FetchGroups() {
+		if p.Privileges.Has(group, model.PrivMember) && r.Person.Privileges.Has(group, model.PrivViewMembers) {
 			return true
 		}
 	}
-	if IsWebmaster(r) {
-		return true // in case the target person has no roles
-	}
-	return false
+	return IsWebmaster(r)
 }
 
+/*
 // CanViewRole returns whether the caller can view the holders of the specified
 // role.
 func CanViewRole(r *util.Request, role *model.Role) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.Has(role.ID, model.PrivViewHolders) || r.Person.PrivMap.Has(role.ID, model.PrivAssignRole)
+	return r.Person.Privileges.Has(role.ID, model.PrivViewHolders) || r.Person.Privileges.Has(role.ID, model.PrivAssignRole)
 }
 
-// HasRole returns whether the specified Person holds the specified Role
-// (directly or indirectly).
+*/
+
+// GroupsCanManageEvents returns the list of groups whose events the caller is
+// allowed to manage.
+func GroupsCanManageEvents(r *util.Request) (groups []*model.Group) {
+	if r.Person == nil {
+		return nil
+	}
+	for _, group := range r.Tx.FetchGroups() {
+		if r.Person.Privileges.Has(group, model.PrivManageEvents) || IsWebmaster(r) {
+			groups = append(groups, group)
+		}
+	}
+	return groups
+}
+
+// HasRole returns whether the specified Person holds the specified Role.
 func HasRole(p *model.Person, r *model.Role) bool {
 	if p == nil {
 		return false
 	}
-	return p.PrivMap.Has(r.ID, model.PrivHoldsRole)
+	for _, role := range p.Roles {
+		if role == r.ID {
+			return true
+		}
+	}
+	return false
+}
+
+// IsMember returns whether the specified Person is a member of the specified
+// group.
+func IsMember(p *model.Person, g *model.Group) bool {
+	if p == nil {
+		return false
+	}
+	return p.Privileges.Has(g, model.PrivMember)
 }
 
 // IsEnabled returns whether the specified Person is enabled.
 func IsEnabled(r *util.Request, p *model.Person) bool {
-	if p.PrivMap.Has(r.Tx.FetchRoleByTag(model.RoleDisabled).ID, model.PrivHoldsRole) {
+	if p.Privileges.Has(r.Tx.FetchGroupByTag(model.GroupDisabled), model.PrivMember) {
 		return false
 	}
-	return p.PrivMap.HasAny(model.PrivHoldsRole)
+	if p.Privileges.HasAny(model.PrivMember) {
+		return true
+	}
+	return HasRole(p, r.Tx.FetchRoleByTag(model.RoleWebmaster))
 }
 
 // IsWebmaster returns whether the caller is a webmaster.
@@ -150,19 +209,5 @@ func IsWebmaster(r *util.Request) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.PrivMap.Has(r.Tx.FetchRoleByTag(model.RoleWebmaster).ID, model.PrivHoldsRole)
-}
-
-// RolesCanManageEvents returns the list of roles whose events the caller is
-// allowed to manage.
-func RolesCanManageEvents(r *util.Request) (roles []*model.Role) {
-	if r.Person == nil {
-		return nil
-	}
-	for _, role := range r.Tx.FetchRoles() {
-		if r.Person.PrivMap.Has(role.ID, model.PrivManageEvents) {
-			roles = append(roles, role)
-		}
-	}
-	return roles
+	return HasRole(r.Person, r.Tx.FetchRoleByTag(model.RoleWebmaster))
 }

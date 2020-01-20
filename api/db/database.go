@@ -117,12 +117,14 @@ func (id *IDStr) Scan(value interface{}) error {
 // functions for access to our tables.
 type Tx struct {
 	tx        *sql.Tx
+	groups    map[model.GroupID]*model.Group
+	groupTags map[model.GroupTag]*model.Group
+	groupList []*model.Group
 	roles     map[model.RoleID]*model.Role
 	roleTags  map[model.RoleTag]*model.Role
 	roleList  []*model.Role
 	venues    map[model.VenueID]*model.Venue
 	venueList []*model.Venue
-	maxRoleID model.RoleID
 	username  string
 	request   string
 }
@@ -135,7 +137,7 @@ func Begin() (tx *Tx) {
 	if tx.tx, err = dbh.Begin(); err != nil {
 		panic(err)
 	}
-	tx.cacheRoles()
+	tx.cacheAuth()
 	return tx
 }
 

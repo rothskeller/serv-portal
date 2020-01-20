@@ -38,9 +38,9 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  if (!store.state.me && !to.matched.some(record => record.meta.publicAccess))
+  if (!store.state.me && !to.matched.some(record => record.meta.publicAccess)) {
     next({ path: '/login', query: { redirect: to.fullPath } })
-  else
+  } else
     next()
 })
 

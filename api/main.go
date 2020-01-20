@@ -22,7 +22,6 @@ import (
 	"rothskeller.net/serv/event"
 	"rothskeller.net/serv/person"
 	"rothskeller.net/serv/report"
-	"rothskeller.net/serv/role"
 	"rothskeller.net/serv/util"
 )
 
@@ -98,20 +97,24 @@ func router(r *util.Request) error {
 		return person.GetPeople(r)
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "":
 		return person.GetPerson(r, c[2])
-	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
-		return person.PostPerson(r, c[2])
+		/*
+			case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
+				return person.PostPerson(r, c[2])
+		*/
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "":
 		return report.GetIndex(r)
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "cert-attendance" && c[3] == "":
 		return report.CERTAttendanceReport(r)
-	case r.Method == "GET" && c[1] == "roles" && c[2] == "":
-		return role.GetRoles(r)
-	case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
-		return role.GetRole(r, c[2])
-	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
-		return role.PostRole(r, c[2])
-	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "reloadPrivs" && c[4] == "":
-		return role.PostRoleReloadPrivs(r, c[2])
+		/*
+			case r.Method == "GET" && c[1] == "roles" && c[2] == "":
+				return role.GetRoles(r)
+			case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
+				return role.GetRole(r, c[2])
+			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
+				return role.PostRole(r, c[2])
+			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "reloadPrivs" && c[4] == "":
+				return role.PostRoleReloadPrivs(r, c[2])
+		*/
 	}
 	return util.NotFound
 }

@@ -23,7 +23,7 @@ var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]
 // CERTAttendanceReport handles GET /api/reports/cert-attendance requests.
 func CERTAttendanceReport(r *util.Request) error {
 	var (
-		team     *model.Role
+		team     *model.Group
 		events   []*model.Event
 		people   []*model.Person
 		rendered attendanceReport
@@ -39,11 +39,11 @@ func CERTAttendanceReport(r *util.Request) error {
 	)
 	switch teamStr {
 	case "Alpha":
-		team = r.Tx.FetchRoleByTag("cert-team-alpha")
+		team = r.Tx.FetchGroupByTag("cert-team-alpha")
 	case "Bravo":
-		team = r.Tx.FetchRoleByTag("cert-team-bravo")
+		team = r.Tx.FetchGroupByTag("cert-team-bravo")
 	default:
-		team = r.Tx.FetchRoleByTag("cert-teams")
+		team = r.Tx.FetchGroupByTag("cert-teams")
 	}
 	if !auth.CanManageEvents(r, team) {
 		return util.Forbidden
@@ -67,8 +67,9 @@ func CERTAttendanceReport(r *util.Request) error {
 	j := 0
 	for _, e := range events {
 		found := false
-		for _, t := range e.Roles {
-			switch t.Tag {
+		for _, t := range e.Groups {
+			group := r.Tx.FetchGroup(t)
+			switch group.Tag {
 			case "cert-teams", "cert-team-alpha", "cert-team-bravo":
 				found = true
 				break
@@ -84,7 +85,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	people = r.Tx.FetchPeople()
 	j = 0
 	for _, p := range people {
-		if auth.HasRole(p, team) {
+		if auth.IsMember(p, team) {
 			people[j] = p
 			j++
 			pmap[p.ID] = p
@@ -220,7 +221,7 @@ func renderAttendance(
 	}
 	report.Body = make([][]string, len(people))
 	for i, p := range people {
-		report.Body[i] = []string{fmt.Sprintf("%s, %s", p.LastName, p.Nickname)}
+		report.Body[i] = []string{p.SortName}
 	}
 	report.Footer = [][]string{{"TOTALS"}}
 	// Create and fill the non-total columns.

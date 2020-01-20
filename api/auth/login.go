@@ -26,8 +26,6 @@ func GetLogin(r *util.Request) error {
 	out.Int(int(r.Person.ID))
 	out.RawString(`,"nickname":`)
 	out.String(r.Person.Nickname)
-	out.RawString(`,"lastName":`)
-	out.String(r.Person.LastName)
 	out.RawString(`,"webmaster":`)
 	out.Bool(IsWebmaster(r))
 	out.RawByte('}')
@@ -40,18 +38,15 @@ func GetLogin(r *util.Request) error {
 func PostLogin(r *util.Request) error {
 	var (
 		person   *model.Person
-		email    = r.FormValue("email")
+		username = r.FormValue("username")
 		password = r.FormValue("password")
 	)
 	// Check that the login is valid.
-	if person = r.Tx.FetchPersonByEmail(email); person == nil {
-		goto FAIL // no person with that email
+	if person = r.Tx.FetchPersonByUsername(username); person == nil {
+		goto FAIL // no person with that username
 	}
 	if !IsEnabled(r, person) {
 		goto FAIL // person is disabled
-	}
-	if person.PWResetToken != "" {
-		goto FAIL // password reset in progress
 	}
 	if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
 		goto FAIL // locked out

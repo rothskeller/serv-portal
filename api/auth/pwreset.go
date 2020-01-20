@@ -20,14 +20,23 @@ const pwresetThreshold = time.Hour
 // PostPasswordReset handles POST /api/password-reset requests.
 func PostPasswordReset(r *util.Request) error {
 	var (
-		person *model.Person
-		body   bytes.Buffer
-		email  = r.FormValue("email")
+		person   *model.Person
+		body     bytes.Buffer
+		emails   []string
+		username = r.FormValue("username")
 	)
-	if person = r.Tx.FetchPersonByEmail(email); person == nil {
+	if person = r.Tx.FetchPersonByUsername(username); person == nil {
 		return nil
 	}
 	if !IsEnabled(r, person) {
+		return nil
+	}
+	for _, e := range person.Emails {
+		if !e.Bad {
+			emails = append(emails, e.Email)
+		}
+	}
+	if len(emails) == 0 {
 		return nil
 	}
 	r.Tx.DeleteSessionsForPerson(person, "")
@@ -36,15 +45,20 @@ func PostPasswordReset(r *util.Request) error {
 	person.PWResetTime = time.Now()
 	r.Tx.SavePerson(person)
 	r.Tx.Commit()
-	fmt.Fprintf(&body, "From: %s\r\nTo: %s %s%s <%s>\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email.\r\n",
-		config.Get("fromEmail"), person.FirstName, person.LastName, person.Suffix,
-		person.Email, person.Nickname, config.Get("siteURL"),
-		person.PWResetToken)
+	fmt.Fprintf(&body, "From: %s\r\nTo: ", config.Get("fromEmail"))
+	for i, e := range emails {
+		if i != 0 {
+			body.WriteString(", ")
+		}
+		fmt.Fprintf(&body, "%s <%s>", person.FullName, e)
+	}
+	fmt.Fprintf(&body, "\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
+		person.Nickname, config.Get("siteURL"), person.PWResetToken)
 	if err := smtp.SendMail(
 		config.Get("smtpServer"),
 		&loginAuth{config.Get("smtpUsername"), config.Get("smtpPassword")},
 		config.Get("fromAddr"),
-		[]string{person.Email, config.Get("adminEmail")},
+		append(emails, config.Get("adminEmail")),
 		body.Bytes(),
 	); err != nil {
 		panic(err)
@@ -71,14 +85,30 @@ func GetPasswordResetToken(r *util.Request, token string) error {
 		out.String(h)
 	}
 	out.RawByte(',')
-	out.String(person.FirstName)
+	out.String(person.FullName)
 	out.RawByte(',')
-	out.String(person.LastName)
+	out.String(person.Nickname)
 	out.RawByte(',')
-	out.String(person.Email)
-	if person.Phone != "" {
+	out.String(person.CallSign)
+	out.RawByte(',')
+	out.String(person.Username)
+	for _, a := range person.Addresses {
 		out.RawByte(',')
-		out.String(person.Phone)
+		out.String(a.Address)
+		out.RawByte(',')
+		out.String(a.City)
+		out.RawByte(',')
+		out.String(a.State)
+		out.RawByte(',')
+		out.String(a.Zip)
+	}
+	for _, e := range person.Emails {
+		out.RawByte(',')
+		out.String(e.Email)
+	}
+	for _, p := range person.Phones {
+		out.RawByte(',')
+		out.String(p.Phone)
 	}
 	out.RawByte(']')
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

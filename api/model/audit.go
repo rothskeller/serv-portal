@@ -1,22 +1,22 @@
 package model
 
-import (
-	"time"
-
-	"github.com/mailru/easyjson/jwriter"
-)
-
+/*
 // An AuditRecord contains the information to record in the audit log about a
 // change.
 type AuditRecord struct {
-	Timestamp time.Time
-	Username  string
-	Request   string
-	Event     *Event
-	Person    *Person
-	Role      *Role
-	Session   *Session
-	Venue     *Venue
+	Timestamp      time.Time
+	Username       string
+	Request        string
+	Event          *Event
+	Person         *Person
+	Role           *Role
+	Session        *Session
+	Venue          *Venue
+	DeletedEvent   EventID
+	DeletedPerson  PersonID
+	DeletedRole    RoleID
+	DeletedSession SessionToken
+	DeletedVenue   VenueID
 }
 
 func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
@@ -52,6 +52,31 @@ func (in AuditRecord) MarshalEasyJSON(out *jwriter.Writer) {
 	if in.Venue != nil {
 		out.RawString(`,"venue":`)
 		in.Venue.ToAudit(out)
+	}
+	if in.DeletedEvent != 0 {
+		out.RawString(`,"event":{"id":`)
+		out.Int(int(in.DeletedEvent))
+		out.RawString(`,"deleted":true}`)
+	}
+	if in.DeletedPerson != 0 {
+		out.RawString(`,"person":{"id":`)
+		out.Int(int(in.DeletedPerson))
+		out.RawString(`,"deleted":true}`)
+	}
+	if in.DeletedRole != 0 {
+		out.RawString(`,"role":{"id":`)
+		out.Int(int(in.DeletedRole))
+		out.RawString(`,"deleted":true}`)
+	}
+	if in.DeletedSession != "" {
+		out.RawString(`,"session":{"token":`)
+		out.String(string(in.DeletedSession))
+		out.RawString(`,"deleted":true}`)
+	}
+	if in.DeletedVenue != 0 {
+		out.RawString(`,"venue":{"id":`)
+		out.Int(int(in.DeletedVenue))
+		out.RawString(`,"deleted":true}`)
 	}
 	out.RawString("}\n")
 }
@@ -94,18 +119,38 @@ func (in Event) ToAudit(out *jwriter.Writer) {
 func (in Person) ToAudit(out *jwriter.Writer) {
 	out.RawString(`{"id":`)
 	out.Int(int(in.ID))
-	out.RawString(`,"firstName":`)
-	out.String(in.FirstName)
-	out.RawString(`,"lastName":`)
-	out.String(in.LastName)
+	out.RawString(`,"username":`)
+	out.String(in.Username)
+	out.RawString(`,"fullName":`)
+	out.String(in.FullName)
+	out.RawString(`,"sortName":`)
+	out.String(in.SortName)
 	out.RawString(`,"nickname":`)
 	out.String(in.Nickname)
-	out.RawString(`,"suffix":`)
-	out.String(in.Suffix)
-	out.RawString(`,"email":`)
-	out.String(in.Email)
-	out.RawString(`,"phone":`)
-	out.String(in.Phone)
+	out.RawString(`,"callSign":`)
+	out.String(in.CallSign)
+	out.RawString(`,"emails":[`)
+	for i, e := range in.Emails {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		e.MarshalEasyJSON(out)
+	}
+	out.RawString(`],"addresses":[`)
+	for i, a := range in.Addresses {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		a.MarshalEasyJSON(out)
+	}
+	out.RawString(`],"phones":[`)
+	for i, p := range in.Phones {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		p.MarshalEasyJSON(out)
+	}
+	out.RawByte(']')
 	if in.BadLoginCount != 0 {
 		out.RawString(`,"badLoginCount":`)
 		out.Int(in.BadLoginCount)
@@ -123,24 +168,10 @@ func (in Person) ToAudit(out *jwriter.Writer) {
 		if i != 0 {
 			out.RawByte(',')
 		}
-		out.Int(int(role.ID))
+		out.Int(int(role))
 	}
-	out.RawString(`]}`)
-}
-
-func (in PrivilegeMap) ToAudit(out *jwriter.Writer) {
-	out.RawByte('{')
-	first := true
-	for r, p := range in {
-		if first {
-			first = false
-		} else {
-			out.RawByte(',')
-		}
-		out.IntStr(int(r))
-		out.RawByte(':')
-		out.Uint8(uint8(p))
-	}
+	out.RawString(`],"privileges":`)
+	in.Privileges.MarshalEasyJSON(out)
 	out.RawByte('}')
 }
 
@@ -153,14 +184,10 @@ func (in Role) ToAudit(out *jwriter.Writer) {
 	}
 	out.RawString(`,"name":`)
 	out.String(in.Name)
-	out.RawString(`,"memberLabel":`)
-	out.String(in.MemberLabel)
-	out.RawString(`,"implyOnly":`)
-	out.Bool(in.ImplyOnly)
 	out.RawString(`,"individual":`)
 	out.Bool(in.Individual)
 	out.RawString(`,"privileges":`)
-	in.PrivMap.ToAudit(out)
+	in.Privileges.MarshalEasyJSON(out)
 	out.RawByte('}')
 }
 
@@ -169,7 +196,7 @@ func (in Session) ToAudit(out *jwriter.Writer) {
 	out.String(string(in.Token))
 	if in.Person != nil {
 		out.RawString(`,"person":`)
-		out.String(in.Person.Email)
+		out.String(in.Person.Username)
 	}
 	if !in.Expires.IsZero() {
 		out.RawString(`,"expires":`)
@@ -193,3 +220,4 @@ func (in Venue) ToAudit(out *jwriter.Writer) {
 	}
 	out.RawByte('}')
 }
+*/

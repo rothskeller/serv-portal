@@ -41,8 +41,8 @@ form#event-edit(@submit.prevent="onSubmit")
       | This may contain HTML &lt;a&gt; tags for links, but no other tags.
   b-form-group(label="Event has these types:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-checkbox-group(stacked :options="types" v-model="event.types")
-  b-form-group(label="Event is for these roles:" :state="rolesError ? false : null" :invalid-feedback="rolesError")
-    b-form-checkbox-group(stacked :options="roles" text-field="name" value-field="id" v-model="event.roles")
+  b-form-group(label="Event is for these groups:" :state="groupsError ? false : null" :invalid-feedback="groupsError")
+    b-form-checkbox-group(stacked :options="groups" text-field="name" value-field="id" v-model="event.groups")
   div.mt-3
     b-btn(type="submit" variant="primary" :disabled="!valid" v-text="event.id ? 'Save Event' : 'Create Event'")
     b-btn.ml-2(@click="onCancel") Cancel
@@ -53,7 +53,7 @@ form#event-edit(@submit.prevent="onSubmit")
 export default {
   props: {
     event: null,
-    roles: null,
+    groups: null,
     venues: null,
     types: null,
   },
@@ -68,7 +68,7 @@ export default {
     venueCityError: null,
     venueURLError: null,
     typeError: null,
-    rolesError: null,
+    groupsError: null,
     valid: true,
   }),
   watch: {
@@ -81,7 +81,7 @@ export default {
     'event.venue.city': 'validate',
     'event.venue.url': 'validate',
     'event.types': 'validate',
-    'event.roles': 'validate',
+    'event.groups': 'validate',
     'event.venue.id'() {
       if (this.event.venue.id === 'NEW') {
         this.event.venue.name = this.event.venue.address = this.event.venue.city = this.event.venue.url = ''
@@ -122,7 +122,7 @@ export default {
       }
       body.append('details', this.event.details)
       this.event.types.forEach(t => { body.append('type', t) })
-      this.event.roles.forEach(r => { body.append('role', r) })
+      this.event.groups.forEach(r => { body.append('group', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
         this.duplicateName = { date: this.event.date, name: this.event.name }
@@ -176,12 +176,12 @@ export default {
         this.typeError = 'At least one event type is required.'
       else
         this.typeError = null
-      if (!this.event.roles.length)
-        this.rolesError = 'At least one role must be selected.'
+      if (!this.event.groups.length)
+        this.groupsError = 'At least one group must be selected.'
       else
-        this.rolesError = null
+        this.groupsError = null
       this.valid = !this.nameError && !this.dateError && !this.timeError && !this.venueNameError && !this.venueAddressError &&
-        !this.venueCityError && !this.venueURLError && !this.typeError && !this.rolesError
+        !this.venueCityError && !this.venueURLError && !this.typeError && !this.groupsError
     },
   },
 }
@@ -192,7 +192,7 @@ export default {
   margin 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-type, #event-roles, #venue-name, #venue-address, #venue-city, #venue-url, #event-details
+#event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details
   min-width 14rem
   max-width 20rem
 #event-venue

@@ -1,7 +1,9 @@
 package db
 
 import (
+	"bytes"
 	"database/sql"
+	"fmt"
 	"sort"
 	"time"
 
@@ -10,112 +12,113 @@ import (
 
 // FetchPerson retrieves a single person from the database by ID.  It returns
 // nil if no such person exists.
-func (tx *Tx) FetchPerson(id model.PersonID) *model.Person {
-	return tx.fetchPerson(`WHERE p.id=?`, id)
+func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
+	var data []byte
+	p = new(model.Person)
+	switch err := dbh.QueryRow(`SELECT data FROM person WHERE id=?`, id).Scan(&data); err {
+	case nil:
+		panicOnError(p.Unmarshal(data))
+		return p
+	case sql.ErrNoRows:
+		return nil
+	default:
+		panic(err)
+	}
 }
 
-// FetchPersonByEmail retrieves a single person from the database, given their
-// email address.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByEmail(email string) *model.Person {
-	return tx.fetchPerson(`WHERE p.email=?`, email)
+// FetchPersonByUsername retrieves a single person from the database, given
+// their username.  It returns nil if no such person exists.
+func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
+	var data []byte
+	p = new(model.Person)
+	switch err := dbh.QueryRow(`SELECT data FROM person WHERE username=?`, username).Scan(&data); err {
+	case nil:
+		panicOnError(p.Unmarshal(data))
+		return p
+	case sql.ErrNoRows:
+		return nil
+	default:
+		panic(err)
+	}
 }
 
 // FetchPersonByPWResetToken retrieves a single person from the database, given
 // a password reset token.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByPWResetToken(token string) *model.Person {
-	return tx.fetchPerson(`WHERE p.pwreset_token=?`, token)
-}
-
-func (tx *Tx) fetchPerson(where string, args ...interface{}) (p *model.Person) {
-	var (
-		rows *sql.Rows
-		err  error
-	)
+func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
+	var data []byte
 	p = new(model.Person)
-	err = tx.tx.QueryRow(`SELECT p.id, p.first_name, p.last_name, p.nickname, p.suffix, p.email, p.phone, p.password, p.bad_login_count, p.bad_login_time, p.pwreset_token, p.pwreset_time FROM person p `+where, args...).Scan(&p.ID, &p.FirstName, &p.LastName, &p.Nickname, &p.Suffix, (*IDStr)(&p.Email), &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime))
-	if err == sql.ErrNoRows {
+	switch err := dbh.QueryRow(`SELECT data FROM person WHERE pwreset_token=?`, token).Scan(&data); err {
+	case nil:
+		panicOnError(p.Unmarshal(data))
+		return p
+	case sql.ErrNoRows:
 		return nil
+	default:
+		panic(err)
 	}
-	panicOnError(err)
-	rows, err = tx.tx.Query(`SELECT role FROM person_role WHERE person=?`, p.ID)
-	panicOnError(err)
-	for rows.Next() {
-		var rid model.RoleID
-		panicOnError(rows.Scan(&rid))
-		role := tx.FetchRole(rid)
-		p.Roles = append(p.Roles, role)
-	}
-	panicOnError(rows.Err())
-	sort.Sort(model.RoleSort(p.Roles))
-	tx.setPersonPrivileges(p)
-	return p
 }
 
-// FetchPeople returns all of the people in the database, in alphabetical order
-// by last name.
+// FetchPeople returns all of the people in the database, in order by sortname.
 func (tx *Tx) FetchPeople() (people []*model.Person) {
 	var (
 		rows *sql.Rows
 		err  error
-		pmap = make(map[model.PersonID]*model.Person)
 	)
-	rows, err = tx.tx.Query(`SELECT id, first_name, last_name, nickname, suffix, email, phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time FROM person ORDER BY last_name, first_name`)
+	rows, err = dbh.Query(`SELECT data FROM person`)
 	panicOnError(err)
 	for rows.Next() {
+		var data []byte
 		var p model.Person
-		panicOnError(rows.Scan(&p.ID, &p.FirstName, &p.LastName, &p.Nickname, &p.Suffix, (*IDStr)(&p.Email), &p.Phone, &p.Password, &p.BadLoginCount, (*Time)(&p.BadLoginTime), (*IDStr)(&p.PWResetToken), (*Time)(&p.PWResetTime)))
-		pmap[p.ID] = &p
+		panicOnError(rows.Scan(&data))
+		p.Unmarshal(data)
 		people = append(people, &p)
 	}
 	panicOnError(rows.Err())
-	rows, err = tx.tx.Query(`SELECT person, role FROM person_role`)
-	panicOnError(err)
-	for rows.Next() {
-		var (
-			pid  model.PersonID
-			rid  model.RoleID
-			p    *model.Person
-			role *model.Role
-		)
-		panicOnError(rows.Scan(&pid, &rid))
-		p = pmap[pid]
-		role = tx.FetchRole(rid)
-		p.Roles = append(p.Roles, role)
-	}
-	panicOnError(rows.Err())
-	for _, p := range people {
-		sort.Sort(model.RoleSort(p.Roles))
-		tx.setPersonPrivileges(p)
-	}
+	sort.Sort(model.PersonSort(people))
 	return people
-}
-
-func (tx *Tx) setPersonPrivileges(p *model.Person) {
-	p.PrivMap = make(model.PrivilegeMap, tx.maxRoleID+1)
-	for _, r := range p.Roles {
-		p.PrivMap = p.PrivMap.Merge(r.TransPrivs)
-	}
 }
 
 // SavePerson saves a person to the database.  If the supplied person ID is
 // zero, a new person is added to the database; otherwise, the identified person
 // is updated.
 func (tx *Tx) SavePerson(p *model.Person) {
-	var err error
-
+	var (
+		data []byte
+		err  error
+	)
+	tx.recalcPersonPrivileges(p)
 	if p.ID == 0 {
-		var result sql.Result
-		result, err = tx.tx.Exec(`INSERT INTO person (first_name, last_name, nickname, suffix, email, phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time) VALUES (?,?,?,?,?,?,?,?,?,?,?)`, p.FirstName, p.LastName, p.Nickname, p.Suffix, IDStr(p.Email), p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime))
+		panicOnError(tx.tx.QueryRow(`SELECT max(id) FROM person`).Scan(&p.ID))
+		p.ID++
+		data, err = p.Marshal()
 		panicOnError(err)
-		p.ID = model.PersonID(lastInsertID(result))
+		panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, data) VALUES (?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), data))
 	} else {
-		panicOnNoRows(tx.tx.Exec(`UPDATE person SET first_name=?, last_name=?, nickname=?, suffix=?, email=?, phone=?, password=?, bad_login_count=?, bad_login_time=?, pwreset_token=?, pwreset_time=? WHERE id=?`, p.FirstName, p.LastName, p.Nickname, p.Suffix, IDStr(p.Email), p.Phone, p.Password, p.BadLoginCount, Time(p.BadLoginTime), IDStr(p.PWResetToken), Time(p.PWResetTime), p.ID))
-		panicOnExecError(tx.tx.Exec(`DELETE FROM person_role WHERE person=?`, p.ID))
+		data, err = p.Marshal()
+		panicOnError(err)
+		panicOnExecError(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, data) = (?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), data, p.ID))
 	}
-	for _, role := range p.Roles {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person_role (person, role) VALUES (?,?)`, p.ID, role.ID))
+	tx.audit("person", p.ID, data)
+}
+
+// recalcAllPersonPrivileges recalculates the privileges map for every person in
+// the database, from the privilege masks for the role(s) held by that person.
+// This is done whenever the role privilege masks may have changed, i.e., when
+// roles or groups are edited.
+func (tx *Tx) recalcAllPersonPrivileges() {
+	people := tx.FetchPeople()
+	for _, p := range people {
+		tx.SavePerson(p)
 	}
-	tx.audit(model.AuditRecord{Person: p})
+}
+
+// recalcPersonPrivileges recalculates the privileges map for a person from the
+// privilege masks for the role(s) held by that person.
+func (tx *Tx) recalcPersonPrivileges(p *model.Person) {
+	p.Privileges.Clear()
+	for _, r := range p.Roles {
+		p.Privileges.Merge(&tx.roles[r].Privileges)
+	}
 }
 
 // FetchSession fetches the session with the specified token.  It does not check
@@ -137,8 +140,10 @@ func (tx *Tx) FetchSession(token model.SessionToken) (s *model.Session) {
 
 // CreateSession creates a session in the database.
 func (tx *Tx) CreateSession(s *model.Session) {
+	var buf bytes.Buffer
 	panicOnExecError(tx.tx.Exec(`INSERT INTO session (token, person, expires) VALUES (?,?,?)`, s.Token, s.Person.ID, Time(s.Expires)))
-	tx.audit(model.AuditRecord{Session: s})
+	fmt.Fprintf(&buf, "person:%s expires:%s", s.Person.Username, s.Expires.Format("2006-01-02 15:04:05"))
+	tx.audit("session", s.Token, buf.Bytes())
 }
 
 // UpdateSession updates a session in the database.
@@ -150,14 +155,14 @@ func (tx *Tx) UpdateSession(s *model.Session) {
 // DeleteSession deletes a session from the database.
 func (tx *Tx) DeleteSession(s *model.Session) {
 	panicOnExecError(tx.tx.Exec(`DELETE FROM session WHERE token=?`, s.Token))
-	tx.audit(model.AuditRecord{Session: &model.Session{Token: s.Token, Person: s.Person}})
+	tx.audit("session", s.Token, nil)
 }
 
 // DeleteSessionsForPerson deletes all sessions for the specified person, except
 // the supplied one if any.
 func (tx *Tx) DeleteSessionsForPerson(p *model.Person, except model.SessionToken) {
 	panicOnExecError(tx.tx.Exec(`DELETE FROM session where person=? AND token != ?`, p.ID, except))
-	tx.audit(model.AuditRecord{Session: &model.Session{Person: p}})
+	tx.audit("session", p.Username, nil)
 }
 
 // DeleteExpiredSessions deletes all expired sessions.

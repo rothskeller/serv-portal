@@ -29,7 +29,6 @@ export default {
   data: () => ({
     password1: null,
     password2: null,
-    passwordHints: null,
     passwordError: null,
     passwordSuccess: null,
     passwordScore: -1,
@@ -78,7 +77,7 @@ export default {
       if (!this.password1 && !this.password2) this.$emit('change', '')
       else if (this.password1 !== this.password2) this.$emit('change', null)
       else if (this.allowBadPassword || this.passwordScore >= 3) this.$emit('change', this.password1)
-      else this.emit('change', null)
+      else this.$emit('change', null)
     },
   },
 }

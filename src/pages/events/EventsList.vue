@@ -17,7 +17,7 @@ EventsList displays the list of events.
       th Event
       th Location
     tr(v-for="e in events" :key="e.id")
-      td(v-text="`${e.date} ${e.start}`")
+      td(v-text="`${e.date}\u00A0${e.start}`")
       td
         EventTypeDots.mr-1(:types="e.types")
         router-link(:to="`/events/${e.id}`" v-text="e.name")

@@ -38,7 +38,7 @@ func ValidateSession(r *Request) {
 	r.Person = r.Session.Person
 	r.Session.Expires = time.Now().Add(sessionExpiration)
 	r.Tx.UpdateSession(r.Session)
-	r.Tx.SetUsername(r.Person.Email)
+	r.Tx.SetUsername(r.Person.Username)
 	http.SetCookie(r, &http.Cookie{
 		Name:    "auth",
 		Value:   string(r.Session.Token),

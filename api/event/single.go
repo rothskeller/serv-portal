@@ -59,17 +59,18 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.RawString(`,"end":`)
 	out.String(event.End)
 	out.RawString(`,"venue":`)
-	if event.Venue != nil {
+	if event.Venue != 0 {
+		venue := r.Tx.FetchVenue(event.Venue)
 		out.RawString(`{"id":`)
-		out.Int(int(event.Venue.ID))
+		out.Int(int(event.Venue))
 		out.RawString(`,"name":`)
-		out.String(event.Venue.Name)
+		out.String(venue.Name)
 		out.RawString(`,"address":`)
-		out.String(event.Venue.Address)
+		out.String(venue.Address)
 		out.RawString(`,"city":`)
-		out.String(event.Venue.City)
+		out.String(venue.City)
 		out.RawString(`,"url":`)
-		out.String(event.Venue.URL)
+		out.String(venue.URL)
 		out.RawByte('}')
 	} else {
 		out.RawString(`{"id":0,"name":"","address":"","city":"","url":""}`)
@@ -88,12 +89,12 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(model.EventTypeNames[et])
 		}
 	}
-	out.RawString(`],"roles":[`)
-	for i, r := range event.Roles {
+	out.RawString(`],"groups":[`)
+	for i, g := range event.Groups {
 		if i != 0 {
 			out.RawByte(',')
 		}
-		out.Int(int(r.ID))
+		out.Int(int(g))
 	}
 	out.RawString(`]}`)
 	if canEdit {
@@ -104,15 +105,15 @@ func GetEvent(r *util.Request, idstr string) error {
 			}
 			out.String(model.EventTypeNames[et])
 		}
-		out.RawString(`],"roles":[`)
-		for i, t := range auth.RolesCanManageEvents(r) {
+		out.RawString(`],"groups":[`)
+		for i, g := range auth.GroupsCanManageEvents(r) {
 			if i != 0 {
 				out.RawByte(',')
 			}
 			out.RawString(`{"id":`)
-			out.Int(int(t.ID))
+			out.Int(int(g.ID))
 			out.RawString(`,"name":`)
-			out.String(t.Name)
+			out.String(g.Name)
 			out.RawByte('}')
 		}
 		out.RawString(`],"venues":[`)
@@ -145,10 +146,8 @@ func GetEvent(r *util.Request, idstr string) error {
 			}
 			out.RawString(`{"id":`)
 			out.Int(int(p.ID))
-			out.RawString(`,"lastName":`)
-			out.String(p.LastName)
-			out.RawString(`,"nickname":`)
-			out.String(p.Nickname)
+			out.RawString(`,"sortName":`)
+			out.String(p.SortName)
 			out.RawString(`,"attended":`)
 			out.Bool(attended[p.ID])
 			out.RawByte('}')
@@ -211,22 +210,23 @@ func PostEvent(r *util.Request, idstr string) error {
 	}
 	vidstr := r.FormValue("venue")
 	if vidstr == "NEW" {
-		event.Venue = &model.Venue{
+		venue := &model.Venue{
 			Name:    strings.TrimSpace(r.FormValue("venueName")),
 			Address: strings.TrimSpace(r.FormValue("venueAddress")),
 			City:    strings.TrimSpace(r.FormValue("venueCity")),
 			URL:     strings.TrimSpace(r.FormValue("venueURL")),
 		}
-		if event.Venue.Name == "" || event.Venue.Address == "" || event.Venue.City == "" {
+		if venue.Name == "" || venue.Address == "" || venue.City == "" {
 			return errors.New("missing venue name, address, or city")
 		}
-		if event.Venue.URL != "" && !strings.HasPrefix(event.Venue.URL, "https://www.google.com/maps/") {
+		if venue.URL != "" && !strings.HasPrefix(venue.URL, "https://www.google.com/maps/") {
 			return errors.New("invalid venue URL")
 		}
-		r.Tx.SaveVenue(event.Venue)
+		r.Tx.SaveVenue(venue)
+		event.Venue = venue.ID
 	} else if vidstr == "0" {
-		event.Venue = nil
-	} else if event.Venue = r.Tx.FetchVenue(model.VenueID(util.ParseID(vidstr))); event.Venue == nil {
+		event.Venue = 0
+	} else if event.Venue = model.VenueID(util.ParseID(vidstr)); r.Tx.FetchVenue(event.Venue) == nil {
 		return errors.New("nonexistent venue")
 	}
 	event.Details = htmlSanitizer.Sanitize(strings.TrimSpace(r.FormValue("details")))
@@ -238,19 +238,19 @@ func PostEvent(r *util.Request, idstr string) error {
 			}
 		}
 	}
-	event.Roles = event.Roles[:0]
-	for _, idstr := range r.Form["role"] {
-		role := r.Tx.FetchRole(model.RoleID(util.ParseID(idstr)))
-		if role == nil {
-			return errors.New("invalid role")
+	event.Groups = event.Groups[:0]
+	for _, idstr := range r.Form["group"] {
+		group := r.Tx.FetchGroup(model.GroupID(util.ParseID(idstr)))
+		if group == nil {
+			return errors.New("invalid group")
 		}
-		if !auth.CanManageEvents(r, role) {
+		if !auth.CanManageEvents(r, group) {
 			return util.Forbidden
 		}
-		event.Roles = append(event.Roles, role)
+		event.Groups = append(event.Groups, group.ID)
 	}
-	if len(event.Roles) == 0 {
-		return errors.New("missing role")
+	if len(event.Groups) == 0 {
+		return errors.New("missing group")
 	}
 	for _, e := range r.Tx.FetchEvents(event.Date, event.Date) {
 		if e.ID != event.ID && e.Name == event.Name {

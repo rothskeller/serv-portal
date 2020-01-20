@@ -5,7 +5,7 @@ EventAttendance shows and allows changes to the attendance for an event.
 <template lang="pug">
 form#event-attendance(v-else @submit.prevent="onSave")
   b-form-group(label="This event was attended by:")
-    b-form-checkbox-group#event-attend-group(stacked :options="people" text-field="name" value-field="id" v-model="attendees")
+    b-form-checkbox-group#event-attend-group(stacked :options="people" text-field="sortName" value-field="id" v-model="attendees")
   div.mt-3
     b-btn(type="submit" variant="primary") Save Attendance
     b-btn.ml-2(@click="onCancel") Cancel
@@ -21,7 +21,6 @@ export default {
   mounted() {
     const attendees = []
     this.people.forEach(p => {
-      this.$set(p, 'name', `${p.lastName}, ${p.nickname}`)
       if (p.attended) attendees.push(p.id)
     })
     this.attendees = attendees

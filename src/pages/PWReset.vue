@@ -11,8 +11,8 @@ Page(title="SERV Portal")
         | To reset your password, please enter your email address.  If it's one we
         | have on file, we'll send a password reset link to it.
       form#pwreset-form(@submit.prevent="onSubmit")
-        b-form-group(label="Email address" label-for="pwreset-email" label-cols-sm="4" :state="emailState" invalid-feedback="This is not a valid email address.")
-          b-input#pwreset-email(autocorrect="off" autocapitalize="none" autofocus required trim v-model="email" :state="emailState")
+        b-form-group(label="Email address" label-for="pwreset-username" label-cols-sm="4")
+          b-input#pwreset-username(autocorrect="off" autocapitalize="none" autofocus required trim v-model="username")
         #pwreset-submit-row
           b-button(type="submit" variant="primary") Reset Password
     #pwreset-intro(v-else)
@@ -23,29 +23,18 @@ Page(title="SERV Portal")
 
 <script>
 export default {
-  data: () => ({ email: '', emailState: null, submitted: false, finished: false }),
+  data: () => ({ username: '', finished: false }),
   watch: {
     email: 'validate',
   },
   methods: {
     async onSubmit() {
-      this.submitted = true
-      this.validate()
-      if (this.emailState === false) return
+      if (!this.username) return
       const body = new (FormData)
-      body.append('email', this.email)
+      body.append('username', this.username)
       const data = (await this.$axios.post('/api/password-reset', body)).data
       this.finished = true
     },
-    validate() {
-      if (!this.submitted) return
-      if (!this.email)
-        this.emailState = false
-      else if (!this.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
-        this.emailState = false
-      else
-        this.emailState = null
-    }
   },
 }
 </script>

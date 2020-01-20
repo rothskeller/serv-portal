@@ -24,7 +24,6 @@ func GetEvents(r *util.Request) error {
 		year = time.Now().Year()
 	}
 	events = r.Tx.FetchEvents(fmt.Sprintf("%d-01-01", year), fmt.Sprintf("%d-12-31", year))
-	r.Tx.Commit()
 	out.RawString(`{"canAdd":`)
 	out.Bool(auth.CanCreateEvents(r))
 	out.RawString(`,"events":[`)
@@ -46,13 +45,14 @@ func GetEvents(r *util.Request) error {
 		out.RawString(`,"start":`)
 		out.String(e.Start)
 		out.RawString(`,"venue":`)
-		if e.Venue != nil {
+		if e.Venue != 0 {
+			venue := r.Tx.FetchVenue(e.Venue)
 			out.RawString(`{"id":`)
-			out.Int(int(e.Venue.ID))
+			out.Int(int(e.Venue))
 			out.RawString(`,"name":`)
-			out.String(e.Venue.Name)
+			out.String(venue.Name)
 			out.RawString(`,"url":`)
-			out.String(e.Venue.URL)
+			out.String(venue.URL)
 			out.RawByte('}')
 		} else {
 			out.RawString(`null`)
@@ -69,16 +69,17 @@ func GetEvents(r *util.Request) error {
 				out.String(model.EventTypeNames[t])
 			}
 		}
-		out.RawString(`],"roles":[`)
-		for i, r := range e.Roles {
+		out.RawString(`],"groups":[`)
+		for i, g := range e.Groups {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.Name)
+			out.String(r.Tx.FetchGroup(g).Name)
 		}
 		out.RawString(`]}`)
 	}
 	out.RawString(`]}`)
+	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil

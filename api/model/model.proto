@@ -1,0 +1,109 @@
+syntax = "proto3";
+package model;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) = true;
+option (gogoproto.goproto_unrecognized_all) = false;
+
+message AuthzData {
+  repeated Group groups = 1;
+  repeated Role  roles  = 2;
+}
+
+message Event {
+  int64          id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
+  string         name      = 2;
+  string         date      = 3;
+  string         start     = 4;
+  string         end       = 5;
+  int64          venue     = 6 [(gogoproto.casttype) = "VenueID"];
+  string         details   = 7;
+  int32          type      = 8 [(gogoproto.casttype) = "EventType"];
+  repeated int64 groups    = 9 [(gogoproto.casttype) = "GroupID"];
+  string         sccAresID = 10;
+}
+
+message Group {
+  int64  id   = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
+  string tag  = 2 [(gogoproto.casttype) = "GroupTag"];
+  string name = 3;
+}
+
+message Person {
+  int64                     id              =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "PersonID"];
+  string                    username        =  2;
+  string                    full_name       =  3 [(gogoproto.jsontag) = "fullName"];
+  string                    sort_name       =  4 [(gogoproto.jsontag) = "sortName"];
+  string                    nickname        =  5;
+  string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
+  repeated PersonEmail      emails          = 12;
+  repeated PersonAddress    addresses       = 13;
+  repeated PersonPhone      phones          = 14;
+  bytes                     password        =  7;
+  int64                     bad_login_count =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
+  google.protobuf.Timestamp bad_login_time  =  9 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "badLoginTime"];
+  string                    pwreset_token   = 10 [(gogoproto.customname) = "PWResetToken", (gogoproto.jsontag) = "pwresetToken,omitempty"];
+  google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
+  repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
+  PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
+}
+
+message PersonAddress {
+  string address         =  1;
+  string city            =  2;
+  string state           =  3;
+  string zip             =  4;
+  string label           =  5;
+  bool   work_hours      =  6 [(gogoproto.jsontag) = "workHours"];
+  bool   home_hours      =  7 [(gogoproto.jsontag) = "homeHours"];
+  bool   mailing_address =  8 [(gogoproto.jsontag) = "mailingAddress"];
+  double latitude        =  9;
+  double longitude       = 10;
+}
+
+message PersonEmail {
+  string email = 1;
+  string label = 2;
+  bool   bad   = 3;
+}
+
+message PersonPhone {
+  string phone = 1;
+  string label = 2;
+  bool   sms   = 3 [(gogoproto.customname) = "SMS"];
+}
+
+message PrivilegeMap {
+  option (gogoproto.marshaler) = false;
+  option (gogoproto.sizer) = false;
+  option (gogoproto.unmarshaler) = false;
+  option (gogoproto.stringer) = false;
+  option (gogoproto.typedecl) = false;
+}
+
+message Role {
+  int64        id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
+  string       tag        = 2 [(gogoproto.casttype) = "RoleTag"];
+  string       name       = 3;
+  bool         individual = 4;
+  PrivilegeMap privileges = 5 [(gogoproto.nullable) = false];
+}
+
+message Venue {
+  int64  id      = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "VenueID"];
+  string name    = 2;
+  string address = 3;
+  string city    = 4;
+  string url     = 5 [(gogoproto.customname) = "URL"];
+}
+
+message Venues {
+  repeated Venue venues = 1;
+}

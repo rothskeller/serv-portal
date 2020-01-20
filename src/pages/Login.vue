@@ -29,7 +29,7 @@ export default {
     async onSubmit() {
       if (!this.email || !this.password) return
       const body = new (FormData)
-      body.append('email', this.email)
+      body.append('username', this.email)
       body.append('password', this.password)
       try {
         const data = (await this.$axios.post('/api/login', body)).data

@@ -24,7 +24,7 @@ Page is the basic framework of all pages on the site.
         b-nav-item(to="/people" :active="menuItem === 'people'") People
         b-nav-item(v-if="$store.state.me.webmaster" to="/roles" :active="menuItem === 'roles'") Roles
         b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
-        b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
+        //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
         b-nav-item(to="/logout") Logout
     #page-content(:class="noPadding ? 'page-no-padding': null")
       #page-subtitle(v-if="subtitle" v-text="subtitle")

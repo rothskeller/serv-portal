@@ -1,0 +1,183 @@
+package main
+
+import (
+	"encoding/csv"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"rothskeller.net/serv/auth"
+	"rothskeller.net/serv/model"
+)
+
+func listPeople(args []string, _ map[string]string) {
+	cw := csv.NewWriter(os.Stdout)
+	cw.Comma = '\t'
+	for _, p := range matchPeople(args[0]) {
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.FullName, p.SortName, p.Nickname, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
+	}
+	cw.Flush()
+}
+
+func matchPeople(pattern string) (people []*model.Person) {
+	id, re, single := parsePattern(pattern)
+	for _, p := range tx.FetchPeople() {
+		if id != 0 && id != int(p.ID) {
+			continue
+		}
+		if re != nil && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
+			continue
+		}
+		people = append(people, p)
+	}
+	if single && len(people) > 1 {
+		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", pattern)
+		for _, p := range people {
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+		}
+		os.Exit(1)
+	}
+	if pattern != "" && len(people) == 0 {
+		fmt.Fprintf(os.Stderr, "ERROR: pattern %q does not match any event.\n", pattern)
+		os.Exit(1)
+	}
+	return people
+}
+
+func createPerson(_ []string, fields map[string]string) {
+	var person model.Person
+	applyPersonFields(&person, fields)
+	tx.SavePerson(&person)
+	fmt.Printf("Created person has ID %d.\n", person.ID)
+}
+
+func setPeople(args []string, fields map[string]string) {
+	var matches, changes int
+	for _, p := range matchPeople(args[0]) {
+		matches++
+		if applyPersonFields(p, fields) {
+			changes++
+			tx.SavePerson(p)
+		}
+	}
+	fmt.Printf("Matched %d people and changed %d.\n", matches, changes)
+}
+
+func applyPersonFields(person *model.Person, fields map[string]string) (changed bool) {
+	var err error
+	for f, v := range fields {
+		switch f {
+		case "username":
+			if person.Username != v {
+				changed = true
+				person.Username = v
+			}
+		case "fullname", "full_name", "full":
+			if person.FullName != v {
+				changed = true
+				person.FullName = v
+			}
+		case "sortname", "sort_name", "sort":
+			if person.SortName != v {
+				changed = true
+				person.SortName = v
+			}
+		case "nickname", "nick":
+			if person.Nickname != v {
+				changed = true
+				person.Nickname = v
+			}
+		case "callsign", "call_sign", "call":
+			if person.CallSign != v {
+				changed = true
+				person.CallSign = v
+			}
+		case "password", "pw":
+			if v == "" {
+				if len(person.Password) != 0 {
+					changed = true
+					person.Password = nil
+				}
+			} else if strings.HasPrefix(v, "$2a$") {
+				if string(person.Password) != v {
+					changed = true
+					person.Password = []byte(v)
+				}
+			} else {
+				changed = true
+				person.Password = auth.EncryptPassword(v)
+			}
+		case "bad_login_count":
+			if count, err := strconv.Atoi(v); err == nil && count >= 0 {
+				if count != person.BadLoginCount {
+					changed = true
+					person.BadLoginCount = count
+				}
+			} else {
+				fmt.Fprintf(os.Stderr, "ERROR: %q is not a valid value for bad_login_count.\n", v)
+				os.Exit(1)
+			}
+		case "bad_login_time":
+			var t time.Time
+			if v == "" {
+				t = time.Time{}
+			} else if t, err = time.ParseInLocation(time.RFC3339, v, time.Local); err != nil {
+				fmt.Fprintf(os.Stderr, "ERROR: %q is not a valid value for bad_login_time. Use an RFC3339 timestamp.\n", v)
+				os.Exit(1)
+			}
+			if !t.Equal(person.BadLoginTime) {
+				changed = true
+				person.BadLoginTime = t
+			}
+		case "pwreset_token":
+			if person.PWResetToken != v {
+				changed = true
+				person.PWResetToken = v
+			}
+		case "pwreset_time":
+			var t time.Time
+			if v == "" {
+				t = time.Time{}
+			} else if t, err = time.ParseInLocation(time.RFC3339, v, time.Local); err != nil {
+				fmt.Fprintf(os.Stderr, "ERROR: %q is not a valid value for pwreset_time. Use an RFC3339 timestamp.\n", v)
+				os.Exit(1)
+			}
+			if !t.Equal(person.PWResetTime) {
+				changed = true
+				person.PWResetTime = t
+			}
+		default:
+			fmt.Fprintf(os.Stderr, "ERROR: there is no %q field on a person.  Valid fields are username, full_name, sort_name, nickname, call_sign, password, bad_login_count, bad_login_time, pwreset_token, and pwreset_time, and abbreviations of those.\n", f)
+			os.Exit(1)
+		}
+	}
+	if person.Username == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: username is required.\n")
+		os.Exit(1)
+	}
+	if p := tx.FetchPersonByUsername(person.Username); p != nil && p.ID != person.ID {
+		fmt.Fprintf(os.Stderr, "ERROR: another person has this username.\n")
+		os.Exit(1)
+	}
+	if person.FullName == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: full_name is required.\n")
+		os.Exit(1)
+	}
+	if person.SortName == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: sort_name is required.\n")
+		os.Exit(1)
+	}
+	if person.Nickname == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: nickname is required.\n")
+		os.Exit(1)
+	}
+	if person.PWResetToken != "" {
+		if p := tx.FetchPersonByPWResetToken(person.PWResetToken); p != nil && p.ID != person.ID {
+			fmt.Fprintf(os.Stderr, "ERROR: another person has this pwreset_token.\n")
+			os.Exit(1)
+		}
+	}
+	return changed
+}

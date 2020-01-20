@@ -74,7 +74,7 @@ func RunRequest(w http.ResponseWriter, r *http.Request, handler RequestHandler) 
 		end = time.Now().In(time.Local)
 		fmt.Fprintf(&logbuf, "%s %s %s", request.Start.Format("2006-01-02 15:04:05"), request.Method, request.Path)
 		if request.Person != nil {
-			fmt.Fprintf(&logbuf, " [u=%s]", request.Person.Email)
+			fmt.Fprintf(&logbuf, " [u=%s]", request.Person.Username)
 		}
 		if request.Form != nil {
 			for k, vs := range request.Form {

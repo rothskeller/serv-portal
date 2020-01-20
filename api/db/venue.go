@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"sort"
 
 	"rothskeller.net/serv/model"
@@ -9,20 +8,16 @@ import (
 
 func (tx *Tx) cacheVenues() {
 	var (
-		rows *sql.Rows
-		err  error
+		data   []byte
+		venues model.Venues
 	)
 	tx.venues = make(map[model.VenueID]*model.Venue)
-	rows, err = tx.tx.Query(`SELECT id, name, address, city, url FROM venue`)
-	panicOnError(err)
-	for rows.Next() {
-		var venue model.Venue
-		panicOnError(rows.Scan(&venue.ID, &venue.Name, &venue.Address, &venue.City, &venue.URL))
-		tx.venues[venue.ID] = &venue
-		tx.venueList = append(tx.venueList, &venue)
+	panicOnError(tx.tx.QueryRow(`SELECT data FROM venue`).Scan(&data))
+	panicOnError(venues.Unmarshal(data))
+	tx.venueList = venues.Venues
+	for _, venue := range tx.venueList {
+		tx.venues[venue.ID] = venue
 	}
-	panicOnError(rows.Err())
-	sort.Slice(tx.venueList, func(i, j int) bool { return tx.venueList[i].Name < tx.venueList[j].Name })
 }
 
 // FetchVenue retrieves a single venue from the database.  It returns nil if the
@@ -46,26 +41,50 @@ func (tx *Tx) FetchVenues() []*model.Venue {
 // zero, it creates a new venue in the database, and puts its ID in the supplied
 // venue structure.
 func (tx *Tx) SaveVenue(venue *model.Venue) {
+	var (
+		venues model.Venues
+		data   []byte
+		err    error
+	)
 	if tx.venues == nil {
 		tx.cacheVenues()
 	}
 	if venue.ID == 0 {
-		result, err := tx.tx.Exec(`INSERT INTO venue (name, address, city, url) VALUES (?,?,?,?)`, venue.Name, venue.Address, venue.City, venue.URL)
-		panicOnError(err)
-		venue.ID = model.VenueID(lastInsertID(result))
-	} else {
-		panicOnNoRows(tx.tx.Exec(`UPDATE venue SET name=?, address=?, city=?, url=? WHERE id=?`, venue.Name, venue.Address, venue.City, venue.URL, venue.ID))
+		for venue.ID = 1; tx.venues[venue.ID] != nil; venue.ID++ {
+		}
+		tx.venueList = append(tx.venueList, venue)
 	}
 	tx.venues[venue.ID] = venue
-	tx.audit(model.AuditRecord{Venue: venue})
+	venues.Venues = tx.venueList
+	sort.Sort(venues)
+	data, err = venues.Marshal()
+	panicOnError(err)
+	panicOnExecError(tx.tx.Exec(`UPDATE venue SET data=?`, data))
+	tx.audit("venues", 0, data)
 }
 
 // DeleteVenue deletes a venue definition from the database.
 func (tx *Tx) DeleteVenue(venue *model.Venue) {
+	var (
+		venues model.Venues
+		data   []byte
+		err    error
+	)
 	if tx.venues == nil {
 		tx.cacheVenues()
 	}
-	panicOnNoRows(tx.tx.Exec(`DELETE FROM venue WHERE id=?`, venue.ID))
 	delete(tx.venues, venue.ID)
-	tx.audit(model.AuditRecord{Venue: &model.Venue{ID: venue.ID}})
+	j := 0
+	for _, v := range tx.venueList {
+		if v != venue {
+			tx.venueList[j] = v
+			j++
+		}
+	}
+	tx.venueList = tx.venueList[:j]
+	venues.Venues = tx.venueList
+	data, err = venues.Marshal()
+	panicOnError(err)
+	panicOnExecError(tx.tx.Exec(`UPDATE venue SET data=?`, data))
+	tx.audit("venues", 0, data)
 }

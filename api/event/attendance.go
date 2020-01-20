@@ -13,7 +13,7 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	var (
 		event  *model.Event
 		person *model.Person
-		people []*model.Person
+		attend = map[model.PersonID]bool{}
 	)
 	if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 		return util.NotFound
@@ -29,9 +29,9 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 		if !auth.CanViewEventP(r, person, event) {
 			return errors.New("illegal person")
 		}
-		people = append(people, person)
+		attend[person.ID] = true
 	}
-	r.Tx.SaveEventAttendance(event, people)
+	r.Tx.SaveEventAttendance(event, attend)
 	r.Tx.Commit()
 	return nil
 }
