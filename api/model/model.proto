@@ -39,6 +39,7 @@ message Group {
 message Person {
   int64                     id              =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "PersonID"];
   string                    username        =  2;
+  string                    informal_name   = 17 [(gogoproto.jsontag) = "informalName"];
   string                    full_name       =  3 [(gogoproto.jsontag) = "fullName"];
   string                    sort_name       =  4 [(gogoproto.jsontag) = "sortName"];
   string                    nickname        =  5;

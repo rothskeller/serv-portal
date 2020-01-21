@@ -716,6 +716,8 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 			out.ID = PersonID(in.Int())
 		case "username":
 			out.Username = string(in.String())
+		case "informalName":
+			out.InformalName = string(in.String())
 		case "fullName":
 			out.FullName = string(in.String())
 		case "sortName":
@@ -892,13 +894,18 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 		out.String(string(in.Username))
 	}
 	{
-		const prefix string = ",\"fullName\":"
+		const prefix string = ",\"informalName\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
+		out.String(string(in.InformalName))
+	}
+	{
+		const prefix string = ",\"fullName\":"
+		out.RawString(prefix)
 		out.String(string(in.FullName))
 	}
 	{

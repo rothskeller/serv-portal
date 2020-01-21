@@ -16,7 +16,7 @@ func listPeople(args []string, _ map[string]string) {
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
 	for _, p := range matchPeople(args[0]) {
-		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.FullName, p.SortName, p.Nickname, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FullName, p.SortName, p.Nickname, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
 	}
 	cw.Flush()
 }
@@ -27,7 +27,7 @@ func matchPeople(pattern string) (people []*model.Person) {
 		if id != 0 && id != int(p.ID) {
 			continue
 		}
-		if re != nil && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
+		if re != nil && !re.MatchString(p.InformalName) && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
 			continue
 		}
 		people = append(people, p)
@@ -73,6 +73,11 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 			if person.Username != v {
 				changed = true
 				person.Username = v
+			}
+		case "informal", "informal_name":
+			if person.InformalName != v {
+				changed = true
+				person.InformalName = v
 			}
 		case "fullname", "full_name", "full":
 			if person.FullName != v {
@@ -158,6 +163,10 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 			fmt.Fprintf(os.Stderr, "ERROR: another person has this username.\n")
 			os.Exit(1)
 		}
+	}
+	if person.InformalName == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: informal_name is required.\n")
+		os.Exit(1)
 	}
 	if person.FullName == "" {
 		fmt.Fprintf(os.Stderr, "ERROR: full_name is required.\n")
