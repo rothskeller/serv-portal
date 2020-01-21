@@ -10,21 +10,21 @@ Page(title="People" menuItem="people")
       option(v-for="t in groups" :key="t.id" :value="t.id" v-text="t.name")
   div.mt-3(v-if="loading")
     b-spinner(small)
-  table#people-table(v-else)
-    tr
-      th Person
-      th Contact Info
-      th Roles
-    tr(v-for="p in people" :key="p.id")
-      td: router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
-      td
+  #people-table(v-else)
+    .people-person.people-heading Person
+    .people-contact.people-heading Contact Info
+    .people-roles.people-heading Roles
+    template(v-for="p in people")
+      .people-person
+        td: router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
+      .people-contact
         div(v-for="email in p.emails")
           a(:href="`mailto:${email.email}`" v-text="email.email" :class="email.bad ? '.people-bad-email' : null")
           span(v-if="email.label" v-text="` (${email.label})`")
         div(v-for="phone in p.phones")
           a(:href="`tel:${phone.phone}`" v-text="phone.phone")
           span(v-if="phone.label" v-text="` (${phone.label})`")
-      td
+      .people-roles
         div(v-for="(r, i) in p.roles" :key="i" v-text="r")
         div(v-if="!p.roles.length") &mdash;
   //-div.mt-3(v-if="canAdd")
@@ -65,17 +65,63 @@ export default {
 <style lang="stylus">
 #people-title
   display flex
-  align-items center
+  flex-direction column
+  align-items flex-start
   font-size 1.5rem
+  @media (min-width: 576px)
+    flex-direction row
+    align-items center
 #people-group
-  margin-left 1rem
   font-size 1rem
+  @media (min-width: 576px)
+    margin-left 1rem
 #people-table
+  display flex
+  flex-wrap wrap
   margin-top 1.5rem
-  th, td
-    padding 0.75rem 1em 0 0
-    vertical-align top
-    line-height 1.2
+.people-heading
+  display none
+  @media (min-width: 576px)
+    display block
+    font-weight bold
+.people-person
+  overflow hidden
+  margin-top 0.25rem
+  width calc(100vw - 1.5rem)
+  text-overflow ellipsis
+  white-space nowrap
+  @media (min-width: 576px)
+    margin-top 0.75rem
+    width 10rem
+    white-space normal
+.people-contact
+  padding-left 8rem
+  width calc(100vw - 1.5rem)
+  div
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+  @media (min-width: 576px)
+    margin-top 0.75rem
+    padding-left 0.25rem
+    width calc(100vw - 18.5rem)
+  @media (min-width: 800px)
+    width calc(50vw - 9.25rem)
+  @media (min-width: 960px)
+    width 20.75rem
+.people-roles
+  display none
+  @media (min-width: 800px)
+    display block
+    margin-top 0.75rem
+    padding-left 0.25rem
+    width calc(50vw - 9.25rem)
+    div
+      overflow hidden
+      text-overflow ellipsis
+      white-space nowrap
+  @media (min-width: 960px)
+    width calc(100vw - 39.25rem)
 .people-bad-email
   text-decoration line-through
 </style>
