@@ -2,8 +2,11 @@ package auth
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"math/big"
+	"strings"
 
 	"github.com/trustelem/zxcvbn"
 	"golang.org/x/crypto/bcrypt"
@@ -104,7 +107,6 @@ func SetPassword(r *util.Request, p *model.Person, password string) {
 	}
 }
 
-/*
 // RandomPassword generates a new, random password.
 func RandomPassword() string {
 	var (
@@ -120,4 +122,3 @@ func RandomPassword() string {
 	}
 	return strings.Join(words, " ")
 }
-*/
