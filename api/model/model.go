@@ -9,6 +9,32 @@ import (
 	"time"
 )
 
+// An AttendanceInfo structure gives information about a person's attendance at
+// an event.
+type AttendanceInfo struct {
+	Type    AttendanceType
+	Minutes uint16
+}
+
+// An AttendanceType indicates the role that a person played in attending an
+// event (though it's carefully not called "role" to avoid confusion with
+// authorization roles).
+type AttendanceType uint8
+
+// Values for AttendanceType.
+const (
+	AttendAsVolunteer AttendanceType = iota
+	AttendAsStudent
+	AttendAsAuditor
+)
+
+// AttendanceTypeNames gives the names for the attendance types.
+var AttendanceTypeNames = map[AttendanceType]string{
+	AttendAsVolunteer: "Volunteer",
+	AttendAsStudent:   "Student",
+	AttendAsAuditor:   "Audit",
+}
+
 // An EventID is a positive integer uniquely identifying an Event.
 type EventID int
 

@@ -18,9 +18,8 @@ func usage() {
     serv event [«pattern»|«id»] set [field «value»]...
     serv event [«pattern»|«id»] delete
     serv event [«pattern»|«id»] attendance [list]
-    serv event [«pattern»|«id»] attendance add «pattern»|«id»...
-    serv event [«pattern»|«id»] attendance remove «pattern»|«id»...
-    serv event [«pattern»|«id»] attendance set «pattern»|«id»...
+    serv event [«pattern»|«id»] attendance «pattern»|«id» remove
+    serv event [«pattern»|«id»] attendance «pattern»|«id» set [field «value»]...
     serv event [«pattern»|«id»] group [list]
     serv event [«pattern»|«id»] group add «pattern»|«id»...
     serv event [«pattern»|«id»] group remove «pattern»|«id»...
@@ -83,9 +82,8 @@ var commands = []command{
 	{[]string{"event", "?", "set", "="}, setEvent},
 	{[]string{"event", "?", "delete"}, deleteEvents},
 	{[]string{"event", "?", "attendance", "list"}, listEventAttendance},
-	{[]string{"event", "?", "attendance", "add", "+"}, addEventAttendance},
-	{[]string{"event", "?", "attendance", "remove", "+"}, removeEventAttendance},
-	{[]string{"event", "?", "attendance", "set", "+"}, setEventAttendance},
+	{[]string{"event", "?", "attendance", ".", "remove"}, removeEventAttendance},
+	{[]string{"event", "?", "attendance", ".", "set", "="}, setEventAttendance},
 	{[]string{"event", "?", "group", "list"}, listEventGroups},
 	{[]string{"event", "?", "group", "add", "+"}, addEventGroups},
 	{[]string{"event", "?", "group", "remove", "+"}, removeEventGroups},

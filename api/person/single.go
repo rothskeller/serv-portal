@@ -18,7 +18,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		canViewContact bool
 		out            jwriter.Writer
 		roles          []*model.Role
-		attendmap      map[model.EventID]bool
+		attendmap      map[model.EventID]model.AttendanceInfo
 		attended       []*model.Event
 	)
 	if idstr == "NEW" {
@@ -115,6 +115,10 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.String(e.Date)
 			out.RawString(`,"name":`)
 			out.String(e.Name)
+			out.RawString(`,"type":`)
+			out.String(model.AttendanceTypeNames[attendmap[e.ID].Type])
+			out.RawString(`,"minutes":`)
+			out.Uint16(attendmap[e.ID].Minutes)
 			out.RawByte('}')
 		}
 		out.RawByte(']')

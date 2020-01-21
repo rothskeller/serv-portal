@@ -54,8 +54,10 @@ CREATE INDEX event_date_index ON event (date);
 
 -- The attendance table tracks which people attended which events.
 CREATE TABLE attendance (
-    event  integer NOT NULL REFERENCES event ON DELETE CASCADE,
-    person integer NOT NULL REFERENCES person ON DELETE CASCADE,
+    event   integer NOT NULL REFERENCES event ON DELETE CASCADE,
+    person  integer NOT NULL REFERENCES person ON DELETE CASCADE,
+    type    integer NOT NULL DEFAULT 0,
+    minutes integer NOT NULL DEFAULT 0,
     PRIMARY KEY (event, person)
 ) WITHOUT ROWID;
 CREATE INDEX attendance_person_index ON attendance (person);

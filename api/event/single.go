@@ -136,7 +136,11 @@ func GetEvent(r *util.Request, idstr string) error {
 		)
 		out.RawString(`,"people":[`)
 		for _, p := range r.Tx.FetchPeople() {
-			if !auth.CanViewEventP(r, p, event) {
+			if !auth.CanViewPerson(r, p) {
+				continue
+			}
+			ai, att := attended[p.ID]
+			if !att && !auth.CanViewEventP(r, p, event) {
 				continue
 			}
 			if first {
@@ -148,8 +152,15 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.Int(int(p.ID))
 			out.RawString(`,"sortName":`)
 			out.String(p.SortName)
-			out.RawString(`,"attended":`)
-			out.Bool(attended[p.ID])
+			if att {
+				out.RawString(`,"attended":{"type":`)
+				out.String(model.AttendanceTypeNames[ai.Type])
+				out.RawString(`,"minutes":`)
+				out.Uint16(ai.Minutes)
+				out.RawByte('}')
+			} else {
+				out.RawString(`,"attended":false`)
+			}
 			out.RawByte('}')
 		}
 		out.RawByte(']')

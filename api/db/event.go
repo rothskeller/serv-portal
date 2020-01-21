@@ -90,53 +90,54 @@ func (tx *Tx) DeleteEvent(e *model.Event) {
 }
 
 // FetchAttendanceByEvent retrieves the attendance at a specific event.
-func (tx *Tx) FetchAttendanceByEvent(e *model.Event) (attend map[model.PersonID]bool) {
+func (tx *Tx) FetchAttendanceByEvent(e *model.Event) (attend map[model.PersonID]model.AttendanceInfo) {
 	var (
 		rows *sql.Rows
-		pid  model.PersonID
 		err  error
 	)
-	attend = make(map[model.PersonID]bool)
-	rows, err = tx.tx.Query(`SELECT person FROM attendance WHERE event=?`, e.ID)
+	attend = make(map[model.PersonID]model.AttendanceInfo)
+	rows, err = tx.tx.Query(`SELECT person, type, minutes FROM attendance WHERE event=?`, e.ID)
 	panicOnError(err)
 	for rows.Next() {
-		panicOnError(rows.Scan(&pid))
-		attend[pid] = true
+		var ai model.AttendanceInfo
+		var pid model.PersonID
+		panicOnError(rows.Scan(&pid, &ai.Type, &ai.Minutes))
+		attend[pid] = ai
 	}
 	panicOnError(rows.Err())
 	return attend
 }
 
 // SaveEventAttendance saves the attendance for a specific event.
-func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]bool) {
+func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]model.AttendanceInfo) {
 	var (
 		stmt *sql.Stmt
 		err  error
 	)
 	panicOnExecError(tx.tx.Exec(`DELETE FROM attendance WHERE event=?`, e.ID))
-	stmt, err = tx.tx.Prepare(`INSERT INTO attendance (event, person) VALUES (?,?)`)
+	stmt, err = tx.tx.Prepare(`INSERT INTO attendance (event, person, type, minutes) VALUES (?,?,?,?)`)
 	panicOnError(err)
 	for pid, att := range attend {
-		if att {
-			panicOnExecError(stmt.Exec(e.ID, pid))
-		}
+		panicOnExecError(stmt.Exec(e.ID, pid, att.Type, att.Minutes))
+
 	}
 	panicOnError(stmt.Close())
 }
 
 // FetchAttendanceByPerson retrieves the attendance for a specific person.
-func (tx *Tx) FetchAttendanceByPerson(p *model.Person) (attend map[model.EventID]bool) {
+func (tx *Tx) FetchAttendanceByPerson(p *model.Person) (attend map[model.EventID]model.AttendanceInfo) {
 	var (
 		rows *sql.Rows
-		eid  model.EventID
 		err  error
 	)
-	attend = make(map[model.EventID]bool)
-	rows, err = tx.tx.Query(`SELECT event FROM attendance WHERE person=?`, p.ID)
+	attend = make(map[model.EventID]model.AttendanceInfo)
+	rows, err = tx.tx.Query(`SELECT event, type, minutes FROM attendance WHERE person=?`, p.ID)
 	panicOnError(err)
 	for rows.Next() {
-		panicOnError(rows.Scan(&eid))
-		attend[eid] = true
+		var ai model.AttendanceInfo
+		var eid model.EventID
+		panicOnError(rows.Scan(&eid, &ai.Type, &ai.Minutes))
+		attend[eid] = ai
 	}
 	panicOnError(rows.Err())
 	return attend
