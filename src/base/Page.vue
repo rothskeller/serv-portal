@@ -16,9 +16,7 @@ Page is the basic framework of all pages on the site.
       #page-menu-welcome
         | Welcome
         br
-        b(v-text="$store.state.me.nickname")
-        br
-        b(v-text="$store.state.me.lastName")
+        b(v-text="$store.state.me.informalName")
       b-nav#page-nav(pills vertical)
         b-nav-item(to="/events" :active="menuItem === 'events'") Events
         b-nav-item(to="/people" :active="menuItem === 'people'") People

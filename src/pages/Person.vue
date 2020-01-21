@@ -35,7 +35,7 @@ export default {
     const data = (await this.$axios.get(`/api/people/${this.$route.params.id}`)).data
     this.canEdit = data.canEdit
     this.person = data.person
-    this.title = data.person.id ? data.fullName : 'New Person'
+    this.title = data.person.id ? data.informalName : 'New Person'
     this.loading = false
   },
 }

@@ -50,10 +50,10 @@ func PostPasswordReset(r *util.Request) error {
 		if i != 0 {
 			body.WriteString(", ")
 		}
-		fmt.Fprintf(&body, "%s <%s>", person.FullName, e)
+		fmt.Fprintf(&body, "%s <%s>", person.FormalName, e)
 	}
 	fmt.Fprintf(&body, "\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
-		person.Nickname, config.Get("siteURL"), person.PWResetToken)
+		person.InformalName, config.Get("siteURL"), person.PWResetToken)
 	if err := smtp.SendMail(
 		config.Get("smtpServer"),
 		&loginAuth{config.Get("smtpUsername"), config.Get("smtpPassword")},
@@ -85,9 +85,9 @@ func GetPasswordResetToken(r *util.Request, token string) error {
 		out.String(h)
 	}
 	out.RawByte(',')
-	out.String(person.FullName)
+	out.String(person.InformalName)
 	out.RawByte(',')
-	out.String(person.Nickname)
+	out.String(person.FormalName)
 	out.RawByte(',')
 	out.String(person.CallSign)
 	out.RawByte(',')

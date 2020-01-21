@@ -20,7 +20,7 @@ func listEventAttendance(args []string, _ map[string]string) {
 		}
 		sort.Sort(model.PersonSort(people))
 		for _, p := range people {
-			cw.Write([]string{strconv.Itoa(int(e.ID)), e.Date, e.Name, strconv.Itoa(int(p.ID)), p.FullName})
+			cw.Write([]string{strconv.Itoa(int(e.ID)), e.Date, e.Name, strconv.Itoa(int(p.ID)), p.FormalName})
 		}
 	}
 	cw.Flush()

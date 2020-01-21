@@ -11,18 +11,11 @@ import (
 )
 
 func listPersonAddresses(args []string, _ map[string]string) {
-	id, re, _ := parsePattern(args[0])
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
-	for _, p := range tx.FetchPeople() {
-		if id != 0 && id != int(p.ID) {
-			continue
-		}
-		if re != nil && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
-			continue
-		}
+	for _, p := range matchPeople(args[0]) {
 		for i, a := range p.Addresses {
-			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FullName, strconv.Itoa(i + 1), a.Label, a.Address, a.City, a.State, a.Zip, strconv.FormatBool(a.WorkHours), strconv.FormatBool(a.HomeHours), strconv.FormatBool(a.MailingAddress), strconv.FormatFloat(a.Latitude, 'f', -1, 64), strconv.FormatFloat(a.Longitude, 'f', -1, 64)})
+			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FormalName, strconv.Itoa(i + 1), a.Label, a.Address, a.City, a.State, a.Zip, strconv.FormatBool(a.WorkHours), strconv.FormatBool(a.HomeHours), strconv.FormatBool(a.MailingAddress), strconv.FormatFloat(a.Latitude, 'f', -1, 64), strconv.FormatFloat(a.Longitude, 'f', -1, 64)})
 
 		}
 	}
@@ -34,7 +27,7 @@ func addPersonAddress(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
@@ -46,7 +39,7 @@ func addPersonAddress(args []string, fields map[string]string) {
 	applyPersonAddressFields(&address, fields)
 	for _, e := range people[0].Addresses {
 		if e.Address == address.Address && e.City == address.City && e.State == address.State && e.Zip == address.Zip {
-			fmt.Fprintf(os.Stderr, "ERROR: %s already has this address.\n", people[0].FullName)
+			fmt.Fprintf(os.Stderr, "ERROR: %s already has this address.\n", people[0].FormalName)
 			os.Exit(1)
 		}
 	}
@@ -59,13 +52,13 @@ func setPersonAddress(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Addresses) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid address index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid address index for %s.\n", args[1], people[0].FormalName)
 	}
 	applyPersonAddressFields(people[0].Addresses[index-1], fields)
 	tx.SavePerson(people[0])
@@ -76,13 +69,13 @@ func removePersonAddress(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Addresses) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid address index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid address index for %s.\n", args[1], people[0].FormalName)
 	}
 	people[0].Addresses = append(people[0].Addresses[:index-1], people[0].Addresses[index:]...)
 	tx.SavePerson(people[0])

@@ -24,8 +24,8 @@ func GetLogin(r *util.Request) error {
 	var out jwriter.Writer
 	out.RawString(`{"id":`)
 	out.Int(int(r.Person.ID))
-	out.RawString(`,"nickname":`)
-	out.String(r.Person.Nickname)
+	out.RawString(`,"informalName":`)
+	out.String(r.Person.InformalName)
 	out.RawString(`,"webmaster":`)
 	out.Bool(IsWebmaster(r))
 	out.RawByte('}')

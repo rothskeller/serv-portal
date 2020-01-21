@@ -12,18 +12,11 @@ import (
 )
 
 func listPersonEmails(args []string, _ map[string]string) {
-	id, re, _ := parsePattern(args[0])
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
-	for _, p := range tx.FetchPeople() {
-		if id != 0 && id != int(p.ID) {
-			continue
-		}
-		if re != nil && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
-			continue
-		}
+	for _, p := range matchPeople(args[0]) {
 		for i, e := range p.Emails {
-			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FullName, strconv.Itoa(i + 1), e.Label, e.Email, strconv.FormatBool(e.Bad)})
+			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FormalName, strconv.Itoa(i + 1), e.Label, e.Email, strconv.FormatBool(e.Bad)})
 
 		}
 	}
@@ -35,7 +28,7 @@ func addPersonEmail(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
@@ -44,7 +37,7 @@ func addPersonEmail(args []string, fields map[string]string) {
 	applyPersonEmailFields(&email, fields)
 	for _, e := range people[0].Emails {
 		if e.Email == email.Email {
-			fmt.Fprintf(os.Stderr, "ERROR: %s already has this email address.\n", people[0].FullName)
+			fmt.Fprintf(os.Stderr, "ERROR: %s already has this email address.\n", people[0].FormalName)
 			os.Exit(1)
 		}
 	}
@@ -57,13 +50,13 @@ func setPersonEmail(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Emails) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid email index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid email index for %s.\n", args[1], people[0].FormalName)
 	}
 	applyPersonEmailFields(people[0].Emails[index-1], fields)
 	tx.SavePerson(people[0])
@@ -74,13 +67,13 @@ func removePersonEmail(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Emails) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid email index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid email index for %s.\n", args[1], people[0].FormalName)
 	}
 	people[0].Emails = append(people[0].Emails[:index-1], people[0].Emails[index:]...)
 	tx.SavePerson(people[0])

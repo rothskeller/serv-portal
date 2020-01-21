@@ -62,7 +62,7 @@ func main() {
 	}
 	person.ID = 1
 	person.Username = "admin"
-	person.FullName = "Administrator"
+	person.FormalName = "Administrator"
 	person.SortName = "Administrator"
 	person.Nickname = "Admin"
 	person.Roles = []model.RoleID{1}

@@ -62,7 +62,7 @@ func StrongPassword(r *util.Request, p *model.Person, password string) bool {
 	hints = make([]string, 0, len(SERVPasswordHints)+4)
 	hints = append(hints, SERVPasswordHints...)
 	if p != nil {
-		hints = append(hints, p.FullName, p.Nickname, p.CallSign, p.Username)
+		hints = append(hints, p.InformalName, p.FormalName, p.CallSign, p.Username)
 		for _, a := range p.Addresses {
 			hints = append(hints, a.Address, a.City, a.State, a.Zip)
 		}

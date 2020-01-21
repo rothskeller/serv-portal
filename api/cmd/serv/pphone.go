@@ -11,18 +11,11 @@ import (
 )
 
 func listPersonPhones(args []string, _ map[string]string) {
-	id, re, _ := parsePattern(args[0])
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
-	for _, p := range tx.FetchPeople() {
-		if id != 0 && id != int(p.ID) {
-			continue
-		}
-		if re != nil && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
-			continue
-		}
+	for _, p := range matchPeople(args[0]) {
 		for i, pp := range p.Phones {
-			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FullName, strconv.Itoa(i + 1), pp.Label, pp.Phone, strconv.FormatBool(pp.SMS)})
+			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FormalName, strconv.Itoa(i + 1), pp.Label, pp.Phone, strconv.FormatBool(pp.SMS)})
 
 		}
 	}
@@ -34,7 +27,7 @@ func addPersonPhone(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
@@ -43,7 +36,7 @@ func addPersonPhone(args []string, fields map[string]string) {
 	applyPersonPhoneFields(&phone, fields)
 	for _, e := range people[0].Phones {
 		if e.Phone == phone.Phone {
-			fmt.Fprintf(os.Stderr, "ERROR: %s already has this phone number.\n", people[0].FullName)
+			fmt.Fprintf(os.Stderr, "ERROR: %s already has this phone number.\n", people[0].FormalName)
 			os.Exit(1)
 		}
 	}
@@ -56,13 +49,13 @@ func setPersonPhone(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Phones) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid phone index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid phone index for %s.\n", args[1], people[0].FormalName)
 	}
 	applyPersonPhoneFields(people[0].Phones[index-1], fields)
 	tx.SavePerson(people[0])
@@ -73,13 +66,13 @@ func removePersonPhone(args []string, fields map[string]string) {
 	if len(people) != 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", args[0])
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
 	index, err := strconv.Atoi(args[1])
 	if err != nil || index < 1 || index > len(people[0].Phones) {
-		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid phone index for %s.\n", args[1], people[0].FullName)
+		fmt.Fprintf(os.Stderr, "ERROR: %s is not a valid phone index for %s.\n", args[1], people[0].FormalName)
 	}
 	people[0].Phones = append(people[0].Phones[:index-1], people[0].Phones[index:]...)
 	tx.SavePerson(people[0])

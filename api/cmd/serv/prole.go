@@ -15,7 +15,7 @@ func listPersonRoles(args []string, _ map[string]string) {
 	for _, p := range matchPeople(args[0]) {
 		for _, rn := range p.Roles {
 			r := tx.FetchRole(rn)
-			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FullName, strconv.Itoa(int(r.ID)), r.Name})
+			cw.Write([]string{strconv.Itoa(int(p.ID)), p.FormalName, strconv.Itoa(int(r.ID)), r.Name})
 		}
 	}
 	cw.Flush()

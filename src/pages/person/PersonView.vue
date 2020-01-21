@@ -4,9 +4,10 @@ PersonView displays the information about a person, in non-editable form.
 
 <template lang="pug">
 #person-view
-  #person-view-fullName
-    span(v-text="person.fullName")
+  #person-view-informalName
+    span(v-text="person.informalName")
     span#person-view-callSign(v-if="person.callSign" v-text="person.callSign")
+  #person-view-formalName(v-if="person.formalName !== person.informalName" v-text="`(formally ${person.formalName})`")
   div(v-for="role in person.roles" v-text="role.name")
   #person-view-emails(v-if="person.emails")
     div(v-for="e in person.emails")
@@ -50,10 +51,12 @@ export default {
 <style lang="stylus">
 #person-view
   margin 1.5rem 0.75rem
-#person-view-fullName
+#person-view-informalName
   font-weight bold
   font-size 1.25rem
   line-height 1.2
+#person-view-formalName
+  color #888
 #person-view-callSign
   margin-left 0.5rem
   font-weight normal

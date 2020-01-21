@@ -718,12 +718,10 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 			out.Username = string(in.String())
 		case "informalName":
 			out.InformalName = string(in.String())
-		case "fullName":
-			out.FullName = string(in.String())
+		case "formalName":
+			out.FormalName = string(in.String())
 		case "sortName":
 			out.SortName = string(in.String())
-		case "nickname":
-			out.Nickname = string(in.String())
 		case "callSign":
 			out.CallSign = string(in.String())
 		case "emails":
@@ -904,19 +902,14 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 		out.String(string(in.InformalName))
 	}
 	{
-		const prefix string = ",\"fullName\":"
+		const prefix string = ",\"formalName\":"
 		out.RawString(prefix)
-		out.String(string(in.FullName))
+		out.String(string(in.FormalName))
 	}
 	{
 		const prefix string = ",\"sortName\":"
 		out.RawString(prefix)
 		out.String(string(in.SortName))
-	}
-	if in.Nickname != "" {
-		const prefix string = ",\"nickname\":"
-		out.RawString(prefix)
-		out.String(string(in.Nickname))
 	}
 	if in.CallSign != "" {
 		const prefix string = ",\"callSign\":"

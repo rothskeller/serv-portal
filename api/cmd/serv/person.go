@@ -16,7 +16,7 @@ func listPeople(args []string, _ map[string]string) {
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
 	for _, p := range matchPeople(args[0]) {
-		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FullName, p.SortName, p.Nickname, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
 	}
 	cw.Flush()
 }
@@ -27,7 +27,7 @@ func matchPeople(pattern string) (people []*model.Person) {
 		if id != 0 && id != int(p.ID) {
 			continue
 		}
-		if re != nil && !re.MatchString(p.InformalName) && !re.MatchString(p.FullName) && !re.MatchString(p.Nickname) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
+		if re != nil && !re.MatchString(p.InformalName) && !re.MatchString(p.FormalName) && !re.MatchString(p.CallSign) && !re.MatchString(p.Username) {
 			continue
 		}
 		people = append(people, p)
@@ -35,7 +35,7 @@ func matchPeople(pattern string) (people []*model.Person) {
 	if single && len(people) > 1 {
 		fmt.Fprintf(os.Stderr, "ERROR: pattern %q matches multiple people:\n", pattern)
 		for _, p := range people {
-			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FullName)
+			fmt.Fprintf(os.Stderr, "%d\t%s\n", p.ID, p.FormalName)
 		}
 		os.Exit(1)
 	}
@@ -79,20 +79,15 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 				changed = true
 				person.InformalName = v
 			}
-		case "fullname", "full_name", "full":
-			if person.FullName != v {
+		case "formalname", "formal_name", "formal":
+			if person.FormalName != v {
 				changed = true
-				person.FullName = v
+				person.FormalName = v
 			}
 		case "sortname", "sort_name", "sort":
 			if person.SortName != v {
 				changed = true
 				person.SortName = v
-			}
-		case "nickname", "nick":
-			if person.Nickname != v {
-				changed = true
-				person.Nickname = v
 			}
 		case "callsign", "call_sign", "call":
 			if person.CallSign != v {
@@ -154,7 +149,7 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 				person.PWResetTime = t
 			}
 		default:
-			fmt.Fprintf(os.Stderr, "ERROR: there is no %q field on a person.  Valid fields are username, full_name, sort_name, nickname, call_sign, password, bad_login_count, bad_login_time, pwreset_token, and pwreset_time, and abbreviations of those.\n", f)
+			fmt.Fprintf(os.Stderr, "ERROR: there is no %q field on a person.  Valid fields are username, informal_name, formal_name, sort_name, call_sign, password, bad_login_count, bad_login_time, pwreset_token, and pwreset_time, and abbreviations of those.\n", f)
 			os.Exit(1)
 		}
 	}
@@ -168,16 +163,12 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 		fmt.Fprintf(os.Stderr, "ERROR: informal_name is required.\n")
 		os.Exit(1)
 	}
-	if person.FullName == "" {
-		fmt.Fprintf(os.Stderr, "ERROR: full_name is required.\n")
+	if person.FormalName == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: formal_name is required.\n")
 		os.Exit(1)
 	}
 	if person.SortName == "" {
 		fmt.Fprintf(os.Stderr, "ERROR: sort_name is required.\n")
-		os.Exit(1)
-	}
-	if person.Nickname == "" {
-		fmt.Fprintf(os.Stderr, "ERROR: nickname is required.\n")
 		os.Exit(1)
 	}
 	if person.PWResetToken != "" {
