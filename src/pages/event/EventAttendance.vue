@@ -66,8 +66,12 @@ export default {
     flex-direction column
     flex-wrap wrap
     align-content flex-start
-    height calc(100vh - 40px - (3.25rem + 2px) - 3rem - (3rem + 2px) - 1rem - (2.25rem + 2px))
-    // title bar, tab bar, tab margin, settings form and margin, button margin, button
+    height calc(100vh - 12.5rem - 46px)
+    // 40px title bar
+    // 3.25rem + 2px tab bar
+    // 3rem tab margin
+    // 3rem + 2px settings form and margin
+    // 3.25rem + 2px button and margin
     .custom-checkbox
       margin-right 1.5rem
 </style>
