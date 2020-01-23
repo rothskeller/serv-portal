@@ -31,8 +31,15 @@ PeopleMap displays people on a map.
         )
         GmapMarker(
           v-if="work && person.workAddress && person.workAddress.latitude && person.workAddress.longitude"
-          :key="person.id"
+          :key="`w${person.id}`"
           :position="{lat: person.workAddress.latitude, lng: person.workAddress.longitude}"
+          :options="{title: person.informalName}"
+          :title="person.informalName"
+        )
+        GmapMarker(
+          v-else-if="work && person.workAddress.sameAsHome && person.homeAddress && person.homeAddress.latitude && person.homeAddress.longitude"
+          :key="`w${person.id}`"
+          :position="{lat: person.homeAddress.latitude, lng: person.homeAddress.longitude}"
           :options="{title: person.informalName}"
           :title="person.informalName"
         )

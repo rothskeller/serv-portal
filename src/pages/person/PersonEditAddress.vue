@@ -38,7 +38,7 @@ b-form-group(
 import SmartyStreetsSDK from 'smartystreets-javascript-sdk'
 const SmartyStreetsCore = SmartyStreetsSDK.core
 const Lookup = SmartyStreetsSDK.usStreet.Lookup
-const credentials = new SmartyStreetsCore.SharedCredentials('15809213558292353')
+const credentials = new SmartyStreetsCore.SharedCredentials(process.env.VUE_APP_SMARTYSTREETS_KEY)
 const client = SmartyStreetsCore.buildClient.usStreet(credentials)
 
 export default {
@@ -84,6 +84,7 @@ export default {
       else if (this.line2 === '') this.line2 = 'Sunnyvale, CA'
     },
     sameAsHome() {
+      this.$emit('change', { address: '', latitude: 0, longitude: 0, sameAsHome: this.sameAsHome })
       if (!this.sameAsHome)
         this.$nextTick(() => { this.$refs.line1.focus() })
     },

@@ -39,8 +39,10 @@ export default {
   display inline-block
   margin-right 0.25rem
   width 3rem
+  border-radius 4px
   color white
   text-align center
+  line-height 1.2
 .event-attend-person-volunteer
   @extend .event-attend-person-absent
   background-color #4363d8
