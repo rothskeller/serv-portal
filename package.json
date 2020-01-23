@@ -12,9 +12,12 @@
     "bootstrap-vue": "^2.1.0",
     "core-js": "^2.6.5",
     "js-cookie": "^2.2.1",
+    "marker-clusterer-plus": "^2.1.4",
     "moment": "^2.24.0",
+    "smartystreets-javascript-sdk": "^1.4.2",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
+    "vue2-google-maps": "^0.10.7",
     "vuex": "^3.0.1",
     "zxcvbn": "^4.4.2"
   },

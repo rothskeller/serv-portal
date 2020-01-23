@@ -52,7 +52,6 @@ message Person {
   string                    sort_name       =  4 [(gogoproto.jsontag) = "sortName"];
   string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
   repeated PersonEmail      emails          = 12;
-  repeated PersonAddress    addresses       = 13;
   Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
   Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
   Address                   mail_address    = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
@@ -64,19 +63,6 @@ message Person {
   google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
   repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
   PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
-}
-
-message PersonAddress {
-  string address         =  1;
-  string city            =  2;
-  string state           =  3;
-  string zip             =  4;
-  string label           =  5;
-  bool   work_hours      =  6 [(gogoproto.jsontag) = "workHours"];
-  bool   home_hours      =  7 [(gogoproto.jsontag) = "homeHours"];
-  bool   mailing_address =  8 [(gogoproto.jsontag) = "mailingAddress"];
-  double latitude        =  9;
-  double longitude       = 10;
 }
 
 message PersonEmail {

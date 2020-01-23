@@ -538,162 +538,7 @@ func (v *PersonEmail) UnmarshalJSON(data []byte) error {
 func (v *PersonEmail) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson6578def1DecodeRothskellerNetServModel4(l, v)
 }
-func easyjson6578def1DecodeRothskellerNetServModel5(in *jlexer.Lexer, out *PersonAddress) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "address":
-			out.Address = string(in.String())
-		case "city":
-			out.City = string(in.String())
-		case "state":
-			out.State = string(in.String())
-		case "zip":
-			out.Zip = string(in.String())
-		case "label":
-			out.Label = string(in.String())
-		case "workHours":
-			out.WorkHours = bool(in.Bool())
-		case "homeHours":
-			out.HomeHours = bool(in.Bool())
-		case "mailingAddress":
-			out.MailingAddress = bool(in.Bool())
-		case "latitude":
-			out.Latitude = float64(in.Float64())
-		case "longitude":
-			out.Longitude = float64(in.Float64())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in PersonAddress) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if in.Address != "" {
-		const prefix string = ",\"address\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.String(string(in.Address))
-	}
-	if in.City != "" {
-		const prefix string = ",\"city\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.City))
-	}
-	if in.State != "" {
-		const prefix string = ",\"state\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.State))
-	}
-	if in.Zip != "" {
-		const prefix string = ",\"zip\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Zip))
-	}
-	if in.Label != "" {
-		const prefix string = ",\"label\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Label))
-	}
-	{
-		const prefix string = ",\"workHours\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Bool(bool(in.WorkHours))
-	}
-	{
-		const prefix string = ",\"homeHours\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.HomeHours))
-	}
-	{
-		const prefix string = ",\"mailingAddress\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.MailingAddress))
-	}
-	if in.Latitude != 0 {
-		const prefix string = ",\"latitude\":"
-		out.RawString(prefix)
-		out.Float64(float64(in.Latitude))
-	}
-	if in.Longitude != 0 {
-		const prefix string = ",\"longitude\":"
-		out.RawString(prefix)
-		out.Float64(float64(in.Longitude))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v PersonAddress) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel5(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v PersonAddress) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel5(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *PersonAddress) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel5(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *PersonAddress) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel5(l, v)
-}
-func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Person) {
+func easyjson6578def1DecodeRothskellerNetServModel5(in *jlexer.Lexer, out *Person) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -755,37 +600,6 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 				}
 				in.Delim(']')
 			}
-		case "addresses":
-			if in.IsNull() {
-				in.Skip()
-				out.Addresses = nil
-			} else {
-				in.Delim('[')
-				if out.Addresses == nil {
-					if !in.IsDelim(']') {
-						out.Addresses = make([]*PersonAddress, 0, 8)
-					} else {
-						out.Addresses = []*PersonAddress{}
-					}
-				} else {
-					out.Addresses = (out.Addresses)[:0]
-				}
-				for !in.IsDelim(']') {
-					var v5 *PersonAddress
-					if in.IsNull() {
-						in.Skip()
-						v5 = nil
-					} else {
-						if v5 == nil {
-							v5 = new(PersonAddress)
-						}
-						(*v5).UnmarshalEasyJSON(in)
-					}
-					out.Addresses = append(out.Addresses, v5)
-					in.WantComma()
-				}
-				in.Delim(']')
-			}
 		case "homeAddress":
 			(out.HomeAddress).UnmarshalEasyJSON(in)
 		case "workAddress":
@@ -808,17 +622,17 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 					out.Phones = (out.Phones)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v6 *PersonPhone
+					var v5 *PersonPhone
 					if in.IsNull() {
 						in.Skip()
-						v6 = nil
+						v5 = nil
 					} else {
-						if v6 == nil {
-							v6 = new(PersonPhone)
+						if v5 == nil {
+							v5 = new(PersonPhone)
 						}
-						(*v6).UnmarshalEasyJSON(in)
+						(*v5).UnmarshalEasyJSON(in)
 					}
-					out.Phones = append(out.Phones, v6)
+					out.Phones = append(out.Phones, v5)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -858,9 +672,9 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 					out.Roles = (out.Roles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v8 RoleID
-					v8 = RoleID(in.Int())
-					out.Roles = append(out.Roles, v8)
+					var v7 RoleID
+					v7 = RoleID(in.Int())
+					out.Roles = append(out.Roles, v7)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -877,7 +691,7 @@ func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Perso
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Person) {
+func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in Person) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -927,32 +741,14 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v9, v10 := range in.Emails {
-				if v9 > 0 {
+			for v8, v9 := range in.Emails {
+				if v8 > 0 {
 					out.RawByte(',')
 				}
-				if v10 == nil {
+				if v9 == nil {
 					out.RawString("null")
 				} else {
-					(*v10).MarshalEasyJSON(out)
-				}
-			}
-			out.RawByte(']')
-		}
-	}
-	if len(in.Addresses) != 0 {
-		const prefix string = ",\"addresses\":"
-		out.RawString(prefix)
-		{
-			out.RawByte('[')
-			for v11, v12 := range in.Addresses {
-				if v11 > 0 {
-					out.RawByte(',')
-				}
-				if v12 == nil {
-					out.RawString("null")
-				} else {
-					(*v12).MarshalEasyJSON(out)
+					(*v9).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -978,14 +774,14 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v13, v14 := range in.Phones {
-				if v13 > 0 {
+			for v10, v11 := range in.Phones {
+				if v10 > 0 {
 					out.RawByte(',')
 				}
-				if v14 == nil {
+				if v11 == nil {
 					out.RawString("null")
 				} else {
-					(*v14).MarshalEasyJSON(out)
+					(*v11).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1021,11 +817,11 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v17, v18 := range in.Roles {
-				if v17 > 0 {
+			for v14, v15 := range in.Roles {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v18))
+				out.Int(int(v15))
 			}
 			out.RawByte(']')
 		}
@@ -1041,27 +837,27 @@ func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Pers
 // MarshalJSON supports json.Marshaler interface
 func (v Person) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel6(&w, v)
+	easyjson6578def1EncodeRothskellerNetServModel5(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Person) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel6(w, v)
+	easyjson6578def1EncodeRothskellerNetServModel5(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Person) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel6(&r, v)
+	easyjson6578def1DecodeRothskellerNetServModel5(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Person) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel6(l, v)
+	easyjson6578def1DecodeRothskellerNetServModel5(l, v)
 }
-func easyjson6578def1DecodeRothskellerNetServModel7(in *jlexer.Lexer, out *Group) {
+func easyjson6578def1DecodeRothskellerNetServModel6(in *jlexer.Lexer, out *Group) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1096,7 +892,7 @@ func easyjson6578def1DecodeRothskellerNetServModel7(in *jlexer.Lexer, out *Group
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeRothskellerNetServModel7(out *jwriter.Writer, in Group) {
+func easyjson6578def1EncodeRothskellerNetServModel6(out *jwriter.Writer, in Group) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1132,27 +928,27 @@ func easyjson6578def1EncodeRothskellerNetServModel7(out *jwriter.Writer, in Grou
 // MarshalJSON supports json.Marshaler interface
 func (v Group) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel7(&w, v)
+	easyjson6578def1EncodeRothskellerNetServModel6(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Group) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel7(w, v)
+	easyjson6578def1EncodeRothskellerNetServModel6(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Group) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel7(&r, v)
+	easyjson6578def1DecodeRothskellerNetServModel6(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Group) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel7(l, v)
+	easyjson6578def1DecodeRothskellerNetServModel6(l, v)
 }
-func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *Event) {
+func easyjson6578def1DecodeRothskellerNetServModel7(in *jlexer.Lexer, out *Event) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1203,9 +999,9 @@ func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *Event
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v19 GroupID
-					v19 = GroupID(in.Int())
-					out.Groups = append(out.Groups, v19)
+					var v16 GroupID
+					v16 = GroupID(in.Int())
+					out.Groups = append(out.Groups, v16)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1222,7 +1018,7 @@ func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *Event
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in Event) {
+func easyjson6578def1EncodeRothskellerNetServModel7(out *jwriter.Writer, in Event) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1312,11 +1108,11 @@ func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in Even
 		}
 		{
 			out.RawByte('[')
-			for v20, v21 := range in.Groups {
-				if v20 > 0 {
+			for v17, v18 := range in.Groups {
+				if v17 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v21))
+				out.Int(int(v18))
 			}
 			out.RawByte(']')
 		}
@@ -1337,27 +1133,27 @@ func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in Even
 // MarshalJSON supports json.Marshaler interface
 func (v Event) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel8(&w, v)
+	easyjson6578def1EncodeRothskellerNetServModel7(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Event) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel8(w, v)
+	easyjson6578def1EncodeRothskellerNetServModel7(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Event) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel8(&r, v)
+	easyjson6578def1DecodeRothskellerNetServModel7(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Event) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel8(l, v)
+	easyjson6578def1DecodeRothskellerNetServModel7(l, v)
 }
-func easyjson6578def1DecodeRothskellerNetServModel9(in *jlexer.Lexer, out *AuthzData) {
+func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *AuthzData) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1392,17 +1188,17 @@ func easyjson6578def1DecodeRothskellerNetServModel9(in *jlexer.Lexer, out *Authz
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v22 *Group
+					var v19 *Group
 					if in.IsNull() {
 						in.Skip()
-						v22 = nil
+						v19 = nil
 					} else {
-						if v22 == nil {
-							v22 = new(Group)
+						if v19 == nil {
+							v19 = new(Group)
 						}
-						(*v22).UnmarshalEasyJSON(in)
+						(*v19).UnmarshalEasyJSON(in)
 					}
-					out.Groups = append(out.Groups, v22)
+					out.Groups = append(out.Groups, v19)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1423,17 +1219,17 @@ func easyjson6578def1DecodeRothskellerNetServModel9(in *jlexer.Lexer, out *Authz
 					out.Roles = (out.Roles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v23 *Role
+					var v20 *Role
 					if in.IsNull() {
 						in.Skip()
-						v23 = nil
+						v20 = nil
 					} else {
-						if v23 == nil {
-							v23 = new(Role)
+						if v20 == nil {
+							v20 = new(Role)
 						}
-						(*v23).UnmarshalEasyJSON(in)
+						(*v20).UnmarshalEasyJSON(in)
 					}
-					out.Roles = append(out.Roles, v23)
+					out.Roles = append(out.Roles, v20)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1448,7 +1244,7 @@ func easyjson6578def1DecodeRothskellerNetServModel9(in *jlexer.Lexer, out *Authz
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeRothskellerNetServModel9(out *jwriter.Writer, in AuthzData) {
+func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in AuthzData) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1458,14 +1254,14 @@ func easyjson6578def1EncodeRothskellerNetServModel9(out *jwriter.Writer, in Auth
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v24, v25 := range in.Groups {
-				if v24 > 0 {
+			for v21, v22 := range in.Groups {
+				if v21 > 0 {
 					out.RawByte(',')
 				}
-				if v25 == nil {
+				if v22 == nil {
 					out.RawString("null")
 				} else {
-					(*v25).MarshalEasyJSON(out)
+					(*v22).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1481,14 +1277,14 @@ func easyjson6578def1EncodeRothskellerNetServModel9(out *jwriter.Writer, in Auth
 		}
 		{
 			out.RawByte('[')
-			for v26, v27 := range in.Roles {
-				if v26 > 0 {
+			for v23, v24 := range in.Roles {
+				if v23 > 0 {
 					out.RawByte(',')
 				}
-				if v27 == nil {
+				if v24 == nil {
 					out.RawString("null")
 				} else {
-					(*v27).MarshalEasyJSON(out)
+					(*v24).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1500,27 +1296,27 @@ func easyjson6578def1EncodeRothskellerNetServModel9(out *jwriter.Writer, in Auth
 // MarshalJSON supports json.Marshaler interface
 func (v AuthzData) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel9(&w, v)
+	easyjson6578def1EncodeRothskellerNetServModel8(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AuthzData) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel9(w, v)
+	easyjson6578def1EncodeRothskellerNetServModel8(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AuthzData) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel9(&r, v)
+	easyjson6578def1DecodeRothskellerNetServModel8(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AuthzData) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel9(l, v)
+	easyjson6578def1DecodeRothskellerNetServModel8(l, v)
 }
-func easyjson6578def1DecodeRothskellerNetServModel10(in *jlexer.Lexer, out *Address) {
+func easyjson6578def1DecodeRothskellerNetServModel9(in *jlexer.Lexer, out *Address) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1559,7 +1355,7 @@ func easyjson6578def1DecodeRothskellerNetServModel10(in *jlexer.Lexer, out *Addr
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeRothskellerNetServModel10(out *jwriter.Writer, in Address) {
+func easyjson6578def1EncodeRothskellerNetServModel9(out *jwriter.Writer, in Address) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1600,23 +1396,23 @@ func easyjson6578def1EncodeRothskellerNetServModel10(out *jwriter.Writer, in Add
 // MarshalJSON supports json.Marshaler interface
 func (v Address) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeRothskellerNetServModel10(&w, v)
+	easyjson6578def1EncodeRothskellerNetServModel9(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Address) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeRothskellerNetServModel10(w, v)
+	easyjson6578def1EncodeRothskellerNetServModel9(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Address) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeRothskellerNetServModel10(&r, v)
+	easyjson6578def1DecodeRothskellerNetServModel9(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Address) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeRothskellerNetServModel10(l, v)
+	easyjson6578def1DecodeRothskellerNetServModel9(l, v)
 }

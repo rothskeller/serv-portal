@@ -1,17 +1,17 @@
 package auth
 
-import "rothskeller.net/serv/util"
+import (
+	"rothskeller.net/serv/model"
+	"rothskeller.net/serv/util"
+)
 
-import "rothskeller.net/serv/model"
-
-/*
 // CanAssignAnyRole returns whether the caller is allowed to assign people to
 // (or unassign them from) any Role.
 func CanAssignAnyRole(r *util.Request) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.Privileges.HasAny(model.PrivAssignRole)
+	return r.Person.Privileges.HasAny(model.PrivManageMembers) || IsWebmaster(r)
 }
 
 // CanAssignRole returns whether the caller is allowed to assign people to (or
@@ -20,9 +20,13 @@ func CanAssignRole(r *util.Request, role *model.Role) bool {
 	if r.Person == nil {
 		return false
 	}
-	return r.Person.Privileges.Has(role.ID, model.PrivAssignRole)
+	for _, group := range r.Tx.FetchGroups() {
+		if role.Privileges.Has(group, model.PrivMember) && r.Person.Privileges.Has(group, model.PrivManageMembers) {
+			return true
+		}
+	}
+	return IsWebmaster(r)
 }
-*/
 
 // CanCreateEvents returns whether the caller is allowed to create new Event
 // entries.

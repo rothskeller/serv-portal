@@ -88,19 +88,25 @@ func GetPasswordResetToken(r *util.Request, token string) error {
 	out.String(person.InformalName)
 	out.RawByte(',')
 	out.String(person.FormalName)
-	out.RawByte(',')
-	out.String(person.CallSign)
-	out.RawByte(',')
-	out.String(person.Username)
-	for _, a := range person.Addresses {
+	if person.CallSign != "" {
 		out.RawByte(',')
-		out.String(a.Address)
+		out.String(person.CallSign)
+	}
+	if person.Username != "" {
 		out.RawByte(',')
-		out.String(a.City)
+		out.String(person.Username)
+	}
+	if person.HomeAddress.Address != "" {
 		out.RawByte(',')
-		out.String(a.State)
+		out.String(person.HomeAddress.Address)
+	}
+	if person.MailAddress.Address != "" {
 		out.RawByte(',')
-		out.String(a.Zip)
+		out.String(person.MailAddress.Address)
+	}
+	if person.WorkAddress.Address != "" {
+		out.RawByte(',')
+		out.String(person.WorkAddress.Address)
 	}
 	for _, e := range person.Emails {
 		out.RawByte(',')

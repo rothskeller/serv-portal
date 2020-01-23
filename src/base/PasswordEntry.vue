@@ -85,6 +85,7 @@ export default {
 
 <style lang="stylus">
 #pwentry-password1, #pwentry-password2
+  min-width 14rem
   max-width 20em
 #pwentry-password .invalid-feedback
   white-space pre-line

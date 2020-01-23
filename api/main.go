@@ -97,10 +97,8 @@ func router(r *util.Request) error {
 		return person.GetPeople(r)
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "":
 		return person.GetPerson(r, c[2])
-		/*
-			case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
-				return person.PostPerson(r, c[2])
-		*/
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
+		return person.PostPerson(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "":
 		return report.GetIndex(r)
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "cert-attendance" && c[3] == "":

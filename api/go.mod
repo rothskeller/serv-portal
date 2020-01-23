@@ -11,6 +11,7 @@ require (
 	github.com/mailru/easyjson v0.7.0
 	github.com/mattn/go-sqlite3 v2.0.2+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/paulmach/orb v0.1.5
 	github.com/scholacantorum/go-sqlite3 v1.10.0
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/tealeg/xlsx v1.0.5

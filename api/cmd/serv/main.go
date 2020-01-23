@@ -30,10 +30,6 @@ func usage() {
     serv group [«pattern»|«id»] delete
     serv person [«pattern»] [list]
     serv person [«pattern»|«id»] set [field «value»]...
-    serv person [«pattern»|«id»] address [list]
-    serv person [«pattern»|«id»] address add «address» «city» «state» «zip» [field «value»]...
-    serv person [«pattern»|«id»] address «index» set [field «value»]...
-    serv person [«pattern»|«id»] address «index» remove
     serv person [«pattern»|«id»] email [list]
     serv person [«pattern»|«id»] email add «email» [field «value»]...
     serv person [«pattern»|«id»] email «index» set [field «value»]...
@@ -97,10 +93,6 @@ var commands = []command{
 	{[]string{"person", "?", "list"}, listPeople},
 	{[]string{"person", "create", "="}, createPerson},
 	{[]string{"person", "?", "set", "="}, setPeople},
-	{[]string{"person", "?", "address", "list"}, listPersonAddresses},
-	{[]string{"person", "?", "address", "add", ".", ".", ".", ".", "="}, addPersonAddress},
-	{[]string{"person", "?", "address", ".", "set", "="}, setPersonAddress},
-	{[]string{"person", "?", "address", ".", "remove"}, removePersonAddress},
 	{[]string{"person", "?", "email", "list"}, listPersonEmails},
 	{[]string{"person", "?", "email", "add", ".", "="}, addPersonEmail},
 	{[]string{"person", "?", "email", ".", "set", "="}, setPersonEmail},

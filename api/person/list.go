@@ -35,6 +35,8 @@ func GetPeople(r *util.Request) error {
 		}
 		out.RawString(`{"id":`)
 		out.Int(int(p.ID))
+		out.RawString(`,"informalName":`)
+		out.String(p.InformalName)
 		out.RawString(`,"sortName":`)
 		out.String(p.SortName)
 		out.RawString(`,"callSign":`)
@@ -47,14 +49,13 @@ func GetPeople(r *util.Request) error {
 				}
 				e.MarshalEasyJSON(&out)
 			}
-			out.RawString(`],"addresses":[`)
-			for i, a := range p.Addresses {
-				if i != 0 {
-					out.RawByte(',')
-				}
-				a.MarshalEasyJSON(&out)
-			}
-			out.RawString(`],"phones":[`)
+			out.RawString(`],"homeAddress":`)
+			p.HomeAddress.MarshalEasyJSON(&out)
+			out.RawString(`,"mailAddress":`)
+			p.MailAddress.MarshalEasyJSON(&out)
+			out.RawString(`,"workAddress":`)
+			p.WorkAddress.MarshalEasyJSON(&out)
+			out.RawString(`,"phones":[`)
 			for i, p := range p.Phones {
 				if i != 0 {
 					out.RawByte(',')

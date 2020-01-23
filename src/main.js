@@ -3,12 +3,17 @@ import camelCase from 'lodash/camelCase'
 import upperFirst from 'lodash/upperFirst'
 import 'mutationobserver-shim'
 import Vue from 'vue'
+import * as VueGoogleMaps from 'vue2-google-maps'
+import GmapCluster from 'vue2-google-maps/dist/components/cluster'
 import './plugins/bootstrap-vue'
 import './plugins/axios'
 import store from './store'
 import router from './router'
 
 Vue.config.productionTip = false
+
+Vue.use(VueGoogleMaps, { load: { key: 'AIzaSyDYiDjdYhCKZnM4qbK68KZRjKZqJiQ1dZw' } })
+Vue.component('GmapCluster', GmapCluster)
 
 // Register every Vue component in the src tree so that they can be used without
 // explicit declaration.
