@@ -90,11 +90,11 @@ func applyPersonAddressFields(address *model.PersonAddress, fields map[string]st
 		case "address":
 			address.Address = v
 		case "city":
-			address.Address = v
+			address.City = v
 		case "state":
-			address.Address = v
+			address.State = v
 		case "zip":
-			address.Address = v
+			address.Zip = v
 		case "label":
 			address.Label = v
 		case "work", "work_hours":
