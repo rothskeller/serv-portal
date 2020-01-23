@@ -38,6 +38,8 @@ func usage() {
     serv person [«pattern»|«id»] email add «email» [field «value»]...
     serv person [«pattern»|«id»] email «index» set [field «value»]...
     serv person [«pattern»|«id»] email «index» remove
+    serv person [«pattern»|«id»] {home|mail|work} address set [field «value»]...
+    serv person [«pattern»|«id»] {home|mail|work} address remove
     serv person [«pattern»|«id»] phone [list]
     serv person [«pattern»|«id»] phone add «phone» [field «value»]...
     serv person [«pattern»|«id»] phone «index» set [field «value»]...
@@ -103,6 +105,10 @@ var commands = []command{
 	{[]string{"person", "?", "email", "add", ".", "="}, addPersonEmail},
 	{[]string{"person", "?", "email", ".", "set", "="}, setPersonEmail},
 	{[]string{"person", "?", "email", ".", "remove"}, removePersonEmail},
+	{[]string{"person", "?", "home", "address", "set", "="}, setPersonHomeAddress},
+	{[]string{"person", "?", "home", "address", "remove"}, removePersonHomeAddress},
+	{[]string{"person", "?", "mail", "address", "set", "="}, setPersonMailAddress},
+	{[]string{"person", "?", "mail", "address", "remove"}, removePersonMailAddress},
 	{[]string{"person", "?", "phone", "list"}, listPersonPhones},
 	{[]string{"person", "?", "phone", "add", ".", "="}, addPersonPhone},
 	{[]string{"person", "?", "phone", ".", "set", "="}, setPersonPhone},
@@ -111,6 +117,8 @@ var commands = []command{
 	{[]string{"person", "?", "role", "add", "+"}, addPersonRoles},
 	{[]string{"person", "?", "role", "remove", "+"}, removePersonRoles},
 	{[]string{"person", "?", "role", "set", "+"}, setPersonRoles},
+	{[]string{"person", "?", "work", "address", "set", "="}, setPersonWorkAddress},
+	{[]string{"person", "?", "work", "address", "remove"}, removePersonWorkAddress},
 	{[]string{"role", "?", "list"}, listRoles},
 	// {[]string{"role", "create", "="}, handler},
 	// {[]string{"role", "?", "set", "="}, handler},
