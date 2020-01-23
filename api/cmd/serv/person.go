@@ -16,7 +16,7 @@ func listPeople(args []string, _ map[string]string) {
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
 	for _, p := range matchPeople(args[0]) {
-		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime)})
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime), p.HomeAddress.Address, strconv.FormatFloat(p.HomeAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.HomeAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.HomeAddress.FireDistrict), strconv.FormatBool(p.MailAddress.SameAsHome), p.MailAddress.Address, strconv.FormatBool(p.WorkAddress.SameAsHome), p.WorkAddress.Address, strconv.FormatFloat(p.WorkAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.WorkAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.WorkAddress.FireDistrict)})
 	}
 	cw.Flush()
 }

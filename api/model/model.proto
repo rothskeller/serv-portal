@@ -12,6 +12,14 @@ option (gogoproto.goproto_stringer_all) = false;
 option (gogoproto.stringer_all) = true;
 option (gogoproto.goproto_unrecognized_all) = false;
 
+message Address {
+  string address       = 1;
+  bool   same_as_home  = 2 [(gogoproto.jsontag) = "sameAsHome"];
+  double latitude      = 3;
+  double longitude     = 4;
+  uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
+}
+
 message AuthzData {
   repeated Group groups = 1;
   repeated Role  roles  = 2;
@@ -45,6 +53,9 @@ message Person {
   string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
   repeated PersonEmail      emails          = 12;
   repeated PersonAddress    addresses       = 13;
+  Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
+  Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
+  Address                   mail_address    = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
   repeated PersonPhone      phones          = 14;
   bytes                     password        =  7;
   int64                     bad_login_count =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
