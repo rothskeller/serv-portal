@@ -606,6 +606,12 @@ func easyjson6578def1DecodeRothskellerNetServModel5(in *jlexer.Lexer, out *Perso
 			(out.WorkAddress).UnmarshalEasyJSON(in)
 		case "mailAddress":
 			(out.MailAddress).UnmarshalEasyJSON(in)
+		case "cellPhone":
+			out.CellPhone = string(in.String())
+		case "homePhone":
+			out.HomePhone = string(in.String())
+		case "workPhone":
+			out.WorkPhone = string(in.String())
 		case "phones":
 			if in.IsNull() {
 				in.Skip()
@@ -681,6 +687,29 @@ func easyjson6578def1DecodeRothskellerNetServModel5(in *jlexer.Lexer, out *Perso
 			}
 		case "privileges":
 			(out.Privileges).UnmarshalEasyJSON(in)
+		case "archive":
+			if in.IsNull() {
+				in.Skip()
+				out.Archive = nil
+			} else {
+				in.Delim('[')
+				if out.Archive == nil {
+					if !in.IsDelim(']') {
+						out.Archive = make([]string, 0, 4)
+					} else {
+						out.Archive = []string{}
+					}
+				} else {
+					out.Archive = (out.Archive)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v8 string
+					v8 = string(in.String())
+					out.Archive = append(out.Archive, v8)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -741,14 +770,14 @@ func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v8, v9 := range in.Emails {
-				if v8 > 0 {
+			for v9, v10 := range in.Emails {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				if v9 == nil {
+				if v10 == nil {
 					out.RawString("null")
 				} else {
-					(*v9).MarshalEasyJSON(out)
+					(*v10).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -769,19 +798,34 @@ func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		(in.MailAddress).MarshalEasyJSON(out)
 	}
+	{
+		const prefix string = ",\"cellPhone\":"
+		out.RawString(prefix)
+		out.String(string(in.CellPhone))
+	}
+	{
+		const prefix string = ",\"homePhone\":"
+		out.RawString(prefix)
+		out.String(string(in.HomePhone))
+	}
+	{
+		const prefix string = ",\"workPhone\":"
+		out.RawString(prefix)
+		out.String(string(in.WorkPhone))
+	}
 	if len(in.Phones) != 0 {
 		const prefix string = ",\"phones\":"
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v10, v11 := range in.Phones {
-				if v10 > 0 {
+			for v11, v12 := range in.Phones {
+				if v11 > 0 {
 					out.RawByte(',')
 				}
-				if v11 == nil {
+				if v12 == nil {
 					out.RawString("null")
 				} else {
-					(*v11).MarshalEasyJSON(out)
+					(*v12).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -817,11 +861,11 @@ func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in Pers
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v14, v15 := range in.Roles {
-				if v14 > 0 {
+			for v15, v16 := range in.Roles {
+				if v15 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v15))
+				out.Int(int(v16))
 			}
 			out.RawByte(']')
 		}
@@ -830,6 +874,20 @@ func easyjson6578def1EncodeRothskellerNetServModel5(out *jwriter.Writer, in Pers
 		const prefix string = ",\"privileges\":"
 		out.RawString(prefix)
 		(in.Privileges).MarshalEasyJSON(out)
+	}
+	if len(in.Archive) != 0 {
+		const prefix string = ",\"archive\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v17, v18 := range in.Archive {
+				if v17 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v18))
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -999,9 +1057,9 @@ func easyjson6578def1DecodeRothskellerNetServModel7(in *jlexer.Lexer, out *Event
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v16 GroupID
-					v16 = GroupID(in.Int())
-					out.Groups = append(out.Groups, v16)
+					var v19 GroupID
+					v19 = GroupID(in.Int())
+					out.Groups = append(out.Groups, v19)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1108,11 +1166,11 @@ func easyjson6578def1EncodeRothskellerNetServModel7(out *jwriter.Writer, in Even
 		}
 		{
 			out.RawByte('[')
-			for v17, v18 := range in.Groups {
-				if v17 > 0 {
+			for v20, v21 := range in.Groups {
+				if v20 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v18))
+				out.Int(int(v21))
 			}
 			out.RawByte(']')
 		}
@@ -1188,17 +1246,17 @@ func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *Authz
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v19 *Group
+					var v22 *Group
 					if in.IsNull() {
 						in.Skip()
-						v19 = nil
+						v22 = nil
 					} else {
-						if v19 == nil {
-							v19 = new(Group)
+						if v22 == nil {
+							v22 = new(Group)
 						}
-						(*v19).UnmarshalEasyJSON(in)
+						(*v22).UnmarshalEasyJSON(in)
 					}
-					out.Groups = append(out.Groups, v19)
+					out.Groups = append(out.Groups, v22)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1219,17 +1277,17 @@ func easyjson6578def1DecodeRothskellerNetServModel8(in *jlexer.Lexer, out *Authz
 					out.Roles = (out.Roles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v20 *Role
+					var v23 *Role
 					if in.IsNull() {
 						in.Skip()
-						v20 = nil
+						v23 = nil
 					} else {
-						if v20 == nil {
-							v20 = new(Role)
+						if v23 == nil {
+							v23 = new(Role)
 						}
-						(*v20).UnmarshalEasyJSON(in)
+						(*v23).UnmarshalEasyJSON(in)
 					}
-					out.Roles = append(out.Roles, v20)
+					out.Roles = append(out.Roles, v23)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1254,14 +1312,14 @@ func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in Auth
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v21, v22 := range in.Groups {
-				if v21 > 0 {
+			for v24, v25 := range in.Groups {
+				if v24 > 0 {
 					out.RawByte(',')
 				}
-				if v22 == nil {
+				if v25 == nil {
 					out.RawString("null")
 				} else {
-					(*v22).MarshalEasyJSON(out)
+					(*v25).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1277,14 +1335,14 @@ func easyjson6578def1EncodeRothskellerNetServModel8(out *jwriter.Writer, in Auth
 		}
 		{
 			out.RawByte('[')
-			for v23, v24 := range in.Roles {
-				if v23 > 0 {
+			for v26, v27 := range in.Roles {
+				if v26 > 0 {
 					out.RawByte(',')
 				}
-				if v24 == nil {
+				if v27 == nil {
 					out.RawString("null")
 				} else {
-					(*v24).MarshalEasyJSON(out)
+					(*v27).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')

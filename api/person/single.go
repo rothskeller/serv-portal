@@ -85,14 +85,12 @@ func GetPerson(r *util.Request, idstr string) error {
 		person.MailAddress.MarshalEasyJSON(&out)
 		out.RawString(`,"workAddress":`)
 		person.WorkAddress.MarshalEasyJSON(&out)
-		out.RawString(`,"phones":[`)
-		for i, p := range person.Phones {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			p.MarshalEasyJSON(&out)
-		}
-		out.RawByte(']')
+		out.RawString(`,"cellPhone":`)
+		out.String(person.CellPhone)
+		out.RawString(`,"homePhone":`)
+		out.String(person.HomePhone)
+		out.RawString(`,"workPhone":`)
+		out.String(person.WorkPhone)
 	}
 	for _, r := range person.Roles {
 		roles[r] = true
@@ -235,21 +233,29 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 			person.Emails = append(person.Emails, &email)
 		}
-		person.Phones = person.Phones[:0]
-		for i, p := range r.Form["phone"] {
-			var phone model.PersonPhone
-			phone.Phone = strings.Map(keepDigits, p)
-			if len(phone.Phone) != 10 {
-				return errors.New("invalid phone")
-			}
-			phone.Phone = phone.Phone[0:3] + "-" + phone.Phone[3:6] + "-" + phone.Phone[6:10]
-			if len(r.Form["phoneLabel"]) > i {
-				phone.Label = strings.TrimSpace(r.Form["phoneLabel"][i])
-			}
-			if len(r.Form["phoneSMS"]) > i {
-				phone.SMS, _ = strconv.ParseBool(r.Form["phoneSMS"][i])
-			}
-			person.Phones = append(person.Phones, &phone)
+		switch person.CellPhone = strings.Map(keepDigits, r.FormValue("cellPhone")); len(person.CellPhone) {
+		case 0:
+			break
+		case 10:
+			person.CellPhone = person.CellPhone[0:3] + "-" + person.CellPhone[3:6] + "-" + person.CellPhone[6:10]
+		default:
+			return errors.New("invalid cell phone")
+		}
+		switch person.HomePhone = strings.Map(keepDigits, r.FormValue("homePhone")); len(person.HomePhone) {
+		case 0:
+			break
+		case 10:
+			person.HomePhone = person.HomePhone[0:3] + "-" + person.HomePhone[3:6] + "-" + person.HomePhone[6:10]
+		default:
+			return errors.New("invalid home phone")
+		}
+		switch person.WorkPhone = strings.Map(keepDigits, r.FormValue("workPhone")); len(person.WorkPhone) {
+		case 0:
+			break
+		case 10:
+			person.WorkPhone = person.WorkPhone[0:3] + "-" + person.WorkPhone[3:6] + "-" + person.WorkPhone[6:10]
+		default:
+			return errors.New("invalid work phone")
 		}
 		person.HomeAddress = model.Address{}
 		if person.HomeAddress.Address = strings.TrimSpace(r.FormValue("homeAddress")); person.HomeAddress.Address != "" {

@@ -55,6 +55,9 @@ message Person {
   Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
   Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
   Address                   mail_address    = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
+  string                    cell_phone      = 21 [(gogoproto.jsontag) = "cellPhone"];
+  string                    home_phone      = 22 [(gogoproto.jsontag) = "homePhone"];
+  string                    work_phone      = 23 [(gogoproto.jsontag) = "workPhone"];
   repeated PersonPhone      phones          = 14;
   bytes                     password        =  7;
   int64                     bad_login_count =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
@@ -63,6 +66,7 @@ message Person {
   google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
   repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
   PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
+  repeated string           archive         = 24;
 }
 
 message PersonEmail {

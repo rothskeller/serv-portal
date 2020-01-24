@@ -16,7 +16,7 @@ func listPeople(args []string, _ map[string]string) {
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
 	for _, p := range matchPeople(args[0]) {
-		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime), p.HomeAddress.Address, strconv.FormatFloat(p.HomeAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.HomeAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.HomeAddress.FireDistrict), strconv.FormatBool(p.MailAddress.SameAsHome), p.MailAddress.Address, strconv.FormatBool(p.WorkAddress.SameAsHome), p.WorkAddress.Address, strconv.FormatFloat(p.WorkAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.WorkAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.WorkAddress.FireDistrict)})
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime), p.HomeAddress.Address, strconv.FormatFloat(p.HomeAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.HomeAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.HomeAddress.FireDistrict), strconv.FormatBool(p.MailAddress.SameAsHome), p.MailAddress.Address, strconv.FormatBool(p.WorkAddress.SameAsHome), p.WorkAddress.Address, strconv.FormatFloat(p.WorkAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.WorkAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.WorkAddress.FireDistrict), p.CellPhone, p.HomePhone, p.WorkPhone})
 	}
 	cw.Flush()
 }
@@ -94,6 +94,21 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 				changed = true
 				person.CallSign = v
 			}
+		case "cell", "cell_phone":
+			if person.CellPhone != v {
+				changed = true
+				person.CellPhone = v
+			}
+		case "home_phone":
+			if person.HomePhone != v {
+				changed = true
+				person.HomePhone = v
+			}
+		case "work_phone":
+			if person.WorkPhone != v {
+				changed = true
+				person.WorkPhone = v
+			}
 		case "password", "pw":
 			if v == "" {
 				if len(person.Password) != 0 {
@@ -149,7 +164,7 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 				person.PWResetTime = t
 			}
 		default:
-			fmt.Fprintf(os.Stderr, "ERROR: there is no %q field on a person.  Valid fields are username, informal_name, formal_name, sort_name, call_sign, password, bad_login_count, bad_login_time, pwreset_token, and pwreset_time, and abbreviations of those.\n", f)
+			fmt.Fprintf(os.Stderr, "ERROR: there is no %q field on a person.  Valid fields are username, informal_name, formal_name, sort_name, call_sign, cell_phone, home_phone, work_phone, password, bad_login_count, bad_login_time, pwreset_token, and pwreset_time, and abbreviations of those.\n", f)
 			os.Exit(1)
 		}
 	}

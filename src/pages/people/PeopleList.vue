@@ -21,9 +21,18 @@ PeopleList displays the list of people.
         div(v-for="email in p.emails")
           a(:href="`mailto:${email.email}`" v-text="email.email" :class="email.bad ? '.people-bad-email' : null")
           span(v-if="email.label" v-text="` (${email.label})`")
-        div(v-for="phone in p.phones")
-          a(:href="`tel:${phone.phone}`" v-text="phone.phone")
-          span(v-if="phone.label" v-text="` (${phone.label})`")
+        .people-phone(v-if="p.cellPhone")
+          a(:href="`tel:${p.cellPhone}`" v-text="p.cellPhone")
+          |
+          | (Cell)
+        .people-phone(v-if="p.homePhone")
+          a(:href="`tel:${p.homePhone}`" v-text="p.homePhone")
+          |
+          | (Home)
+        .people-phone(v-if="p.workPhone")
+          a(:href="`tel:${p.workPhone}`" v-text="p.workPhone")
+          |
+          | (Work)
       .people-roles
         div(v-for="(r, i) in p.roles" :key="i" v-text="r")
         div(v-if="!p.roles.length") &mdash;
@@ -111,6 +120,8 @@ export default {
     width calc(50vw - 9.25rem)
   @media (min-width: 960px)
     width 20.75rem
+.people-phone
+  font-variant tabular-nums
 .people-roles
   display none
   @media (min-width: 800px)

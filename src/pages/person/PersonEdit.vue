@@ -22,11 +22,12 @@ form#person-edit(@submit.prevent="onSubmit")
     b-input.person-edit-input.d-inline(:id="`person-email${i}`" :plaintext="!canEditDetails" :state="emailErrors[i] ? false : null" trim v-model="e.email")
     b-input.person-edit-label-input(v-if="person.emails.length > 1" :id="`person-email${i}-label`" placeholder="Label" :plaintext="!canEditDetails" trim v-model="e.label")
     b-button.mt-3.d-block(v-if="i === person.emails.length-1" size="sm" @click="addEmail") Add another email
-  b-form-group(v-for="(p, i) in person.phones" :key="`p${i}`" :label="person.phones.length === 1 ? 'Phone' : `Phone #${i+1}`" :label-for="`person-phone${i}`" label-cols-sm="auto" label-class="person-edit-label" :state="phoneErrors[i] ? false : null" :invalid-feedback="phoneErrors[i]")
-    b-input.person-edit-input.d-inline(:id="`person-phone${i}`" :plaintext="!canEditDetails" :state="phoneErrors[i] ? false : null" trim v-model="p.phone")
-    b-input.person-edit-label-input(v-if="person.phones.length > 1" :id="`person-phone${i}-label`" placeholder="Label" :plaintext="!canEditDetails" trim v-model="p.label")
-    b-checkbox(v-model="p.sms") Receive text messages at this number
-    b-button.mt-3(v-if="i === person.phones.length-1" size="sm" @click="addPhone") Add another phone number
+  b-form-group(label="Cell Phone" label-for="person-cellPhone" label-cols-sm="auto" label-class="person-edit-label" :state="cellPhoneError ? false : null" :invalid-feedback="cellPhoneError")
+    b-input#person-cellPhone.person-edit-input(:plaintext="!canEditDetails" :state="cellPhoneError ? false : null" trim v-model="person.cellPhone")
+  b-form-group(label="Home Phone" label-for="person-homePhone" label-cols-sm="auto" label-class="person-edit-label" :state="homePhoneError ? false : null" :invalid-feedback="homePhoneError")
+    b-input#person-homePhone.person-edit-input(:plaintext="!canEditDetails" :state="homePhoneError ? false : null" trim v-model="person.homePhone")
+  b-form-group(label="Work Phone" label-for="person-workPhone" label-cols-sm="auto" label-class="person-edit-label" :state="workPhoneError ? false : null" :invalid-feedback="workPhoneError")
+    b-input#person-workPhone.person-edit-input(:plaintext="!canEditDetails" :state="workPhoneError ? false : null" trim v-model="person.workPhone")
   PersonEditAddress(type="Home" v-model="person.homeAddress")
   PersonEditAddress(type="Work" v-model="person.workAddress" :hasHome="!!person.homeAddress.address")
   PersonEditAddress(type="Mail" v-model="person.mailAddress" :hasHome="!!person.homeAddress.address")
@@ -58,9 +59,11 @@ export default {
     duplicateUsername: null,
     callSignError: null,
     duplicateCallSign: null,
+    cellPhoneError: null,
+    homePhoneError: null,
+    workPhoneError: null,
     password: '',
     emailErrors: [],
-    phoneErrors: [],
     rolesError: null,
     submitted: false,
     suggestions: null,
@@ -83,7 +86,9 @@ export default {
       if (this.person.mailAddress && this.person.mailAddress.address) hints.push(this.person.mailAddress.address)
       if (this.person.workAddress && this.person.workAddress.address) hints.push(this.person.workAddress.address)
       this.person.emails.forEach(e => { hints.push(e.email) })
-      this.person.phones.forEach(p => { hints.push(p.phone) })
+      if (this.person.cellPhone) hints.push(this.person.cellPhone)
+      if (this.person.homePhone) hints.push(this.person.homePhone)
+      if (this.person.workPhone) hints.push(this.person.workPhone)
       return hints
     },
     submitLabel() {
@@ -91,7 +96,7 @@ export default {
       return this.newp ? 'Create Person' : 'Save Person'
     },
     valid() {
-      return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.rolesError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress && !this.emailErrors.some(e => e) && !this.phoneErrors.some(p => p)
+      return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.cellPhoneError && !this.homePhoneError && !this.workPhoneError && !this.rolesError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress && !this.emailErrors.some(e => e)
     },
   },
   mounted() {
@@ -100,8 +105,6 @@ export default {
       this.emailErrors.push(null)
     })
     if (!this.person.emails.length) this.addEmails()
-    this.person.phones.forEach(p => { this.phoneErrors.push(null) })
-    if (!this.person.phones.length) this.addPhones()
     if (this.canEditRoles && this.newp)
       this.person.roles.forEach(r => {
         if (r.canAssign) this.$watch((() => r.held), this.validate)
@@ -117,6 +120,9 @@ export default {
     'person.sortName': 'validate',
     'person.username': 'validate',
     'person.callSign': 'validate',
+    'person.cellPhone': 'validate',
+    'person.homePhone': 'validate',
+    'person.workPhone': 'validate',
   },
   methods: {
     addEmail() {
@@ -124,12 +130,6 @@ export default {
       this.person.emails.push(e)
       this.emailErrors.push(null)
       this.$watch((() => e.email), this.validate)
-    },
-    addPhone() {
-      const p = { phone: '', label: '', sms: true }
-      this.person.phones.push(p)
-      this.phoneErrors.push(null)
-      this.$watch((() => p.phone), this.validate)
     },
     onCancel() { this.$router.go(-1) },
     onPasswordChange() { this.password = p },
@@ -144,18 +144,14 @@ export default {
       body.append('sortName', this.person.sortName)
       body.append('username', this.person.username)
       body.append('callSign', this.person.callSign)
+      body.append('cellPhone', this.person.cellPhone)
+      body.append('homePhone', this.person.homePhone)
+      body.append('workPhone', this.person.workPhone)
       if (this.password) body.append('password', this.password)
       this.person.emails.forEach(e => {
         if (e.email) {
           body.append('email', e.email)
           body.append('emailLabel', e.label || '')
-        }
-      })
-      this.person.phones.forEach(p => {
-        if (p.phone) {
-          body.append('phone', p.phone)
-          body.append('phoneLabel', p.label || '')
-          body.append('phoneSMS', p.sms)
         }
       })
       if (this.person.homeAddress.address) {
@@ -221,12 +217,18 @@ export default {
         else
           this.emailErrors[i] = null
       })
-      this.person.phones.forEach((p, i) => {
-        if (p.phone && p.phone.replace(/[^0-9]/g, '').length !== 10)
-          this.phoneErrors[i] = 'A valid phone number must have 10 digits.'
-        else
-          this.phoneErrors[i] = null
-      })
+      if (this.person.cellPhone && this.person.cellPhone.replace(/[^0-9]/g, '').length !== 10)
+        this.cellPhoneError = 'A valid phone number must have 10 digits.'
+      else
+        this.cellPhoneError = null
+      if (this.person.homePhone && this.person.homePhone.replace(/[^0-9]/g, '').length !== 10)
+        this.homePhoneError = 'A valid phone number must have 10 digits.'
+      else
+        this.homePhoneError = null
+      if (this.person.workPhone && this.person.workPhone.replace(/[^0-9]/g, '').length !== 10)
+        this.workPhoneError = 'A valid phone number must have 10 digits.'
+      else
+        this.workPhoneError = null
       if (this.newp && !this.person.roles.some(role => role.held))
         this.rolesError = 'At least one role must be selected.'
       else

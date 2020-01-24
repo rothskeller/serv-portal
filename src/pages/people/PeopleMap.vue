@@ -20,29 +20,28 @@ PeopleMap displays people on a map.
     GmapPolygon(:path="districts.district4" :options="{strokeWeight: 0, fillColor: '#00CCCC', fillOpacity: 0.36}")
     GmapPolygon(:path="districts.district5" :options="{strokeWeight: 0, fillColor: '#336633', fillOpacity: 0.36}")
     GmapPolygon(:path="districts.district6" :options="{strokeWeight: 0, fillColor: '#CC99CC', fillOpacity: 0.36}")
-    GmapCluster
-      template(v-for="person in people")
-        GmapMarker(
-          v-if="home && person.homeAddress && person.homeAddress.latitude && person.homeAddress.longitude"
-          :key="person.id"
-          :position="{lat: person.homeAddress.latitude, lng: person.homeAddress.longitude}"
-          :options="{title: person.informalName}"
-          :title="person.informalName"
-        )
-        GmapMarker(
-          v-if="work && person.workAddress && person.workAddress.latitude && person.workAddress.longitude"
-          :key="`w${person.id}`"
-          :position="{lat: person.workAddress.latitude, lng: person.workAddress.longitude}"
-          :options="{title: person.informalName}"
-          :title="person.informalName"
-        )
-        GmapMarker(
-          v-else-if="work && person.workAddress.sameAsHome && person.homeAddress && person.homeAddress.latitude && person.homeAddress.longitude"
-          :key="`w${person.id}`"
-          :position="{lat: person.homeAddress.latitude, lng: person.homeAddress.longitude}"
-          :options="{title: person.informalName}"
-          :title="person.informalName"
-        )
+    template(v-for="person in people")
+      GmapMarker(
+        v-if="home && person.homeAddress && person.homeAddress.latitude && person.homeAddress.longitude"
+        :key="person.id"
+        :position="{lat: person.homeAddress.latitude, lng: person.homeAddress.longitude}"
+        :options="{title: person.informalName}"
+        :title="person.informalName"
+      )
+      GmapMarker(
+        v-if="work && person.workAddress && person.workAddress.latitude && person.workAddress.longitude"
+        :key="`w${person.id}`"
+        :position="{lat: person.workAddress.latitude, lng: person.workAddress.longitude}"
+        :options="{title: person.informalName}"
+        :title="person.informalName"
+      )
+      GmapMarker(
+        v-else-if="work && !home && person.workAddress.sameAsHome && person.homeAddress && person.homeAddress.latitude && person.homeAddress.longitude"
+        :key="`w${person.id}`"
+        :position="{lat: person.homeAddress.latitude, lng: person.homeAddress.longitude}"
+        :options="{title: person.informalName}"
+        :title="person.informalName"
+      )
 </template>
 
 <script>

@@ -30,6 +30,10 @@ func usage() {
     serv group [«pattern»|«id»] delete
     serv person [«pattern»] [list]
     serv person [«pattern»|«id»] set [field «value»]...
+    serv person [«pattern»|«id»] archive [list]
+    serv person [«pattern»|«id»] archive add [field «value»]...
+    serv person [«pattern»|«id»] archive set [field «value»]...
+    serv person [«pattern»|«id»] archive remove field...
     serv person [«pattern»|«id»] email [list]
     serv person [«pattern»|«id»] email add «email» [field «value»]...
     serv person [«pattern»|«id»] email «index» set [field «value»]...
@@ -93,6 +97,10 @@ var commands = []command{
 	{[]string{"person", "?", "list"}, listPeople},
 	{[]string{"person", "create", "="}, createPerson},
 	{[]string{"person", "?", "set", "="}, setPeople},
+	{[]string{"person", "?", "archive", "list"}, listPersonArchive},
+	{[]string{"person", "?", "archive", "add", "="}, addPersonArchive},
+	{[]string{"person", "?", "archive", "set", "="}, setPersonArchive},
+	{[]string{"person", "?", "archive", "remove", "+"}, removePersonArchive},
 	{[]string{"person", "?", "email", "list"}, listPersonEmails},
 	{[]string{"person", "?", "email", "add", ".", "="}, addPersonEmail},
 	{[]string{"person", "?", "email", ".", "set", "="}, setPersonEmail},

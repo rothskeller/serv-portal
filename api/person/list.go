@@ -55,14 +55,12 @@ func GetPeople(r *util.Request) error {
 			p.MailAddress.MarshalEasyJSON(&out)
 			out.RawString(`,"workAddress":`)
 			p.WorkAddress.MarshalEasyJSON(&out)
-			out.RawString(`,"phones":[`)
-			for i, p := range p.Phones {
-				if i != 0 {
-					out.RawByte(',')
-				}
-				p.MarshalEasyJSON(&out)
-			}
-			out.RawByte(']')
+			out.RawString(`,"cellPhone":`)
+			out.String(p.CellPhone)
+			out.RawString(`,"homePhone":`)
+			out.String(p.HomePhone)
+			out.RawString(`,"workPhone":`)
+			out.String(p.WorkPhone)
 		}
 		out.RawString(`,"roles":[`)
 		for i, role := range p.Roles {

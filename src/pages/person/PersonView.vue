@@ -16,12 +16,15 @@ PersonView displays the information about a person, in non-editable form.
     div(v-for="e in person.emails")
       a(:href="`mailto:${e.email}`" v-text="e.email")
       span.person-view-email-label(v-if="e.label" v-text="` (${e.label})`")
-  #person-view-phones(v-if="person.phones")
-    div(v-for="p in person.phones")
-      a(:href="`tel:${p.phone}`" v-text="p.phone")
-      span.person-view-phone-label(v-if="p.label && p.sms" v-text="` (${p.label}, SMS)`")
-      span.person-view-phone-label(v-else-if="p.sms" v-text="` (SMS)`")
-      span.person-view-phone-label(v-else-if="p.label" v-text="` (${p.label}`")
+  .person-view-phone(v-if="person.cellPhone")
+      a(:href="`tel:${person.cellPhone}`" v-text="person.cellPhone")
+      span.person-view-phone-label (Cell)
+  .person-view-phone(v-if="person.homePhone")
+      a(:href="`tel:${person.homePhone}`" v-text="person.homePhone")
+      span.person-view-phone-label (Home)
+  .person-view-phone(v-if="person.workPhone")
+      a(:href="`tel:${person.workPhone}`" v-text="person.workPhone")
+      span.person-view-phone-label (Work)
   .person-view-address(v-if="person.homeAddress.address")
     div
       span(v-if="person.workAddress.sameAsHome") Home Address (all day):
@@ -85,7 +88,10 @@ export default {
   margin-top 0.75rem
 .person-view-email-label
   color #888
+.person-view-phone
+  font-variant tabular-nums
 .person-view-phone-label
+  margin-left 0.25rem
   color #888
 .person-view-address
   margin-top 0.75rem
