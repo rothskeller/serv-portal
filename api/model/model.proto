@@ -58,7 +58,6 @@ message Person {
   string                    cell_phone      = 21 [(gogoproto.jsontag) = "cellPhone"];
   string                    home_phone      = 22 [(gogoproto.jsontag) = "homePhone"];
   string                    work_phone      = 23 [(gogoproto.jsontag) = "workPhone"];
-  repeated PersonPhone      phones          = 14;
   bytes                     password        =  7;
   int64                     bad_login_count =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
   google.protobuf.Timestamp bad_login_time  =  9 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "badLoginTime"];
@@ -73,12 +72,6 @@ message PersonEmail {
   string email = 1;
   string label = 2;
   bool   bad   = 3;
-}
-
-message PersonPhone {
-  string phone = 1;
-  string label = 2;
-  bool   sms   = 3 [(gogoproto.customname) = "SMS"];
 }
 
 message PrivilegeMap {

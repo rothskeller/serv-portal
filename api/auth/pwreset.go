@@ -112,9 +112,17 @@ func GetPasswordResetToken(r *util.Request, token string) error {
 		out.RawByte(',')
 		out.String(e.Email)
 	}
-	for _, p := range person.Phones {
+	if person.CellPhone != "" {
 		out.RawByte(',')
-		out.String(p.Phone)
+		out.String(person.CellPhone)
+	}
+	if person.HomePhone != "" {
+		out.RawByte(',')
+		out.String(person.HomePhone)
+	}
+	if person.WorkPhone != "" {
+		out.RawByte(',')
+		out.String(person.WorkPhone)
 	}
 	out.RawByte(']')
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

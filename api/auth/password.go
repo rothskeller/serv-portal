@@ -66,9 +66,7 @@ func StrongPassword(r *util.Request, p *model.Person, password string) bool {
 		for _, e := range p.Emails {
 			hints = append(hints, e.Email)
 		}
-		for _, p := range p.Phones {
-			hints = append(hints, p.Phone)
-		}
+		hints = append(hints, p.CellPhone, p.HomePhone, p.WorkPhone)
 	}
 	return zxcvbn.PasswordStrength(password, hints).Score >= 3
 }
