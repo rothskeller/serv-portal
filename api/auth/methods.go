@@ -86,6 +86,12 @@ func CanRecordAttendanceAtEvent(r *util.Request, event *model.Event) bool {
 	return IsWebmaster(r)
 }
 
+// CanSendTextMessages returns whether the caller is allowed to send text
+// messages through the site.
+func CanSendTextMessages(r *util.Request) bool {
+	return IsWebmaster(r)
+}
+
 // CanViewContactInfo returns whether the caller can view contact information
 // for the argument Person.
 func CanViewContactInfo(r *util.Request, p *model.Person) bool {

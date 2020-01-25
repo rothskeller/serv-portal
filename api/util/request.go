@@ -188,3 +188,12 @@ func ParseID(s string) int {
 	}
 	return -1
 }
+
+// KeepDigits is a function to be passed to strings.Map, which will keep only
+// the digits from a string and discard all other characters.
+func KeepDigits(r rune) rune {
+	if r >= '0' && r <= '9' {
+		return r
+	}
+	return -1
+}

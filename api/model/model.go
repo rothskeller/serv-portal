@@ -203,6 +203,9 @@ type Session struct {
 	Expires time.Time
 }
 
+// A TextMessageID uniquely identifies an outgoing text message.
+type TextMessageID int
+
 // A VenueID uniquely identifies an event Venue.
 type VenueID int
 

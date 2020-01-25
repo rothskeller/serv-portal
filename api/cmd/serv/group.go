@@ -42,3 +42,45 @@ func matchGroups(pattern string) (groups []*model.Group) {
 	}
 	return groups
 }
+
+func setGroups(args []string, fields map[string]string) {
+	var changes int
+	matches := matchGroups(args[0])
+	for _, g := range matches {
+		var changed bool
+		for f, v := range fields {
+			switch f {
+			case "tag":
+				if g.Tag != model.GroupTag(v) {
+					changed = true
+					g.Tag = model.GroupTag(v)
+				}
+			case "name":
+				if g.Name != v {
+					changed = true
+					g.Name = v
+				}
+			case "text", "allow_text", "allow_text_messages":
+				if b, err := strconv.ParseBool(v); err == nil {
+					if g.AllowTextMessages != b {
+						changed = true
+						g.AllowTextMessages = b
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "ERROR: %q is not a valid value for allow_text_messages.\n", v)
+					os.Exit(1)
+				}
+			default:
+				fmt.Fprintf(os.Stderr, "ERROR: there is no field %q for a group.  Valid fields are tag, name, and allow_text_messages.\n", f)
+				os.Exit(1)
+			}
+		}
+		if changed {
+			changes++
+		}
+	}
+	if changes != 0 {
+		tx.SaveAuthz()
+	}
+	fmt.Printf("Matched %d groups, changed %d.\n", len(matches), changes)
+}

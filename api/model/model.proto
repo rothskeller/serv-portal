@@ -39,9 +39,10 @@ message Event {
 }
 
 message Group {
-  int64  id   = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
-  string tag  = 2 [(gogoproto.casttype) = "GroupTag"];
-  string name = 3;
+  int64  id                  = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
+  string tag                 = 2 [(gogoproto.casttype) = "GroupTag"];
+  string name                = 3;
+  bool   allow_text_messages = 4 [(gogoproto.jsontag) = "allowTextMessages"];
 }
 
 message Person {
@@ -88,6 +89,26 @@ message Role {
   string       name       = 3;
   bool         individual = 4;
   PrivilegeMap privileges = 5 [(gogoproto.nullable) = false];
+}
+
+message TextMessage {
+  int64                     id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "TextMessageID"];
+  int64                     sender    = 2 [(gogoproto.casttype) = "PersonID"];
+  repeated int64            groups    = 3 [(gogoproto.casttype) = "GroupID"];
+  google.protobuf.Timestamp timestamp = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  string                    message   = 5;
+}
+
+message TextDelivery {
+  int64                     recipient = 1 [(gogoproto.casttype) = "PersonID"];
+  string                    status    = 2;
+  google.protobuf.Timestamp timestamp = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "statusTime"];
+  repeated TextResponse     responses = 4;
+}
+
+message TextResponse {
+  string                    response  = 1;
+  google.protobuf.Timestamp timestamp = 2 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }
 
 message Venue {

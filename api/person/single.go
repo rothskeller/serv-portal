@@ -233,7 +233,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 			person.Emails = append(person.Emails, &email)
 		}
-		switch person.CellPhone = strings.Map(keepDigits, r.FormValue("cellPhone")); len(person.CellPhone) {
+		switch person.CellPhone = strings.Map(util.KeepDigits, r.FormValue("cellPhone")); len(person.CellPhone) {
 		case 0:
 			break
 		case 10:
@@ -241,7 +241,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		default:
 			return errors.New("invalid cell phone")
 		}
-		switch person.HomePhone = strings.Map(keepDigits, r.FormValue("homePhone")); len(person.HomePhone) {
+		switch person.HomePhone = strings.Map(util.KeepDigits, r.FormValue("homePhone")); len(person.HomePhone) {
 		case 0:
 			break
 		case 10:
@@ -249,7 +249,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		default:
 			return errors.New("invalid home phone")
 		}
-		switch person.WorkPhone = strings.Map(keepDigits, r.FormValue("workPhone")); len(person.WorkPhone) {
+		switch person.WorkPhone = strings.Map(util.KeepDigits, r.FormValue("workPhone")); len(person.WorkPhone) {
 		case 0:
 			break
 		case 10:
@@ -355,11 +355,4 @@ func usernameInUse(r *util.Request, person *model.Person) bool {
 		}
 	}
 	return false
-}
-
-func keepDigits(r rune) rune {
-	if r >= '0' && r <= '9' {
-		return r
-	}
-	return -1
 }

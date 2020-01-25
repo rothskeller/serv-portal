@@ -90,3 +90,18 @@ CREATE TABLE scc_ares_event_type (
     scc  text PRIMARY KEY,
     serv text NOT NULL
 );
+
+-- The text_message table tracks all outgoing text messages.
+CREATE TABLE text_message (
+    id   integer PRIMARY KEY,
+    data blob    NOT NULL
+);
+
+-- The text_delivery table tracks the delivery of each outgoing text message to
+-- each recipient.  This includes tracking their responses if any.
+CREATE TABLE text_delivery (
+    message   integer NOT NULL REFERENCES text_message ON DELETE CASCADE,
+    number    text    NOT NULL,
+    data      blob    NOT NULL,
+    PRIMARY KEY (message, number)
+);

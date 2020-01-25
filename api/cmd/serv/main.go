@@ -92,7 +92,7 @@ var commands = []command{
 	{[]string{"event", "?", "group", "set", "+"}, setEventGroups},
 	{[]string{"group", "?", "list"}, listGroups},
 	// {[]string{"group", "create", "="}, handler},
-	// {[]string{"group", "?", "set", "="}, handler},
+	{[]string{"group", "?", "set", "="}, setGroups},
 	// {[]string{"group", "?", "delete"}, handler},
 	{[]string{"person", "?", "list"}, listPeople},
 	{[]string{"person", "create", "="}, createPerson},

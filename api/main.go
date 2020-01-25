@@ -22,6 +22,7 @@ import (
 	"rothskeller.net/serv/event"
 	"rothskeller.net/serv/person"
 	"rothskeller.net/serv/report"
+	"rothskeller.net/serv/text"
 	"rothskeller.net/serv/util"
 )
 
@@ -113,6 +114,10 @@ func router(r *util.Request) error {
 			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "reloadPrivs" && c[4] == "":
 				return role.PostRoleReloadPrivs(r, c[2])
 		*/
+	case r.Method == "POST" && c[1] == "textMessage" && c[2] == "":
+		return text.PostTextMessage(r)
+	case r.Method == "GET" && c[1] == "textMessage" && c[2] != "" && c[3] == "":
+		return text.GetTextMessage(r, c[2])
 	}
 	return util.NotFound
 }
