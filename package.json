@@ -12,8 +12,7 @@
     "bootstrap-vue": "^2.1.0",
     "core-js": "^2.6.5",
     "js-cookie": "^2.2.1",
-    "marker-clusterer-plus": "^2.1.4",
-    "moment": "^2.24.0",
+    "moment-mini": "^2.22.1",
     "smartystreets-javascript-sdk": "^1.4.2",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
@@ -42,12 +41,8 @@
     "stylus-loader": "^3.0.2",
     "vue-cli-plugin-axios": "^0.0.4",
     "vue-cli-plugin-bootstrap-vue": "^0.6.0",
+    "vue-cli-plugin-webpack-bundle-analyzer": "^2.0.0",
     "vue-template-compiler": "^2.6.10"
-  },
-  "vue": {
-    "devServer": {
-      "proxy": "http://localhost:8100"
-    }
   },
   "eslintConfig": {
     "root": true,

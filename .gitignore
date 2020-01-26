@@ -1,6 +1,5 @@
 serv-portal.code-workspace
-api/migrate
-api/serv
+portal
 data
 .DS_Store
 node_modules

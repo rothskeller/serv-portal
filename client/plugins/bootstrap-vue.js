@@ -1,0 +1,49 @@
+import Vue from 'vue'
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import {
+  BButton,
+  BCard,
+  BForm,
+  BFormCheckbox,
+  BFormGroup,
+  BFormInput,
+  BFormRadioGroup,
+  BFormSelect,
+  BFormSelectOption,
+  BFormText,
+  BLink,
+  BNav,
+  BNavItem,
+  BProgress,
+  BProgressBar,
+  BSpinner,
+  BTab,
+  BTabs,
+} from 'bootstrap-vue'
+
+Vue.component('b-btn', BButton)
+Vue.component('b-button', BButton)
+Vue.component('b-card', BCard)
+Vue.component('b-checkbox', BFormCheckbox)
+Vue.component('b-form', BForm)
+Vue.component('b-form-checkbox', BFormCheckbox)
+Vue.component('b-form-group', BFormGroup)
+Vue.component('b-form-input', BFormInput)
+Vue.component('b-form-radio-group', BFormRadioGroup)
+Vue.component('b-form-select', BFormSelect)
+Vue.component('b-form-select-option', BFormSelectOption)
+Vue.component('b-form-text', BFormText)
+Vue.component('b-input', BFormInput)
+Vue.component('b-link', BLink)
+Vue.component('b-nav', BNav)
+Vue.component('b-nav-item', BNavItem)
+Vue.component('b-progress', BProgress)
+Vue.component('b-progress-bar', BProgressBar)
+Vue.component('b-select-option', BFormSelectOption)
+Vue.component('b-select', BFormSelect)
+Vue.component('b-spinner', BSpinner)
+Vue.component('b-tab', BTab)
+Vue.component('b-tabs', BTabs)
+
