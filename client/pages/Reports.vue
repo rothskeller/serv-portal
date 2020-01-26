@@ -3,17 +3,19 @@ Reports displays the index page for generating reports.
 -->
 
 <template lang="pug">
-Page(title="Reports" menuItem="reports")
-  div.mt-3(v-if="loading")
-    b-spinner(small)
-  template(v-else)
-    CERTAttendanceForm(v-bind="certAtt")
+div.mt-3(v-if="loading")
+  b-spinner(small)
+CERTAttendanceForm(v-else v-bind="certAtt")
 </template>
 
 <script>
+import CERTAttendanceForm from './reports/CERTAttendanceForm'
+
 export default {
+  components: { CERTAttendanceForm },
   data: () => ({ loading: false, certAtt: null }),
   async created() {
+    this.$store.commit('setPage', { title: 'Reports' })
     this.loading = true
     const data = (await this.$axios.get('/api/reports')).data
     this.certAtt = data.certAttendance

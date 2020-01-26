@@ -3,6 +3,8 @@ EventAttendance shows and allows changes to the attendance for an event.
 -->
 
 <template lang="pug">
+div.mt-3.ml-2(v-if="!event")
+  b-spinner(small)
 form#event-attendance(v-else @submit.prevent="onSave")
   b-form#event-attend-settings(inline)
     label.mr-2(for="event-attend-type") Set attendance for:
@@ -21,15 +23,25 @@ form#event-attendance(v-else @submit.prevent="onSave")
 
 <script>
 import moment from 'moment-mini'
+import EventAttendancePerson from './EventAttendancePerson'
 
 export default {
+  components: { EventAttendancePerson },
   props: {
+    onLoadEvent: Function,
+  },
+  data: () => ({
     event: null,
     people: null,
-  },
-  data: () => ({ setType: 'Volunteer', setHours: 1.0 }),
-  mounted() {
+    setType: 'Volunteer',
+    setHours: 1.0,
+  }),
+  async created() {
+    const data = (await this.$axios.get(`/api/events/${this.$route.params.id}?attendance=1`)).data
+    this.event = data.event
+    this.people = data.people
     this.setHours = moment(this.event.end, 'HH:mm').diff(moment(this.event.start, 'HH:mm'), 'hours', true)
+    this.onLoadEvent(this.event)
   },
   methods: {
     onCancel() { this.$router.go(-1) },
@@ -43,7 +55,7 @@ export default {
         }
       })
       await this.$axios.post(`/api/events/${this.$route.params.id}/attendance`, body)
-      this.$router.push({ path: '/events', params: { year: this.event.date.substr(0, 4) } })
+      this.$router.push(`/events/${this.$route.params.id}`)
     },
     onTogglePerson(person) {
       if (person.attended && person.attended.type === this.setType) person.attended = false

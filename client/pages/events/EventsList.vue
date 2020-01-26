@@ -31,8 +31,10 @@ EventsList displays the list of events.
 
 <script>
 import range from 'lodash/range'
+import EventTypeDots from '@/base/EventTypeDots'
 
 export default {
+  components: { EventTypeDots },
   data: () => ({
     year: null,
     years: range(2013, new Date().getFullYear() + 2),

@@ -3,7 +3,9 @@ PersonEdit displays the editor page for a person.
 -->
 
 <template lang="pug">
-form#person-edit(@submit.prevent="onSubmit")
+div.mt-3.ml-2(v-if="!person")
+  b-spinner(small)
+form#person-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Name" label-for="person-informalName" label-cols-sm="auto" label-class="person-edit-label" :state="informalNameError ? false : null" :invalid-feedback="informalNameError")
     b-input#person-informalName.person-edit-input(autofocus :plaintext="!canEditDetails" :state="informalNameError ? false : null" trim v-model="person.informalName")
     b-form-text(v-if="canEditDetails") What you like to be called, e.g. “Joe Banks”
@@ -41,16 +43,21 @@ form#person-edit(@submit.prevent="onSubmit")
 </template>
 
 <script>
+import PasswordEntry from '@/base/PasswordEntry'
+import PersonEditAddress from './PersonEditAddress'
+
 export default {
+  components: { PasswordEntry, PersonEditAddress },
   props: {
-    person: Object,
-    allowBadPassword: Boolean,
-    canEditDetails: Boolean,
-    canEditRoles: Boolean,
-    canEditUsername: Boolean,
-    passwordHints: Array,
+    onLoadPerson: Function,
   },
   data: () => ({
+    person: null,
+    allowBadPassword: false,
+    canEditDetails: false,
+    canEditRoles: false,
+    canEditUsername: false,
+    passwordHints: [],
     informalNameError: null,
     formalNameError: null,
     sortNameError: null,
@@ -100,7 +107,15 @@ export default {
       return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.cellPhoneError && !this.homePhoneError && !this.workPhoneError && !this.rolesError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress && !this.emailErrors.some(e => e)
     },
   },
-  mounted() {
+  async created() {
+    const data = (await this.$axios.get(`/api/people/${this.$route.params.id}?edit=1`)).data
+    this.allowBadPassword = data.allowBadPassword
+    this.canEditDetails = data.canEditDetails
+    this.canEditRoles = data.canEditRoles
+    this.canEditUsername = data.canEditUsername
+    this.passwordHints = data.passwordHints
+    this.person = data.person
+    this.onLoadPerson(this.person)
     this.person.emails.forEach(e => {
       this.$watch((() => e.email), this.validate)
       this.emailErrors.push(null)
@@ -131,6 +146,11 @@ export default {
       this.person.emails.push(e)
       this.emailErrors.push(null)
       this.$watch((() => e.email), this.validate)
+    },
+    informalToSort(n) {
+      if (!n) return n
+      const parts = n.split(/\s+/, 2)
+      return parts.length > 1 ? `${parts[1]}, ${parts[0]}` : n
     },
     onCancel() { this.$router.go(-1) },
     onPasswordChange(p) { this.password = p },

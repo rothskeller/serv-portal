@@ -3,15 +3,16 @@ PersonView displays the information about a person, in non-editable form.
 -->
 
 <template lang="pug">
-#person-view
+div.mt-3.ml-2(v-if="!person")
+  b-spinner(small)
+#person-view(v-else)
   #person-view-name
     #person-view-informalName
       span(v-text="person.informalName")
       span#person-view-callSign(v-if="person.callSign" v-text="person.callSign")
     #person-view-formalName(v-if="person.formalName !== person.informalName" v-text="`(formally ${person.formalName})`")
   #person-view-roles
-    template(v-for="role in person.roles")
-      div(v-if="role.held" v-text="role.name")
+    div(v-for="role in person.roles" v-text="role.name")
   #person-view-emails(v-if="person.emails")
     div(v-for="e in person.emails")
       a(:href="`mailto:${e.email}`" v-text="e.email")
@@ -54,11 +55,13 @@ PersonView displays the information about a person, in non-editable form.
 <script>
 export default {
   props: {
-    person: null,
+    onLoadPerson: Function,
   },
-  computed: {
-  },
-  methods: {
+  data: () => ({ person: null }),
+  async created() {
+    const data = (await this.$axios.get(`/api/people/${this.$route.params.id}`)).data
+    this.person = data.person
+    this.onLoadPerson(this.person)
   },
 }
 </script>

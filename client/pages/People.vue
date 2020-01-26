@@ -3,20 +3,43 @@ People displays the list of people.
 -->
 
 <template lang="pug">
-Page(title="People" menuItem="people" noPadding)
-  b-card#people-card(no-body)
-    b-tabs(card)
-      b-tab.people-tab-pane(title="List" no-body)
-        PeopleList
-      b-tab.person-tab-pane(title="Map" no-body lazy)
-        PeopleMap
+b-card#people-card(no-body)
+  b-card-header(header-tag="nav")
+    b-nav(card-header tabs)
+      b-nav-item(to="/people/list" exact exact-active-class="active") List
+      b-nav-item(to="/people/map" exact exact-active-class="class") Map
+      b-nav-item(v-if="canAdd" to="/people/NEW") Add Person
+      b-nav-item(v-if="canView" :to="`/people/${$route.params.id}`" exact exact-active-class="active") Details
+      b-nav-item(v-if="canEdit" :to="`/people/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
+  router-view(:onLoadPerson="onLoadPerson")
 </template>
 
 <script>
-const PeopleMap = () => import(/* webpackChunkName: "maps" */ './people/-PeopleMap.vue')
-
 export default {
-  components: { PeopleMap },
+  data: () => ({ person: null }),
+  computed: {
+    canAdd() { return !this.$route.params.id && this.$store.state.me.canAddPeople },
+    canEdit() { return this.person && this.person.canEdit },
+    canView() { return this.person && this.$route.params.id !== 'NEW' },
+    editLabel() { return this.$route.params.id === 'NEW' ? 'Add Person' : 'Edit' },
+  },
+  watch: {
+    $route() {
+      if (!this.$route.params.id) {
+        this.person = null
+        this.$store.commit('setPage', { title: 'People' })
+      }
+    },
+  },
+  mounted() {
+    this.$store.commit('setPage', { title: this.$route.params.id === 'NEW' ? 'New Person' : 'People' })
+  },
+  methods: {
+    onLoadPerson(p) {
+      this.person = p
+      if (this.$route.params.id !== 'NEW') this.$store.commit('setPage', { title: p.informalName })
+    },
+  },
 }
 </script>
 
@@ -24,7 +47,7 @@ export default {
 #people-card
   height calc(100vh - 40px)
   border none
-.people-tab-pane
-  overflow-y auto
-  height calc(100vh - 3.25rem - 42px)
+  .card-header
+    @media print
+      display none
 </style>

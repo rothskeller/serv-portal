@@ -3,7 +3,9 @@ Event displays the event viewing/editing page.
 -->
 
 <template lang="pug">
-#event-view
+div.mt-3.ml-2(v-if="!event")
+  b-spinner(small)
+#event-view(v-else)
   #event-view-name(v-text="event.name")
   #event-view-types(v-if="types" v-text="types")
   #event-view-date-time(v-text="dateTimeFmt")
@@ -24,8 +26,9 @@ import moment from 'moment-mini'
 
 export default {
   props: {
-    event: Object,
+    onLoadEvent: Function,
   },
+  data: () => ({ event: null }),
   computed: {
     dateTimeFmt() {
       const date = moment(this.event.date, 'YYYY-MM-DD')
@@ -42,6 +45,11 @@ export default {
       else
         return null
     }
+  },
+  async created() {
+    const data = (await this.$axios.get(`/api/events/${this.$route.params.id}`)).data
+    this.event = data.event
+    this.onLoadEvent(this.event)
   },
 }
 </script>

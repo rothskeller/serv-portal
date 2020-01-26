@@ -3,28 +3,43 @@ Events displays the list of events.
 -->
 
 <template lang="pug">
-Page(title="Events" menuItem="events" noPadding)
-  b-card#events-card(no-body)
-    b-tabs(card v-model="tab")
-      b-tab.events-tab-pane(title="Calendar" no-body)
-        EventsCalendar(@canAdd="canAdd = true")
-      b-tab.events-tab-pane(title="List" no-body)
-        EventsList(@canAdd="canAdd = true")
-      template(v-if="canAdd" v-slot:tabs-end)
-        b-nav-item(to="/events/NEW") Add Event
+b-card#events-card(no-body)
+  b-card-header(header-tag="nav")
+    b-nav(card-header tabs)
+      b-nav-item(to="/events/calendar" exact exact-active-class="active") Calendar
+      b-nav-item(to="/events/list" exact exact-active-class="active") List
+      b-nav-item(v-if="canAdd" to="/events/NEW") Add Event
+      b-nav-item(v-if="canView" :to="`/events/${$route.params.id}`" exact exact-active-class="active") Details
+      b-nav-item(v-if="canEdit" :to="`/events/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
+      b-nav-item(v-if="canAttendance" :to="`/events/${$route.params.id}/attendance`" exact exact-active-class="active") Attendance
+  router-view(:onLoadEvent="onLoadEvent")
 </template>
 
 <script>
-import Cookies from 'js-cookie'
-
 export default {
-  data: () => ({ tab: 0, canAdd: false }),
-  mounted() {
-    this.tab = Cookies.get('serv-events-list') === '1' ? 1 : 0
+  data: () => ({ event: null }),
+  computed: {
+    canAdd() { return !this.$route.params.id && this.$store.state.me.canAddEvents },
+    canAttendance() { return this.event && this.event.canAttendance },
+    canEdit() { return this.event && this.event.canEdit },
+    canView() { return this.event && this.$route.params.id !== 'NEW' },
+    editLabel() { return this.$route.params.id === 'NEW' ? 'Add Event' : 'Edit' },
   },
   watch: {
-    tab() {
-      Cookies.set('serv-events-list', this.tab, { expires: 3650 })
+    $route() {
+      if (!this.$route.params.id) {
+        this.event = null
+        this.$store.commit('setPage', { title: 'Events' })
+      }
+    },
+  },
+  mounted() {
+    this.$store.commit('setPage', { title: this.$route.params.id === 'NEW' ? 'New Event' : 'Events' })
+  },
+  methods: {
+    onLoadEvent(e) {
+      this.event = e
+      if (this.$route.params.id !== 'NEW') this.$store.commit('setPage', { title: `${e.date} ${e.name}` })
     },
   },
 }
@@ -37,7 +52,4 @@ export default {
   .card-header
     @media print
       display none
-.events-tab-pane
-  overflow-y auto
-  height calc(100vh - 3.25rem - 42px)
 </style>

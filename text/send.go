@@ -31,7 +31,7 @@ func GetSMS(r *util.Request) error {
 		out.RawString(`{"id":`)
 		out.Int(int(m.ID))
 		out.RawString(`,"timestamp":`)
-		out.String(m.Timestamp.In(time.Local).Format("2006-01-02 15:04:05"))
+		out.String(m.Timestamp.In(time.Local).Format("2006-01-02 15:04"))
 		out.RawString(`,"sender":`)
 		out.String(r.Tx.FetchPerson(m.Sender).InformalName)
 		out.RawString(`,"groups":[`)
@@ -85,7 +85,7 @@ func PostSMS(r *util.Request) error {
 	message.Sender = r.Person.ID
 	if message.Message = r.FormValue("message"); message.Message == "" {
 		return errors.New("missing message")
-	} else if len(message.Message) > 140 {
+	} else if !messageFits(message.Message) {
 		return errors.New("message too long")
 	}
 	for _, g := range r.Form["group"] {
@@ -136,4 +136,26 @@ func PostSMS(r *util.Request) error {
 
 func formatPhoneForText(s string) string {
 	return "1" + strings.Map(util.KeepDigits, s)
+}
+
+var doubleWidthCharacters = "\f\n^{}\\[~]|€"
+var singleWidthCharacters = "£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà"
+
+func messageFits(s string) bool {
+	var runes, chars int
+	var unicode bool
+	for _, r := range s {
+		runes++
+		if strings.ContainsRune(singleWidthCharacters, r) {
+			chars++
+		} else if strings.ContainsRune(doubleWidthCharacters, r) {
+			chars += 2
+		} else {
+			unicode = true
+		}
+	}
+	if unicode {
+		return runes <= 70
+	}
+	return chars <= 160
 }

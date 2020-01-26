@@ -3,7 +3,7 @@ PWReset displays the password reset page.
 -->
 
 <template lang="pug">
-Page(title="SERV Portal")
+PublicPage(title="SERV Portal")
   #pwreset-top
     #pwreset-banner Password Reset
     template(v-if="!finished")
@@ -22,7 +22,10 @@ Page(title="SERV Portal")
 </template>
 
 <script>
+import PublicPage from '@/base/PublicPage'
+
 export default {
+  components: { PublicPage },
   data: () => ({ username: '', finished: false }),
   watch: {
     email: 'validate',

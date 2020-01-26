@@ -25,6 +25,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		attended       []*model.Event
 		individualHeld map[*model.Role]bool
 		roles          = map[model.RoleID]bool{}
+		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
 		if !auth.CanCreatePeople(r) {
@@ -43,23 +44,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		canEditDetails = r.Person == person || auth.IsWebmaster(r)
 		canViewContact = canEditDetails || auth.CanViewContactInfo(r, person)
 	}
-	out.RawString(`{"canEditDetails":`)
-	out.Bool(canEditDetails)
-	out.RawString(`,"allowBadPassword":`)
-	out.Bool(auth.IsWebmaster(r))
-	out.RawString(`,"canEditUsername":`)
-	out.Bool(auth.IsWebmaster(r))
-	if canEditDetails {
-		out.RawString(`,"passwordHints":[`)
-		for i, h := range auth.SERVPasswordHints {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.String(h)
-		}
-		out.RawByte(']')
-	}
-	out.RawString(`,"person":{"id":`)
+	out.RawString(`{"person":{"id":`)
 	out.Int(int(person.ID))
 	out.RawString(`,"username":`)
 	out.String(person.Username)
@@ -104,7 +89,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		if individualHeld[role] {
 			canAssign = false
 		}
-		if !roles[role.ID] && !canAssign {
+		if !roles[role.ID] && (!canAssign || !wantEdit) {
 			continue
 		}
 		if first {
@@ -116,44 +101,69 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.Int(int(role.ID))
 		out.RawString(`,"name":`)
 		out.String(role.Name)
-		out.RawString(`,"canAssign":`)
-		out.Bool(canAssign)
-		out.RawString(`,"held":`)
-		out.Bool(roles[role.ID])
+		if wantEdit {
+			out.RawString(`,"canAssign":`)
+			out.Bool(canAssign)
+			out.RawString(`,"held":`)
+			out.Bool(roles[role.ID])
+		}
 		out.RawByte('}')
 	}
 	out.RawByte(']')
-	attendmap = r.Tx.FetchAttendanceByPerson(person)
-	for eid := range attendmap {
-		event := r.Tx.FetchEvent(eid)
-		if r.Person == person || auth.CanRecordAttendanceAtEvent(r, event) {
-			attended = append(attended, event)
-		}
-	}
-	if len(attended) > 0 {
-		sort.Sort(model.EventSort(attended))
-		out.RawString(`,"attended":[`)
-		for i := len(attended) - 1; i >= 0; i-- {
-			if i != len(attended)-1 {
-				out.RawByte(',')
+	if !wantEdit {
+		attendmap = r.Tx.FetchAttendanceByPerson(person)
+		for eid := range attendmap {
+			event := r.Tx.FetchEvent(eid)
+			if r.Person == person || auth.CanRecordAttendanceAtEvent(r, event) {
+				attended = append(attended, event)
 			}
-			e := attended[i]
-			out.RawString(`{"id":`)
-			out.Int(int(e.ID))
-			out.RawString(`,"date":`)
-			out.String(e.Date)
-			out.RawString(`,"name":`)
-			out.String(e.Name)
-			out.RawString(`,"type":`)
-			out.String(model.AttendanceTypeNames[attendmap[e.ID].Type])
-			out.RawString(`,"minutes":`)
-			out.Uint16(attendmap[e.ID].Minutes)
-			out.RawByte('}')
 		}
-		out.RawByte(']')
+		if len(attended) > 0 {
+			sort.Sort(model.EventSort(attended))
+			out.RawString(`,"attended":[`)
+			for i := len(attended) - 1; i >= 0; i-- {
+				if i != len(attended)-1 {
+					out.RawByte(',')
+				}
+				e := attended[i]
+				out.RawString(`{"id":`)
+				out.Int(int(e.ID))
+				out.RawString(`,"date":`)
+				out.String(e.Date)
+				out.RawString(`,"name":`)
+				out.String(e.Name)
+				out.RawString(`,"type":`)
+				out.String(model.AttendanceTypeNames[attendmap[e.ID].Type])
+				out.RawString(`,"minutes":`)
+				out.Uint16(attendmap[e.ID].Minutes)
+				out.RawByte('}')
+			}
+			out.RawByte(']')
+		}
 	}
-	out.RawString(`},"canEditRoles":`)
-	out.Bool(canEditRoles)
+	out.RawString(`,"canEdit":`)
+	out.Bool(canEditDetails || canEditRoles)
+	out.RawByte('}')
+	if wantEdit {
+		out.RawString(`,"canEditRoles":`)
+		out.Bool(canEditRoles)
+		out.RawString(`,"canEditDetails":`)
+		out.Bool(canEditDetails)
+		out.RawString(`,"allowBadPassword":`)
+		out.Bool(auth.IsWebmaster(r))
+		out.RawString(`,"canEditUsername":`)
+		out.Bool(auth.IsWebmaster(r))
+		if canEditDetails {
+			out.RawString(`,"passwordHints":[`)
+			for i, h := range auth.SERVPasswordHints {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				out.String(h)
+			}
+			out.RawByte(']')
+		}
+	}
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

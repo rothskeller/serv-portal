@@ -3,7 +3,9 @@ Event displays the event viewing/editing page.
 -->
 
 <template lang="pug">
-form#event-edit(@submit.prevent="onSubmit")
+div.mt-3.ml-2(v-if="!event")
+  b-spinner(small)
+form#event-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="event-edit-label" :state="nameError ? false : null" :invalid-feedback="nameError")
     b-input#event-name(autofocus :state="nameError ? false : null" trim v-model="event.name")
   b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
@@ -52,12 +54,13 @@ form#event-edit(@submit.prevent="onSubmit")
 <script>
 export default {
   props: {
+    onLoadEvent: Function,
+  },
+  data: () => ({
     event: null,
     groups: null,
     venues: null,
     types: null,
-  },
-  data: () => ({
     submitted: false,
     dateError: null,
     timeError: null,
@@ -89,6 +92,14 @@ export default {
         this.$nextTick(() => { this.$refs.venueName.focus() })
       }
     },
+  },
+  async created() {
+    const data = (await this.$axios.get(`/api/events/${this.$route.params.id}?edit=1`)).data
+    this.event = data.event
+    this.groups = data.groups
+    this.venues = data.venues
+    this.types = data.types
+    this.onLoadEvent(this.event)
   },
   methods: {
     onCancel() { this.$router.go(-1) },
@@ -126,8 +137,8 @@ export default {
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
         this.duplicateName = { date: this.event.date, name: this.event.name }
-      else
-        this.$router.push({ path: '/events', params: { year: this.event.date.substr(0, 4) } })
+      else if (resp)
+        this.$router.push(`/events/${resp.id}`)
     },
     validate() {
       if (!this.submitted) return

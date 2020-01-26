@@ -3,7 +3,7 @@ Login displays the login page.
 -->
 
 <template lang="pug">
-Page(title="SERV Portal")
+PublicPage(title="SERV Portal")
   #login-top
     #login-banner Please log in.
     #login-forserv
@@ -23,7 +23,10 @@ Page(title="SERV Portal")
 </template>
 
 <script>
+import PublicPage from '@/base/PublicPage'
+
 export default {
+  components: { PublicPage },
   data: () => ({ email: '', password: '', failed: false }),
   methods: {
     async onSubmit() {

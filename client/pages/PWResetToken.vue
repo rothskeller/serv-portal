@@ -3,7 +3,7 @@ PWResetToken displays the second password reset page (the one the email links to
 -->
 
 <template lang="pug">
-Page(title="SERV Portal")
+PublicPage(title="SERV Portal")
   #pwreset-token-top
     #pwreset-token-banner Password Reset
     template(v-if="invalid")
@@ -23,7 +23,11 @@ Page(title="SERV Portal")
 </template>
 
 <script>
+import PasswordEntry from '@/base/PasswordEntry'
+import PublicPage from '@/base/PublicPage'
+
 export default {
+  components: { PasswordEntry, PublicPage },
   data: () => ({ hints: null, invalid: false, password: '', submitted: false }),
   async created() {
     try {

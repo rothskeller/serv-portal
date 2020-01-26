@@ -2,6 +2,7 @@ package event
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -23,10 +24,12 @@ var htmlSanitizer = bluemonday.NewPolicy().
 // GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
 func GetEvent(r *util.Request, idstr string) error {
 	var (
-		event         *model.Event
-		canEdit       bool
-		canAttendance bool
-		out           jwriter.Writer
+		event          *model.Event
+		canEdit        bool
+		canAttendance  bool
+		out            jwriter.Writer
+		wantAttendance = r.FormValue("attendance") != ""
+		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
 		if !auth.CanCreateEvents(r) {
@@ -44,11 +47,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		canEdit = auth.CanManageEvent(r, event) && event.SccAresID == ""
 		canAttendance = auth.CanRecordAttendanceAtEvent(r, event)
 	}
-	out.RawString(`{"canEdit":`)
-	out.Bool(canEdit)
-	out.RawString(`,"canAttendance":`)
-	out.Bool(canAttendance)
-	out.RawString(`,"event":{"id":`)
+	out.RawString(`{"event":{"id":`)
 	out.Int(int(event.ID))
 	out.RawString(`,"name":`)
 	out.String(event.Name)
@@ -96,8 +95,12 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.Int(int(g))
 	}
-	out.RawString(`]}`)
-	if canEdit {
+	out.RawString(`],"canEdit":`)
+	out.Bool(canEdit)
+	out.RawString(`,"canAttendance":`)
+	out.Bool(canAttendance)
+	out.RawByte('}')
+	if canEdit && wantEdit {
 		out.RawString(`,"types":[`)
 		for i, et := range model.AllEventTypes {
 			if i != 0 {
@@ -129,7 +132,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawByte(']')
 	}
-	if canAttendance {
+	if canAttendance && wantAttendance {
 		var (
 			attended = r.Tx.FetchAttendanceByEvent(event)
 			first    = true
@@ -272,5 +275,7 @@ func PostEvent(r *util.Request, idstr string) error {
 	}
 	r.Tx.SaveEvent(event)
 	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(r, `{"id":%d}`, event.ID)
 	return nil
 }

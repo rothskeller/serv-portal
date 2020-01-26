@@ -9,6 +9,7 @@ const store = new Vuex.Store({
     started: false,
     eventsYear: null,
     touch: false,
+    page: {},
   },
   mutations: {
     login(state, data) {
@@ -16,6 +17,7 @@ const store = new Vuex.Store({
       state.started = true
     },
     eventsYear(state, year) { state.eventsYear = year },
+    setPage(state, page) { state.page = page },
     setTouch(state, touch) { state.touch = touch },
   },
   actions: {

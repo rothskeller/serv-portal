@@ -8,19 +8,10 @@ import './plugins/bootstrap-vue'
 import './plugins/axios'
 import store from './store'
 import router from './router'
+import Main from './Main.vue'
 Vue.config.productionTip = false
 
 Vue.use(VueGoogleMaps, { load: { key: 'AIzaSyDYiDjdYhCKZnM4qbK68KZRjKZqJiQ1dZw' } })
-
-// Register every Vue component in the src tree so that they can be used without
-// explicit declaration.
-const toRequire = require.context('.', true, /\/[A-Za-z]*\.vue$/)
-toRequire.keys().forEach(fileName => {
-  const config = toRequire(fileName)
-  // Get PascalCase name of component
-  const name = fileName.split('/').pop().replace(/\.vue$/, '')
-  Vue.component(name, config.default || config)
-})
 
 // Find out if we're already logged in (via cookie), and if so, get and store
 // the session data.
@@ -31,6 +22,6 @@ Vue.axios.get('/api/login')
     new Vue({
       store,
       router,
-      render: h => h('Main')
+      render: h => h(Main)
     }).$mount('#app')
   })

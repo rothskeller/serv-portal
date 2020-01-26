@@ -37,8 +37,10 @@ EventsCalendar displays the events in a calendar form.
 
 <script>
 import moment from 'moment-mini'
+import EventTypeDots from '@/base/EventTypeDots'
 
 export default {
+  components: { EventTypeDots },
   data: () => ({
     month: moment(),
     dates: [],

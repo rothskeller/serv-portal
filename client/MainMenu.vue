@@ -1,18 +1,19 @@
 <!--
-Page is the basic framework of all pages on the site.
+MainMenu displays the main menu and routes to the page being displayed within
+it.
 -->
 
 <template lang="pug">
 #page-top(:class="$store.state.touch ? 'touch' : 'mouse'")
   #page-heading
     #page-menu-trigger-box(@click="onMenuTrigger")
-      svg#page-menu-trigger.bi.bi-list(v-if="$store.state.me" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
+      svg#page-menu-trigger.bi.bi-list(viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
         path(fill-rule="evenodd" d="M4.5 13.5A.5.5 0 015 13h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 9h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 5h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5z" clip-rule="evenodd")
     #page-titlebox
-      #page-title(v-text="title")
+      #page-title(v-text="$store.state.page.title")
     #page-menu-spacer
   #page-main(:class="menuOpen ? 'page-menu-open' : null")
-    #page-menu(v-if="$store.state.me")
+    #page-menu
       #page-menu-welcome
         | Welcome
         br
@@ -20,24 +21,25 @@ Page is the basic framework of all pages on the site.
       b-nav#page-nav(pills vertical)
         b-nav-item(to="/events" :active="menuItem === 'events'") Events
         b-nav-item(to="/people" :active="menuItem === 'people'") People
-        b-nav-item(v-if="$store.state.me.webmaster" to="/roles" :active="menuItem === 'roles'") Roles
         b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
+        b-nav-item(v-if="$store.state.me.webmaster" to="/texts" :active="menuItem === 'texts'") Texts
         //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
         b-nav-item(to="/logout") Logout
-    #page-content(:class="noPadding ? 'page-no-padding': null")
-      #page-subtitle(v-if="subtitle" v-text="subtitle")
-      slot
+    #page-content(:class="tabbed ? 'page-no-padding': null")
+      #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
+      router-view
 </template>
 
 <script>
 export default {
-  props: {
-    title: String,
-    subtitle: String,
-    menuItem: String,
-    noPadding: Boolean,
-  },
   data: () => ({ menuOpen: false }),
+  computed: {
+    menuItem() {
+      const record = this.$route.matched.find(rec => rec.meta.menuItem)
+      return record ? record.meta.menuItem : null
+    },
+    tabbed() { return this.$route.matched.some(rec => rec.meta.tabbed) },
+  },
   methods: {
     onMenuTrigger() { this.menuOpen = !this.menuOpen },
   },

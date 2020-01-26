@@ -3,19 +3,18 @@ CERTAttendance displays a CERT attendance report.
 -->
 
 <template lang="pug">
-Page(title="CERT Attendance" subtitle="CERT Attendance" menuItem="reports")
-  div.mt-3(v-if="loading")
-    b-spinner(small)
-  table#cert-att-table(v-else)
-    thead
-      tr(v-for="(row, rownum) in header" :key="rownum")
-        td(v-for="(cell, colnum) in row" :key="colnum" :colspan="cell.span || 1" :class="headerClass(rownum, colnum)" v-text="wrapText(cell)")
-    tbody
-      tr(v-for="(row, rownum) in body" :key="rownum")
-        td(v-for="(cell, colnum) in row" :key="colnum" :class="spanStarts[colnum] ? 'cert-att-span' : null" v-text="cell")
-    tfoot
-      tr(v-for="(row, rownum) in footer" :key="rownum")
-        td(v-for="(cell, colnum) in row" :key="colnum" :class="spanStarts[colnum] ? 'cert-att-span' : null" v-text="cell")
+div.mt-3(v-if="loading")
+  b-spinner(small)
+table#cert-att-table(v-else)
+  thead
+    tr(v-for="(row, rownum) in header" :key="rownum")
+      td(v-for="(cell, colnum) in row" :key="colnum" :colspan="cell.span || 1" :class="headerClass(rownum, colnum)" v-text="wrapText(cell)")
+  tbody
+    tr(v-for="(row, rownum) in body" :key="rownum")
+      td(v-for="(cell, colnum) in row" :key="colnum" :class="spanStarts[colnum] ? 'cert-att-span' : null" v-text="cell")
+  tfoot
+    tr(v-for="(row, rownum) in footer" :key="rownum")
+      td(v-for="(cell, colnum) in row" :key="colnum" :class="spanStarts[colnum] ? 'cert-att-span' : null" v-text="cell")
 </template>
 
 <script>
@@ -40,6 +39,7 @@ export default {
     }
   },
   async created() {
+    this.$store.commit('setPage', { title: 'CERT Attendance', subtitle: 'CERT Attendance' })
     this.loading = true
     const data = (await this.$axios.get('/api/reports/cert-attendance', {
       params: {

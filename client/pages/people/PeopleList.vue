@@ -4,10 +4,8 @@ PeopleList displays the list of people.
 
 <template lang="pug">
 #people-list
-  #people-title
-    | People
-    select#people-group(v-if="groups && groups.length > 1" v-model="group")
-      option(v-for="t in groups" :key="t.id" :value="t.id" v-text="t.name")
+  select#people-group(v-if="groups && groups.length > 1" v-model="group")
+    option(v-for="t in groups" :key="t.id" :value="t.id" v-text="t.name")
   div.mt-3(v-if="loading")
     b-spinner(small)
   #people-table(v-else)
@@ -36,8 +34,6 @@ PeopleList displays the list of people.
       .people-roles
         div(v-for="(r, i) in p.roles" :key="i" v-text="r")
         div(v-if="!p.roles.length") &mdash;
-  //-div.mt-3(v-if="canAdd")
-    b-btn(to="/people/NEW") Add Person
 </template>
 
 <script>
@@ -73,23 +69,11 @@ export default {
 
 <style lang="stylus">
 #people-list
-  margin 0.75rem
-#people-title
-  display flex
-  flex-direction column
-  align-items flex-start
-  font-size 1.5rem
-  @media (min-width: 576px)
-    flex-direction row
-    align-items center
-#people-group
-  font-size 1rem
-  @media (min-width: 576px)
-    margin-left 1rem
+  margin 1.5rem 0.75rem 0.75rem
 #people-table
   display flex
   flex-wrap wrap
-  margin-top 1.5rem
+  margin-top 0.755rem
 .people-heading
   display none
   @media (min-width: 576px)

@@ -3,7 +3,7 @@ Logout handles a logout request.
 -->
 
 <template lang="pug">
-Page(title="Logout" subtitle="Logging out..." menuItem="logout")
+div.mt-3.ml-2 Logging out...
 </template>
 
 <script>

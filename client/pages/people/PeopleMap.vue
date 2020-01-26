@@ -5,7 +5,6 @@ PeopleMap displays people on a map.
 <template lang="pug">
 #people-map
   #people-map-title
-    | People
     select#people-map-group(v-if="groups && groups.length > 1" v-model="group")
       option(v-for="t in groups" :key="t.id" :value="t.id" v-text="t.name")
     b-checkbox.people-map-option(v-model="home") Home
@@ -79,13 +78,10 @@ export default {
   margin 0.75rem 0 0 0
 #people-map-title
   display flex
-  flex-direction column
-  align-items flex-start
-  margin 0 0.75rem 0.75rem
-  font-size 1.5rem
-  @media (min-width: 576px)
-    flex-direction row
-    align-items center
+  flex-direction row
+  flex-wrap wrap
+  align-items center
+  margin-bottom 0.75rem
 .people-map-option
   margin-left 0.75rem
   font-size 1rem
@@ -94,9 +90,9 @@ export default {
   @media (min-width: 576px)
     margin-left 1rem
 #people-map-map
-  height calc(100vh - 7rem - 42px)
+  height calc(100vh - 6.25rem - 42px)
   // 40px title bar
   // 3.25rem + 2px tab bar
   // 0.75rem tab margin
-  // 3rem settings form and margin
+  // 2.25rem settings form and margin
 </style>
