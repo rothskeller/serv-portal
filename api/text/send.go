@@ -36,7 +36,7 @@ func PostTextMessage(r *util.Request) error {
 		return errors.New("message too long")
 	}
 	for _, g := range r.Form["group"] {
-		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group == nil && group.AllowTextMessages {
+		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages {
 			groups[group] = true
 			message.Groups = append(message.Groups, group.ID)
 		} else {

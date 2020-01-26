@@ -122,6 +122,6 @@ func (tx *Tx) SaveTextDelivery(delivery *model.TextDelivery, message model.TextM
 	)
 	data, err = delivery.Marshal()
 	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE text_delivery SET data=? WHERE id=? AND number=?`, data, message, number))
+	panicOnNoRows(tx.tx.Exec(`UPDATE text_delivery SET data=? WHERE message=? AND number=?`, data, message, number))
 	tx.audit("text_delivery", fmt.Sprintf("%d-%s", message, number), data)
 }
