@@ -60,6 +60,7 @@ export default {
     callSignError: null,
     duplicateCallSign: null,
     cellPhoneError: null,
+    duplicateCellPhone: null,
     homePhoneError: null,
     workPhoneError: null,
     password: '',
@@ -177,6 +178,7 @@ export default {
         if (resp.duplicateSortName) this.duplicateSortName = this.person.sortName
         if (resp.duplicateUsername) this.duplicateUsername = this.person.username
         if (resp.duplicateCallSign) this.duplicateCallSign = this.person.callSign
+        if (resp.duplicateCellPhone) this.duplicateCellPhone = this.person.cellPhone
         // disregarding resp.weakPassword since we catch that locally
         this.validate()
       } else {
@@ -219,6 +221,8 @@ export default {
       })
       if (this.person.cellPhone && this.person.cellPhone.replace(/[^0-9]/g, '').length !== 10)
         this.cellPhoneError = 'A valid phone number must have 10 digits.'
+      else if (this.duplicateCellPhone === this.person.cellPhone)
+        this.cellPhoneError = 'A different person has this cell phone number.'
       else
         this.cellPhoneError = null
       if (this.person.homePhone && this.person.homePhone.replace(/[^0-9]/g, '').length !== 10)

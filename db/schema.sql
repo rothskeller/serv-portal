@@ -26,6 +26,7 @@ CREATE TABLE person (
     id            integer PRIMARY KEY,
     username      text    UNIQUE COLLATE NOCASE,
     pwreset_token text    UNIQUE,
+    cell_phone    text    UNIQUE,
     data          blob    NOT NULL
 );
 
@@ -78,9 +79,8 @@ CREATE TABLE scc_ares_event_name (
 -- here for scc='' (which must exist).
 CREATE TABLE scc_ares_event_location (
     scc  text    PRIMARY KEY,
-    serv integer REFERENCES venue ON DELETE CASCADE
+    serv integer NOT NULL
 );
-CREATE INDEX scc_ares_event_location_serv_index ON scc_ares_event_location (serv);
 
 -- The scc_ares_event_type table maps types of events imported from the
 -- scc-ares-races.org site into our event types.  Any event type in their

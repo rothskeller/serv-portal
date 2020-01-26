@@ -201,26 +201,6 @@ func PostPerson(r *util.Request, idstr string) error {
 		}
 		person.Username = strings.TrimSpace(r.FormValue("userName"))
 		person.CallSign = strings.TrimSpace(r.FormValue("callSign"))
-		for _, p := range r.Tx.FetchPeople() {
-			if p.ID == person.ID {
-				continue
-			}
-			if p.SortName == person.SortName {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateSortName":true}`))
-				return nil
-			}
-			if p.Username != "" && p.Username == person.Username {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateUsername":true}`))
-				return nil
-			}
-			if p.CallSign != "" && p.CallSign == person.CallSign {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateCallSign":true}`))
-				return nil
-			}
-		}
 		person.Emails = person.Emails[:0]
 		for i, e := range r.Form["email"] {
 			var email model.PersonEmail
@@ -295,6 +275,31 @@ func PostPerson(r *util.Request, idstr string) error {
 				}
 			}
 			auth.SetPassword(r, person, password)
+		}
+		for _, p := range r.Tx.FetchPeople() {
+			if p.ID == person.ID {
+				continue
+			}
+			if p.SortName == person.SortName {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"duplicateSortName":true}`))
+				return nil
+			}
+			if p.Username != "" && p.Username == person.Username {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"duplicateUsername":true}`))
+				return nil
+			}
+			if p.CallSign != "" && p.CallSign == person.CallSign {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"duplicateCallSign":true}`))
+				return nil
+			}
+			if p.CellPhone != "" && p.CellPhone == person.CellPhone {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"duplicateCellPhone":true}`))
+				return nil
+			}
 		}
 	}
 	for _, role := range person.Roles {

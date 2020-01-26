@@ -58,6 +58,22 @@ func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
 	}
 }
 
+// FetchPersonByCellPhone retrieves a single person from the database, given a
+// cell phone number.  It returns nil if no such person exists.
+func (tx *Tx) FetchPersonByCellPhone(token string) (p *model.Person) {
+	var data []byte
+	p = new(model.Person)
+	switch err := dbh.QueryRow(`SELECT data FROM person WHERE cell_phone=?`, token).Scan(&data); err {
+	case nil:
+		panicOnError(p.Unmarshal(data))
+		return p
+	case sql.ErrNoRows:
+		return nil
+	default:
+		panic(err)
+	}
+}
+
 // FetchPeople returns all of the people in the database, in order by sortname.
 func (tx *Tx) FetchPeople() (people []*model.Person) {
 	var (
@@ -92,11 +108,11 @@ func (tx *Tx) SavePerson(p *model.Person) {
 		p.ID++
 		data, err = p.Marshal()
 		panicOnError(err)
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, data) VALUES (?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), data))
+		panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, data) VALUES (?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data))
 	} else {
 		data, err = p.Marshal()
 		panicOnError(err)
-		panicOnExecError(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, data) = (?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), data, p.ID))
+		panicOnExecError(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, data) = (?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data, p.ID))
 	}
 	tx.audit("person", p.ID, data)
 }
