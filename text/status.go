@@ -9,8 +9,8 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetTextMessage handles GET /api/textMessage/$id requests.
-func GetTextMessage(r *util.Request, idstr string) (err error) {
+// GetSMS1 handles GET /api/sms/$id requests.
+func GetSMS1(r *util.Request, idstr string) (err error) {
 	var (
 		message    *model.TextMessage
 		deliveries []*model.TextDelivery

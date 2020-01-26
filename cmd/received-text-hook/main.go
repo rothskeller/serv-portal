@@ -1,5 +1,5 @@
-// Webhook that receives notification of status changes for outbound text
-// messages.  It is invoked as a CGI "script" by the Dreamhost web server.
+// Webhook that receives notification of incoming text messages.  It is invoked
+// as a CGI "script" by the Dreamhost web server.
 //
 // This program expects to be run in the web root directory, which must contain
 // a mode-700 "data" subdirectory.  The data subdirectory must contain the
@@ -16,7 +16,6 @@ import (
 
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/util"
 )
 
 func main() {
@@ -29,22 +28,21 @@ func main() {
 	}
 	cgi.Serve(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			number     = r.FormValue("recipient")
-			message    = model.TextMessageID(util.ParseID(r.FormValue("reference")))
-			status     = r.FormValue("status")
-			statusTime time.Time
-			person     *model.Person
-			delivery   *model.TextDelivery
-			err        error
+			number      = r.FormValue("originator")
+			message     = r.FormValue("body")
+			createdTime time.Time
+			person      *model.Person
+			delivery    *model.TextDelivery
+			err         error
 		)
-		if statusTime, err = time.Parse(time.RFC3339, r.FormValue("statusDatetime")); err != nil {
+		if createdTime, err = time.Parse(time.RFC3339, r.FormValue("createdDatetime")); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Invalid timestamp.")
 			return
 		}
 		if len(number) != 11 || number[0] != '1' {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Invalid recipient phone number.")
+			fmt.Fprintln(w, "Invalid originator phone number.")
 			return
 		}
 		number = number[1:4] + number[5:8] + number[9:11]
@@ -52,30 +50,17 @@ func main() {
 		tx := db.Begin()
 		if person = tx.FetchPersonByCellPhone(number); person == nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Status on unknown recipient phone number.")
+			fmt.Fprintln(w, "Incoming message from unknown phone number.")
 			return
 		}
-		if delivery = tx.FetchTextDelivery(message, person.ID); delivery == nil {
+		if delivery = tx.FetchNewestTextDelivery(person.ID); delivery == nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Status on recipient of unknown message.")
+			fmt.Fprintln(w, "Incoming reply without a corresponding outgoing message.")
 			return
 		}
-		if s := formatStatus[status]; s != "" {
-			status = s
-		}
-		delivery.Status = status
-		delivery.Timestamp = statusTime.In(time.Local)
+		delivery.Responses = append(delivery.Responses, &model.TextResponse{Response: message, Timestamp: createdTime.In(time.Local)})
 		tx.SaveTextDelivery(delivery)
 		tx.Commit()
 		w.WriteHeader(http.StatusNoContent)
 	}))
-}
-
-var formatStatus = map[string]string{
-	"scheduled":       "Scheduled",
-	"sent":            "Sent",
-	"buffered":        "Buffered",
-	"delivered":       "Delivered",
-	"expired":         "Expired",
-	"delivery_failed": "Delivery Failed",
 }

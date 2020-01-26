@@ -100,10 +100,11 @@ message TextMessage {
 }
 
 message TextDelivery {
-  int64                     recipient = 1 [(gogoproto.casttype) = "PersonID"];
-  string                    status    = 2;
-  google.protobuf.Timestamp timestamp = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "statusTime"];
-  repeated TextResponse     responses = 4;
+  int64                     message   = 1 [(gogoproto.casttype) = "TextMessageID"];
+  int64                     recipient = 2 [(gogoproto.casttype) = "PersonID"];
+  string                    status    = 3;
+  google.protobuf.Timestamp timestamp = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "statusTime"];
+  repeated TextResponse     responses = 5;
 }
 
 message TextResponse {

@@ -101,7 +101,8 @@ CREATE TABLE text_message (
 -- each recipient.  This includes tracking their responses if any.
 CREATE TABLE text_delivery (
     message   integer NOT NULL REFERENCES text_message ON DELETE CASCADE,
-    number    text    NOT NULL,
+    recipient integer NOT NULL REFERENCES person ON DELETE CASCADE,
     data      blob    NOT NULL,
-    PRIMARY KEY (message, number)
+    PRIMARY KEY (message, recipient)
 );
+CREATE INDEX text_delivery_recipient_index ON text_delivery (recipient);

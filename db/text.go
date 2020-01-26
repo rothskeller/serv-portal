@@ -68,14 +68,30 @@ func (tx *Tx) FetchTextDeliveries(id model.TextMessageID) (deliveries []*model.T
 	return deliveries
 }
 
-// FetchTextDelivery returns the text message delivery with the specified
-// message ID and recipient number, or nil if there is none.
-func (tx *Tx) FetchTextDelivery(id model.TextMessageID, number string) (delivery *model.TextDelivery) {
+// FetchTextDelivery returns the text message delivery record for the specified
+// message and recipient, or nil if there is none.
+func (tx *Tx) FetchTextDelivery(message model.TextMessageID, recipient model.PersonID) (delivery *model.TextDelivery) {
 	var (
 		data []byte
 		err  error
 	)
-	if err = tx.tx.QueryRow(`SELECT data FROM text_delivery WHERE message=? AND number=?`, id, number).Scan(&data); err == sql.ErrNoRows {
+	if err = tx.tx.QueryRow(`SELECT data FROM text_delivery WHERE message=? AND recipient=?`, message, recipient).Scan(&data); err == sql.ErrNoRows {
+		return nil
+	}
+	panicOnError(err)
+	delivery = new(model.TextDelivery)
+	panicOnError(delivery.Unmarshal(data))
+	return delivery
+}
+
+// FetchNewestTextDelivery returns the most recent text message delivery record
+// for the specified recipient, or nil if there is none.
+func (tx *Tx) FetchNewestTextDelivery(recipient model.PersonID) (delivery *model.TextDelivery) {
+	var (
+		data []byte
+		err  error
+	)
+	if err = tx.tx.QueryRow(`SELECT data FROM text_delivery WHERE recipient=? ORDER BY message DESC LIMIT 1`, recipient).Scan(&data); err == sql.ErrNoRows {
 		return nil
 	}
 	panicOnError(err)
@@ -87,7 +103,7 @@ func (tx *Tx) FetchTextDelivery(id model.TextMessageID, number string) (delivery
 // SaveTextMessage saves the supplied text message in the database.  If it does
 // not already have an ID, it assigns one.  If deliveries are specified, it
 // creates them.
-func (tx *Tx) SaveTextMessage(message *model.TextMessage, deliveries map[string]*model.TextDelivery) {
+func (tx *Tx) SaveTextMessage(message *model.TextMessage, deliveries []*model.TextDelivery) {
 	var (
 		data []byte
 		err  error
@@ -106,22 +122,23 @@ func (tx *Tx) SaveTextMessage(message *model.TextMessage, deliveries map[string]
 	if deliveries == nil {
 		return
 	}
-	for n, d := range deliveries {
+	for _, d := range deliveries {
+		d.Message = message.ID
 		data, err = d.Marshal()
 		panicOnError(err)
-		panicOnExecError(tx.tx.Exec(`INSERT INTO text_delivery (message, number, data) VALUES (?,?,?)`, message.ID, n, data))
-		tx.audit("text_delivery", fmt.Sprintf("%d-%s", message.ID, n), data)
+		panicOnExecError(tx.tx.Exec(`INSERT INTO text_delivery (message, recipient, data) VALUES (?,?,?)`, d.Message, d.Recipient, data))
+		tx.audit("text_delivery", fmt.Sprintf("%d-%d", d.Message, d.Recipient), data)
 	}
 }
 
 // SaveTextDelivery saves the supplied text delivery in the database.
-func (tx *Tx) SaveTextDelivery(delivery *model.TextDelivery, message model.TextMessageID, number string) {
+func (tx *Tx) SaveTextDelivery(delivery *model.TextDelivery) {
 	var (
 		data []byte
 		err  error
 	)
 	data, err = delivery.Marshal()
 	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE text_delivery SET data=? WHERE message=? AND number=?`, data, message, number))
-	tx.audit("text_delivery", fmt.Sprintf("%d-%s", message, number), data)
+	panicOnNoRows(tx.tx.Exec(`UPDATE text_delivery SET data=? WHERE message=? AND number=?`, data, delivery.Message, delivery.Recipient))
+	tx.audit("text_delivery", fmt.Sprintf("%d-%d", delivery.Message, delivery.Recipient), data)
 }

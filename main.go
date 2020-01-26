@@ -114,10 +114,12 @@ func router(r *util.Request) error {
 			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "reloadPrivs" && c[4] == "":
 				return role.PostRoleReloadPrivs(r, c[2])
 		*/
+	case r.Method == "GET" && c[1] == "textMessage" && c[2] == "":
+		return text.GetSMS(r)
 	case r.Method == "POST" && c[1] == "textMessage" && c[2] == "":
-		return text.PostTextMessage(r)
+		return text.PostSMS(r)
 	case r.Method == "GET" && c[1] == "textMessage" && c[2] != "" && c[3] == "":
-		return text.GetTextMessage(r, c[2])
+		return text.GetSMS1(r, c[2])
 	}
 	return util.NotFound
 }
