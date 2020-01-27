@@ -19,12 +19,17 @@ import (
 
 var eventDetailHrefRE = regexp.MustCompile(`eventdetail\.php\?id=(\d+)`)
 
+type eventData struct {
+	model.Event
+	venueName string
+}
+
 func main() {
 	var (
 		eventsResponse *http.Response
 		eventsBody     *html.Node
 		eventIDs       map[string]model.EventType
-		events         []*model.Event
+		events         []*eventData
 		err            error
 	)
 	if eventsResponse, err = http.Get("https://www.scc-ares-races.org/activities/events.php"); err != nil {
@@ -39,7 +44,7 @@ func main() {
 	if eventIDs = getEventIDs(eventsBody); len(eventIDs) == 0 {
 		panicf("no events found in events.php")
 	}
-	events = make([]*model.Event, 0, len(eventIDs))
+	events = make([]*eventData, 0, len(eventIDs))
 	for id, typ := range eventIDs {
 		events = append(events, getEvent(id, typ))
 	}
@@ -105,18 +110,17 @@ func getEventIDs(node *html.Node) (ids map[string]model.EventType) {
 	return ids
 }
 
-func getEvent(eventID string, eventType model.EventType) (event *model.Event) {
+func getEvent(eventID string, eventType model.EventType) (event *eventData) {
 	var (
 		eventResponse *http.Response
 		node          *html.Node
 		n             *html.Node
 		err           error
 	)
-	event = &model.Event{
-		SccAresID: eventID,
-		Type:      eventType,
-		Details:   fmt.Sprintf(`For details and to register, visit <a href="https://www.scc-ares-races.org/activities/eventdetail.php?id=%s" target="_blank" rel="nofollow noopener">scc-ares-races.org</a>.`, eventID),
-	}
+	event = new(eventData)
+	event.SccAresID = eventID
+	event.Type = eventType
+	event.Details = fmt.Sprintf(`For details and to register, visit <a href="https://www.scc-ares-races.org/activities/eventdetail.php?id=%s" target="_blank" rel="nofollow noopener">scc-ares-races.org</a>.`, eventID)
 	if eventResponse, err = http.Get(fmt.Sprintf("https://scc-ares-races.org/activities/eventdetail.php?id=%s", eventID)); err != nil {
 		panicf("get eventdetail.php?id=%s: %s", eventID, err)
 	}
@@ -175,39 +179,39 @@ func getEvent(eventID string, eventType model.EventType) (event *model.Event) {
 	node = expectElement(node.NextSibling, atom.Td)
 	n = expectElement(node.FirstChild, atom.Strong)
 	n = expectNode(n.NextSibling, html.TextNode)
-	event.Venue = &model.Venue{Name: strings.TrimSpace(n.Data)}
+	event.venueName = strings.TrimSpace(n.Data)
 	return event
 }
 
-func applyRewrites(events []*model.Event) {
+func applyRewrites(events []*eventData) {
 	var (
-		tx    *db.Tx
-		roles []*model.Role
-		vmap  map[string]*model.Venue
-		nmap  map[string]string
+		tx     *db.Tx
+		groups []model.GroupID
+		vmap   map[string]*model.Venue
+		nmap   map[string]string
 	)
 	tx = db.Begin()
 	nmap = tx.FetchSccAresEventNames()
 	vmap = tx.FetchSccAresEventVenues()
-	roles = []*model.Role{tx.FetchRoleByTag(model.RoleSccAres)}
+	groups = []model.GroupID{tx.FetchGroupByTag(model.GroupSccAres).ID}
 	for _, e := range events {
-		if mapped, ok := vmap[e.Venue.Name]; ok {
-			e.Venue = mapped
+		if mapped, ok := vmap[e.venueName]; ok {
+			e.Venue = mapped.ID
 		} else if mapped, ok := vmap[""]; ok {
-			fmt.Printf("WARNING: no mapping for venue %q, recording as \"See Event Detail Page\"\n", e.Venue.Name)
-			e.Venue = mapped
+			fmt.Printf("WARNING: no mapping for venue %q, recording as \"See Event Detail Page\"\n", e.venueName)
+			e.Venue = mapped.ID
 		} else {
 			panic("no fallback venue in database")
 		}
 		if rw, ok := nmap[e.Name]; ok {
 			e.Name = rw
 		}
-		e.Roles = roles
+		e.Groups = groups
 	}
 	tx.Commit()
 }
 
-func saveEvents(events []*model.Event) {
+func saveEvents(events []*eventData) {
 	var (
 		dbe     *model.Event
 		futures []*model.Event
@@ -226,7 +230,7 @@ func saveEvents(events []*model.Event) {
 			fmt.Printf("ADD: new event %s %s\n", e.Date, e.Name)
 		}
 		if e.Name != "" {
-			tx.SaveEvent(e)
+			tx.SaveEvent(&e.Event)
 			emap[e.SccAresID] = true
 		}
 	}
