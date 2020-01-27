@@ -12,9 +12,8 @@ import (
 // GetSMS1 handles GET /api/sms/$id requests.
 func GetSMS1(r *util.Request, idstr string) (err error) {
 	var (
-		message    *model.TextMessage
-		deliveries []*model.TextDelivery
-		out        jwriter.Writer
+		message *model.TextMessage
+		out     jwriter.Writer
 	)
 	if !auth.CanSendTextMessages(r) {
 		return util.Forbidden
@@ -22,7 +21,6 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 	if message = r.Tx.FetchTextMessage(model.TextMessageID(util.ParseID(idstr))); message == nil {
 		return util.NotFound
 	}
-	deliveries = r.Tx.FetchTextDeliveries(message.ID)
 	out.RawString(`{"id":`)
 	out.Int(int(message.ID))
 	out.RawString(`,"sender":`)
@@ -39,7 +37,7 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 	out.RawString(`,"message":`)
 	out.String(message.Message)
 	out.RawString(`,"deliveries":[`)
-	for i, d := range deliveries {
+	for i, d := range message.Recipients {
 		if i != 0 {
 			out.RawByte(',')
 		}
@@ -49,7 +47,7 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 		out.RawString(`,"recipient":`)
 		out.String(p.SortName)
 		out.RawString(`,"number":`)
-		out.String(p.CellPhone)
+		out.String(d.Number)
 		out.RawString(`,"status":`)
 		out.String(d.Status)
 		out.RawString(`,"timestamp":`)

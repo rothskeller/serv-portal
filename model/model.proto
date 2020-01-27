@@ -92,19 +92,20 @@ message Role {
 }
 
 message TextMessage {
-  int64                     id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "TextMessageID"];
-  int64                     sender    = 2 [(gogoproto.casttype) = "PersonID"];
-  repeated int64            groups    = 3 [(gogoproto.casttype) = "GroupID"];
-  google.protobuf.Timestamp timestamp = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  string                    message   = 5;
+  int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "TextMessageID"];
+  int64                     sender     = 2 [(gogoproto.casttype) = "PersonID"];
+  repeated int64            groups     = 3 [(gogoproto.casttype) = "GroupID"];
+  google.protobuf.Timestamp timestamp  = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  string                    message    = 5;
+  repeated TextRecipient    recipients = 6;
 }
 
-message TextDelivery {
-  int64                     message   = 1 [(gogoproto.casttype) = "TextMessageID"];
-  int64                     recipient = 2 [(gogoproto.casttype) = "PersonID"];
-  string                    status    = 3;
-  google.protobuf.Timestamp timestamp = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "statusTime"];
-  repeated TextResponse     responses = 5;
+message TextRecipient {
+  int64                     recipient   = 1 [(gogoproto.casttype) = "PersonID"];
+  string                    number      = 2;
+  string                    status      = 3;
+  google.protobuf.Timestamp timestamp   = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  repeated TextResponse     responses   = 5;
 }
 
 message TextResponse {

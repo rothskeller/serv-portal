@@ -16,7 +16,6 @@ import (
 
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/util"
 )
 
 func main() {
@@ -30,58 +29,28 @@ func main() {
 	}
 	cgi.Serve(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			number     = r.FormValue("recipient")
-			message    = model.TextMessageID(util.ParseID(r.FormValue("reference")))
-			status     = r.FormValue("status")
-			statusTime time.Time
-			person     *model.Person
-			delivery   *model.TextDelivery
-			err        error
+			number    = r.FormValue("To")
+			status    = r.FormValue("MessageStatus")
+			message   *model.TextMessage
+			recipient *model.TextRecipient
 		)
-		if statusTime, err = time.Parse(time.RFC3339, r.FormValue("statusDatetime")); err != nil {
-			println("text-status-hook: invalid timestamp")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Invalid timestamp.")
-			return
-		}
-		if len(number) != 11 || number[0] != '1' {
-			println("text-status-hook: invalid recipient phone number: ", number)
+		db.Open("serv.db")
+		tx := db.Begin()
+		if message = tx.FetchTextMessageByNumber(number); message == nil {
+			println("text-status-hook: unknown recipient phone number: ", number)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Invalid recipient phone number.")
 			return
 		}
-		number = number[1:4] + "-" + number[4:7] + "-" + number[7:11]
-		println(number)
-		db.Open("serv.db")
-		tx := db.Begin()
-		if person = tx.FetchPersonByCellPhone(number); person == nil {
-			println("text-status-hook: status on unknown recipient phone number: ", number)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Status on unknown recipient phone number.")
-			return
+		for _, r := range message.Recipients {
+			if r.Number == number {
+				recipient.Status = status
+				recipient.Timestamp = time.Now()
+				break
+			}
 		}
-		if delivery = tx.FetchTextDelivery(message, person.ID); delivery == nil {
-			println("text-status-hook: status on recipient of unknown message: ", message)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Status on recipient of unknown message.")
-			return
-		}
-		if s := formatStatus[status]; s != "" {
-			status = s
-		}
-		delivery.Status = status
-		delivery.Timestamp = statusTime.In(time.Local)
-		tx.SaveTextDelivery(delivery)
+		tx.SaveTextMessage(message)
 		tx.Commit()
 		w.WriteHeader(http.StatusNoContent)
 	}))
-}
-
-var formatStatus = map[string]string{
-	"scheduled":       "Scheduled",
-	"sent":            "Sent",
-	"buffered":        "Buffered",
-	"delivered":       "Delivered",
-	"expired":         "Expired",
-	"delivery_failed": "Delivery Failed",
 }

@@ -97,12 +97,10 @@ CREATE TABLE text_message (
     data blob    NOT NULL
 );
 
--- The text_delivery table tracks the delivery of each outgoing text message to
--- each recipient.  This includes tracking their responses if any.
-CREATE TABLE text_delivery (
-    message   integer NOT NULL REFERENCES text_message ON DELETE CASCADE,
-    recipient integer NOT NULL REFERENCES person ON DELETE CASCADE,
-    data      blob    NOT NULL,
-    PRIMARY KEY (message, recipient)
+-- The text_number table maps inbound phone numbers to the text_message ID of
+-- the text message most recently sent to that number.
+CREATE TABLE text_number (
+    number text    PRIMARY KEY,
+    mid    integer NOT NULL REFERENCES text_message ON DELETE CASCADE
 );
-CREATE INDEX text_delivery_recipient_index ON text_delivery (recipient);
+CREATE INDEX text_number_mid_index ON text_number (mid);

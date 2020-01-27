@@ -1,12 +1,12 @@
 package text
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -49,17 +49,22 @@ func GetSMSNew(r *util.Request) error {
 	return nil
 }
 
+type twilioMessage struct {
+	DateUpdated  string `json:"date_updated"`
+	ErrorMessage string `json:"error_message"`
+	Status       string `json:"status"`
+}
+
 // PostSMS handles POST /api/sms requests.
 func PostSMS(r *util.Request) error {
 	var (
-		message    model.TextMessage
-		request    *http.Request
-		response   *http.Response
-		deliveries []*model.TextDelivery
-		recipients []string
-		err        error
-		params     = url.Values{}
-		groups     = map[*model.Group]bool{}
+		message  model.TextMessage
+		request  *http.Request
+		response *http.Response
+		tmessage twilioMessage
+		err      error
+		params   = url.Values{}
+		groups   = map[*model.Group]bool{}
 	)
 	if !auth.CanSendTextMessages(r) {
 		return util.Forbidden
@@ -67,8 +72,6 @@ func PostSMS(r *util.Request) error {
 	message.Sender = r.Person.ID
 	if message.Message = r.FormValue("message"); message.Message == "" {
 		return errors.New("missing message")
-	} else if !messageFits(message.Message) {
-		return errors.New("message too long")
 	}
 	for _, g := range r.Form["group"] {
 		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages {
@@ -86,36 +89,52 @@ PEOPLE:
 		for group := range groups {
 			if auth.IsMember(p, group) {
 				if p.CellPhone != "" {
-					recipients = append(recipients, formatPhoneForText(p.CellPhone))
-					deliveries = append(deliveries, &model.TextDelivery{Recipient: p.ID})
+					message.Recipients = append(message.Recipients, &model.TextRecipient{
+						Recipient: p.ID,
+						Number:    formatPhoneForText(p.CellPhone),
+					})
 				} else {
-					deliveries = append(deliveries, &model.TextDelivery{Recipient: p.ID, Status: "No Cell Phone"})
+					message.Recipients = append(message.Recipients, &model.TextRecipient{
+						Recipient: p.ID,
+						Status:    "No Cell Phone",
+					})
 				}
 				continue PEOPLE
 			}
 		}
 	}
-	if len(recipients) > 50 {
-		return errors.New("too many numbers in one batch")
+	r.Tx.SaveTextMessage(&message)
+	params.Set("From", config.Get("twilioPhoneNumber"))
+	params.Set("Body", message.Message)
+	params.Set("StatusCallback", "https://sunnyvaleserv.org/text-status-hook")
+	href := fmt.Sprintf("https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json", config.Get("twilioAccountSID"))
+	for _, recip := range message.Recipients {
+		if recip.Number == "" {
+			continue
+		}
+		params.Set("To", recip.Number)
+		request, _ = http.NewRequest(http.MethodPost, href, strings.NewReader(params.Encode()))
+		request.SetBasicAuth(config.Get("twilioAccountSID"), config.Get("twilioAuthToken"))
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if response, err = http.DefaultClient.Do(request); err != nil {
+			panic(err)
+		}
+		if response.StatusCode >= 400 {
+			by, _ := httputil.DumpResponse(response, true)
+			panic(string(by))
+		}
+		if err = json.NewDecoder(response.Body).Decode(&tmessage); err != nil {
+			panic(err.Error())
+		}
+		response.Body.Close()
+		recip.Status = tmessage.Status
+		if tmessage.ErrorMessage != "" {
+			recip.Status += ": " + tmessage.ErrorMessage
+		}
+		recip.Timestamp, _ = time.Parse(time.RFC1123Z, tmessage.DateUpdated)
 	}
-	r.Tx.SaveTextMessage(&message, deliveries)
-	params.Set("originator", "inbox")
-	params.Set("reference", strconv.Itoa(int(message.ID)))
-	params.Set("body", message.Message)
-	params.Set("recipients", strings.Join(recipients, ","))
-	request, _ = http.NewRequest(http.MethodPost, "https://rest.messagebird.com/messages", strings.NewReader(params.Encode()))
-	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Set("Authorization", "AccessKey "+config.Get("messageBirdAccessKey"))
-	if response, err = http.DefaultClient.Do(request); err != nil {
-		panic(err)
-	}
-	if response.StatusCode >= 400 {
-		by, _ := httputil.DumpResponse(response, true)
-		panic(string(by))
-	}
-	response.Body.Close()
 	message.Timestamp = time.Now()
-	r.Tx.SaveTextMessage(&message, nil)
+	r.Tx.SaveTextMessage(&message)
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(r, `{"id":%d}`, message.ID)
@@ -123,27 +142,5 @@ PEOPLE:
 }
 
 func formatPhoneForText(s string) string {
-	return "1" + strings.Map(util.KeepDigits, s)
-}
-
-var doubleWidthCharacters = "\f\n^{}\\[~]|€"
-var singleWidthCharacters = "£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà"
-
-func messageFits(s string) bool {
-	var runes, chars int
-	var unicode bool
-	for _, r := range s {
-		runes++
-		if strings.ContainsRune(singleWidthCharacters, r) {
-			chars++
-		} else if strings.ContainsRune(doubleWidthCharacters, r) {
-			chars += 2
-		} else {
-			unicode = true
-		}
-	}
-	if unicode {
-		return runes <= 70
-	}
-	return chars <= 160
+	return "+1" + strings.Map(util.KeepDigits, s)
 }

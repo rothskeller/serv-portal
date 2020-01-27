@@ -29,39 +29,27 @@ func main() {
 	}
 	cgi.Serve(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			number      = r.FormValue("originator")
-			message     = r.FormValue("body")
-			createdTime time.Time
-			person      *model.Person
-			delivery    *model.TextDelivery
-			err         error
+			number  = r.FormValue("From")
+			body    = r.FormValue("Body")
+			message *model.TextMessage
 		)
-		if createdTime, err = time.Parse(time.RFC3339, r.FormValue("createdDatetime")); err != nil {
-			println("received-text-hook: invalid timestamp")
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Invalid timestamp.")
-			return
-		}
-		if len(number) != 11 || number[0] != '1' {
-			println("received-text-hook: invalid originator phone number: ", number)
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		number = number[1:4] + "-" + number[4:7] + "-" + number[7:11]
 		db.Open("serv.db")
 		tx := db.Begin()
-		if person = tx.FetchPersonByCellPhone(number); person == nil {
+		if message = tx.FetchTextMessageByNumber(number); message == nil {
 			println("received-text-hook: incoming message from unknown phone number: ", number)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		if delivery = tx.FetchNewestTextDelivery(person.ID); delivery == nil {
-			println("received-text-hook: incoming reply without a corresponding outgoing message: ", number, message)
-			w.WriteHeader(http.StatusNoContent)
-			return
+		for _, r := range message.Recipients {
+			if r.Number == number {
+				r.Responses = append(r.Responses, &model.TextResponse{
+					Response:  body,
+					Timestamp: time.Now(),
+				})
+				break
+			}
 		}
-		delivery.Responses = append(delivery.Responses, &model.TextResponse{Response: message, Timestamp: createdTime.In(time.Local)})
-		tx.SaveTextDelivery(delivery)
+		tx.SaveTextMessage(message)
 		tx.Commit()
 		w.WriteHeader(http.StatusNoContent)
 	}))

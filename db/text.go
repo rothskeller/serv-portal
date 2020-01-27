@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 
 	"sunnyvaleserv.org/portal/model"
 )
@@ -45,65 +44,25 @@ func (tx *Tx) FetchTextMessage(id model.TextMessageID) (message *model.TextMessa
 	return message
 }
 
-// FetchTextDeliveries returns the set of delivery records for a text message.
-// FetchTextMessages returns a list of outgoing text messages, in reverse
-// chronological order.
-func (tx *Tx) FetchTextDeliveries(id model.TextMessageID) (deliveries []*model.TextDelivery) {
-	var (
-		rows *sql.Rows
-		err  error
-	)
-	rows, err = tx.tx.Query(`SELECT data FROM text_delivery WHERE message=?`, id)
-	panicOnError(err)
-	for rows.Next() {
-		var (
-			data     []byte
-			delivery model.TextDelivery
-		)
-		panicOnError(rows.Scan(&data))
-		panicOnError(delivery.Unmarshal(data))
-		deliveries = append(deliveries, &delivery)
-	}
-	panicOnError(rows.Err())
-	return deliveries
-}
-
-// FetchTextDelivery returns the text message delivery record for the specified
-// message and recipient, or nil if there is none.
-func (tx *Tx) FetchTextDelivery(message model.TextMessageID, recipient model.PersonID) (delivery *model.TextDelivery) {
+// FetchTextMessageByNumber returns the text message most recently sent to the
+// specified phone number, or nil if there is none.
+func (tx *Tx) FetchTextMessageByNumber(number string) (message *model.TextMessage) {
 	var (
 		data []byte
 		err  error
 	)
-	if err = tx.tx.QueryRow(`SELECT data FROM text_delivery WHERE message=? AND recipient=?`, message, recipient).Scan(&data); err == sql.ErrNoRows {
+	if err = tx.tx.QueryRow(`SELECT m.data FROM text_number n, text_message m WHERE n.number=? AND n.mid=m.id`, number).Scan(&data); err == sql.ErrNoRows {
 		return nil
 	}
 	panicOnError(err)
-	delivery = new(model.TextDelivery)
-	panicOnError(delivery.Unmarshal(data))
-	return delivery
-}
-
-// FetchNewestTextDelivery returns the most recent text message delivery record
-// for the specified recipient, or nil if there is none.
-func (tx *Tx) FetchNewestTextDelivery(recipient model.PersonID) (delivery *model.TextDelivery) {
-	var (
-		data []byte
-		err  error
-	)
-	if err = tx.tx.QueryRow(`SELECT data FROM text_delivery WHERE recipient=? ORDER BY message DESC LIMIT 1`, recipient).Scan(&data); err == sql.ErrNoRows {
-		return nil
-	}
-	panicOnError(err)
-	delivery = new(model.TextDelivery)
-	panicOnError(delivery.Unmarshal(data))
-	return delivery
+	message = new(model.TextMessage)
+	panicOnError(message.Unmarshal(data))
+	return message
 }
 
 // SaveTextMessage saves the supplied text message in the database.  If it does
-// not already have an ID, it assigns one.  If deliveries are specified, it
-// creates them.
-func (tx *Tx) SaveTextMessage(message *model.TextMessage, deliveries []*model.TextDelivery) {
+// not already have an ID, it assigns one.
+func (tx *Tx) SaveTextMessage(message *model.TextMessage) {
 	var (
 		data []byte
 		err  error
@@ -113,32 +72,15 @@ func (tx *Tx) SaveTextMessage(message *model.TextMessage, deliveries []*model.Te
 		data, err = message.Marshal()
 		panicOnError(err)
 		panicOnExecError(tx.tx.Exec(`INSERT INTO text_message (id, data) VALUES (?,?)`, message.ID, data))
+		for _, r := range message.Recipients {
+			if r.Number != "" {
+				panicOnExecError(tx.tx.Exec(`INSERT OR REPLACE INTO text_number (number, mid) VALUES (?,?)`, r.Number, message.ID))
+			}
+		}
 	} else {
 		data, err = message.Marshal()
 		panicOnError(err)
 		panicOnNoRows(tx.tx.Exec(`UPDATE text_message SET data=? WHERE id=?`, data, message.ID))
 	}
 	tx.audit("text_message", message.ID, data)
-	if deliveries == nil {
-		return
-	}
-	for _, d := range deliveries {
-		d.Message = message.ID
-		data, err = d.Marshal()
-		panicOnError(err)
-		panicOnExecError(tx.tx.Exec(`INSERT INTO text_delivery (message, recipient, data) VALUES (?,?,?)`, d.Message, d.Recipient, data))
-		tx.audit("text_delivery", fmt.Sprintf("%d-%d", d.Message, d.Recipient), data)
-	}
-}
-
-// SaveTextDelivery saves the supplied text delivery in the database.
-func (tx *Tx) SaveTextDelivery(delivery *model.TextDelivery) {
-	var (
-		data []byte
-		err  error
-	)
-	data, err = delivery.Marshal()
-	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE text_delivery SET data=? WHERE message=? AND recipient=?`, data, delivery.Message, delivery.Recipient))
-	tx.audit("text_delivery", fmt.Sprintf("%d-%d", delivery.Message, delivery.Recipient), data)
 }
