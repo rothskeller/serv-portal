@@ -29,7 +29,7 @@ func GetSMSNew(r *util.Request) error {
 	out.RawString(`{"groups":[`)
 	first := true
 	for _, g := range r.Tx.FetchGroups() {
-		if g.AllowTextMessages {
+		if g.AllowTextMessages && auth.CanSendTextMessagesToGroup(r, g) {
 			if first {
 				first = false
 			} else {
@@ -74,7 +74,7 @@ func PostSMS(r *util.Request) error {
 		return errors.New("missing message")
 	}
 	for _, g := range r.Form["group"] {
-		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages {
+		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages && auth.CanSendTextMessagesToGroup(r, group) {
 			groups[group] = true
 			message.Groups = append(message.Groups, group.ID)
 		} else {

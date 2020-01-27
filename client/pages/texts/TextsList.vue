@@ -14,7 +14,7 @@ TextsList displays the list of previously sent text messages.
       .texts-list-timestamp
         b-link(:to="`/texts/${m.id}`" v-text="m.timestamp")
       .texts-list-groups
-        .texts-list-group(v-for="g in m.groups" v-text="'CERT Team Alpha'")
+        .texts-list-group(v-for="g in m.groups" v-text="g")
       .texts-list-message(v-text="m.message")
 </template>
 

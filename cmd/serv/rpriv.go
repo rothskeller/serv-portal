@@ -31,6 +31,9 @@ func listRolePrivileges(args []string, _ map[string]string) {
 			if privs&model.PrivManageEvents != 0 {
 				cw.Write([]string{strconv.Itoa(int(r.ID)), r.Name, strconv.Itoa(int(g.ID)), g.Name, "events"})
 			}
+			if privs&model.PrivSendTextMessages != 0 {
+				cw.Write([]string{strconv.Itoa(int(r.ID)), r.Name, strconv.Itoa(int(g.ID)), g.Name, "texts"})
+			}
 		}
 	}
 	cw.Flush()
@@ -64,8 +67,10 @@ func updateRolePrivileges(args []string, updater func(orig, mask model.Privilege
 			toChange |= model.PrivManageMembers
 		case "events":
 			toChange |= model.PrivManageEvents
+		case "texts":
+			toChange |= model.PrivSendTextMessages
 		default:
-			fmt.Fprintf(os.Stderr, "ERROR: %q is not a known privilege.  Privileges are member, roster, contact, admin, and events.\n", t)
+			fmt.Fprintf(os.Stderr, "ERROR: %q is not a known privilege.  Privileges are member, roster, contact, admin, events, and texts.\n", t)
 			os.Exit(1)
 		}
 	}

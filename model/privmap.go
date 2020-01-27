@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strconv"
 	"strings"
 	"unsafe"
 
@@ -229,56 +228,74 @@ func (pm *PrivilegeMap) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
+// MarshalEasyJSON encodes the privilege into JSON.
+func (p Privilege) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(PrivilegeNames[p])
+}
+
 // MarshalEasyJSON encodes the privilege map into JSON.
 func (pm PrivilegeMap) MarshalEasyJSON(w *jwriter.Writer) {
-	w.RawByte('{')
 	first := true
+	w.RawByte('[')
 	for id, p := range pm.p {
-		if p == 0 {
-			continue
+		for _, priv := range AllPrivileges {
+			if p&priv != 0 {
+				if first {
+					first = false
+				} else {
+					w.RawByte(',')
+				}
+				w.RawString(`{"group":`)
+				w.Int(int(id))
+				w.RawString(`,"priv":`)
+				priv.MarshalEasyJSON(w)
+				w.RawByte('}')
+			}
 		}
-		if first {
-			first = false
-		} else {
-			w.RawByte(',')
-		}
-		w.IntStr(id)
-		w.RawByte(':')
-		w.Uint8(uint8(p))
 	}
-	w.RawByte('}')
+	w.RawByte(']')
+}
+
+// UnmarshalEasyJSON decodes the privilege from JSON.
+func (p *Privilege) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	s := l.UnsafeString()
+	for priv, name := range PrivilegeNames {
+		if s == name {
+			*p = priv
+			return
+		}
+	}
+	l.AddError(errors.New("unrecognized value for Privilege"))
 }
 
 // UnmarshalEasyJSON decodes the privilege map from JSON.
 func (pm *PrivilegeMap) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	isTopLevel := l.IsStart()
 	if l.IsNull() {
-		if isTopLevel {
-			l.Consumed()
-		}
 		l.Skip()
 		return
 	}
-	l.Delim('{')
-	for !l.IsDelim('}') {
-		key := l.UnsafeString()
-		l.WantColon()
-		if l.IsNull() {
-			l.Skip()
+	l.Delim('[')
+	for !l.IsDelim(']') {
+		l.Delim('{')
+		for !l.IsDelim('}') {
+			var g GroupID
+			var p Privilege
+			key := l.UnsafeString()
+			l.WantColon()
+			switch key {
+			case "group":
+				g = GroupID(l.Int())
+			case "priv":
+				p.UnmarshalEasyJSON(l)
+			default:
+				l.SkipRecursive()
+			}
+			pm.enlargeFor(g)
+			pm.p[g] |= p
 			l.WantComma()
-			continue
 		}
-		id, err := strconv.Atoi(key)
-		if err != nil {
-			l.AddError(err)
-		}
-		privs := Privilege(l.Uint8())
-		pm.enlargeFor(GroupID(id))
-		pm.p[id] = privs
+		l.Delim('}')
 		l.WantComma()
 	}
-	l.Delim('}')
-	if isTopLevel {
-		l.Consumed()
-	}
+	l.Delim(']')
 }

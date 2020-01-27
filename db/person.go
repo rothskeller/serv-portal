@@ -137,6 +137,25 @@ func (tx *Tx) recalcPersonPrivileges(p *model.Person) {
 	}
 }
 
+// FetchSessions fetches all sessions in the database.
+func (tx *Tx) FetchSessions() (sessions []*model.Session) {
+	var (
+		rows *sql.Rows
+		err  error
+	)
+	rows, err = tx.tx.Query(`SELECT token, person, expires FROM session`)
+	panicOnError(err)
+	for rows.Next() {
+		var session model.Session
+		var pid model.PersonID
+		panicOnError(rows.Scan(&session.Token, &pid, (*Time)(&session.Expires)))
+		session.Person = tx.FetchPerson(pid)
+		sessions = append(sessions, &session)
+	}
+	panicOnError(rows.Err())
+	return sessions
+}
+
 // FetchSession fetches the session with the specified token.  It does not check
 // for session expiration.  It returns nil if no such session exists.
 func (tx *Tx) FetchSession(token model.SessionToken) (s *model.Session) {

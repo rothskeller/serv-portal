@@ -176,7 +176,24 @@ const (
 	// PrivManageEvents denotes the ability to manage events to which the
 	// target group is invited.
 	PrivManageEvents
+
+	// PrivSendTextMessages denotes the ability to send text messages to the
+	// members of the target group.
+	PrivSendTextMessages
 )
+
+// AllPrivileges lists all possible privileges.
+var AllPrivileges = []Privilege{PrivMember, PrivViewMembers, PrivViewContactInfo, PrivManageMembers, PrivManageEvents, PrivSendTextMessages}
+
+// PrivilegeNames gives the names of all of the privileges.
+var PrivilegeNames = map[Privilege]string{
+	PrivMember:           "member",
+	PrivViewMembers:      "roster",
+	PrivViewContactInfo:  "contact",
+	PrivManageMembers:    "admin",
+	PrivManageEvents:     "events",
+	PrivSendTextMessages: "texts",
+}
 
 // A RoleID is a positive integer uniquely identifying a Role.
 type RoleID int

@@ -89,7 +89,13 @@ func CanRecordAttendanceAtEvent(r *util.Request, event *model.Event) bool {
 // CanSendTextMessages returns whether the caller is allowed to send text
 // messages through the site.
 func CanSendTextMessages(r *util.Request) bool {
-	return IsWebmaster(r)
+	return r.Person.Privileges.HasAny(model.PrivSendTextMessages) || IsWebmaster(r)
+}
+
+// CanSendTextMessagesToGroup returns whether the caller is allowed to send text
+// messages to the specified group.
+func CanSendTextMessagesToGroup(r *util.Request, g *model.Group) bool {
+	return r.Person.Privileges.Has(g, model.PrivSendTextMessages) || IsWebmaster(r)
 }
 
 // CanViewContactInfo returns whether the caller can view contact information
