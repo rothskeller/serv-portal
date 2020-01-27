@@ -24,6 +24,7 @@ func main() {
 	// location.  This directory should be mode 700 so that it not directly
 	// readable by the web server.
 	if err := os.Chdir("data"); err != nil {
+		println("text-status-hook: ", err)
 		fmt.Printf("Status: 500 Internal Server Error\nContent-Type: text/plain\n\n%s\n", err)
 		os.Exit(1)
 	}
@@ -38,11 +39,13 @@ func main() {
 			err        error
 		)
 		if statusTime, err = time.Parse(time.RFC3339, r.FormValue("statusDatetime")); err != nil {
+			println("text-status-hook: invalid timestamp")
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Invalid timestamp.")
 			return
 		}
 		if len(number) != 11 || number[0] != '1' {
+			println("text-status-hook: invalid recipient phone number: ", number)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Invalid recipient phone number.")
 			return
@@ -52,11 +55,13 @@ func main() {
 		db.Open("serv.db")
 		tx := db.Begin()
 		if person = tx.FetchPersonByCellPhone(number); person == nil {
+			println("text-status-hook: status on unknown recipient phone number: ", number)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Status on unknown recipient phone number.")
 			return
 		}
 		if delivery = tx.FetchTextDelivery(message, person.ID); delivery == nil {
+			println("text-status-hook: status on recipient of unknown message: ", message)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintln(w, "Status on recipient of unknown message.")
 			return
