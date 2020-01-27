@@ -2,6 +2,7 @@ package text
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -9,43 +10,22 @@ import (
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
+
 	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/config"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetSMS handles GET /api/sms requests.
-func GetSMS(r *util.Request) error {
+// GetSMSNew handles GET /api/sms/NEW requests.
+func GetSMSNew(r *util.Request) error {
 	var (
 		out jwriter.Writer
 	)
 	if !auth.CanSendTextMessages(r) {
 		return util.Forbidden
 	}
-	out.RawString(`{"messages":[`)
-	for i, m := range r.Tx.FetchTextMessages() {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(m.ID))
-		out.RawString(`,"timestamp":`)
-		out.String(m.Timestamp.In(time.Local).Format("2006-01-02 15:04"))
-		out.RawString(`,"sender":`)
-		out.String(r.Tx.FetchPerson(m.Sender).InformalName)
-		out.RawString(`,"groups":[`)
-		for i, g := range m.Groups {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.String(r.Tx.FetchGroup(g).Name)
-		}
-		out.RawString(`],"message":`)
-		out.String(m.Message)
-		out.RawByte('}')
-	}
-	out.RawString(`],"groups":[`)
+	out.RawString(`{"groups":[`)
 	first := true
 	for _, g := range r.Tx.FetchGroups() {
 		if g.AllowTextMessages {
@@ -75,6 +55,7 @@ func PostSMS(r *util.Request) error {
 		request    *http.Request
 		response   *http.Response
 		deliveries []*model.TextDelivery
+		recipients []string
 		err        error
 		params     = url.Values{}
 		groups     = map[*model.Group]bool{}
@@ -99,25 +80,28 @@ func PostSMS(r *util.Request) error {
 	if len(groups) == 0 {
 		return errors.New("no groups selected")
 	}
+PEOPLE:
 	for _, p := range r.Tx.FetchPeople() {
 		for group := range groups {
 			if auth.IsMember(p, group) {
 				if p.CellPhone != "" {
-					params.Add("recipients", formatPhoneForText(p.CellPhone))
+					recipients = append(recipients, formatPhoneForText(p.CellPhone))
 					deliveries = append(deliveries, &model.TextDelivery{Recipient: p.ID})
 				} else {
 					deliveries = append(deliveries, &model.TextDelivery{Recipient: p.ID, Status: "No Cell Phone"})
 				}
+				continue PEOPLE
 			}
 		}
 	}
-	if len(params["recipients"]) > 50 {
+	if len(recipients) > 50 {
 		return errors.New("too many numbers in one batch")
 	}
 	r.Tx.SaveTextMessage(&message, deliveries)
 	params.Set("originator", "inbox")
 	params.Set("reference", strconv.Itoa(int(message.ID)))
 	params.Set("body", message.Message)
+	params.Set("recipients", strings.Join(recipients, ","))
 	request, _ = http.NewRequest(http.MethodPost, "https://rest.messagebird.com/messages", strings.NewReader(params.Encode()))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	request.Header.Set("Authorization", "AccessKey "+config.Get("messageBirdAccessKey"))
@@ -131,6 +115,8 @@ func PostSMS(r *util.Request) error {
 	message.Timestamp = time.Now()
 	r.Tx.SaveTextMessage(&message, nil)
 	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(r, `{"id":%d}`, message.ID)
 	return nil
 }
 

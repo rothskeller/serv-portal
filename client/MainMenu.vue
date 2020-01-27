@@ -22,7 +22,7 @@ it.
         b-nav-item(to="/events" :active="menuItem === 'events'") Events
         b-nav-item(to="/people" :active="menuItem === 'people'") People
         b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
-        b-nav-item(v-if="$store.state.me.webmaster" to="/texts" :active="menuItem === 'texts'") Texts
+        b-nav-item(v-if="$store.state.me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
         //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
         b-nav-item(to="/logout") Logout
     #page-content(:class="tabbed ? 'page-no-padding': null")

@@ -32,6 +32,8 @@ func GetLogin(r *util.Request) error {
 	out.Bool(CanCreateEvents(r))
 	out.RawString(`,"canAddPeople":`)
 	out.Bool(CanCreatePeople(r))
+	out.RawString(`,"canSendTextMessages":`)
+	out.Bool(CanSendTextMessages(r))
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)

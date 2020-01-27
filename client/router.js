@@ -4,6 +4,7 @@ import store from './store'
 import MainMenu from './MainMenu'
 import Events from './pages/Events'
 import People from './pages/People'
+import Texts from './pages/Texts'
 
 Vue.use(Router)
 
@@ -106,19 +107,23 @@ const router = new Router({
           meta: { menuItem: 'reports' },
         },
         {
-          path: '/roles',
-          component: () => import(/* webpackChunkName: "Roles" */ './pages/Roles'),
-          meta: { menuItem: 'roles' },
-        },
-        {
-          path: '/roles/:id',
-          component: () => import(/* webpackChunkName: "Role" */ './pages/Role'),
-          meta: { menuItem: 'roles' },
-        },
-        {
           path: '/texts',
-          component: () => import(/* webpackChunkName: "Texts" */ './pages/Texts'),
+          component: Texts,
           meta: { menuItem: 'texts', tabbed: true },
+          children: [
+            {
+              path: '',
+              component: () => import(/* webpackChunkName: "TextsList" */ './pages/texts/TextsList'),
+            },
+            {
+              path: 'send',
+              component: () => import(/* webpackChunkName: "TextsSend" */ './pages/texts/TextsSend'),
+            },
+            {
+              path: ':id',
+              component: () => import(/* webpackChunkName: "TextsView" */ './pages/texts/TextsView'),
+            }
+          ]
         },
       ],
       beforeEnter: (to, from, next) => {

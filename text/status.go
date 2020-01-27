@@ -44,8 +44,10 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 			out.RawByte(',')
 		}
 		p := r.Tx.FetchPerson(d.Recipient)
-		out.RawString(`{"recipient":`)
-		out.String(p.InformalName)
+		out.RawString(`{"id":`)
+		out.Int(int(d.Recipient))
+		out.RawString(`,"recipient":`)
+		out.String(p.SortName)
 		out.RawString(`,"number":`)
 		out.String(p.CellPhone)
 		out.RawString(`,"status":`)

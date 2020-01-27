@@ -1,2 +1,0 @@
-(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["TextSend"],{"1ef7":function(n,e,l){"use strict";l.r(e);var t,u,o=l("2877"),p={},s=Object(o["a"])(p,t,u,!1,null,null,null);e["default"]=s.exports}}]);
-//# sourceMappingURL=TextSend.16c9a35d.js.map

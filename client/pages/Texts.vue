@@ -1,19 +1,20 @@
 <!--
-People displays the list of people.
+Texts displays the list of text messages we have sent.
 -->
 
 <template lang="pug">
-Page(title="Text Messages" menuItem="texts" noPadding)
-  b-card#texts-card(no-body)
-    b-tabs(card)
-      b-tab.texts-tab-pane(title="Sent Messages" no-body)
-        TextsList
-      b-tab.person-tab-pane(title="New Message" no-body)
-        | World
+b-card#texts-card(no-body)
+  b-card-header(header-tag="nav")
+    b-nav(card-header tabs)
+      b-nav-item(to="/texts" exact exact-active-class="active") Sent Messages
+      b-nav-item(to="/texts/send" exact exact-active-class="active") New Message
+      b-nav-item(v-if="$route.params.id" :to="`/texts/${$route.params.id}`" exact exact-active-class="active") Delivery Status
+  router-view
 </template>
 
 <script>
 export default {
+  created() { this.$store.commit('setPage', { title: 'Text Messages' }) },
 }
 </script>
 
@@ -21,7 +22,7 @@ export default {
 #texts-card
   height calc(100vh - 40px)
   border none
-.texts-tab-pane
-  overflow-y auto
-  height calc(100vh - 3.25rem - 42px)
+  .card-header
+    @media print
+      display none
 </style>

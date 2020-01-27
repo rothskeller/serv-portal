@@ -45,7 +45,7 @@ func main() {
 			fmt.Fprintln(w, "Invalid originator phone number.")
 			return
 		}
-		number = number[1:4] + number[5:8] + number[9:11]
+		number = number[1:4] + "-" + number[4:7] + "-" + number[7:11]
 		db.Open("serv.db")
 		tx := db.Begin()
 		if person = tx.FetchPersonByCellPhone(number); person == nil {

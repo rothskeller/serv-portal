@@ -118,6 +118,8 @@ func router(r *util.Request) error {
 		return text.GetSMS(r)
 	case r.Method == "POST" && c[1] == "sms" && c[2] == "":
 		return text.PostSMS(r)
+	case r.Method == "GET" && c[1] == "sms" && c[2] == "NEW" && c[3] == "":
+		return text.GetSMSNew(r)
 	case r.Method == "GET" && c[1] == "sms" && c[2] != "" && c[3] == "":
 		return text.GetSMS1(r, c[2])
 	}
