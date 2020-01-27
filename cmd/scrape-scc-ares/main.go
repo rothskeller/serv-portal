@@ -41,6 +41,7 @@ func main() {
 	if eventsBody, err = html.Parse(eventsResponse.Body); err != nil {
 		panicf("parse events.php: %s", err)
 	}
+	db.Open("serv.db")
 	if eventIDs = getEventIDs(eventsBody); len(eventIDs) == 0 {
 		panicf("no events found in events.php")
 	}
@@ -48,7 +49,6 @@ func main() {
 	for id, typ := range eventIDs {
 		events = append(events, getEvent(id, typ))
 	}
-	db.Open("serv.db")
 	applyRewrites(events)
 	saveEvents(events)
 }
