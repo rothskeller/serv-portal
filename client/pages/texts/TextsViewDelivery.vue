@@ -10,7 +10,7 @@ message.
       .texts-view-delivery-name(v-text="delivery.recipient")
       .texts-view-delivery-num(v-text="delivery.number")
     .texts-view-delivery-status-time
-      .texts-view-delivery-status(:class="classes" v-text="delivery.status || 'Pending'")
+      .texts-view-delivery-status(:class="classes" v-text="formatStatus")
       .texts-view-delivery-time(v-text="formatTimestamp")
   .texts-view-delivery-responses(v-if="delivery.responses.length")
     .texts-view-delivery-response(v-for="r in delivery.responses")
@@ -26,14 +26,26 @@ export default {
   computed: {
     classes() {
       switch (this.delivery.status) {
-        case 'Scheduled': return 'texts-view-delivery-pending'
-        case 'Sent': return 'texts-view-delivery-sent'
-        case 'Buffered': return 'texts-view-delivery-pending'
-        case 'Delivered': return 'texts-view-delivery-delivered'
-        case 'Expired': return 'texts-view-delivery-failed'
-        case 'Delivery Failed': return 'texts-view-delivery-failed'
+        case 'queued': return 'texts-view-delivery-pending'
+        case 'sent': return 'texts-view-delivery-sent'
+        case 'sending': return 'texts-view-delivery-pending'
+        case 'delivered': return 'texts-view-delivery-delivered'
+        case 'undelivered': return 'texts-view-delivery-failed'
+        case 'failed': return 'texts-view-delivery-failed'
         case 'No Cell Phone': return 'texts-view-delivery-failed'
         default: return 'texts-view-delivery-pending'
+      }
+    },
+    formatStatus() {
+      switch (this.delivery.status) {
+        case 'queued': return 'Queued'
+        case 'sending': return 'Sending'
+        case 'sent': return 'Sent'
+        case 'delivered': return 'Delivered'
+        case 'undelivered': return 'Not Delivered'
+        case 'failed': return 'Failed'
+        case 'No Cell Phone': return 'No Cell Phone'
+        default: return 'Pending'
       }
     },
     formatTimestamp() { return this.delivery.status ? `as of ${this.delivery.timestamp.substr(11, 8)}` : '' },
