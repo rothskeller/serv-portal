@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"strings"
@@ -109,7 +110,8 @@ PEOPLE:
 		panic(err)
 	}
 	if response.StatusCode >= 400 {
-		panic(response.Status)
+		by, _ := httputil.DumpResponse(response, true)
+		panic(string(by))
 	}
 	response.Body.Close()
 	message.Timestamp = time.Now()
