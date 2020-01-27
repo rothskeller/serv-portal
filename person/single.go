@@ -209,7 +209,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		if person.SortName = strings.TrimSpace(r.FormValue("sortName")); person.SortName == "" {
 			return errors.New("missing sortName")
 		}
-		person.Username = strings.TrimSpace(r.FormValue("userName"))
+		person.Username = strings.TrimSpace(r.FormValue("username"))
 		person.CallSign = strings.TrimSpace(r.FormValue("callSign"))
 		person.Emails = person.Emails[:0]
 		for i, e := range r.Form["email"] {
