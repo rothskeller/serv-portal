@@ -29,10 +29,9 @@ func main() {
 	}
 	cgi.Serve(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			number    = r.FormValue("To")
-			status    = r.FormValue("MessageStatus")
-			message   *model.TextMessage
-			recipient *model.TextRecipient
+			number  = r.FormValue("To")
+			status  = r.FormValue("MessageStatus")
+			message *model.TextMessage
 		)
 		db.Open("serv.db")
 		tx := db.Begin()
@@ -44,8 +43,8 @@ func main() {
 		}
 		for _, r := range message.Recipients {
 			if r.Number == number {
-				recipient.Status = status
-				recipient.Timestamp = time.Now()
+				r.Status = status
+				r.Timestamp = time.Now()
 				break
 			}
 		}
