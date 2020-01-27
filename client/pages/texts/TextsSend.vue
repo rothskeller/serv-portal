@@ -10,7 +10,7 @@ b-form#texts-send(v-else @submit.prevent="onSubmit")
     b-textarea#texts-send-message(v-model="message" autofocus)
     b-form-text(v-if="countMessage") {{countMessage}}
   b-form-group(label="Recipients" label-for="texts-send-groups" label-cols-sm="auto" label-class="texts-send-label pt-0" :state="groupsError ? false : null" :invalidFeedback="groupsError")
-    b-form-checkbox-group#texts-send-groups(v-model="recipients" :options="groups" text-field="name" value-field="id")
+    b-form-checkbox-group#texts-send-groups(v-model="recipients" :options="groups" stacked text-field="name" value-field="id")
   div.mt-3
     b-button(type="submit" variant="primary" :disabled="sending || !valid")
       b-spinner(v-if="sending" small)
