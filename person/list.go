@@ -42,6 +42,10 @@ func GetPeople(r *util.Request) error {
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
 		if auth.CanViewContactInfo(r, p) {
+			out.String(`,"email":`)
+			out.String(p.Email)
+			out.String(`,"email2":`)
+			out.String(p.Email2)
 			out.RawString(`,"emails":[`)
 			for i, e := range p.Emails {
 				if i != 0 {

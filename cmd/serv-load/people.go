@@ -33,15 +33,19 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 			case "id":
 				p.ID = model.PersonID(in.Int())
 			case "username":
-				p.Username = string(in.String())
+				p.Username = in.String()
 			case "informalName":
-				p.InformalName = string(in.String())
+				p.InformalName = in.String()
 			case "formalName":
-				p.FormalName = string(in.String())
+				p.FormalName = in.String()
 			case "sortName":
-				p.SortName = string(in.String())
+				p.SortName = in.String()
 			case "callSign":
-				p.CallSign = string(in.String())
+				p.CallSign = in.String()
+			case "email":
+				p.Email = in.String()
+			case "email2":
+				p.Email2 = in.String()
 			case "emails":
 				if in.IsNull() {
 					in.Skip()

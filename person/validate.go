@@ -34,6 +34,17 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	}
 	person.Username = strings.ToLower(strings.TrimSpace(person.Username))
 	person.CallSign = strings.ToUpper(strings.TrimSpace(person.CallSign))
+	person.Email = strings.ToLower(strings.TrimSpace(person.Email))
+	if person.Email != "" && !emailRE.MatchString(person.Email) {
+		return errors.New("invalid email")
+	}
+	person.Email2 = strings.ToLower(strings.TrimSpace(person.Email2))
+	if person.Email2 != "" && !emailRE.MatchString(person.Email2) {
+		return errors.New("invalid email2")
+	}
+	if person.Email2 != "" && (person.Email == "" || person.Email == person.Email2) {
+		return errors.New("invalid email2")
+	}
 	for i := range person.Emails {
 		person.Emails[i].Email = strings.ToLower(strings.TrimSpace(person.Emails[i].Email))
 		if !emailRE.MatchString(person.Emails[i].Email) {

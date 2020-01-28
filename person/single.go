@@ -57,6 +57,10 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"callSign":`)
 	out.String(person.CallSign)
 	if canViewContact {
+		out.RawString(`,"email":`)
+		out.String(person.Email)
+		out.RawString(`,"email2":`)
+		out.String(person.Email2)
 		out.RawString(`,"emails":[`)
 		for i, e := range person.Emails {
 			if i != 0 {
@@ -217,6 +221,8 @@ func PostPerson(r *util.Request, idstr string) error {
 		person.SortName = r.FormValue("sortName")
 		person.Username = r.FormValue("username")
 		person.CallSign = r.FormValue("callSign")
+		person.Email = r.FormValue("email")
+		person.Email2 = r.FormValue("email2")
 		person.Emails = person.Emails[:0]
 		for i, e := range r.Form["email"] {
 			var email model.PersonEmail

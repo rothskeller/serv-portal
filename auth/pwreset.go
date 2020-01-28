@@ -31,10 +31,11 @@ func PostPasswordReset(r *util.Request) error {
 	if !IsEnabled(r, person) {
 		return nil
 	}
-	for _, e := range person.Emails {
-		if !e.Bad {
-			emails = append(emails, e.Email)
-		}
+	if person.Email != "" {
+		emails = append(emails, person.Email)
+	}
+	if person.Email2 != "" {
+		emails = append(emails, person.Email2)
 	}
 	if len(emails) == 0 {
 		return nil

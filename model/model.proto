@@ -52,6 +52,8 @@ message Person {
   string                    formal_name     =  3 [(gogoproto.jsontag) = "formalName"];
   string                    sort_name       =  4 [(gogoproto.jsontag) = "sortName"];
   string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
+  string                    email           = 25;
+  string                    email2          = 26;
   repeated PersonEmail      emails          = 12;
   Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
   Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];

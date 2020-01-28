@@ -904,6 +904,10 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 			out.SortName = string(in.String())
 		case "callSign":
 			out.CallSign = string(in.String())
+		case "email":
+			out.Email = string(in.String())
+		case "email2":
+			out.Email2 = string(in.String())
 		case "emails":
 			if in.IsNull() {
 				in.Skip()
@@ -1068,6 +1072,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 		const prefix string = ",\"callSign\":"
 		out.RawString(prefix)
 		out.String(string(in.CallSign))
+	}
+	if in.Email != "" {
+		const prefix string = ",\"email\":"
+		out.RawString(prefix)
+		out.String(string(in.Email))
+	}
+	if in.Email2 != "" {
+		const prefix string = ",\"email2\":"
+		out.RawString(prefix)
+		out.String(string(in.Email2))
 	}
 	if len(in.Emails) != 0 {
 		const prefix string = ",\"emails\":"

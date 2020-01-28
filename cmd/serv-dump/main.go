@@ -247,6 +247,14 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
 	}
+	if p.Email != "" {
+		out.RawString(`,"email":`)
+		out.String(p.Email)
+	}
+	if p.Email2 != "" {
+		out.RawString(`,"email2":`)
+		out.String(p.Email2)
+	}
 	if len(p.Emails) != 0 {
 		out.RawString(`,"emails":[`)
 		for i, e := range p.Emails {
