@@ -16,7 +16,7 @@ func listPeople(args []string, _ map[string]string) {
 	cw := csv.NewWriter(os.Stdout)
 	cw.Comma = '\t'
 	for _, p := range matchPeople(args[0]) {
-		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime), p.HomeAddress.Address, strconv.FormatFloat(p.HomeAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.HomeAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.HomeAddress.FireDistrict), strconv.FormatBool(p.MailAddress.SameAsHome), p.MailAddress.Address, strconv.FormatBool(p.WorkAddress.SameAsHome), p.WorkAddress.Address, strconv.FormatFloat(p.WorkAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.WorkAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.WorkAddress.FireDistrict), p.CellPhone, p.HomePhone, p.WorkPhone})
+		cw.Write([]string{strconv.Itoa(int(p.ID)), p.Username, p.InformalName, p.FormalName, p.SortName, p.CallSign, strconv.Itoa(p.BadLoginCount), formatTime(p.BadLoginTime), p.PWResetToken, formatTime(p.PWResetTime), p.Email, p.Email2, p.HomeAddress.Address, strconv.FormatFloat(p.HomeAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.HomeAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.HomeAddress.FireDistrict), strconv.FormatBool(p.MailAddress.SameAsHome), p.MailAddress.Address, strconv.FormatBool(p.WorkAddress.SameAsHome), p.WorkAddress.Address, strconv.FormatFloat(p.WorkAddress.Latitude, 'f', -1, 64), strconv.FormatFloat(p.WorkAddress.Longitude, 'f', -1, 64), strconv.Itoa(p.WorkAddress.FireDistrict), p.CellPhone, p.HomePhone, p.WorkPhone})
 	}
 	cw.Flush()
 }
@@ -93,6 +93,16 @@ func applyPersonFields(person *model.Person, fields map[string]string) (changed 
 			if person.CallSign != v {
 				changed = true
 				person.CallSign = v
+			}
+		case "email":
+			if person.Email != v {
+				changed = true
+				person.Email = v
+			}
+		case "email2":
+			if person.Email2 != v {
+				changed = true
+				person.Email2 = v
 			}
 		case "cell", "cell_phone":
 			if person.CellPhone != v {

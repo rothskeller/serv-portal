@@ -34,16 +34,8 @@ func usage() {
     serv person [«pattern»|«id»] archive add [field «value»]...
     serv person [«pattern»|«id»] archive set [field «value»]...
     serv person [«pattern»|«id»] archive remove field...
-    serv person [«pattern»|«id»] email [list]
-    serv person [«pattern»|«id»] email add «email» [field «value»]...
-    serv person [«pattern»|«id»] email «index» set [field «value»]...
-    serv person [«pattern»|«id»] email «index» remove
     serv person [«pattern»|«id»] {home|mail|work} address set [field «value»]...
     serv person [«pattern»|«id»] {home|mail|work} address remove
-    serv person [«pattern»|«id»] phone [list]
-    serv person [«pattern»|«id»] phone add «phone» [field «value»]...
-    serv person [«pattern»|«id»] phone «index» set [field «value»]...
-    serv person [«pattern»|«id»] phone «index» remove
     serv person [«pattern»|«id»] role [list]
     serv person [«pattern»|«id»] role add «pattern»|«id»...
     serv person [«pattern»|«id»] role remove «pattern»|«id»...
@@ -101,10 +93,6 @@ var commands = []command{
 	{[]string{"person", "?", "archive", "add", "="}, addPersonArchive},
 	{[]string{"person", "?", "archive", "set", "="}, setPersonArchive},
 	{[]string{"person", "?", "archive", "remove", "+"}, removePersonArchive},
-	{[]string{"person", "?", "email", "list"}, listPersonEmails},
-	{[]string{"person", "?", "email", "add", ".", "="}, addPersonEmail},
-	{[]string{"person", "?", "email", ".", "set", "="}, setPersonEmail},
-	{[]string{"person", "?", "email", ".", "remove"}, removePersonEmail},
 	{[]string{"person", "?", "home", "address", "set", "="}, setPersonHomeAddress},
 	{[]string{"person", "?", "home", "address", "remove"}, removePersonHomeAddress},
 	{[]string{"person", "?", "mail", "address", "set", "="}, setPersonMailAddress},
@@ -136,11 +124,9 @@ var abbreviations = map[string]string{
 	"addresses":  "address",
 	"addrs":      "address",
 	"attend":     "attendance",
-	"emails":     "email",
 	"events":     "event",
 	"groups":     "group",
 	"people":     "person",
-	"phones":     "phone",
 	"priv":       "privilege",
 	"privileges": "privilege",
 	"privs":      "privilege",
