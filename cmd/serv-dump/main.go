@@ -255,26 +255,6 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"email2":`)
 		out.String(p.Email2)
 	}
-	if len(p.Emails) != 0 {
-		out.RawString(`,"emails":[`)
-		for i, e := range p.Emails {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.RawString(`{"email":`)
-			out.String(e.Email)
-			if e.Label != "" {
-				out.RawString(`,"label":`)
-				out.String(e.Label)
-			}
-			if e.Bad {
-				out.RawString(`,"bad":`)
-				out.Bool(e.Bad)
-			}
-			out.RawByte('}')
-		}
-		out.RawByte(']')
-	}
 	if p.HomeAddress.Address != "" {
 		out.RawString(`,"homeAddress":`)
 		p.HomeAddress.MarshalEasyJSON(out)

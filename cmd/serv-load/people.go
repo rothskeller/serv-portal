@@ -46,33 +46,6 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 				p.Email = in.String()
 			case "email2":
 				p.Email2 = in.String()
-			case "emails":
-				if in.IsNull() {
-					in.Skip()
-					p.Emails = nil
-				} else {
-					in.Delim('[')
-					if p.Emails == nil {
-						if !in.IsDelim(']') {
-							p.Emails = make([]*model.PersonEmail, 0, 2)
-						} else {
-							p.Emails = []*model.PersonEmail{}
-						}
-					} else {
-						p.Emails = (p.Emails)[:0]
-					}
-					for !in.IsDelim(']') {
-						var pe model.PersonEmail
-						if in.IsNull() {
-							in.Skip()
-						} else {
-							pe.UnmarshalEasyJSON(in)
-							p.Emails = append(p.Emails, &pe)
-						}
-						in.WantComma()
-					}
-					in.Delim(']')
-				}
 			case "homeAddress":
 				p.HomeAddress.UnmarshalEasyJSON(in)
 			case "workAddress":

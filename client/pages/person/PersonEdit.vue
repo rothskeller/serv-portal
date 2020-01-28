@@ -20,10 +20,10 @@ form#person-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Call sign" label-for="person-callSign" label-cols-sm="auto" label-class="person-edit-label" :state="callSignError ? false : null" :invalid-feedback="callSignError")
     b-input#person-callSign.person-edit-input(:plaintext="!canEditDetails" :state="callSignError ? false : null" v-model="person.callSign")
   PasswordEntry(v-if="canEditDetails" label="Password" labelClass="person-edit-label" :deferValidation="!submitted" :allowBadPassword="allowBadPassword" :passwordHints="myPasswordHints" @change="onPasswordChange")
-  b-form-group(v-for="(e, i) in person.emails" :key="`e${i}`" :label="person.emails.length === 1 ? 'Email' : `Email #${i+1}`" :label-for="`person-email${i}`" label-cols-sm="auto" label-class="person-edit-label" :state="emailErrors[i] ? false : null" :invalid-feedback="emailErrors[i]")
-    b-input.person-edit-input.d-inline(:id="`person-email${i}`" :plaintext="!canEditDetails" :state="emailErrors[i] ? false : null" trim v-model="e.email")
-    b-input.person-edit-label-input(v-if="person.emails.length > 1" :id="`person-email${i}-label`" placeholder="Label" :plaintext="!canEditDetails" trim v-model="e.label")
-    b-button.mt-3.d-block(v-if="i === person.emails.length-1" size="sm" @click="addEmail") Add another email
+  b-form-group(label="Email" label-for="person-email" label-cols-sm="auto" label-class="person-edit-label" :state="emailError ? false : null" :invalid-feedback="emailError")
+    b-input#person-email.person-edit-input(:plaintext="!canEditDetails" :state="emailError ? false : null" trim v-model="person.email")
+  b-form-group(label="Alt. Email" label-for="person-email2" label-cols-sm="auto" label-class="person-edit-label" :state="email2Error ? false : null" :invalid-feedback="email2Error")
+    b-input#person-email2.person-edit-input(:plaintext="!canEditDetails" :state="email2Error ? false : null" trim v-model="person.email2")
   b-form-group(label="Cell Phone" label-for="person-cellPhone" label-cols-sm="auto" label-class="person-edit-label" :state="cellPhoneError ? false : null" :invalid-feedback="cellPhoneError")
     b-input#person-cellPhone.person-edit-input(:plaintext="!canEditDetails" :state="cellPhoneError ? false : null" trim v-model="person.cellPhone")
   b-form-group(label="Home Phone" label-for="person-homePhone" label-cols-sm="auto" label-class="person-edit-label" :state="homePhoneError ? false : null" :invalid-feedback="homePhoneError")
@@ -66,12 +66,13 @@ export default {
     duplicateUsername: null,
     callSignError: null,
     duplicateCallSign: null,
+    emailError: null,
+    email2Error: null,
     cellPhoneError: null,
     duplicateCellPhone: null,
     homePhoneError: null,
     workPhoneError: null,
     password: '',
-    emailErrors: [],
     rolesError: null,
     submitted: false,
     suggestions: null,
@@ -90,10 +91,11 @@ export default {
       if (this.person.formalName) hints.push(this.person.formalName)
       if (this.person.callSign) hints.push(this.person.callSign)
       if (this.person.username) hints.push(this.person.username)
+      if (this.person.email) hints.push(this.person.email)
+      if (this.person.email2) hints.push(this.person.email2)
       if (this.person.homeAddress && this.person.homeAddress.address) hints.push(this.person.homeAddress.address)
       if (this.person.mailAddress && this.person.mailAddress.address) hints.push(this.person.mailAddress.address)
       if (this.person.workAddress && this.person.workAddress.address) hints.push(this.person.workAddress.address)
-      this.person.emails.forEach(e => { hints.push(e.email) })
       if (this.person.cellPhone) hints.push(this.person.cellPhone)
       if (this.person.homePhone) hints.push(this.person.homePhone)
       if (this.person.workPhone) hints.push(this.person.workPhone)
@@ -104,7 +106,7 @@ export default {
       return this.newp ? 'Create Person' : 'Save Person'
     },
     valid() {
-      return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.cellPhoneError && !this.homePhoneError && !this.workPhoneError && !this.rolesError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress && !this.emailErrors.some(e => e)
+      return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.emailError && !this.email2Error && !this.cellPhoneError && !this.homePhoneError && !this.workPhoneError && !this.rolesError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress
     },
   },
   async created() {
@@ -116,11 +118,6 @@ export default {
     this.passwordHints = data.passwordHints
     this.person = data.person
     this.onLoadPerson(this.person)
-    this.person.emails.forEach(e => {
-      this.$watch((() => e.email), this.validate)
-      this.emailErrors.push(null)
-    })
-    if (!this.person.emails.length) this.addEmails()
     if (this.canEditRoles && this.newp)
       this.person.roles.forEach(r => {
         if (r.canAssign) this.$watch((() => r.held), this.validate)
@@ -136,17 +133,13 @@ export default {
     'person.sortName': 'validate',
     'person.username': 'validate',
     'person.callSign': 'validate',
+    'person.email': 'validate',
+    'person.email2': 'validate',
     'person.cellPhone': 'validate',
     'person.homePhone': 'validate',
     'person.workPhone': 'validate',
   },
   methods: {
-    addEmail() {
-      const e = { email: '', label: '' }
-      this.person.emails.push(e)
-      this.emailErrors.push(null)
-      this.$watch((() => e.email), this.validate)
-    },
     informalToSort(n) {
       if (!n) return n
       const parts = n.split(/\s+/, 2)
@@ -159,22 +152,17 @@ export default {
       this.validate()
       if (!this.valid) return
       const body = new FormData
-      // TODO fill in body
       body.append('informalName', this.person.informalName)
       body.append('formalName', this.person.formalName)
       body.append('sortName', this.person.sortName)
       body.append('username', this.person.username)
       body.append('callSign', this.person.callSign)
+      body.append('email', this.person.email || this.person.email2)
+      body.append('email2', this.person.email ? this.person.email2 : '')
       body.append('cellPhone', this.person.cellPhone)
       body.append('homePhone', this.person.homePhone)
       body.append('workPhone', this.person.workPhone)
       if (this.password) body.append('password', this.password)
-      this.person.emails.forEach(e => {
-        if (e.email) {
-          body.append('email', e.email)
-          body.append('emailLabel', e.label || '')
-        }
-      })
       if (this.person.homeAddress.address) {
         body.append('homeAddress', this.person.homeAddress.address)
         body.append('homeAddressLatitude', this.person.homeAddress.latitude)
@@ -231,14 +219,20 @@ export default {
         this.callSignError = 'A different person has this call sign.'
       else
         this.callSignError = null
-      this.person.emails.forEach((e, i) => {
-        if (!e.email)
-          this.emailErrors[i] = null
-        else if (!e.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
-          this.emailErrors[i] = 'This is not a valid email address.'
-        else
-          this.emailErrors[i] = null
-      })
+      if (!this.person.email)
+        this.emailError = null
+      else if (!this.person.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
+        this.emailError = 'This is not a valid email address.'
+      else
+        this.emailError = null
+      if (!this.person.email2)
+        this.email2Error = null
+      else if (!this.person.email2.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
+        this.email2Error = 'This is not a valid email address.'
+      else if (this.person.email2 == this.person.email)
+        this.email2Error = 'The two email addresses should not be the same.  (Leave this field empty if you only have one.)'
+      else
+        this.email2Error = null
       if (this.person.cellPhone && this.person.cellPhone.replace(/[^0-9]/g, '').length !== 10)
         this.cellPhoneError = 'A valid phone number must have 10 digits.'
       else if (this.duplicateCellPhone === this.person.cellPhone)

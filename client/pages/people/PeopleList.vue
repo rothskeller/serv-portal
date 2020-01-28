@@ -16,9 +16,10 @@ PeopleList displays the list of people.
       .people-person
         td: router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
       .people-contact
-        div(v-for="email in p.emails")
-          a(:href="`mailto:${email.email}`" v-text="email.email" :class="email.bad ? '.people-bad-email' : null")
-          span(v-if="email.label" v-text="` (${email.label})`")
+        div(v-if="p.email")
+          a(:href="`mailto:${p.email}`" v-text="p.email")
+        div(v-if="p.email2")
+          a(:href="`mailto:${p.email2}`" v-text="p.email2")
         .people-phone(v-if="p.cellPhone")
           a(:href="`tel:${p.cellPhone}`" v-text="p.cellPhone")
           |

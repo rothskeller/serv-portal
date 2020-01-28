@@ -45,18 +45,6 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	if person.Email2 != "" && (person.Email == "" || person.Email == person.Email2) {
 		return errors.New("invalid email2")
 	}
-	for i := range person.Emails {
-		person.Emails[i].Email = strings.ToLower(strings.TrimSpace(person.Emails[i].Email))
-		if !emailRE.MatchString(person.Emails[i].Email) {
-			return errors.New("invalid email")
-		}
-		for j := 0; j < i; j++ {
-			if person.Emails[i].Email == person.Emails[j].Email {
-				return errors.New("duplicate email")
-			}
-		}
-		person.Emails[i].Label = strings.TrimSpace(person.Emails[i].Label)
-	}
 	switch person.CellPhone = strings.Map(util.KeepDigits, person.CellPhone); len(person.CellPhone) {
 	case 0:
 		break

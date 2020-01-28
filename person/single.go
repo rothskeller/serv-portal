@@ -61,14 +61,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.String(person.Email)
 		out.RawString(`,"email2":`)
 		out.String(person.Email2)
-		out.RawString(`,"emails":[`)
-		for i, e := range person.Emails {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			e.MarshalEasyJSON(&out)
-		}
-		out.RawString(`],"homeAddress":`)
+		out.RawString(`,"homeAddress":`)
 		person.HomeAddress.MarshalEasyJSON(&out)
 		out.RawString(`,"mailAddress":`)
 		person.MailAddress.MarshalEasyJSON(&out)
@@ -208,6 +201,7 @@ func PostPerson(r *util.Request, idstr string) error {
 	}
 	person.Roles = person.Roles[:j]
 	// Add roles that the user requested.
+	r.ParseMultipartForm(1048576)
 	for _, ridstr := range r.Form["role"] {
 		if role := r.Tx.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil && auth.CanAssignRole(r, role) {
 			person.Roles = append(person.Roles, role.ID)
@@ -223,15 +217,6 @@ func PostPerson(r *util.Request, idstr string) error {
 		person.CallSign = r.FormValue("callSign")
 		person.Email = r.FormValue("email")
 		person.Email2 = r.FormValue("email2")
-		person.Emails = person.Emails[:0]
-		for i, e := range r.Form["email"] {
-			var email model.PersonEmail
-			email.Email = e
-			if len(r.Form["emailLabel"]) > i {
-				email.Label = r.Form["emailLabel"][i]
-			}
-			person.Emails = append(person.Emails, &email)
-		}
 		person.CellPhone = r.FormValue("cellPhone")
 		person.HomePhone = r.FormValue("homePhone")
 		person.WorkPhone = r.FormValue("workPhone")

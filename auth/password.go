@@ -62,11 +62,7 @@ func StrongPassword(p *model.Person, password string) bool {
 	hints = make([]string, 0, len(SERVPasswordHints)+4)
 	hints = append(hints, SERVPasswordHints...)
 	if p != nil {
-		hints = append(hints, p.InformalName, p.FormalName, p.CallSign, p.Username, p.Email, p.Email2, p.HomeAddress.Address, p.MailAddress.Address, p.WorkAddress.Address)
-		for _, e := range p.Emails {
-			hints = append(hints, e.Email)
-		}
-		hints = append(hints, p.CellPhone, p.HomePhone, p.WorkPhone)
+		hints = append(hints, p.InformalName, p.FormalName, p.CallSign, p.Username, p.Email, p.Email2, p.HomeAddress.Address, p.MailAddress.Address, p.WorkAddress.Address, p.CellPhone, p.HomePhone, p.WorkPhone)
 	}
 	return zxcvbn.PasswordStrength(password, hints).Score >= 3
 }

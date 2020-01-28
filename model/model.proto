@@ -54,7 +54,6 @@ message Person {
   string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
   string                    email           = 25;
   string                    email2          = 26;
-  repeated PersonEmail      emails          = 12;
   Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
   Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
   Address                   mail_address    = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
@@ -69,12 +68,6 @@ message Person {
   repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
   PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
   repeated string           archive         = 24;
-}
-
-message PersonEmail {
-  string email = 1;
-  string label = 2;
-  bool   bad   = 3;
 }
 
 message PrivilegeMap {
