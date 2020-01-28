@@ -139,7 +139,7 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	if person = r.Tx.FetchPersonByPWResetToken(token); person == nil || time.Since(person.PWResetTime) > pwresetThreshold {
 		return util.HTTPError(http.StatusConflict, "The password reset token is invalid or expired.")
 	}
-	if !StrongPassword(r, person, password) {
+	if !StrongPassword(person, password) {
 		return errors.New("bad password")
 	}
 	SetPassword(r, person, password)

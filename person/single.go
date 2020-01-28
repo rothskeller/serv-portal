@@ -2,7 +2,7 @@ package person
 
 import (
 	"errors"
-	"regexp"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -80,7 +80,7 @@ func GetPerson(r *util.Request, idstr string) error {
 	for _, r := range person.Roles {
 		roles[r] = true
 	}
-	individualHeld = cacheIndividuallyHeldRoles(r, person)
+	individualHeld = cacheIndividuallyHeldRoles(r.Tx, r.Tx.FetchPeople(), person)
 	out.RawString(`,"roles":[`)
 	first := true
 	for _, role := range r.Tx.FetchRoles() {
@@ -171,17 +171,12 @@ func GetPerson(r *util.Request, idstr string) error {
 	return nil
 }
 
-var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
 // PostPerson handles POST /api/people/$id requests (where $id may be "NEW").
 func PostPerson(r *util.Request, idstr string) error {
 	var (
 		person         *model.Person
 		canEditDetails bool
-		individualHeld map[*model.Role]bool
 		err            error
-		previousRoles  = map[model.RoleID]bool{}
-		requestedRoles = map[model.RoleID]bool{}
 	)
 	if idstr == "NEW" {
 		if !auth.CanCreatePeople(r) {
@@ -198,176 +193,91 @@ func PostPerson(r *util.Request, idstr string) error {
 	if !canEditDetails && !auth.CanAssignAnyRole(r) {
 		return util.Forbidden
 	}
-	individualHeld = cacheIndividuallyHeldRoles(r, person)
-	if canEditDetails {
-		if person.InformalName = strings.TrimSpace(r.FormValue("informalName")); person.InformalName == "" {
-			return errors.New("missing informalName")
-		}
-		if person.FormalName = strings.TrimSpace(r.FormValue("formalName")); person.FormalName == "" {
-			return errors.New("missing formalName")
-		}
-		if person.SortName = strings.TrimSpace(r.FormValue("sortName")); person.SortName == "" {
-			return errors.New("missing sortName")
-		}
-		person.Username = strings.TrimSpace(r.FormValue("username"))
-		person.CallSign = strings.TrimSpace(r.FormValue("callSign"))
-		person.Emails = person.Emails[:0]
-		for i, e := range r.Form["email"] {
-			var email model.PersonEmail
-			email.Email = strings.TrimSpace(e)
-			if !emailRE.MatchString(email.Email) {
-				return errors.New("invalid email")
-			}
-			if len(r.Form["emailLabel"]) > i {
-				email.Label = strings.TrimSpace(r.Form["emailLabel"][i])
-			}
-			person.Emails = append(person.Emails, &email)
-		}
-		switch person.CellPhone = strings.Map(util.KeepDigits, r.FormValue("cellPhone")); len(person.CellPhone) {
-		case 0:
-			break
-		case 10:
-			person.CellPhone = person.CellPhone[0:3] + "-" + person.CellPhone[3:6] + "-" + person.CellPhone[6:10]
-		default:
-			return errors.New("invalid cell phone")
-		}
-		switch person.HomePhone = strings.Map(util.KeepDigits, r.FormValue("homePhone")); len(person.HomePhone) {
-		case 0:
-			break
-		case 10:
-			person.HomePhone = person.HomePhone[0:3] + "-" + person.HomePhone[3:6] + "-" + person.HomePhone[6:10]
-		default:
-			return errors.New("invalid home phone")
-		}
-		switch person.WorkPhone = strings.Map(util.KeepDigits, r.FormValue("workPhone")); len(person.WorkPhone) {
-		case 0:
-			break
-		case 10:
-			person.WorkPhone = person.WorkPhone[0:3] + "-" + person.WorkPhone[3:6] + "-" + person.WorkPhone[6:10]
-		default:
-			return errors.New("invalid work phone")
-		}
-		person.HomeAddress = model.Address{}
-		if person.HomeAddress.Address = strings.TrimSpace(r.FormValue("homeAddress")); person.HomeAddress.Address != "" {
-			person.HomeAddress.Latitude, err = strconv.ParseFloat(r.FormValue("homeAddressLatitude"), 64)
-			if err != nil || person.HomeAddress.Latitude < -90 || person.HomeAddress.Latitude > 90 {
-				return errors.New("invalid latitude")
-			}
-			person.HomeAddress.Longitude, err = strconv.ParseFloat(r.FormValue("homeAddressLongitude"), 64)
-			if err != nil || person.HomeAddress.Longitude < -180 || person.HomeAddress.Longitude > 180 {
-				return errors.New("invalid longitude")
-			}
-		}
-		person.MailAddress = model.Address{}
-		person.MailAddress.Address = strings.TrimSpace(r.FormValue("mailAddress"))
-		if sameAsHome, _ := strconv.ParseBool(r.FormValue("mailAddressSameAsHome")); sameAsHome && person.MailAddress.Address == "" {
-			person.MailAddress.SameAsHome = true
-		}
-		person.WorkAddress = model.Address{}
-		if person.WorkAddress.Address = strings.TrimSpace(r.FormValue("workAddress")); person.WorkAddress.Address != "" {
-			person.WorkAddress.Latitude, err = strconv.ParseFloat(r.FormValue("workAddressLatitude"), 64)
-			if err != nil || person.WorkAddress.Latitude < -90 || person.WorkAddress.Latitude > 90 {
-				return errors.New("invalid latitude")
-			}
-			person.WorkAddress.Longitude, err = strconv.ParseFloat(r.FormValue("workAddressLongitude"), 64)
-			if err != nil || person.WorkAddress.Longitude < -180 || person.WorkAddress.Longitude > 180 {
-				return errors.New("invalid longitude")
-			}
-		} else if sameAsHome, _ := strconv.ParseBool(r.FormValue("workAddressSameAsHome")); sameAsHome {
-			person.WorkAddress.SameAsHome = true
-		}
-		if password := r.FormValue("password"); password != "" {
-			if !auth.IsWebmaster(r) {
-				if !auth.StrongPassword(r, person, password) {
-					r.Header().Set("Content-Type", "application/json; charset=utf-8")
-					r.Write([]byte(`{"weakPassword":true}`))
-					return nil
-				}
-			}
-			auth.SetPassword(r, person, password)
-		}
-		for _, p := range r.Tx.FetchPeople() {
-			if p.ID == person.ID {
-				continue
-			}
-			if p.SortName == person.SortName {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateSortName":true}`))
-				return nil
-			}
-			if p.Username != "" && p.Username == person.Username {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateUsername":true}`))
-				return nil
-			}
-			if p.CallSign != "" && p.CallSign == person.CallSign {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateCallSign":true}`))
-				return nil
-			}
-			if p.CellPhone != "" && p.CellPhone == person.CellPhone {
-				r.Header().Set("Content-Type", "application/json; charset=utf-8")
-				r.Write([]byte(`{"duplicateCellPhone":true}`))
-				return nil
-			}
-		}
-	}
+	// Remove all roles that the user is allowed to change; keep the ones
+	// that they aren't.
+	j := 0
 	for _, role := range person.Roles {
-		previousRoles[role] = true
+		if !auth.CanAssignRole(r, r.Tx.FetchRole(role)) {
+			person.Roles[j] = role
+			j++
+		}
 	}
+	person.Roles = person.Roles[:j]
+	// Add roles that the user requested.
 	for _, ridstr := range r.Form["role"] {
-		if role := r.Tx.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil {
-			requestedRoles[role.ID] = true
+		if role := r.Tx.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil && auth.CanAssignRole(r, role) {
+			person.Roles = append(person.Roles, role.ID)
 		} else {
 			return errors.New("bad role")
 		}
 	}
-	person.Roles = person.Roles[:0]
-	for _, role := range r.Tx.FetchRoles() {
-		if !auth.CanAssignRole(r, role) {
-			if previousRoles[role.ID] {
-				person.Roles = append(person.Roles, role.ID)
+	if canEditDetails {
+		person.InformalName = r.FormValue("informalName")
+		person.FormalName = r.FormValue("formalName")
+		person.SortName = r.FormValue("sortName")
+		person.Username = r.FormValue("username")
+		person.CallSign = r.FormValue("callSign")
+		person.Emails = person.Emails[:0]
+		for i, e := range r.Form["email"] {
+			var email model.PersonEmail
+			email.Email = e
+			if len(r.Form["emailLabel"]) > i {
+				email.Label = r.Form["emailLabel"][i]
 			}
-		} else if !individualHeld[role] {
-			if requestedRoles[role.ID] {
-				person.Roles = append(person.Roles, role.ID)
+			person.Emails = append(person.Emails, &email)
+		}
+		person.CellPhone = r.FormValue("cellPhone")
+		person.HomePhone = r.FormValue("homePhone")
+		person.WorkPhone = r.FormValue("workPhone")
+		person.HomeAddress.Address = r.FormValue("homeAddress")
+		if l := r.FormValue("homeAddressLatitude"); l != "" {
+			if person.HomeAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+				return errors.New("invalid latitude")
 			}
 		}
+		if l := r.FormValue("homeAddressLongitude"); l != "" {
+			if person.HomeAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+				return errors.New("invalid longitude")
+			}
+		}
+		person.MailAddress.Address = r.FormValue("mailAddress")
+		person.MailAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("mailAddressSameAsHome"))
+		person.WorkAddress.Address = r.FormValue("workAddress")
+		if l := r.FormValue("workAddressLatitude"); l != "" {
+			if person.WorkAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+				return errors.New("invalid latitude")
+			}
+		}
+		if l := r.FormValue("workAddressLongitude"); l != "" {
+			if person.WorkAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+				return errors.New("invalid longitude")
+			}
+		}
+		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
 	}
-	if len(person.Roles) == 0 && person.ID == 0 {
-		return errors.New("new user with no roles")
+	if err = ValidatePerson(r.Tx, person); err != nil {
+		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {
+			// These need to be sent back to the client as 200
+			// responses with error details.
+			r.Header().Set("Content-Type", "application/json; charset=utf-8")
+			fmt.Fprintf(r, `{"duplicate%s":true}`, strings.ToUpper(estr[10:11])+estr[11:])
+			return nil
+		}
+		return err
+	}
+	// We do password after validation so that it can use the other
+	// fields as password hints.
+	if password := r.FormValue("password"); password != "" && canEditDetails {
+		if !auth.IsWebmaster(r) {
+			if !auth.StrongPassword(person, password) {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"weakPassword":true}`))
+				return nil
+			}
+		}
+		auth.SetPassword(r, person, password)
 	}
 	r.Tx.SavePerson(person)
 	r.Tx.Commit()
 	return nil
-}
-
-func cacheIndividuallyHeldRoles(r *util.Request, except *model.Person) (held map[*model.Role]bool) {
-	held = make(map[*model.Role]bool)
-	for _, p := range r.Tx.FetchPeople() {
-		if p.ID == except.ID {
-			continue
-		}
-		for _, role := range r.Tx.FetchRoles() {
-			if !role.Individual {
-				continue
-			}
-			if auth.HasRole(p, role) {
-				held[role] = true
-			}
-		}
-	}
-	return held
-}
-
-func usernameInUse(r *util.Request, person *model.Person) bool {
-	for _, p := range r.Tx.FetchPeople() {
-		if p.ID == person.ID {
-			continue
-		}
-		if strings.EqualFold(p.Username, person.Username) {
-			return true
-		}
-	}
-	return false
 }

@@ -56,7 +56,7 @@ func checkPassword(p *model.Person, password string) bool {
 }
 
 // StrongPassword returns whether the password is strong enough.
-func StrongPassword(r *util.Request, p *model.Person, password string) bool {
+func StrongPassword(p *model.Person, password string) bool {
 	var hints []string
 
 	hints = make([]string, 0, len(SERVPasswordHints)+4)
