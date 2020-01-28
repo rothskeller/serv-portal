@@ -196,7 +196,11 @@ func applyRewrites(events []*eventData) {
 	groups = []model.GroupID{tx.FetchGroupByTag(model.GroupSccAres).ID}
 	for _, e := range events {
 		if mapped, ok := vmap[e.venueName]; ok {
-			e.Venue = mapped.ID
+			if mapped != nil {
+				e.Venue = mapped.ID
+			} else {
+				e.Venue = 0
+			}
 		} else if mapped, ok := vmap[""]; ok {
 			fmt.Printf("WARNING: no mapping for venue %q, recording as \"See Event Detail Page\"\n", e.venueName)
 			e.Venue = mapped.ID
