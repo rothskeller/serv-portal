@@ -392,7 +392,7 @@ func dumpRole(tx *db.Tx, out *jwriter.Writer, r *model.Role) {
 	out.RawString(`,"name":`)
 	out.String(r.Name)
 	if r.Individual {
-		out.String(`,"individual":`)
+		out.RawString(`,"individual":`)
 		out.Bool(r.Individual)
 	}
 	out.RawString(`,"privileges":`)
