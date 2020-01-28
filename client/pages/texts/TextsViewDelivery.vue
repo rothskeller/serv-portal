@@ -48,7 +48,10 @@ export default {
         default: return 'Pending'
       }
     },
-    formatTimestamp() { return this.delivery.status ? `as of ${this.delivery.timestamp.substr(11, 8)}` : '' },
+    formatTimestamp() {
+      if (!this.delivery.status || this.delivery.status === 'No Cell Phone') return ''
+      return `as of ${this.delivery.timestamp.substr(11, 8)}`
+    },
   },
 }
 </script>
