@@ -76,9 +76,11 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 		if person.HomeAddress.Longitude < -180 || person.HomeAddress.Longitude > 180 {
 			return errors.New("invalid longitude")
 		}
+		person.HomeAddress.FireDistrict = FireDistrict(&person.HomeAddress)
 	} else {
 		person.HomeAddress.Latitude = 0
 		person.HomeAddress.Longitude = 0
+		person.HomeAddress.FireDistrict = 0
 	}
 	person.HomeAddress.SameAsHome = false
 	if person.MailAddress.Address = strings.TrimSpace(person.MailAddress.Address); person.MailAddress.Address != "" {
@@ -86,6 +88,7 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	}
 	person.MailAddress.Latitude = 0
 	person.MailAddress.Longitude = 0
+	person.MailAddress.FireDistrict = 0
 	if person.WorkAddress.Address = strings.TrimSpace(person.WorkAddress.Address); person.WorkAddress.Address != "" {
 		if person.WorkAddress.Latitude < -90 || person.WorkAddress.Latitude > 90 {
 			return errors.New("invalid latitude")
@@ -94,9 +97,11 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 			return errors.New("invalid longitude")
 		}
 		person.WorkAddress.SameAsHome = false
+		person.WorkAddress.FireDistrict = FireDistrict(&person.WorkAddress)
 	} else {
 		person.WorkAddress.Latitude = 0
 		person.WorkAddress.Longitude = 0
+		person.WorkAddress.FireDistrict = 0
 	}
 	people = tx.FetchPeople()
 	for _, p := range people {
