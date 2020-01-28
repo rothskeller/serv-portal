@@ -395,7 +395,7 @@ func dumpRole(tx *db.Tx, out *jwriter.Writer, r *model.Role) {
 		out.String(`,"individual":`)
 		out.Bool(r.Individual)
 	}
-	out.String(`,"privileges":`)
+	out.RawString(`,"privileges":`)
 	dumpPrivilegeMap(tx, out, r.Privileges)
 	out.RawByte('}')
 }
@@ -439,7 +439,7 @@ func dumpTextMessage(tx *db.Tx, out *jwriter.Writer, t *model.TextMessage) {
 	out.Int(int(t.Sender))
 	out.RawString(`,"sortName":`)
 	out.String(personName(tx, t.Sender))
-	out.RawString(`,"groups":[`)
+	out.RawString(`},"groups":[`)
 	for i, g := range t.Groups {
 		if i != 0 {
 			out.RawByte(',')

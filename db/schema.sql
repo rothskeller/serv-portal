@@ -3,13 +3,14 @@
 -- The audit table contains a record of every change to site data (except minor
 -- trivia like session expiration).
 CREATE TABLE audit (
-    timestamp datetime NOT NULL,
-    username  text     NOT NULL,
-    request   text     NOT NULL,
-    type      text     NOT NULL,
-    id        any      NOT NULL,
+    timestamp text NOT NULL,
+    username  text NOT NULL,
+    request   text NOT NULL,
+    type      text NOT NULL,
+    id        any  NOT NULL,
     data      blob
 );
+CREATE INDEX audit_timestamp_index ON audit (timestamp);
 
 -- The authz table is a single-row, single-column table containing a BLOB.
 -- The BLOB is the protocol buffer encoding of model.AuthzData, which contains
