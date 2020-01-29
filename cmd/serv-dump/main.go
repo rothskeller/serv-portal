@@ -315,23 +315,6 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 	}
 	out.RawString(`,"privileges":`)
 	dumpPrivilegeMap(tx, out, p.Privileges)
-	if len(p.Archive) != 0 {
-		out.RawString(`,"archive":[`)
-		for i, a := range p.Archive {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			parts := strings.SplitN(a, "=", 2)
-			out.RawByte('[')
-			out.String(parts[0])
-			if len(parts) > 1 {
-				out.RawByte(',')
-				out.String(parts[1])
-			}
-			out.RawByte(']')
-		}
-		out.RawByte(']')
-	}
 	if len(p.Notes) != 0 {
 		out.RawString(`,"notes":[`)
 		for i, n := range p.Notes {

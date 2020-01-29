@@ -151,11 +151,6 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	if person.PWResetToken != "" && person.PWResetTime.IsZero() {
 		return errors.New("invalid pwresetTime")
 	}
-	for _, a := range person.Archive {
-		if !strings.ContainsRune(a, '=') {
-			return errors.New("invalid archive string")
-		}
-	}
 	return nil
 }
 

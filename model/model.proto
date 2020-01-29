@@ -67,7 +67,6 @@ message Person {
   google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
   repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
   PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
-  repeated string           archive         = 24;
   repeated PersonNote       notes           = 27;
 }
 

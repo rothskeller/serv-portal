@@ -119,38 +119,6 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 					}
 					in.Delim(']')
 				}
-			case "archive":
-				if in.IsNull() {
-					in.Skip()
-					p.Archive = nil
-				} else {
-					in.Delim('[')
-					if p.Archive == nil {
-						if !in.IsDelim(']') {
-							p.Archive = make([]string, 0, 4)
-						} else {
-							p.Archive = []string{}
-						}
-					} else {
-						p.Archive = p.Archive[:0]
-					}
-					for !in.IsDelim(']') {
-						if in.IsNull() {
-							in.Skip()
-						} else {
-							in.Delim('[')
-							var key, value string
-							key = in.String()
-							in.WantComma()
-							value = in.String()
-							in.WantComma()
-							in.Delim(']')
-							p.Archive = append(p.Archive, key+"="+value)
-						}
-						in.WantComma()
-					}
-					in.Delim(']')
-				}
 			case "notes":
 				if in.IsNull() {
 					in.Skip()
