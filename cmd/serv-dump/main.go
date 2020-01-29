@@ -332,6 +332,24 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
+	if len(p.Notes) != 0 {
+		out.RawString(`,"notes":[`)
+		for i, n := range p.Notes {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"timestamp":`)
+			out.Raw(n.Timestamp.MarshalJSON())
+			out.RawString(`,"note":`)
+			out.String(n.Note)
+			out.RawString(`,"visibility":{"id":`)
+			out.Int(int(n.Visibility))
+			out.RawString(`,"name":`)
+			out.String(groupName(tx, n.Visibility))
+			out.RawString(`}}`)
+		}
+		out.RawByte(']')
+	}
 	out.RawByte('}')
 }
 

@@ -68,6 +68,13 @@ message Person {
   repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
   PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
   repeated string           archive         = 24;
+  repeated PersonNote       notes           = 27;
+}
+
+message PersonNote {
+  google.protobuf.Timestamp timestamp  = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  string                    note       = 2;
+  int64                     visibility = 3 [(gogoproto.casttype) = "GroupID"];
 }
 
 message PrivilegeMap {

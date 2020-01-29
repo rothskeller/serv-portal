@@ -132,7 +132,7 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 							p.Archive = []string{}
 						}
 					} else {
-						p.Archive = (p.Archive)[:0]
+						p.Archive = p.Archive[:0]
 					}
 					for !in.IsDelim(']') {
 						if in.IsNull() {
@@ -146,6 +146,75 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 							in.WantComma()
 							in.Delim(']')
 							p.Archive = append(p.Archive, key+"="+value)
+						}
+						in.WantComma()
+					}
+					in.Delim(']')
+				}
+			case "notes":
+				if in.IsNull() {
+					in.Skip()
+					p.Notes = nil
+				} else {
+					in.Delim('[')
+					if p.Notes == nil {
+						if !in.IsDelim(']') {
+							p.Notes = make([]*model.PersonNote, 0, 4)
+						} else {
+							p.Notes = []*model.PersonNote{}
+						}
+					} else {
+						p.Notes = p.Notes[:0]
+					}
+					for !in.IsDelim(']') {
+						if in.IsNull() {
+							in.Skip()
+						} else {
+							var pn model.PersonNote
+							in.Delim('{')
+							for !in.IsDelim('}') {
+								key := in.UnsafeString()
+								in.WantColon()
+								if in.IsNull() {
+									in.Skip()
+									in.WantComma()
+									continue
+								}
+								switch key {
+								case "timestamp":
+									if data := in.Raw(); in.Ok() {
+										in.AddError(pn.Timestamp.UnmarshalJSON(data))
+									}
+								case "note":
+									pn.Note = in.String()
+								case "visibility":
+									if in.IsDelim('{') {
+										in.Delim('{')
+										for !in.IsDelim('}') {
+											key := in.UnsafeString()
+											in.WantColon()
+											if in.IsNull() {
+												in.Skip()
+												in.WantComma()
+												continue
+											}
+											switch key {
+											case "id":
+												pn.Visibility = model.GroupID(in.Int())
+											default:
+												in.SkipRecursive()
+											}
+											in.WantComma()
+										}
+										in.Delim('}')
+									} else {
+										pn.Visibility = model.GroupID(in.Int())
+									}
+								default:
+									in.SkipRecursive()
+								}
+								in.WantComma()
+							}
 						}
 						in.WantComma()
 					}
