@@ -137,6 +137,27 @@ func GetPerson(r *util.Request, idstr string) error {
 			}
 			out.RawByte(']')
 		}
+		out.RawString(`,"notes":[`)
+		first := true
+		for _, n := range person.Notes {
+			if n.Privilege == 0 && !auth.IsWebmaster(r) {
+				continue
+			}
+			if n.Privilege != 0 && !auth.HasPrivilegeOnPerson(r, n.Privilege, person) {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.RawString(`{"date":`)
+			out.String(n.Date)
+			out.RawString(`,"note":`)
+			out.String(n.Note)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)

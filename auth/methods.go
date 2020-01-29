@@ -187,6 +187,17 @@ func GroupsCanManageEvents(r *util.Request) (groups []*model.Group) {
 	return groups
 }
 
+// HasPrivilegeOnPerson returns whether the caller has the specified privilege
+// on any group to which the specified person belongs.
+func HasPrivilegeOnPerson(r *util.Request, priv model.Privilege, p *model.Person) bool {
+	for _, group := range r.Tx.FetchGroups() {
+		if p.Privileges.Has(group, model.PrivMember) && r.Person.Privileges.Has(group, priv) {
+			return true
+		}
+	}
+	return IsWebmaster(r)
+}
+
 // HasRole returns whether the specified Person holds the specified Role.
 func HasRole(p *model.Person, r *model.Role) bool {
 	if p == nil {

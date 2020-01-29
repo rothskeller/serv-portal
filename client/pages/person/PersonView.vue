@@ -47,9 +47,14 @@ div.mt-3.ml-2(v-if="!person")
     div(v-text="person.mailAddress.address.replace(/^[^,]*, */, '')")
   #person-view-attended(v-if="person.attended")
     div Events attended:
-    div(v-for="e in person.attended")
+    .person-view-attended(v-for="e in person.attended")
       span.person-view-attended-date(v-text="e.date")
       span(v-text="e.name")
+  #person-view-notes(v-if="person.notes && person.notes.length")
+    div Notes:
+    .person-view-note(v-for="n in person.notes")
+      span.person-view-note-date(v-text="n.date")
+      span(v-text="n.note")
 </template>
 
 <script>
@@ -111,7 +116,21 @@ export default {
 #person-view-attended
   margin-top 0.75rem
   line-height 1.2
+.person-view-attended
+  margin-left 2rem
+  text-indent -2rem
 .person-view-attended-date
   margin-right 0.75rem
+  color #888
+  font-variant tabular-nums
+#person-view-notes
+  margin-top 0.75rem
+  line-height 1.2
+.person-view-note
+  margin-left 2rem
+  text-indent -2rem
+.person-view-note-date
+  margin-right 0.75rem
+  color #888
   font-variant tabular-nums
 </style>
