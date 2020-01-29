@@ -67,12 +67,12 @@ func main() {
 	// 	dumpAudit(tx)
 	// case strings.HasPrefix("events", os.Args[1]):
 	// 	dumpEvents(tx)
-	// case strings.HasPrefix("groups", os.Args[1]):
-	// 	dumpGroups(tx)
+	case strings.HasPrefix("groups", os.Args[1]):
+		loadGroups(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		loadPeople(tx, in)
-	// case strings.HasPrefix("roles", os.Args[1]):
-	// 	dumpRoles(tx)
+	case strings.HasPrefix("roles", os.Args[1]):
+		loadRoles(tx, in)
 	// case strings.HasPrefix("sessions", os.Args[1]):
 	// 	dumpSessions(tx)
 	// case strings.HasPrefix("text_messages", os.Args[1]):

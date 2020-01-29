@@ -1,5 +1,6 @@
 package role
 
+/*
 import (
 	"errors"
 	"strconv"
@@ -370,3 +371,4 @@ func enforceRoleConstraints(roles []*model.Role) (forced map[*model.Role]model.P
 	}
 	return forced
 }
+*/

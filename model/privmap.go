@@ -84,11 +84,22 @@ func (pm *PrivilegeMap) HasAny(priv Privilege) bool {
 	return false
 }
 
-// RolesWith returns an unsorted list of the IDs of all groups for which the map
-// contains the specified privilege(s).
-func (pm *PrivilegeMap) RolesWith(privs Privilege) (groupIDs []GroupID) {
+// GroupsWith returns an unsorted list of the IDs of all groups for which the
+// map contains the specified privilege(s).
+func (pm *PrivilegeMap) GroupsWith(privs Privilege) (groupIDs []GroupID) {
 	for id, p := range pm.p {
 		if p&privs == privs {
+			groupIDs = append(groupIDs, GroupID(id))
+		}
+	}
+	return groupIDs
+}
+
+// GroupsWithAny returns an unsorted list of the IDs of all groups for which the
+// map contains any privileges.
+func (pm *PrivilegeMap) GroupsWithAny() (groupIDs []GroupID) {
+	for id, p := range pm.p {
+		if p != 0 {
 			groupIDs = append(groupIDs, GroupID(id))
 		}
 	}
