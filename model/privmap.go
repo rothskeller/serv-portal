@@ -259,6 +259,10 @@ func (pm PrivilegeMap) MarshalEasyJSON(w *jwriter.Writer) {
 // UnmarshalEasyJSON decodes the privilege from JSON.
 func (p *Privilege) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	s := l.UnsafeString()
+	if s == "" {
+		*p = 0
+		return
+	}
 	for priv, name := range PrivilegeNames {
 		if s == name {
 			*p = priv

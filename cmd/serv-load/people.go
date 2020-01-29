@@ -155,6 +155,10 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 									}
 								case "note":
 									pn.Note = in.String()
+								case "date":
+									pn.Date = in.String()
+								case "privilege":
+									pn.Privilege.UnmarshalEasyJSON(in)
 								case "visibility":
 									if in.IsDelim('{') {
 										in.Delim('{')

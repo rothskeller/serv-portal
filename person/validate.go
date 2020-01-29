@@ -13,6 +13,7 @@ import (
 )
 
 var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$`)
 
 // ValidatePerson validates a Person record, except for its Password field.  It
 // enforces all data consistency rules, but does not enforce privileges.
@@ -150,6 +151,26 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	}
 	if person.PWResetToken != "" && person.PWResetTime.IsZero() {
 		return errors.New("invalid pwresetTime")
+	}
+	for _, n := range person.Notes {
+		if n.Note = strings.TrimSpace(n.Note); n.Note == "" {
+			return errors.New("missing note text")
+		}
+		if !dateRE.MatchString(n.Date) {
+			return errors.New("invalid note date")
+		}
+		if n.Privilege != 0 {
+			found := false
+			for _, p := range model.AllPrivileges {
+				if p == n.Privilege {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return errors.New("invalid note privilege")
+			}
+		}
 	}
 	return nil
 }

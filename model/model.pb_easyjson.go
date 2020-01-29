@@ -809,6 +809,10 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *P
 			out.Note = string(in.String())
 		case "visibility":
 			out.Visibility = GroupID(in.Int())
+		case "date":
+			out.Date = string(in.String())
+		case "privilege":
+			(out.Privilege).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -837,6 +841,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in 
 		const prefix string = ",\"visibility\":"
 		out.RawString(prefix)
 		out.Int(int(in.Visibility))
+	}
+	if in.Date != "" {
+		const prefix string = ",\"date\":"
+		out.RawString(prefix)
+		out.String(string(in.Date))
+	}
+	if in.Privilege != 0 {
+		const prefix string = ",\"privilege\":"
+		out.RawString(prefix)
+		(in.Privilege).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
