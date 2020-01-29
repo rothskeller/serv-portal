@@ -149,39 +149,12 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 									continue
 								}
 								switch key {
-								case "timestamp":
-									if data := in.Raw(); in.Ok() {
-										in.AddError(pn.Timestamp.UnmarshalJSON(data))
-									}
 								case "note":
 									pn.Note = in.String()
 								case "date":
 									pn.Date = in.String()
 								case "privilege":
 									pn.Privilege.UnmarshalEasyJSON(in)
-								case "visibility":
-									if in.IsDelim('{') {
-										in.Delim('{')
-										for !in.IsDelim('}') {
-											key := in.UnsafeString()
-											in.WantColon()
-											if in.IsNull() {
-												in.Skip()
-												in.WantComma()
-												continue
-											}
-											switch key {
-											case "id":
-												pn.Visibility = model.GroupID(in.Int())
-											default:
-												in.SkipRecursive()
-											}
-											in.WantComma()
-										}
-										in.Delim('}')
-									} else {
-										pn.Visibility = model.GroupID(in.Int())
-									}
 								default:
 									in.SkipRecursive()
 								}

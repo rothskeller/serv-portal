@@ -321,19 +321,13 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.RawString(`{"timestamp":`)
-			out.Raw(n.Timestamp.MarshalJSON())
-			out.RawString(`,"note":`)
+			out.RawString(`{"note":`)
 			out.String(n.Note)
 			out.RawString(`,"date":`)
 			out.String(n.Date)
 			out.RawString(`,"privilege":`)
 			out.String(model.PrivilegeNames[n.Privilege])
-			out.RawString(`,"visibility":{"id":`)
-			out.Int(int(n.Visibility))
-			out.RawString(`,"name":`)
-			out.String(groupName(tx, n.Visibility))
-			out.RawString(`}}`)
+			out.RawByte('}')
 		}
 		out.RawByte(']')
 	}

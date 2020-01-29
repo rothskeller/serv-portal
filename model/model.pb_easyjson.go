@@ -801,14 +801,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *P
 			continue
 		}
 		switch key {
-		case "timestamp":
-			if data := in.Raw(); in.Ok() {
-				in.AddError((out.Timestamp).UnmarshalJSON(data))
-			}
 		case "note":
 			out.Note = string(in.String())
-		case "visibility":
-			out.Visibility = GroupID(in.Int())
 		case "date":
 			out.Date = string(in.String())
 		case "privilege":
@@ -827,29 +821,30 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in 
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
-		const prefix string = ",\"timestamp\":"
-		out.RawString(prefix[1:])
-		out.Raw((in.Timestamp).MarshalJSON())
-	}
 	if in.Note != "" {
 		const prefix string = ",\"note\":"
-		out.RawString(prefix)
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Note))
-	}
-	if in.Visibility != 0 {
-		const prefix string = ",\"visibility\":"
-		out.RawString(prefix)
-		out.Int(int(in.Visibility))
 	}
 	if in.Date != "" {
 		const prefix string = ",\"date\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Date))
 	}
 	if in.Privilege != 0 {
 		const prefix string = ",\"privilege\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		(in.Privilege).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')

@@ -71,11 +71,9 @@ message Person {
 }
 
 message PersonNote {
-  google.protobuf.Timestamp timestamp  = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  string                    note       = 2;
-  int64                     visibility = 3 [(gogoproto.casttype) = "GroupID"];
-  string                    date       = 4;
-  int64                     privilege  = 5 [(gogoproto.casttype) = "Privilege"];
+  string note      = 2;
+  string date      = 4;
+  int64  privilege = 5 [(gogoproto.casttype) = "Privilege"];
 }
 
 message PrivilegeMap {
