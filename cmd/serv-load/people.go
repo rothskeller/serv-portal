@@ -215,6 +215,8 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 								}
 								in.WantComma()
 							}
+							in.Delim('}')
+							p.Notes = append(p.Notes, &pn)
 						}
 						in.WantComma()
 					}
