@@ -15,7 +15,7 @@ import (
 func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
 	var data []byte
 	p = new(model.Person)
-	switch err := dbh.QueryRow(`SELECT data FROM person WHERE id=?`, id).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE id=?`, id).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
 		return p
@@ -31,7 +31,7 @@ func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
 func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
 	var data []byte
 	p = new(model.Person)
-	switch err := dbh.QueryRow(`SELECT data FROM person WHERE username=?`, username).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE username=?`, username).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
 		return p
@@ -47,7 +47,7 @@ func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
 func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
 	var data []byte
 	p = new(model.Person)
-	switch err := dbh.QueryRow(`SELECT data FROM person WHERE pwreset_token=?`, token).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE pwreset_token=?`, token).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
 		return p
@@ -63,7 +63,7 @@ func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
 func (tx *Tx) FetchPersonByCellPhone(token string) (p *model.Person) {
 	var data []byte
 	p = new(model.Person)
-	switch err := dbh.QueryRow(`SELECT data FROM person WHERE cell_phone=?`, token).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE cell_phone=?`, token).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
 		return p
@@ -80,7 +80,7 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 		rows *sql.Rows
 		err  error
 	)
-	rows, err = dbh.Query(`SELECT data FROM person`)
+	rows, err = tx.tx.Query(`SELECT data FROM person`)
 	panicOnError(err)
 	for rows.Next() {
 		var data []byte

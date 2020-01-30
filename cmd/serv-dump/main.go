@@ -16,6 +16,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, `usage: serv-dump object-type
     where object-type is one of:
         audit
+	email_message
 	event
 	group
 	person
@@ -47,7 +48,9 @@ func main() {
 	switch {
 	case strings.HasPrefix("audit", os.Args[1]):
 		dumpAudit(tx)
-	case strings.HasPrefix("events", os.Args[1]):
+	case (strings.HasPrefix("email_messages", os.Args[1]) && len(os.Args[1]) > 1) || os.Args[1] == "emails":
+		dumpEmailMessages(tx)
+	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
 		dumpEvents(tx)
 	case strings.HasPrefix("groups", os.Args[1]):
 		dumpGroups(tx)
@@ -57,7 +60,7 @@ func main() {
 		dumpRoles(tx)
 	case strings.HasPrefix("sessions", os.Args[1]):
 		dumpSessions(tx)
-	case strings.HasPrefix("text_messages", os.Args[1]):
+	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
 		dumpTextMessages(tx)
 	case strings.HasPrefix("venues", os.Args[1]):
 		dumpVenues(tx)
@@ -96,6 +99,10 @@ func dumpAudit(tx *db.Tx) {
 				dumpRole(tx, &out, r)
 			}
 			out.RawByte(']')
+		case "email_message":
+			out.RawString(`,"emailMessage":`)
+			var email = data.(model.EmailMessage)
+			dumpEmailMessage(tx, &out, &email)
 		case "event":
 			out.RawString(`,"event":`)
 			var event = data.(model.Event)
@@ -127,6 +134,46 @@ func dumpAudit(tx *db.Tx) {
 		out.DumpTo(os.Stdout)
 		os.Stdout.Write([]byte{'\n'})
 	})
+}
+
+func dumpEmailMessages(tx *db.Tx) {
+	tx.FetchEmailMessages(func(em *model.EmailMessage) bool {
+		var out jwriter.Writer
+		out.NoEscapeHTML = true
+		dumpEmailMessage(tx, &out, em)
+		out.DumpTo(os.Stdout)
+		os.Stdout.Write([]byte{'\n'})
+		return true
+	})
+}
+
+func dumpEmailMessage(tx *db.Tx, out *jwriter.Writer, em *model.EmailMessage) {
+	out.RawString(`{"id":`)
+	out.Int(int(em.ID))
+	out.RawString(`,"messageID":`)
+	out.String(em.MessageID)
+	out.RawString(`,"timestamp":`)
+	out.Raw(em.Timestamp.MarshalJSON())
+	out.RawString(`,"type":`)
+	out.String(model.EmailMessageTypeNames[em.Type])
+	out.RawString(`,"attention":`)
+	out.Bool(em.Attention)
+	out.RawString(`,"groups":[`)
+	for i, g := range em.Groups {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(g))
+		out.RawString(`,"name":`)
+		out.String(groupName(tx, g))
+		out.RawByte('}')
+	}
+	out.RawString(`],"from":`)
+	out.String(em.From)
+	out.RawString(`,"subject":`)
+	out.String(em.Subject)
+	out.RawByte('}')
 }
 
 func dumpEvents(tx *db.Tx) {

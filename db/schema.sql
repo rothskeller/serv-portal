@@ -17,6 +17,22 @@ CREATE INDEX audit_timestamp_index ON audit (timestamp);
 -- all of the groups, roles, and privileges for the SERV portal.
 CREATE TABLE authz (data BLOB);
 
+-- The email_message table tracks all email messages handled by the portal.
+CREATE TABLE email_message (
+    id         integer PRIMARY KEY,
+    message_id text    NOT NULL UNIQUE,
+    timestamp  text    NOT NULL,
+    data       blob    NOT NULL
+);
+CREATE INDEX email_message_timestamp_index ON email_message (timestamp DESC);
+
+-- The email_message_body table contains the actual body of each email message,
+-- including headers, in transfer-encoded form exactly as received.
+CREATE TABLE email_message_body (
+    id   integer PRIMARY KEY REFERENCES email_message ON DELETE CASCADE,
+    body blob    NOT NULL
+);
+
 -- The person table tracks all people associated (or formerly associated) with
 -- SERV.  There is one row in this table for each such person.  Since each such
 -- person has a (potentially disabled) login to the SERV portal, this table also

@@ -12,7 +12,7 @@ import (
 func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 	var data []byte
 	e = new(model.Event)
-	switch err := dbh.QueryRow(`SELECT data FROM event WHERE id=?`, id).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM event WHERE id=?`, id).Scan(&data); err {
 	case nil:
 		panicOnError(e.Unmarshal(data))
 		return e
@@ -28,7 +28,7 @@ func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 func (tx *Tx) FetchEventBySccAresID(id string) (e *model.Event) {
 	var data []byte
 	e = new(model.Event)
-	switch err := dbh.QueryRow(`SELECT data FROM event WHERE scc_ares_id=?`, id).Scan(&data); err {
+	switch err := tx.tx.QueryRow(`SELECT data FROM event WHERE scc_ares_id=?`, id).Scan(&data); err {
 	case nil:
 		panicOnError(e.Unmarshal(data))
 		return e
@@ -47,7 +47,7 @@ func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
 		rows *sql.Rows
 		err  error
 	)
-	rows, err = dbh.Query(`SELECT data FROM event WHERE date>=? AND date<=?`, from, to)
+	rows, err = tx.tx.Query(`SELECT data FROM event WHERE date>=? AND date<=?`, from, to)
 	panicOnError(err)
 	for rows.Next() {
 		var data []byte

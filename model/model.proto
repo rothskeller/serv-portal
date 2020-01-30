@@ -25,6 +25,17 @@ message AuthzData {
   repeated Role  roles  = 2;
 }
 
+message EmailMessage {
+  int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
+  string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
+  google.protobuf.Timestamp timestamp  = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  int32                     type       = 4 [(gogoproto.casttype) = "EmailMessageType"];
+  bool                      attention  = 5;
+  repeated int64            groups     = 6 [(gogoproto.casttype) = "GroupID"];
+  string                    from       = 7;
+  string                    subject    = 8;
+}
+
 message Event {
   int64          id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
   string         name      = 2;
@@ -43,6 +54,7 @@ message Group {
   string tag                 = 2 [(gogoproto.casttype) = "GroupTag"];
   string name                = 3;
   bool   allow_text_messages = 4 [(gogoproto.jsontag) = "allowTextMessages"];
+  string email               = 5;
 }
 
 message Person {

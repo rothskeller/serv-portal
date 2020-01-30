@@ -65,8 +65,9 @@ func main() {
 	switch {
 	// case strings.HasPrefix("audit", os.Args[1]):
 	// 	dumpAudit(tx)
-	// case strings.HasPrefix("events", os.Args[1]):
-	// 	dumpEvents(tx)
+	// case (strings.HasPrefix("email_messages", os.Args[1]) && len(os.Args[1]) > 1) || os.Args[1] == "emails":
+	// 	dumpEmailMessages(tx)
+	// case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
 	case strings.HasPrefix("groups", os.Args[1]):
 		loadGroups(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
@@ -75,7 +76,7 @@ func main() {
 		loadRoles(tx, in)
 	// case strings.HasPrefix("sessions", os.Args[1]):
 	// 	dumpSessions(tx)
-	// case strings.HasPrefix("text_messages", os.Args[1]):
+	// case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
 	// 	dumpTextMessages(tx)
 	// case strings.HasPrefix("venues", os.Args[1]):
 	// 	dumpVenues(tx)
