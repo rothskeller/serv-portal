@@ -4,7 +4,7 @@ it.
 -->
 
 <template lang="pug">
-#page-top(:class="$store.state.touch ? 'touch' : 'mouse'")
+#page-top(:class="[$store.state.touch ? 'touch' : 'mouse', menuOpen ? 'page-menu-open' : null]")
   #page-heading
     #page-menu-trigger-box(@click="onMenuTrigger")
       svg#page-menu-trigger.bi.bi-list(viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
@@ -12,22 +12,21 @@ it.
     #page-titlebox
       #page-title(v-text="$store.state.page.title")
     #page-menu-spacer
-  #page-main(:class="menuOpen ? 'page-menu-open' : null")
-    #page-menu
-      #page-menu-welcome
-        | Welcome
-        br
-        b(v-text="$store.state.me.informalName")
-      b-nav#page-nav(pills vertical)
-        b-nav-item(to="/events" :active="menuItem === 'events'") Events
-        b-nav-item(to="/people" :active="menuItem === 'people'") People
-        b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
-        b-nav-item(v-if="$store.state.me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
-        //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
-        b-nav-item(to="/logout") Logout
-    #page-content(:class="tabbed ? 'page-no-padding': null")
-      #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
-      router-view
+  #page-menu
+    #page-menu-welcome
+      | Welcome
+      br
+      b(v-text="$store.state.me.informalName")
+    b-nav#page-nav(pills vertical)
+      b-nav-item(to="/events" :active="menuItem === 'events'") Events
+      b-nav-item(to="/people" :active="menuItem === 'people'") People
+      b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
+      b-nav-item(v-if="$store.state.me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
+      //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
+      b-nav-item(to="/logout") Logout
+  #page-content(:class="tabbed ? 'page-no-padding': null")
+    #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
+    router-view
 </template>
 
 <script>
@@ -48,21 +47,21 @@ export default {
 
 <style lang="stylus">
 titlebarHeight = 40px
+sidebarWidth = 7em
 #page-top
-  display flex
-  flex-direction column
+  display grid
   height 100vh
+  grid 'header header' titlebarHeight 'menu content' 1fr / sidebarWidth 1fr
   @media print
+    display block
     height auto
 #page-heading
-  z-index 1
   display flex
-  flex none
   justify-content space-between
   align-items center
-  height titlebarHeight
   background-color #006600
   color #fff
+  grid-area header
   @media print
     display none
 #page-menu-trigger-box, #page-menu-spacer
@@ -76,9 +75,8 @@ titlebarHeight = 40px
     display none
 #page-titlebox
   display flex
-  flex none
+  flex auto
   flex-direction column
-  width calc(100vw - 5.5rem)
   text-align center
 #page-title
   overflow hidden
@@ -86,27 +84,15 @@ titlebarHeight = 40px
   text-overflow ellipsis
   white-space nowrap
   font-size 1.5rem
-#page-main
-  position relative
-  display flex
-  flex none
-  overflow-y auto
-  width 100vw
-  height 'calc(100vh - %s)' % titlebarHeight
-  @media print
-    height auto
 #page-menu
   display none
-  flex none
   overflow visible
-  width 7rem
   border-right 1px solid #888
   background-color #ccc
+  grid-area menu
   .page-menu-open &
-    position absolute
     z-index 1
     display block
-    height 'calc(100vh - %s)' % titlebarHeight
   @media (min-width: 576px)
     display block
   @media print
@@ -127,9 +113,11 @@ titlebarHeight = 40px
     &.active
       color white
 #page-content
-  flex auto
   overflow auto
   padding 1.5rem 0.75rem
+  grid-area 2 / 1 / 3 / 3
+  @media (min-width: 576px)
+    grid-area content
   &.page-no-padding
     padding 0
 #page-subtitle

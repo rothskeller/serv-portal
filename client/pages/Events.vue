@@ -47,7 +47,6 @@ export default {
 
 <style lang="stylus">
 #events-card
-  height calc(100vh - 40px)
   border none
   .card-header
     @media print
