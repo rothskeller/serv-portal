@@ -16,13 +16,13 @@ it.
     #page-menu-welcome
       | Welcome
       br
-      b(v-text="$store.state.me.informalName")
+      b(v-text="me.informalName")
     b-nav#page-nav(pills vertical)
       b-nav-item(to="/events" :active="menuItem === 'events'") Events
       b-nav-item(to="/people" :active="menuItem === 'people'") People
       b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
-      b-nav-item(v-if="$store.state.me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
-      //-b-nav-item(:to="`/people/${$store.state.me.id}`") Profile
+      b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
+      b-nav-item(v-if="me.id" :to="`/people/${me.id}`") Profile
       b-nav-item(to="/logout") Logout
   #page-content(:class="tabbed ? 'page-no-padding': null")
     #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
@@ -33,6 +33,7 @@ it.
 export default {
   data: () => ({ menuOpen: false }),
   computed: {
+    me() { return this.$store.state.me || {} },
     menuItem() {
       const record = this.$route.matched.find(rec => rec.meta.menuItem)
       return record ? record.meta.menuItem : null
@@ -118,6 +119,8 @@ sidebarWidth = 7em
   grid-area 2 / 1 / 3 / 3
   @media (min-width: 576px)
     grid-area content
+    &.page-no-menu
+      grid-area 2 / 1 / 3 / 3
   &.page-no-padding
     padding 0
 #page-subtitle

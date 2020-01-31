@@ -10,9 +10,8 @@ public (nonauthenticated) pages.
     #page-titlebox
       #page-title(v-text="title")
     #page-menu-spacer
-  #page-main
-    #page-content
-      slot
+  #page-content.page-no-menu
+    slot
 </template>
 
 <script>
