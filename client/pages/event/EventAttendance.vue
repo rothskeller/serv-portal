@@ -16,7 +16,7 @@ form#event-attendance(v-else @submit.prevent="onSave")
     b-form-input#event-attend-hours(v-model="setHours" type="number" min="0" max="24" step="0.5")
   #event-attend-group
     EventAttendancePerson(v-for="p in people" :key="p.id" :person="p" @toggle="onTogglePerson")
-  div.mt-3
+  #event-attend-submit
     b-btn(type="submit" variant="primary") Save Attendance
     b-btn.ml-2(@click="onCancel") Cancel
 </template>
@@ -67,9 +67,15 @@ export default {
 
 <style lang="stylus">
 #event-attendance
-  margin 1.5rem 0.75rem
+  padding 1.5rem 0.75rem
+  @media (min-width: 576px)
+    display grid
+    height 100%
+    grid max-content 1fr max-content / 100%
 #event-attend-settings
   margin-bottom 0.75rem
+  @media print
+    display none
 #event-attend-hours
   max-width 5rem
 @media (min-width: 576px)
@@ -78,12 +84,11 @@ export default {
     flex-direction column
     flex-wrap wrap
     align-content flex-start
-    height calc(100vh - 12.5rem - 46px)
-    // 40px title bar
-    // 3.25rem + 2px tab bar
-    // 3rem tab margin
-    // 3rem + 2px settings form and margin
-    // 3.25rem + 2px button and margin
+    min-height 0
     .custom-checkbox
       margin-right 1.5rem
+#event-attend-submit
+  margin-top 0.75rem
+  @media print
+    display none
 </style>

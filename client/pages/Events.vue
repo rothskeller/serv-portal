@@ -12,7 +12,8 @@ b-card#events-card(no-body)
       b-nav-item(v-if="canView" :to="`/events/${$route.params.id}`" exact exact-active-class="active") Details
       b-nav-item(v-if="canEdit" :to="`/events/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
       b-nav-item(v-if="canAttendance" :to="`/events/${$route.params.id}/attendance`" exact exact-active-class="active") Attendance
-  router-view(:onLoadEvent="onLoadEvent")
+  #events-scroll
+    router-view(:onLoadEvent="onLoadEvent")
 </template>
 
 <script>
@@ -47,8 +48,12 @@ export default {
 
 <style lang="stylus">
 #events-card
+  height 100%
   border none
   .card-header
     @media print
       display none
+#events-scroll
+  overflow-x hidden
+  overflow-y auto
 </style>
