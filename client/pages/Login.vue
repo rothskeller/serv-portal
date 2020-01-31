@@ -10,6 +10,9 @@ PublicPage(title="SERV Portal")
       | This web site is for SERV volunteers only.
       | If you are interested in joining one of the SERV volunteer organizations,
       | please visit Sunnyvale’s <a href="https://sunnyvale.ca.gov/government/safety/emergency.htm">emergency response&nbsp;page</a>.
+    #login-browserwarn
+      | Your browser is out of date and lacks features needed by this web site.
+      | The site may not look or behave correctly.
     form#login-form(@submit.prevent="onSubmit")
       b-form-group(label="Email address" label-for="login-email" label-cols-sm="4")
         b-input#login-email(autocorrect="off" autocapitalize="none" autofocus required trim v-model="email")
@@ -64,6 +67,14 @@ export default {
   margin-top 0.5rem
   font-size 0.9rem
   line-height 1.2
+#login-browserwarn
+  margin-top 0.5rem
+  padding 2px 4px
+  background-color red
+  color white
+  line-height 1.2
+  @supports (display: grid)
+    display none
 #login-form
   margin-top 1.5rem
 #login-submit-row
