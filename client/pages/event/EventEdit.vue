@@ -200,7 +200,7 @@ export default {
 
 <style lang="stylus">
 #event-edit
-  margin 1.5rem 0.75rem
+  padding 1.5rem 0.75rem
 .event-edit-label
   width 7rem
 #event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details

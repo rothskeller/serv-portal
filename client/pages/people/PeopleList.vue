@@ -14,7 +14,7 @@ PeopleList displays the list of people.
     .people-roles.people-heading Roles
     template(v-for="p in people")
       .people-person
-        td: router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
+        router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
       .people-contact
         div(v-if="p.email")
           a(:href="`mailto:${p.email}`" v-text="p.email")
@@ -70,11 +70,18 @@ export default {
 
 <style lang="stylus">
 #people-list
-  margin 1.5rem 0.75rem 0.75rem
+  padding 1.5rem 0.75rem 0.75rem
 #people-table
   display flex
-  flex-wrap wrap
-  margin-top 0.755rem
+  flex-direction column
+  margin-top 0.75rem
+  @media (min-width: 576px)
+    display grid
+    grid auto / 10rem 1fr
+  @media (min-width: 800px)
+    grid auto / 10rem 1fr 1fr
+  @media (min-width: 960px)
+    grid auto / 10rem 21rem 1fr
 .people-heading
   display none
   @media (min-width: 576px)
@@ -83,28 +90,20 @@ export default {
 .people-person
   overflow hidden
   margin-top 0.25rem
-  width calc(100vw - 1.5rem)
   text-overflow ellipsis
   white-space nowrap
   @media (min-width: 576px)
     margin-top 0.75rem
-    width 10rem
     white-space normal
 .people-contact
-  padding-left 8rem
-  width calc(100vw - 1.5rem)
+  margin-left 6rem
   div
     overflow hidden
     text-overflow ellipsis
     white-space nowrap
   @media (min-width: 576px)
     margin-top 0.75rem
-    padding-left 0.25rem
-    width calc(100vw - 18.5rem)
-  @media (min-width: 800px)
-    width calc(50vw - 9.25rem)
-  @media (min-width: 960px)
-    width 20.75rem
+    margin-left 0.25rem
 .people-phone
   font-variant tabular-nums
 .people-roles
@@ -112,14 +111,9 @@ export default {
   @media (min-width: 800px)
     display block
     margin-top 0.75rem
-    padding-left 0.25rem
-    width calc(50vw - 9.25rem)
+    margin-left 0.25rem
     div
       overflow hidden
       text-overflow ellipsis
       white-space nowrap
-  @media (min-width: 960px)
-    width calc(100vw - 39.25rem)
-.people-bad-email
-  text-decoration line-through
 </style>

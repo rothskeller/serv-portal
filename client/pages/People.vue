@@ -7,11 +7,12 @@ b-card#people-card(no-body)
   b-card-header(header-tag="nav")
     b-nav(card-header tabs)
       b-nav-item(to="/people/list" exact exact-active-class="active") List
-      b-nav-item(to="/people/map" exact exact-active-class="class") Map
+      b-nav-item(to="/people/map" exact exact-active-class="active") Map
       b-nav-item(v-if="canAdd" to="/people/NEW") Add Person
       b-nav-item(v-if="canView" :to="`/people/${$route.params.id}`" exact exact-active-class="active") Details
       b-nav-item(v-if="canEdit" :to="`/people/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
-  router-view(:onLoadPerson="onLoadPerson")
+  #people-scroll
+    router-view(:onLoadPerson="onLoadPerson")
 </template>
 
 <script>
@@ -45,9 +46,13 @@ export default {
 
 <style lang="stylus">
 #people-card
-  height calc(100vh - 40px)
+  height 100%
   border none
   .card-header
     @media print
       display none
+#people-scroll
+  flex auto
+  overflow-x hidden
+  overflow-y auto
 </style>

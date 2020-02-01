@@ -54,6 +54,7 @@ export default {
     @media print
       display none
 #events-scroll
+  flex auto
   overflow-x hidden
   overflow-y auto
 </style>

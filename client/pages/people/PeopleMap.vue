@@ -75,7 +75,10 @@ export default {
 
 <style lang="stylus">
 #people-map
-  margin 0.75rem 0 0 0
+  display grid
+  padding 0.75rem 0 0 0
+  height 100%
+  grid max-content 1fr / 100%
 #people-map-title
   display flex
   flex-direction row
@@ -89,10 +92,4 @@ export default {
   font-size 1rem
   @media (min-width: 576px)
     margin-left 1rem
-#people-map-map
-  height calc(100vh - 6.25rem - 42px)
-  // 40px title bar
-  // 3.25rem + 2px tab bar
-  // 0.75rem tab margin
-  // 2.25rem settings form and margin
 </style>

@@ -56,7 +56,7 @@ export default {
 
 <style lang="stylus">
 #event-view
-  margin 1.5rem 0.75rem
+  padding 1.5rem 0.75rem
 #event-view-name
   font-weight bold
   font-size 1.25rem
