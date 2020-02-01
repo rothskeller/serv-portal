@@ -16,6 +16,7 @@
     "smartystreets-javascript-sdk": "^1.4.2",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
+    "vue-select": "^3.4.0",
     "vue2-google-maps": "^0.10.7",
     "vuex": "^3.0.1",
     "zxcvbn": "^4.4.2"

@@ -19,14 +19,20 @@ form#event-attendance(v-else @submit.prevent="onSave")
   #event-attend-submit
     b-btn(type="submit" variant="primary") Save Attendance
     b-btn.ml-2(@click="onCancel") Cancel
+    b-btn.ml-5(v-b-modal.event-attend-add-guest) Add Guest
+  b-modal#event-attend-add-guest(title="Add Guest" @shown="onAddGuestShown" @ok="onAddGuestOK")
+    form(@select.prevent="onAddGuest")
+      v-select(ref="guest" v-model="guest" :options="guestOptions" :filterable="false" :selectOnTab="true" label="sortName" placeholder="Guest Name" @search="onGuestSearch")
 </template>
 
 <script>
 import moment from 'moment-mini'
+import VSelect from 'vue-select'
 import EventAttendancePerson from './EventAttendancePerson'
+import 'vue-select/dist/vue-select.css'
 
 export default {
-  components: { EventAttendancePerson },
+  components: { EventAttendancePerson, VSelect },
   props: {
     onLoadEvent: Function,
   },
@@ -35,6 +41,8 @@ export default {
     people: null,
     setType: 'Volunteer',
     setHours: 1.0,
+    guest: null,
+    guestOptions: [],
   }),
   async created() {
     const data = (await this.$axios.get(`/api/events/${this.$route.params.id}?attendance=1`)).data
@@ -44,6 +52,24 @@ export default {
     this.onLoadEvent(this.event)
   },
   methods: {
+    onAddGuest() {
+      if (!this.guest) return
+      if (this.people.find(p => p.id === this.guest.id)) return
+      this.people.push({ id: this.guest.id, sortName: this.guest.sortName, attended: { type: this.setType, minutes: 60 * this.setHours } })
+      this.people.sort((a, b) => a.sortName < b.sortName ? -1 : a.sortName > b.sortName ? +1 : 0)
+    },
+    onAddGuestOK(evt) {
+      if (this.guest)
+        this.onAddGuest()
+      else
+        evt.preventDefault()
+    },
+    onAddGuestShown() {
+      this.guest = null
+      this.onGuestSearch('', () => { })
+      const inputs = this.$refs.guest.$el.getElementsByTagName('input')
+      if (inputs.length > 0) inputs[0].focus()
+    },
     onCancel() { this.$router.go(-1) },
     async onSave() {
       const body = new FormData
@@ -56,6 +82,12 @@ export default {
       })
       await this.$axios.post(`/api/events/${this.$route.params.id}/attendance`, body)
       this.$router.push(`/events/${this.$route.params.id}`)
+    },
+    async onGuestSearch(search, loading) {
+      search = search.trim()
+      loading(true)
+      this.guestOptions = (await this.$axios.get('/api/people', { params: { search } })).data
+      loading(false)
     },
     onTogglePerson(person) {
       if (person.attended && person.attended.type === this.setType) person.attended = false

@@ -1,6 +1,8 @@
 package person
 
 import (
+	"strings"
+
 	"github.com/mailru/easyjson/jwriter"
 
 	"sunnyvaleserv.org/portal/auth"
@@ -15,6 +17,9 @@ func GetPeople(r *util.Request) error {
 		out   jwriter.Writer
 	)
 	focus = r.Tx.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
+	if _, ok := r.Form["search"]; ok {
+		return getPeopleSearch(r)
+	}
 	out.RawString(`{"people":[`)
 	first := true
 	for _, p := range r.Tx.FetchPeople() {
@@ -88,6 +93,43 @@ func GetPeople(r *util.Request) error {
 	out.RawString(`],"canAdd":`)
 	out.Bool(auth.CanCreatePeople(r))
 	out.RawByte('}')
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+// getPeopleSearch handles GET /api/people?search=XXX requests.
+func getPeopleSearch(r *util.Request) error {
+	var (
+		out    jwriter.Writer
+		count  int
+		search = strings.ToLower(strings.TrimSpace(r.FormValue("search")))
+	)
+	out.RawByte('[')
+	for _, p := range r.Tx.FetchPeople() {
+		if !auth.CanViewPerson(r, p) {
+			continue
+		}
+		if !strings.Contains(strings.ToLower(p.SortName), search) &&
+			!strings.Contains(strings.ToLower(p.FormalName), search) &&
+			!strings.Contains(strings.ToLower(p.CallSign), search) {
+			continue
+		}
+		if count != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(p.ID))
+		out.RawString(`,"sortName":`)
+		out.String(p.SortName)
+		out.RawByte('}')
+		count++
+		if count > 10 {
+			break
+		}
+	}
+	out.RawByte(']')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
