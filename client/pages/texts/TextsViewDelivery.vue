@@ -60,12 +60,9 @@ export default {
 .texts-view-delivery
   margin-top 0.5rem
   padding 0.25rem
-  max-width 400px
+  width 296px
   border 2px solid #ccc
   border-radius 8px
-  @media (min-width: 752px)
-    margin-right 0.5rem
-    min-width 300px
 .texts-view-delivery-meta
   display flex
   justify-content space-between

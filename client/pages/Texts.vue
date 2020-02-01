@@ -9,7 +9,8 @@ b-card#texts-card(no-body)
       b-nav-item(to="/texts" exact exact-active-class="active") Sent Messages
       b-nav-item(to="/texts/send" exact exact-active-class="active") New Message
       b-nav-item(v-if="$route.params.id" :to="`/texts/${$route.params.id}`" exact exact-active-class="active") Delivery Status
-  router-view
+  #texts-scroll
+    router-view
 </template>
 
 <script>
@@ -20,9 +21,13 @@ export default {
 
 <style lang="stylus">
 #texts-card
-  height calc(100vh - 40px)
+  height 100%
   border none
   .card-header
     @media print
       display none
+#texts-scroll
+  flex auto
+  overflow-x hidden
+  overflow-y auto
 </style>

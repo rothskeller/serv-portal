@@ -7,7 +7,7 @@ div.mt-3.ml-2(v-if="!groups")
   b-spinner(small)
 b-form#texts-send(v-else @submit.prevent="onSubmit")
   b-form-group(label="Message" label-for="texts-send-message" label-cols-sm="auto" label-class="texts-send-label" :state="messageError ? false: null" :invalidFeedback="messageError")
-    b-textarea#texts-send-message(v-model="message" autofocus)
+    b-textarea#texts-send-message(v-model="message" rows="5" autofocus)
     b-form-text(v-if="countMessage") {{countMessage}}
   b-form-group(label="Recipients" label-for="texts-send-groups" label-cols-sm="auto" label-class="texts-send-label pt-0" :state="groupsError ? false : null" :invalidFeedback="groupsError")
     b-form-checkbox-group#texts-send-groups(v-model="recipients" :options="groups" stacked text-field="name" value-field="id")
@@ -93,7 +93,7 @@ export default {
 
 <style lang="stylus">
 #texts-send
-  margin 1.5rem 0.75rem
+  padding 1.5rem 0.75rem
 .texts-send-label
   width 7rem
 #texts-send-message
