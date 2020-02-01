@@ -22,7 +22,7 @@ div.mt-3.ml-2(v-if="!message")
     .texts-view-status-time.texts-view-heading Status
     .texts-view-responses.texts-view-heading Reply
     template(v-for="d in message.deliveries")
-      .texts-view-name-num
+      .texts-view-name-num(@click="onClick(d)")
         .texts-view-recipient(v-text="d.recipient")
         .texts-view-number(v-text="formatNumber(d)")
       .texts-view-status-time
@@ -41,6 +41,11 @@ export default {
     this.load()
   },
   methods: {
+    onClick(d) {
+      if (!navigator.userAgent.match(/Android/i) && !navigator.userAgent.match(/iPhone/i)) return
+      if (!d.number) return
+      window.open(`sms:${d.number.substr(2)}`, '_blank')
+    },
     formatNumber(d) {
       if (!d.number) return ''
       return `${d.number.substr(2, 3)}-${d.number.substr(5, 3)}-${d.number.substr(8, 4)}`
