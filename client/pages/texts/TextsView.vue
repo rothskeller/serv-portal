@@ -44,7 +44,7 @@ export default {
     onClick(d) {
       if (!navigator.userAgent.match(/Android/i) && !navigator.userAgent.match(/iPhone/i)) return
       if (!d.number) return
-      window.open(`sms:${d.number.substr(2)}`, '_blank')
+      window.location = `sms:${d.number.substr(2)}`
     },
     formatNumber(d) {
       if (!d.number) return ''
