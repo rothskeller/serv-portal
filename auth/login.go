@@ -27,13 +27,13 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"informalName":`)
 	out.String(r.Person.InformalName)
 	out.RawString(`,"webmaster":`)
-	out.Bool(IsWebmaster(r))
+	out.Bool(r.Auth.IsWebmaster())
 	out.RawString(`,"canAddEvents":`)
-	out.Bool(CanCreateEvents(r))
+	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"canAddPeople":`)
-	out.Bool(CanCreatePeople(r))
+	out.Bool(r.Auth.CanA(model.PrivManageMembers))
 	out.RawString(`,"canSendTextMessages":`)
-	out.Bool(CanSendTextMessages(r))
+	out.Bool(r.Auth.CanA(model.PrivSendTextMessages))
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)
@@ -51,17 +51,20 @@ func PostLogin(r *util.Request) error {
 	if person = r.Tx.FetchPersonByUsername(username); person == nil {
 		goto FAIL // no person with that username
 	}
-	if !IsEnabled(r, person) {
-		goto FAIL // person is disabled
-	}
-	if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
-		goto FAIL // locked out
+	if username != "admin" { // admin cannot be disabled or locked out
+		if !IsEnabled(r, person) {
+			goto FAIL // person is disabled
+		}
+		if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
+			goto FAIL // locked out
+		}
 	}
 	if !checkPassword(person, password) {
 		goto FAIL // password mismatch
 	}
 	// The login is valid.  Record it and create a session.
 	r.Person = person
+	r.Auth.SetMe(person)
 	if person.BadLoginCount > 0 {
 		person.BadLoginCount = 0
 		r.Tx.SavePerson(person)

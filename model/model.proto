@@ -20,11 +20,6 @@ message Address {
   uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
 }
 
-message AuthzData {
-  repeated Group groups = 1;
-  repeated Role  roles  = 2;
-}
-
 message EmailMessage {
   int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
   string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
@@ -77,8 +72,6 @@ message Person {
   google.protobuf.Timestamp bad_login_time  =  9 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "badLoginTime"];
   string                    pwreset_token   = 10 [(gogoproto.customname) = "PWResetToken", (gogoproto.jsontag) = "pwresetToken,omitempty"];
   google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
-  repeated int64            roles           = 15 [(gogoproto.casttype) = "RoleID"];
-  PrivilegeMap              privileges      = 16 [(gogoproto.nullable) = false];
   repeated PersonNote       notes           = 27;
 }
 
@@ -88,20 +81,11 @@ message PersonNote {
   int64  privilege = 5 [(gogoproto.casttype) = "Privilege"];
 }
 
-message PrivilegeMap {
-  option (gogoproto.marshaler) = false;
-  option (gogoproto.sizer) = false;
-  option (gogoproto.unmarshaler) = false;
-  option (gogoproto.stringer) = false;
-  option (gogoproto.typedecl) = false;
-}
-
 message Role {
-  int64        id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
-  string       tag        = 2 [(gogoproto.casttype) = "RoleTag"];
-  string       name       = 3;
-  bool         individual = 4;
-  PrivilegeMap privileges = 5 [(gogoproto.nullable) = false];
+  int64          id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
+  string         tag        = 2 [(gogoproto.casttype) = "RoleTag"];
+  string         name       = 3;
+  bool           individual = 4;
 }
 
 message TextMessage {

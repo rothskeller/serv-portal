@@ -9,7 +9,6 @@ import (
 	"github.com/mailru/easyjson/jwriter"
 	"github.com/microcosm-cc/bluemonday"
 
-	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -25,6 +24,7 @@ var htmlSanitizer = bluemonday.NewPolicy().
 func GetEvent(r *util.Request, idstr string) error {
 	var (
 		event          *model.Event
+		canView        bool
 		canEdit        bool
 		canAttendance  bool
 		out            jwriter.Writer
@@ -32,7 +32,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
-		if !auth.CanCreateEvents(r) {
+		if !r.Auth.CanA(model.PrivManageEvents) {
 			return util.Forbidden
 		}
 		event = new(model.Event)
@@ -41,11 +41,23 @@ func GetEvent(r *util.Request, idstr string) error {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		if !auth.CanViewEvent(r, event) {
+		canEdit = true
+		for _, group := range event.Groups {
+			if r.Auth.MemberG(group) {
+				canView = true
+			}
+			if r.Auth.CanAG(model.PrivManageEvents, group) {
+				canAttendance = true
+			} else {
+				canEdit = false
+			}
+		}
+		if !canView {
 			return util.Forbidden
 		}
-		canEdit = auth.CanManageEvent(r, event) && event.SccAresID == ""
-		canAttendance = auth.CanRecordAttendanceAtEvent(r, event)
+		if event.SccAresID != "" {
+			canEdit = false
+		}
 	}
 	out.RawString(`{"event":{"id":`)
 	out.Int(int(event.ID))
@@ -109,7 +121,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(model.EventTypeNames[et])
 		}
 		out.RawString(`],"groups":[`)
-		for i, g := range auth.GroupsCanManageEvents(r) {
+		for i, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivManageEvents)) {
 			if i != 0 {
 				out.RawByte(',')
 			}
@@ -138,12 +150,16 @@ func GetEvent(r *util.Request, idstr string) error {
 			first    = true
 		)
 		out.RawString(`,"people":[`)
-		for _, p := range r.Tx.FetchPeople() {
-			if !auth.CanViewPerson(r, p) {
-				continue
-			}
+		for _, p := range r.Auth.FetchPeople(r.Auth.PeopleA(model.PrivViewMembers)) {
 			ai, att := attended[p.ID]
-			if !att && !auth.CanViewEventP(r, p, event) {
+			canView := att
+			for _, group := range event.Groups {
+				if r.Auth.MemberPG(p.ID, group) {
+					canView = true
+					break
+				}
+			}
+			if !canView {
 				continue
 			}
 			if first {
@@ -184,7 +200,7 @@ func PostEvent(r *util.Request, idstr string) error {
 	var event *model.Event
 
 	if idstr == "NEW" {
-		if !auth.CanCreateEvents(r) {
+		if !r.Auth.CanA(model.PrivManageEvents) {
 			return util.Forbidden
 		}
 		event = new(model.Event)
@@ -192,8 +208,10 @@ func PostEvent(r *util.Request, idstr string) error {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		if !auth.CanManageEvent(r, event) {
-			return util.Forbidden
+		for _, group := range event.Groups {
+			if !r.Auth.CanAG(model.PrivManageEvents, group) {
+				return util.Forbidden
+			}
 		}
 	}
 	if r.FormValue("delete") != "" && event.ID != 0 {
@@ -254,11 +272,11 @@ func PostEvent(r *util.Request, idstr string) error {
 	}
 	event.Groups = event.Groups[:0]
 	for _, idstr := range r.Form["group"] {
-		group := r.Tx.FetchGroup(model.GroupID(util.ParseID(idstr)))
+		group := r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr)))
 		if group == nil {
 			return errors.New("invalid group")
 		}
-		if !auth.CanManageEvents(r, group) {
+		if !r.Auth.CanAG(model.PrivManageEvents, group.ID) {
 			return util.Forbidden
 		}
 		event.Groups = append(event.Groups, group.ID)

@@ -116,6 +116,8 @@ export default {
     flex-direction column
     flex-wrap wrap
     align-content flex-start
+    overflow-x auto
+    overflow-y hidden
     min-height 0
     .custom-checkbox
       margin-right 1.5rem

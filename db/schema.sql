@@ -12,6 +12,11 @@ CREATE TABLE audit (
 );
 CREATE INDEX audit_timestamp_index ON audit (timestamp);
 
+-- The authorizer table is a single-row, single-column table containing a BLOB.
+-- The BLOB is the protocol buffer encoding of authz.Authorizer, which contains
+-- all of the groups, roles, and privileges for the SERV portal.
+CREATE TABLE authorizer (data BLOB);
+
 -- The authz table is a single-row, single-column table containing a BLOB.
 -- The BLOB is the protocol buffer encoding of model.AuthzData, which contains
 -- all of the groups, roles, and privileges for the SERV portal.

@@ -12,7 +12,6 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/config"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
@@ -23,13 +22,13 @@ func GetSMSNew(r *util.Request) error {
 	var (
 		out jwriter.Writer
 	)
-	if !auth.CanSendTextMessages(r) {
+	if !r.Auth.CanA(model.PrivSendTextMessages) {
 		return util.Forbidden
 	}
 	out.RawString(`{"groups":[`)
 	first := true
-	for _, g := range r.Tx.FetchGroups() {
-		if g.AllowTextMessages && auth.CanSendTextMessagesToGroup(r, g) {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
+		if g.AllowTextMessages {
 			if first {
 				first = false
 			} else {
@@ -66,7 +65,7 @@ func PostSMS(r *util.Request) error {
 		params   = url.Values{}
 		groups   = map[*model.Group]bool{}
 	)
-	if !auth.CanSendTextMessages(r) {
+	if !r.Auth.CanA(model.PrivSendTextMessages) {
 		return util.Forbidden
 	}
 	message.Sender = r.Person.ID
@@ -74,7 +73,7 @@ func PostSMS(r *util.Request) error {
 		return errors.New("missing message")
 	}
 	for _, g := range r.Form["group"] {
-		if group := r.Tx.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages && auth.CanSendTextMessagesToGroup(r, group) {
+		if group := r.Auth.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages && r.Auth.CanAG(model.PrivSendTextMessages, group.ID) {
 			groups[group] = true
 			message.Groups = append(message.Groups, group.ID)
 		} else {
@@ -87,7 +86,7 @@ func PostSMS(r *util.Request) error {
 PEOPLE:
 	for _, p := range r.Tx.FetchPeople() {
 		for group := range groups {
-			if auth.IsMember(p, group) {
+			if r.Auth.MemberPG(p.ID, group.ID) {
 				if p.CellPhone != "" {
 					message.Recipients = append(message.Recipients, &model.TextRecipient{
 						Recipient: p.ID,

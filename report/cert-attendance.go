@@ -10,7 +10,6 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -39,13 +38,13 @@ func CERTAttendanceReport(r *util.Request) error {
 	)
 	switch teamStr {
 	case "Alpha":
-		team = r.Tx.FetchGroupByTag("cert-team-alpha")
+		team = r.Auth.FetchGroupByTag("cert-team-alpha")
 	case "Bravo":
-		team = r.Tx.FetchGroupByTag("cert-team-bravo")
+		team = r.Auth.FetchGroupByTag("cert-team-bravo")
 	default:
-		team = r.Tx.FetchGroupByTag("cert-teams")
+		team = r.Auth.FetchGroupByTag("cert-teams")
 	}
-	if !auth.CanManageEvents(r, team) {
+	if !r.Auth.CanAG(model.PrivManageEvents, team.ID) {
 		return util.Forbidden
 	}
 	if !dateRE.MatchString(dateFrom) {
@@ -68,7 +67,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	for _, e := range events {
 		found := false
 		for _, t := range e.Groups {
-			group := r.Tx.FetchGroup(t)
+			group := r.Auth.FetchGroup(t)
 			switch group.Tag {
 			case "cert-teams", "cert-team-alpha", "cert-team-bravo":
 				found = true
@@ -82,16 +81,10 @@ func CERTAttendanceReport(r *util.Request) error {
 	}
 	events = events[:j]
 	// Get all relevant people.
-	people = r.Tx.FetchPeople()
-	j = 0
+	people = r.Auth.FetchPeople(r.Auth.PeopleG(team.ID))
 	for _, p := range people {
-		if auth.IsMember(p, team) {
-			people[j] = p
-			j++
-			pmap[p.ID] = p
-		}
+		pmap[p.ID] = p
 	}
-	people = people[:j]
 	// Get the attendance data.
 	for _, e := range events {
 		if etabbr = getEventTypeAbbr(e.Type); etabbr == "" {

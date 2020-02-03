@@ -3,10 +3,9 @@ package person
 import (
 	"errors"
 	"regexp"
-	"sort"
 	"strings"
 
-	"sunnyvaleserv.org/portal/auth"
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
@@ -17,11 +16,10 @@ var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01
 
 // ValidatePerson validates a Person record, except for its Password field.  It
 // enforces all data consistency rules, but does not enforce privileges.
-func ValidatePerson(tx *db.Tx, person *model.Person) error {
+func ValidatePerson(tx *db.Tx, auth *authz.Authorizer, person *model.Person, roles []model.RoleID) error {
 	var (
-		individualHeld map[*model.Role]bool
+		individualHeld map[model.RoleID]model.PersonID
 		people         []*model.Person
-		roles          []*model.Role
 		roleMap        map[model.RoleID]bool
 	)
 	if person.InformalName = strings.TrimSpace(person.InformalName); person.InformalName == "" {
@@ -122,26 +120,21 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 			return errors.New("duplicate cellPhone")
 		}
 	}
-	individualHeld = cacheIndividuallyHeldRoles(tx, people, person)
-	roles = make([]*model.Role, len(person.Roles))
+	individualHeld = cacheIndividuallyHeldRoles(auth, person.ID)
 	roleMap = make(map[model.RoleID]bool)
-	for i, rid := range person.Roles {
-		if roles[i] = tx.FetchRole(rid); roles[i] == nil {
+	for _, rid := range roles {
+		if auth.FetchRole(rid) == nil {
 			return errors.New("invalid role")
 		}
 		if roleMap[rid] {
 			return errors.New("redundant role")
 		}
-		if individualHeld[roles[i]] {
+		if individualHeld[rid] != 0 {
 			return errors.New("individual role already held")
 		}
 		roleMap[rid] = true
 	}
-	sort.Sort(model.RoleSort(roles))
-	for i := range roles {
-		person.Roles[i] = roles[i].ID
-	}
-	if len(person.Roles) == 0 && person.ID == 0 {
+	if roles != nil && len(roles) == 0 && person.ID == 0 {
 		return errors.New("new user with no roles")
 	}
 	if person.BadLoginCount < 0 {
@@ -175,19 +168,11 @@ func ValidatePerson(tx *db.Tx, person *model.Person) error {
 	return nil
 }
 
-func cacheIndividuallyHeldRoles(tx *db.Tx, people []*model.Person, except *model.Person) (held map[*model.Role]bool) {
-	held = make(map[*model.Role]bool)
-	for _, p := range people {
-		if p.ID == except.ID {
-			continue
-		}
-		for _, role := range tx.FetchRoles() {
-			if !role.Individual {
-				continue
-			}
-			if auth.HasRole(p, role) {
-				held[role] = true
-			}
+func cacheIndividuallyHeldRoles(auth *authz.Authorizer, except model.PersonID) (held map[model.RoleID]model.PersonID) {
+	held = auth.RolesIndividuallyHeld()
+	for rid, pid := range held {
+		if pid == except {
+			delete(held, rid)
 		}
 	}
 	return held

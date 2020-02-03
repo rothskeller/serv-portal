@@ -1,108 +1,78 @@
-The primary objects are people, roles, and events.
-- A person is someone who can log in to the site (or, who used to be able to;
-  logins can be disabled without deleting the person).  Actions on a person
-  include:
-  - CreatePerson
-  - ViewPerson
-  - ModifyPerson (i.e., name, email, etc.)
-  - DisablePerson
-- A role is a group of people.  Each person can directly hold zero or more
-  roles.  In addition, roles can hold other roles, so each person may hold zero
-  or more additional roles indirectly.  Actions on a role include:
-  - CreateRole
-  - ViewRole
-  - ModifyRole
-  - DeleteRole
-  - AssignRoleToPerson
-  - ViewRoleAssignments
-  - RemoveRoleFromPerson
-- An event is something to which holders of one or more roles are invited, and
-  (optionally) at which attendance is tracked.  Actions on an event include:
-  - CreateEvent
-  - ViewEvent
-  - ModifyEvent (i.e., date, name, etc.)
-  - DeleteEvent
-  - InviteRoleToEvent
-  - RemoveRoleFromEvent
-  - ViewAttendanceAtEvent
-  - RecordAttendanceAtEvent
-In addition, there is one non-targeted action:
-  - Login
-Many more object types and corresponding actions will be added as the site
-features are developed.
+The authorization model for the SERV Portal web site is based on people, roles,
+groups, and privileges:
 
-For compactness and maintenance simplicity, it makes sense to combine some of
-the above actions into a smaller set of privileges.  There are currently three
-defined privileges:
-  - ViewMembers on a role allows seeing people who have that role.  In order to
-    see a person, you only need ViewMembers on any one of the roles held by that
-    person.
-  - AssignRole on a role allows you to assign people to that role, or remove
-    them from that role, subject to the role assignment constraints noted above.
-  - ManageEvents on a role allows you to manage events to which people holding
-    that role are invited.  To create, edit, or delete an event, you must have
-    ManageEvents on all of the roles that are invited to that event.  To view or
-    record attendance at an event, you must have ManageEvents on at least one of
-    those roles.
-There is also one pseudo-privilege:
-  - HoldsRole on a role states that holders of the actor role are also implicit
-    holders of the target role (recursively).  It also states that roles with
-    (real) privileges on the target role implicitly have those same privileges
-    on the actor role (recursively).  Every role has this "privilege" on itself.
-    Although this is not technically a "privilege", it gets stored and evaluated
-    the same way as the real privileges.
+People are individuals who are, or have at some point been, affiliated with
+SERV.  Each person has a name and contact information, and a list of roles that
+they hold.  Each person may also have a username and password allowing them to
+log into the web site.  (See the note about who can log in, below.)
 
-The privileges are granted on a per-target-role basis.  Thus, one can invoke
-ViewMembers actions on the people who hold specific roles, not on individual
-people.  And one can invoke CreateEvent, etc.  actions on events to which
-certain roles are invited, not on individual events.
+Groups are groups of people (teams, classes, etc.) who can be addressed as a
+unit.  One can view the list of people in a group, send emails or text messages
+to a group, invite a group to an event, etc.  Each group has a name and
+optionally a group email list name.
 
-The privileges to perform these actions are assigned to roles.  Thus, each role
-has a matrix of privileges targeting each other role, indicating whether or not
-holders of the actor role holds the corresponding privileges for actions on the
-target role.
+Privileges are things that people can do to groups.  There are six:
+  "Member": the membership of a group is defined as the set of people who have
+      "Member" privilege on that group.
+  "Roster": people with this privilege on a group are able to see the list of
+      members of that group.
+  "Contact": people with this privilege on a group are able to see the contact
+      information for each of the members of that group.
+  "Admin": people with this privilege on a group are able to add and remove
+      members of the group.  This also means they are able to add people to the
+      web site.
+  "Events": people with this privilege on a group are able to invite the group
+      to events.  This also means they can create events, and record attendance
+      at events.  To modify or delete an existing event, a person must have this
+      privilege on every group invited to the event.
+  "Texts": people with this privilege on a group are able to send text messages
+      to the group (assuming the group supports text messaging at all).
 
-Here is the mapping from action to privilege:
-  - CreatePerson: requires AssignRole for any role.
-  - ViewPerson: requires ViewMembers on at least one of the roles held by the
-    target person.
-  - ModifyPerson: requires membership in the Webmaster role; also allowed for
-    individuals to modify themselves.
-  - DisablePerson: requires AssignRole for the Disabled Users role, or for all
-    roles that the person holds.
-  - CreateRole: requires membership in the Webmaster role.
-  - ViewRole: requires membership in the Webmaster role.
-  - ModifyRole: requires membership in the Webmaster role.
-  - DeleteRole: requires membership in the Webmaster role.
-  - AssignRoleToPerson: requires AssignRole.
-  - ViewRoleAssignments: requires ViewMembers on any one of the roles held by
-    the target person.  If you can see that person, you can see all of their
-    roles.
-  - RemoveRoleFromPerson: requires AssignRole.
-  - CreateEvent: requires ManageEvents on all of the roles to be invited to the
-    event.
-  - ViewEvent: requires membership in a role invited to the event.
-  - ModifyEvent: requires ManageEvents on all of the roles invited, or to be
-    invited, to the event.
-  - DeleteEvent: requires ManageEvents on all of the roles invited to the event.
-  - InviteRoleToEvent: requires ManageEvents on all of the roles invited, or to
-    be invited, to the event.
-  - RemoveRoleFromEvent: requires ManageEvents on all of the roles invited to
-    the event.
-  - ViewAttendanceAtEvent: requires ManageEvents on any one of the roles invited
-    to the event.
-  - RecordAttendanceAtEvent: requires ManageEvents on any one of the roles
-    invited to the event.
-  - Login: requires membership in any role other than Disabled Users.
+Roles are the glue between people, privileges, and groups.  It would be too
+difficult to manage the privileges for each person individually.  Instead,
+privileges are granted on a role-to-group basis, and people inherit the
+privileges granted to the roles they hold.  In addition, roles have names which
+help explain what the people who hold them do in SERV.  Some roles have a flag
+indicating that they can only be held by a single person.
 
-In order to enforce structure, there are some limitations on role assignments:
-  - Some roles cannot be held directly, only indirectly.
-  - Some roles can be held by only one person.
+To illustrate all this, we will use Alex as an example.  Alex holds the
+following roles:
+    CERT Team Alpha Group 1 Lead
+    CERT Training Assistant Lead
+Both of these are individual roles: he's the only one who holds them.  Note that
+their names (which appear next to his name on the web site) are very specific
+descriptions of mhat he does.
 
-The mapping of (actor role, target role, privileges) is stored in the database
-in two forms.  (In both cases only directly applied privileges are stored, not
-the transitive closure of them.)  The form that gets read and used by the
-server, for performance, is a BLOB column on the role table that encodes all of
-the tuples with that role as actor.  When writing, however, the code also
-maintains a more traditional role_privilege table, which can be used for offline
-queries.
+Because he holds the CERT Team Alpha Group 1 Lead role, he has the following
+privileges that were granted to that role:
+    "Member" of CERT Deployment Teams, CERT Team Alpha, CERT Volunteers, and
+        SERV Volunteers.
+    "Roster" and "Contact" on CERT Deployment Teams and CERT Team Alpha.
+
+Because he holds the CERT Training Assistant Lead role, he has the following
+additional privileges that were granted to that role:
+    "Member" of CERT Trainers, CERT Volunteers, SERV Leads, and SERV Volunteers.
+    "Roster" on every past CERT class, and on the aggregate groups called "CERT
+        Classes (past)", "CERT Classes (all)", and "CERT Graduates".
+    "Roster", "Contact", "Admin", and "Events" on the current and every future
+        CERT class, and on CERT Trainers.
+    "Roster", "Contact", and "Events" on the aggregate group called "CERT
+        Classes (all)".  (He doesn't have "Admin" on this group because one
+        shouldn't add or remove members from an aggregate group.)
+    "Roster" and "Contact" on SERV Leads.
+
+The webmaster is a special role which irrevocably has all privileges on all
+groups.  The webmaster can also do other things that no one else can, such as
+change a person's username or set an insecure password.
+
+In order to be able to log in to the web site, a person must satisfy all of
+the following criteria:
+  - They must have a username assigned.  (If they have one, it will usually be
+    their email address.)
+  - They must have a password.
+  - They must not be a member of the special "Disabled Users" group.
+  - They must have at least one role.
+  - They must not have had too many recent failed login attempts.
+Going forward, all new people added to the web site will have usernames and
+passwords and will be able to log in.  However, many historical CERT students do
+not have a username or password.

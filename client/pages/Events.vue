@@ -8,7 +8,7 @@ b-card#events-card(no-body)
     b-nav(card-header tabs)
       b-nav-item(to="/events/calendar" exact exact-active-class="active") Calendar
       b-nav-item(to="/events/list" exact exact-active-class="active") List
-      b-nav-item(v-if="canAdd" to="/events/NEW") Add Event
+      b-nav-item(v-if="canAdd" to="/events/NEW/edit") Add Event
       b-nav-item(v-if="canView" :to="`/events/${$route.params.id}`" exact exact-active-class="active") Details
       b-nav-item(v-if="canEdit" :to="`/events/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
       b-nav-item(v-if="canAttendance" :to="`/events/${$route.params.id}/attendance`" exact exact-active-class="active") Attendance

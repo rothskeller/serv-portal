@@ -13,24 +13,27 @@ import (
 // GetPeople handles GET /api/people requests.
 func GetPeople(r *util.Request) error {
 	var (
-		focus *model.Group
-		out   jwriter.Writer
+		focus  *model.Group
+		people []*model.Person
+		out    jwriter.Writer
 	)
-	focus = r.Tx.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
+	focus = r.Auth.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
 	if _, ok := r.Form["search"]; ok {
 		return getPeopleSearch(r)
 	}
+	if focus != nil && !r.Auth.CanAG(model.PrivViewMembers, focus.ID) {
+		focus = nil
+	}
+	if focus != nil && focus.Tag != model.GroupDisabled {
+		people = r.Auth.FetchPeople(r.Auth.PeopleG(focus.ID))
+	} else {
+		people = r.Tx.FetchPeople()
+	}
 	out.RawString(`{"people":[`)
 	first := true
-	for _, p := range r.Tx.FetchPeople() {
-		if !auth.CanViewPerson(r, p) {
-			continue
-		}
+	for _, p := range people {
 		if focus != nil && focus.Tag == model.GroupDisabled && auth.IsEnabled(r, p) {
-			// Special case because the lack of *any* role also
-			// means disabled.
-			continue
-		} else if focus != nil && !auth.IsMember(p, focus) {
+			// Special case because the lack of *any* role also means disabled.
 			continue
 		}
 		if first {
@@ -46,7 +49,7 @@ func GetPeople(r *util.Request) error {
 		out.String(p.SortName)
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
-		if auth.CanViewContactInfo(r, p) {
+		if r.Auth.CanAP(model.PrivViewContactInfo, p.ID) {
 			out.RawString(`,"email":`)
 			out.String(p.Email)
 			out.RawString(`,"email2":`)
@@ -65,20 +68,17 @@ func GetPeople(r *util.Request) error {
 			out.String(p.WorkPhone)
 		}
 		out.RawString(`,"roles":[`)
-		for i, role := range p.Roles {
+		for i, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.Tx.FetchRole(role).Name)
+			out.String(role.Name)
 		}
 		out.RawString(`]}`)
 	}
 	out.RawString(`],"viewableGroups":[`)
 	first = true
-	for _, group := range r.Tx.FetchGroups() {
-		if !auth.CanViewGroup(r, group) {
-			continue
-		}
+	for _, group := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivViewMembers)) {
 		if first {
 			first = false
 		} else {
@@ -91,7 +91,7 @@ func GetPeople(r *util.Request) error {
 		out.RawByte('}')
 	}
 	out.RawString(`],"canAdd":`)
-	out.Bool(auth.CanCreatePeople(r))
+	out.Bool(r.Auth.CanA(model.PrivManageMembers))
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -107,10 +107,7 @@ func getPeopleSearch(r *util.Request) error {
 		search = strings.ToLower(strings.TrimSpace(r.FormValue("search")))
 	)
 	out.RawByte('[')
-	for _, p := range r.Tx.FetchPeople() {
-		if !auth.CanViewPerson(r, p) {
-			continue
-		}
+	for _, p := range r.Auth.FetchPeople(r.Auth.PeopleA(model.PrivViewMembers)) {
 		if !strings.Contains(strings.ToLower(p.SortName), search) &&
 			!strings.Contains(strings.ToLower(p.FormalName), search) &&
 			!strings.Contains(strings.ToLower(p.CallSign), search) {

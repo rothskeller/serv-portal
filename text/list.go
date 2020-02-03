@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
-	"sunnyvaleserv.org/portal/auth"
+	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -13,7 +13,7 @@ func GetSMS(r *util.Request) error {
 	var (
 		out jwriter.Writer
 	)
-	if !auth.CanSendTextMessages(r) {
+	if !r.Auth.CanA(model.PrivSendTextMessages) {
 		return util.Forbidden
 	}
 	out.RawString(`{"messages":[`)
@@ -32,7 +32,7 @@ func GetSMS(r *util.Request) error {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.Tx.FetchGroup(g).Name)
+			out.String(r.Auth.FetchGroup(g).Name)
 		}
 		out.RawString(`],"message":`)
 		out.String(m.Message)
@@ -40,7 +40,7 @@ func GetSMS(r *util.Request) error {
 	}
 	out.RawString(`],"groups":[`)
 	first := true
-	for _, g := range r.Tx.FetchGroups() {
+	for _, g := range r.Auth.FetchGroups(r.Auth.AllGroups()) {
 		if g.AllowTextMessages {
 			if first {
 				first = false

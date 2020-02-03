@@ -1,29 +1,31 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
 	"time"
 )
 
-var madeBackup bool
-
-func maybeMakeBackup()                           { makeBackup2(false) }
-func makeBackup(_ []string, _ map[string]string) { makeBackup2(true) }
-func makeBackup2(ifExists bool) {
+func main() {
 	var (
-		bfn string
-		in  *os.File
-		out *os.File
-		err error
+		bfn         string
+		in          *os.File
+		out         *os.File
+		err         error
+		ifNotExists = flag.Bool("i", false, "back up only if none taken today")
 	)
-	if madeBackup {
-		return
+	flag.Parse()
+	switch os.Getenv("HOME") {
+	case "/home/snyserv":
+		os.Chdir("/home/snyserv/sunnyvaleserv.org")
+	case "/Users/stever":
+		os.Chdir("/Users/stever/src/serv-portal")
 	}
 	bfn = "data/serv.db." + time.Now().Format("2006-01-02")
 	if exists(bfn) {
-		if !ifExists {
+		if *ifNotExists {
 			return
 		}
 		var idx = 2
@@ -54,7 +56,6 @@ func makeBackup2(ifExists bool) {
 		os.Exit(1)
 	}
 	in.Close()
-	madeBackup = true
 }
 
 func exists(fn string) bool {

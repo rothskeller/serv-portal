@@ -1,19 +1,20 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/mailru/easyjson/jlexer"
 
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/role"
 )
 
 func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
+	auth := authz.NewAuthorizer(tx)
 	var record = 1
 	for {
 		var r = new(model.Role)
@@ -21,7 +22,7 @@ func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
 
 		in.Delim('{')
 		if in.Error() == io.EOF {
-			tx.SaveAuthz()
+			auth.Save()
 			return
 		}
 		for !in.IsDelim('}') {
@@ -41,59 +42,17 @@ func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
 						os.Exit(1)
 					}
 					rid := r.ID
-					if r = tx.FetchRole(r.ID); r == nil {
+					if r = auth.FetchRole(r.ID); r == nil {
 						fmt.Fprintf(os.Stderr, "ERROR: role %d does not exist\n", rid)
 						os.Exit(1)
 					}
 					r.Name = ""
 					r.Individual = false
-					r.Privileges.Clear()
 				}
 			case "name":
 				r.Name = in.String()
 			case "individual":
 				r.Individual = in.Bool()
-			case "privileges":
-				if in.IsNull() {
-					in.Skip()
-				} else {
-					in.Delim('[')
-					for !in.IsDelim(']') {
-						var group *model.Group
-						var priv model.Privilege
-						in.Delim('{')
-						for !in.IsDelim('}') {
-							key := in.UnsafeString()
-							in.WantColon()
-							if in.IsNull() {
-								in.Skip()
-								in.WantComma()
-								continue
-							}
-							switch key {
-							case "id":
-								if group = tx.FetchGroup(model.GroupID(in.Int())); group == nil {
-									in.AddError(errors.New("invalid group"))
-								}
-							case "privilege":
-								priv.UnmarshalEasyJSON(in)
-							default:
-								in.SkipRecursive()
-							}
-							in.WantComma()
-						}
-						in.Delim('}')
-						in.WantComma()
-						if group == nil {
-							in.AddError(errors.New("missing group in privilege"))
-						} else if priv == 0 {
-							in.AddError(errors.New("missing privilege in privilege"))
-						} else {
-							r.Privileges.Add(group, priv)
-						}
-					}
-					in.Delim(']')
-				}
 			default:
 				in.SkipRecursive()
 			}
@@ -105,12 +64,12 @@ func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
-		if err := role.ValidateRole(tx, r); err != nil {
+		if err := role.ValidateRole(auth, r); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
 		if r.ID == 0 {
-			tx.CreateRole(r)
+			auth.CreateRole(r)
 		}
 		record++
 	}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -25,10 +24,17 @@ func GetEvents(r *util.Request) error {
 	}
 	events = r.Tx.FetchEvents(fmt.Sprintf("%d-01-01", year), fmt.Sprintf("%d-12-31", year))
 	out.RawString(`{"canAdd":`)
-	out.Bool(auth.CanCreateEvents(r))
+	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"events":[`)
 	for _, e := range events {
-		if !auth.CanViewEvent(r, e) {
+		var canView bool
+		for _, group := range e.Groups {
+			if r.Auth.MemberG(group) {
+				canView = true
+				break
+			}
+		}
+		if !canView {
 			continue
 		}
 		if first {
@@ -74,7 +80,7 @@ func GetEvents(r *util.Request) error {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.Tx.FetchGroup(g).Name)
+			out.String(r.Auth.FetchGroup(g).Name)
 		}
 		out.RawString(`]}`)
 	}

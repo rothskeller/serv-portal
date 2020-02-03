@@ -36,6 +36,7 @@ func ValidateSession(r *Request) {
 		return
 	}
 	r.Person = r.Session.Person
+	r.Auth.SetMe(r.Session.Person)
 	r.Session.Expires = time.Now().Add(sessionExpiration)
 	r.Tx.UpdateSession(r.Session)
 	r.Tx.SetUsername(r.Person.Username)

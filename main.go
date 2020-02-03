@@ -18,10 +18,13 @@ import (
 	"strings"
 
 	"sunnyvaleserv.org/portal/auth"
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/event"
+	"sunnyvaleserv.org/portal/group"
 	"sunnyvaleserv.org/portal/person"
 	"sunnyvaleserv.org/portal/report"
+	"sunnyvaleserv.org/portal/role"
 	"sunnyvaleserv.org/portal/text"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -44,7 +47,9 @@ func main() {
 	}))
 }
 
-// txWrapper opens the database and wraps the request in a transaction.
+// txWrapper opens the database and wraps the request in a transaction.  It also
+// checks authorization, and sets the user's identity in r.Person and r.Auth if
+// properly validated.
 func txWrapper(r *util.Request) error {
 	// Open the database and start a transaction.
 	db.Open("serv.db")
@@ -52,14 +57,8 @@ func txWrapper(r *util.Request) error {
 	defer func() {
 		r.Tx.Rollback()
 	}()
+	r.Auth = authz.NewAuthorizer(r.Tx)
 	r.Tx.SetRequest(r.Method + " " + r.Path)
-	return authWrapper(r)
-}
-
-// authWrapper looks for authorization cookies in the request and, if present,
-// validates the session.  It never fails; it just doesn't set r.Person if the
-// session is invalid.
-func authWrapper(r *util.Request) error {
 	util.ValidateSession(r)
 	return router(r)
 }
@@ -94,6 +93,12 @@ func router(r *util.Request) error {
 		return event.PostEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
 		return event.PostEventAttendance(r, c[2])
+	case r.Method == "GET" && c[1] == "groups" && c[2] == "":
+		return group.GetGroups(r)
+	case r.Method == "GET" && c[1] == "groups" && c[2] != "" && c[3] == "":
+		return group.GetGroup(r, c[2])
+	case r.Method == "POST" && c[1] == "groups" && c[2] != "" && c[3] == "":
+		return group.PostGroup(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] == "":
 		return person.GetPeople(r)
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "":
@@ -104,16 +109,12 @@ func router(r *util.Request) error {
 		return report.GetIndex(r)
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "cert-attendance" && c[3] == "":
 		return report.CERTAttendanceReport(r)
-		/*
-			case r.Method == "GET" && c[1] == "roles" && c[2] == "":
-				return role.GetRoles(r)
-			case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
-				return role.GetRole(r, c[2])
-			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
-				return role.PostRole(r, c[2])
-			case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "reloadPrivs" && c[4] == "":
-				return role.PostRoleReloadPrivs(r, c[2])
-		*/
+	case r.Method == "GET" && c[1] == "roles" && c[2] == "":
+		return role.GetRoles(r)
+	case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
+		return role.GetRole(r, c[2])
+	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
+		return role.PostRole(r, c[2])
 	case r.Method == "GET" && c[1] == "sms" && c[2] == "":
 		return text.GetSMS(r)
 	case r.Method == "POST" && c[1] == "sms" && c[2] == "":

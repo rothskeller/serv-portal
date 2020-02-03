@@ -28,8 +28,11 @@ func PostPasswordReset(r *util.Request) error {
 	if person = r.Tx.FetchPersonByUsername(username); person == nil {
 		return nil
 	}
-	if !IsEnabled(r, person) {
-		return nil
+	if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
+		return nil // person is disabled
+	}
+	if !r.Auth.CanPA(person.ID, model.PrivMember) {
+		return nil // person belongs to no groups
 	}
 	if person.Email != "" {
 		emails = append(emails, person.Email)
@@ -143,6 +146,7 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	person.PWResetToken = ""
 	r.Tx.SavePerson(person)
 	r.Person = person
+	r.Auth.SetMe(person)
 	util.CreateSession(r)
 	r.Tx.Commit()
 	return GetLogin(r)

@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 )
@@ -186,14 +187,16 @@ func getEvent(eventID string, eventType model.EventType) (event *eventData) {
 func applyRewrites(events []*eventData) {
 	var (
 		tx     *db.Tx
+		auth   *authz.Authorizer
 		groups []model.GroupID
 		vmap   map[string]*model.Venue
 		nmap   map[string]string
 	)
 	tx = db.Begin()
+	auth = authz.NewAuthorizer(tx)
 	nmap = tx.FetchSccAresEventNames()
 	vmap = tx.FetchSccAresEventVenues()
-	groups = []model.GroupID{tx.FetchGroupByTag(model.GroupSccAres).ID}
+	groups = []model.GroupID{auth.FetchGroupByTag(model.GroupSccAres).ID}
 	for _, e := range events {
 		if mapped, ok := vmap[e.venueName]; ok {
 			if mapped != nil {

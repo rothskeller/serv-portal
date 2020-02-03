@@ -13,11 +13,15 @@ import (
 // FetchPerson retrieves a single person from the database by ID.  It returns
 // nil if no such person exists.
 func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
+	if p = tx.people[id]; p != nil {
+		return p
+	}
 	var data []byte
 	p = new(model.Person)
 	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE id=?`, id).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
+		tx.people[id] = p
 		return p
 	case sql.ErrNoRows:
 		return nil
@@ -34,6 +38,10 @@ func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
 	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE username=?`, username).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
+		if p2 := tx.people[p.ID]; p2 != nil {
+			return p2
+		}
+		tx.people[p.ID] = p
 		return p
 	case sql.ErrNoRows:
 		return nil
@@ -50,6 +58,10 @@ func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
 	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE pwreset_token=?`, token).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
+		if p2 := tx.people[p.ID]; p2 != nil {
+			return p2
+		}
+		tx.people[p.ID] = p
 		return p
 	case sql.ErrNoRows:
 		return nil
@@ -66,6 +78,10 @@ func (tx *Tx) FetchPersonByCellPhone(token string) (p *model.Person) {
 	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE cell_phone=?`, token).Scan(&data); err {
 	case nil:
 		panicOnError(p.Unmarshal(data))
+		if p2 := tx.people[p.ID]; p2 != nil {
+			return p2
+		}
+		tx.people[p.ID] = p
 		return p
 	case sql.ErrNoRows:
 		return nil
@@ -76,6 +92,9 @@ func (tx *Tx) FetchPersonByCellPhone(token string) (p *model.Person) {
 
 // FetchPeople returns all of the people in the database, in order by sortname.
 func (tx *Tx) FetchPeople() (people []*model.Person) {
+	if tx.personList != nil {
+		return tx.personList
+	}
 	var (
 		rows *sql.Rows
 		err  error
@@ -87,10 +106,16 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 		var p model.Person
 		panicOnError(rows.Scan(&data))
 		p.Unmarshal(data)
-		people = append(people, &p)
+		if p2 := tx.people[p.ID]; p2 != nil {
+			people = append(people, p2)
+		} else {
+			people = append(people, &p)
+			tx.people[p.ID] = &p
+		}
 	}
 	panicOnError(rows.Err())
 	sort.Sort(model.PersonSort(people))
+	tx.personList = people
 	return people
 }
 
@@ -102,10 +127,10 @@ func (tx *Tx) SavePerson(p *model.Person) {
 		data []byte
 		err  error
 	)
-	tx.recalcPersonPrivileges(p)
 	if p.ID == 0 {
 		panicOnError(tx.tx.QueryRow(`SELECT max(id) FROM person`).Scan(&p.ID))
 		p.ID++
+		tx.people[p.ID] = p
 		data, err = p.Marshal()
 		panicOnError(err)
 		panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, data) VALUES (?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data))
@@ -115,26 +140,6 @@ func (tx *Tx) SavePerson(p *model.Person) {
 		panicOnExecError(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, data) = (?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data, p.ID))
 	}
 	tx.audit("person", p.ID, data)
-}
-
-// recalcAllPersonPrivileges recalculates the privileges map for every person in
-// the database, from the privilege masks for the role(s) held by that person.
-// This is done whenever the role privilege masks may have changed, i.e., when
-// roles or groups are edited.
-func (tx *Tx) recalcAllPersonPrivileges() {
-	people := tx.FetchPeople()
-	for _, p := range people {
-		tx.SavePerson(p)
-	}
-}
-
-// recalcPersonPrivileges recalculates the privileges map for a person from the
-// privilege masks for the role(s) held by that person.
-func (tx *Tx) recalcPersonPrivileges(p *model.Person) {
-	p.Privileges.Clear()
-	for _, r := range p.Roles {
-		p.Privileges.Merge(&tx.roles[r].Privileges)
-	}
 }
 
 // FetchSessions fetches all sessions in the database.

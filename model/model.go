@@ -6,7 +6,11 @@ package model
 //go:generate easyjson -all model.pb.go
 
 import (
+	"errors"
 	"time"
+
+	jlexer "github.com/mailru/easyjson/jlexer"
+	jwriter "github.com/mailru/easyjson/jwriter"
 )
 
 // An AttendanceInfo structure gives information about a person's attendance at
@@ -222,6 +226,27 @@ var PrivilegeNames = map[Privilege]string{
 	PrivManageMembers:    "admin",
 	PrivManageEvents:     "events",
 	PrivSendTextMessages: "texts",
+}
+
+// MarshalEasyJSON encodes the privilege into JSON.
+func (p Privilege) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(PrivilegeNames[p])
+}
+
+// UnmarshalEasyJSON decodes the privilege from JSON.
+func (p *Privilege) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	s := l.UnsafeString()
+	if s == "" {
+		*p = 0
+		return
+	}
+	for priv, name := range PrivilegeNames {
+		if s == name {
+			*p = priv
+			return
+		}
+	}
+	l.AddError(errors.New("unrecognized value for Privilege"))
 }
 
 // A RoleID is a positive integer uniquely identifying a Role.

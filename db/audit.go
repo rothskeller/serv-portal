@@ -34,10 +34,6 @@ func (tx *Tx) FetchAudit(handler func(time.Time, string, string, string, interfa
 		)
 		panicOnError(rows.Scan((*Time)(&timestamp), &username, &request, &otype, &id, &data))
 		switch otype {
-		case "authz":
-			var authz model.AuthzData
-			panicOnError(authz.Unmarshal(data))
-			object = authz
 		case "event":
 			var event model.Event
 			panicOnError(event.Unmarshal(data))

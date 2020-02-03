@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 )
@@ -123,6 +124,7 @@ type Request struct {
 	Response
 	Session *model.Session
 	Person  *model.Person
+	Auth    *authz.Authorizer
 	Start   time.Time
 	Path    string
 	Tx      *db.Tx

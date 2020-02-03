@@ -3,7 +3,9 @@ import Router from 'vue-router'
 import store from './store'
 import MainMenu from './MainMenu'
 import Events from './pages/Events'
+import Groups from './pages/Groups'
 import People from './pages/People'
+import Roles from './pages/Roles'
 import Texts from './pages/Texts'
 
 Vue.use(Router)
@@ -65,6 +67,21 @@ const router = new Router({
           ]
         },
         {
+          path: '/groups',
+          component: Groups,
+          meta: { menuItem: 'groups', tabbed: true },
+          children: [
+            {
+              path: '',
+              component: () => import(/* webpackChunkName: "GroupsList" */ './pages/groups/GroupsList'),
+            },
+            {
+              path: ':id',
+              component: () => import(/* webpackChunkName: "GroupEdit" */ './pages/groups/GroupEdit'),
+            },
+          ],
+        },
+        {
           path: '/logout',
           component: () => import(/* webpackChunkName: "Logout" */ './pages/Logout'),
         },
@@ -105,6 +122,21 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "CERTAttendance" */ './pages/reports/CERTAttendance'),
           props: route => route.query,
           meta: { menuItem: 'reports' },
+        },
+        {
+          path: '/roles',
+          component: Roles,
+          meta: { menuItem: 'roles', tabbed: true },
+          children: [
+            {
+              path: '',
+              component: () => import(/* webpackChunkName: "RolesList" */ './pages/roles/RolesList'),
+            },
+            {
+              path: ':id',
+              component: () => import(/* webpackChunkName: "RoleEdit" */ './pages/roles/RoleEdit'),
+            },
+          ],
         },
         {
           path: '/texts',

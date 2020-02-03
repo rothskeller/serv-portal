@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import {
   BButton,
+  BButtonGroup,
   BCard,
   BCardBody,
   BCardHeader,
@@ -30,7 +31,9 @@ import {
 } from 'bootstrap-vue'
 
 Vue.component('b-btn', BButton)
+Vue.component('b-btn-group', BButtonGroup)
 Vue.component('b-button', BButton)
+Vue.component('b-button-group', BButtonGroup)
 Vue.component('b-card', BCard)
 Vue.component('b-card-body', BCardBody)
 Vue.component('b-card-header', BCardHeader)

@@ -7,18 +7,25 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/person"
 )
 
 func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
+	auth := authz.NewAuthorizer(tx)
+	var authDirty = false
 	var record = 1
 	for {
-		var p model.Person
+		var p = new(model.Person)
+		var first = true
 
 		in.Delim('{')
 		if in.Error() == io.EOF {
+			if authDirty {
+				auth.Save()
+			}
 			return
 		}
 		for !in.IsDelim('}') {
@@ -32,6 +39,18 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 			switch key {
 			case "id":
 				p.ID = model.PersonID(in.Int())
+				if p.ID != 0 {
+					if !first {
+						fmt.Fprintf(os.Stderr, "ERROR: id must be first key in person\n")
+						os.Exit(1)
+					}
+					pid := p.ID
+					if p = tx.FetchPerson(p.ID); p == nil {
+						fmt.Fprintf(os.Stderr, "ERROR: group %d does not exist\n", pid)
+						os.Exit(1)
+					}
+					*p = model.Person{ID: pid}
+				}
 			case "username":
 				p.Username = in.String()
 			case "informalName":
@@ -76,48 +95,6 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 			case "pwresetTime":
 				if data := in.Raw(); in.Ok() {
 					in.AddError(p.PWResetTime.UnmarshalJSON(data))
-				}
-			case "roles":
-				if in.IsNull() {
-					in.Skip()
-					p.Roles = nil
-				} else {
-					in.Delim('[')
-					if p.Roles == nil {
-						if !in.IsDelim(']') {
-							p.Roles = make([]model.RoleID, 0, 8)
-						} else {
-							p.Roles = []model.RoleID{}
-						}
-					} else {
-						p.Roles = (p.Roles)[:0]
-					}
-					for !in.IsDelim(']') {
-						if in.IsDelim(('{')) {
-							in.Delim('{')
-							for !in.IsDelim('}') {
-								key := in.UnsafeString()
-								in.WantColon()
-								if in.IsNull() {
-									in.Skip()
-									in.WantComma()
-									continue
-								}
-								switch key {
-								case "id":
-									p.Roles = append(p.Roles, model.RoleID(in.Int()))
-								default:
-									in.SkipRecursive()
-								}
-								in.WantComma()
-							}
-							in.Delim('}')
-						} else {
-							p.Roles = append(p.Roles, model.RoleID(in.Int()))
-						}
-						in.WantComma()
-					}
-					in.Delim(']')
 				}
 			case "notes":
 				if in.IsNull() {
@@ -171,17 +148,24 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 				in.SkipRecursive()
 			}
 			in.WantComma()
+			first = false
 		}
 		in.Delim('}')
 		if !in.Ok() {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
-		if err := person.ValidatePerson(tx, &p); err != nil {
+		if err := person.ValidatePerson(tx, auth, p, nil); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
-		tx.SavePerson(&p)
+		if p.ID == 0 {
+			tx.SavePerson(p)
+			auth.AddPerson(p.ID)
+			authDirty = true
+		} else {
+			tx.SavePerson(p)
+		}
 		record++
 	}
 }

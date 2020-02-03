@@ -23,12 +23,12 @@ func GetPerson(r *util.Request, idstr string) error {
 		out            jwriter.Writer
 		attendmap      map[model.EventID]model.AttendanceInfo
 		attended       []*model.Event
-		individualHeld map[*model.Role]bool
+		individualHeld map[model.RoleID]model.PersonID
 		roles          = map[model.RoleID]bool{}
 		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
-		if !auth.CanCreatePeople(r) {
+		if !r.Auth.CanA(model.PrivManageMembers) {
 			return util.Forbidden
 		}
 		person = new(model.Person)
@@ -38,11 +38,11 @@ func GetPerson(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		if !auth.CanViewPerson(r, person) {
+		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) {
 			return util.Forbidden
 		}
-		canEditDetails = r.Person == person || auth.IsWebmaster(r)
-		canViewContact = canEditDetails || auth.CanViewContactInfo(r, person)
+		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
+		canViewContact = canEditDetails || r.Auth.CanAP(model.PrivViewContactInfo, person.ID)
 	}
 	out.RawString(`{"person":{"id":`)
 	out.Int(int(person.ID))
@@ -74,16 +74,16 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
-	for _, r := range person.Roles {
+	for _, r := range r.Auth.RolesP(person.ID) {
 		roles[r] = true
 	}
-	individualHeld = cacheIndividuallyHeldRoles(r.Tx, r.Tx.FetchPeople(), person)
+	individualHeld = cacheIndividuallyHeldRoles(r.Auth, person.ID)
 	out.RawString(`,"roles":[`)
 	first := true
-	for _, role := range r.Tx.FetchRoles() {
-		canAssign := auth.CanAssignRole(r, role)
+	for _, role := range r.Auth.FetchRoles(r.Auth.AllRoles()) {
+		var canAssign = r.Auth.CanAR(model.PrivManageMembers, role.ID)
 		canEditRoles = canEditRoles || canAssign
-		if individualHeld[role] {
+		if individualHeld[role.ID] != 0 {
 			canAssign = false
 		}
 		if !roles[role.ID] && (!canAssign || !wantEdit) {
@@ -111,8 +111,15 @@ func GetPerson(r *util.Request, idstr string) error {
 		attendmap = r.Tx.FetchAttendanceByPerson(person)
 		for eid := range attendmap {
 			event := r.Tx.FetchEvent(eid)
-			if r.Person == person || auth.CanRecordAttendanceAtEvent(r, event) {
+			if r.Person == person {
 				attended = append(attended, event)
+			} else {
+				for _, group := range event.Groups {
+					if r.Auth.CanAG(model.PrivManageEvents, group) {
+						attended = append(attended, event)
+						break
+					}
+				}
 			}
 		}
 		if len(attended) > 0 {
@@ -140,10 +147,10 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"notes":[`)
 		first := true
 		for _, n := range person.Notes {
-			if n.Privilege == 0 && !auth.IsWebmaster(r) {
+			if n.Privilege == 0 && !r.Auth.IsWebmaster() {
 				continue
 			}
-			if n.Privilege != 0 && !auth.HasPrivilegeOnPerson(r, n.Privilege, person) {
+			if n.Privilege != 0 && !r.Auth.CanAP(n.Privilege, person.ID) {
 				continue
 			}
 			if first {
@@ -168,9 +175,9 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"canEditDetails":`)
 		out.Bool(canEditDetails)
 		out.RawString(`,"allowBadPassword":`)
-		out.Bool(auth.IsWebmaster(r))
+		out.Bool(r.Auth.IsWebmaster())
 		out.RawString(`,"canEditUsername":`)
-		out.Bool(auth.IsWebmaster(r))
+		out.Bool(r.Auth.IsWebmaster())
 		if canEditDetails {
 			out.RawString(`,"passwordHints":[`)
 			for i, h := range auth.SERVPasswordHints {
@@ -194,10 +201,11 @@ func PostPerson(r *util.Request, idstr string) error {
 	var (
 		person         *model.Person
 		canEditDetails bool
+		roles          []model.RoleID
 		err            error
 	)
 	if idstr == "NEW" {
-		if !auth.CanCreatePeople(r) {
+		if !r.Auth.CanA(model.PrivManageMembers) {
 			return util.Forbidden
 		}
 		person = new(model.Person)
@@ -206,26 +214,27 @@ func PostPerson(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		canEditDetails = r.Person == person || auth.IsWebmaster(r)
+		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
 	}
-	if !canEditDetails && !auth.CanAssignAnyRole(r) {
+	if !canEditDetails && !r.Auth.CanA(model.PrivManageMembers) {
 		return util.Forbidden
 	}
 	// Remove all roles that the user is allowed to change; keep the ones
 	// that they aren't.
+	roles = r.Auth.RolesP(person.ID)
 	j := 0
-	for _, role := range person.Roles {
-		if !auth.CanAssignRole(r, r.Tx.FetchRole(role)) {
-			person.Roles[j] = role
+	for _, role := range roles {
+		if !r.Auth.CanAR(model.PrivManageMembers, role) {
+			roles[j] = role
 			j++
 		}
 	}
-	person.Roles = person.Roles[:j]
+	roles = roles[:j]
 	// Add roles that the user requested.
 	r.ParseMultipartForm(1048576)
 	for _, ridstr := range r.Form["role"] {
-		if role := r.Tx.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil && auth.CanAssignRole(r, role) {
-			person.Roles = append(person.Roles, role.ID)
+		if role := r.Auth.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil && r.Auth.CanAR(model.PrivManageMembers, role.ID) {
+			roles = append(roles, role.ID)
 		} else {
 			return errors.New("bad role")
 		}
@@ -267,7 +276,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		}
 		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
 	}
-	if err = ValidatePerson(r.Tx, person); err != nil {
+	if err = ValidatePerson(r.Tx, r.Auth, person, roles); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {
 			// These need to be sent back to the client as 200
 			// responses with error details.
@@ -280,7 +289,7 @@ func PostPerson(r *util.Request, idstr string) error {
 	// We do password after validation so that it can use the other
 	// fields as password hints.
 	if password := r.FormValue("password"); password != "" && canEditDetails {
-		if !auth.IsWebmaster(r) {
+		if !r.Auth.IsWebmaster() {
 			if !auth.StrongPassword(person, password) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"weakPassword":true}`))
@@ -289,7 +298,14 @@ func PostPerson(r *util.Request, idstr string) error {
 		}
 		auth.SetPassword(r, person, password)
 	}
-	r.Tx.SavePerson(person)
+	if person.ID == 0 {
+		r.Tx.SavePerson(person)
+		r.Auth.AddPerson(person.ID)
+	} else {
+		r.Tx.SavePerson(person)
+	}
+	r.Auth.SetPersonRoles(person.ID, roles)
+	r.Auth.Save()
 	r.Tx.Commit()
 	return nil
 }
