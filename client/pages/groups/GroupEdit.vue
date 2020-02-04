@@ -134,7 +134,7 @@ export default {
   padding 1.5rem 0.75rem
 .group-edit-label
   width 7rem
-#group-edit-name, #group-edit-flags
+#group-edit-name, #group-edit-email, #group-edit-flags
   min-width 14rem
   max-width 20rem
 #group-edit-privs

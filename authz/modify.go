@@ -43,13 +43,13 @@ func (a *Authorizer) AddPerson(person model.PersonID) {
 	a.numPeople = person + 1
 }
 
-// CreateGroup creates a new group.  It sets the ID in its argument to the next
-// available group ID.
-func (a *Authorizer) CreateGroup(g *model.Group) {
-	for g.ID = 1; int(g.ID) < len(a.groups); g.ID++ {
-		if a.groups[g.ID].ID == 0 {
-			a.groups[g.ID] = *g
-			return
+// CreateGroup creates a new group.
+func (a *Authorizer) CreateGroup() *model.Group {
+	var id int
+	for id = 1; id < len(a.groups); id++ {
+		if a.groups[id].ID == 0 {
+			a.groups[id] = model.Group{ID: model.GroupID(id)}
+			return &a.groups[id]
 		}
 	}
 	newlen := len(a.groups) + 1
@@ -59,25 +59,26 @@ func (a *Authorizer) CreateGroup(g *model.Group) {
 			nrp[rid*(newlen)+gid] = a.rolePrivs[rid*len(a.groups)+gid]
 		}
 	}
-	a.groups = append(a.groups, *g)
+	a.groups = append(a.groups, model.Group{ID: model.GroupID(id)})
 	a.rolePrivs = nrp
+	return &a.groups[id]
 }
 
-// CreateRole creates a new role.  It sets the ID in its argument to the next
-// available role ID.
-func (a *Authorizer) CreateRole(r *model.Role) {
-	for r.ID = 1; int(r.ID) < len(a.roles); r.ID++ {
-		if a.roles[r.ID].ID == 0 {
-			a.roles[r.ID] = *r
-			return
+// CreateRole creates a new role.
+func (a *Authorizer) CreateRole() *model.Role {
+	var id int
+	for id = 1; int(id) < len(a.roles); id++ {
+		if a.roles[id].ID == 0 {
+			a.roles[id] = model.Role{ID: model.RoleID(id)}
+			return &a.roles[id]
 		}
 	}
 	nrp := make([]model.Privilege, (len(a.roles)+1)*len(a.groups))
 	copy(nrp, a.rolePrivs)
 	a.rolePrivs = nrp
-	a.roles = append(a.roles, *r)
+	a.roles = append(a.roles, model.Role{ID: model.RoleID(id)})
 	if len(a.roles)%8 != 1 {
-		return
+		return &a.roles[id]
 	}
 	nbpp := a.bytesPerPerson + 1
 	npr := make([]byte, int(a.numPeople)*nbpp)
@@ -86,6 +87,7 @@ func (a *Authorizer) CreateRole(r *model.Role) {
 	}
 	a.bytesPerPerson = nbpp
 	a.personRoles = npr
+	return &a.roles[id]
 }
 
 // DeleteGroup deletes a group.

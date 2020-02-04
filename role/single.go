@@ -17,8 +17,7 @@ func GetRole(r *util.Request, idstr string) error {
 		out  jwriter.Writer
 	)
 	if idstr == "NEW" {
-		role = new(model.Role)
-		r.Auth.CreateRole(role) // but we won't save it
+		role = r.Auth.CreateRole() // but we won't save it
 	} else {
 		if role = r.Auth.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return util.NotFound
@@ -62,8 +61,7 @@ func PostRole(r *util.Request, idstr string) error {
 	var role *model.Role
 
 	if idstr == "NEW" {
-		role = new(model.Role)
-		r.Auth.CreateRole(role)
+		role = r.Auth.CreateRole()
 	} else {
 		if role = r.Auth.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return util.NotFound

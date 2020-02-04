@@ -17,8 +17,7 @@ func GetGroup(r *util.Request, idstr string) error {
 		out   jwriter.Writer
 	)
 	if idstr == "NEW" {
-		group = new(model.Group)
-		r.Auth.CreateGroup(group) // but we won't save it
+		group = r.Auth.CreateGroup() // but we won't save it
 	} else {
 		if group = r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr))); group == nil {
 			return util.NotFound
@@ -68,8 +67,8 @@ func PostGroup(r *util.Request, idstr string) error {
 	var group *model.Group
 
 	if idstr == "NEW" {
-		group = new(model.Group)
-		r.Auth.CreateGroup(group)
+		group = r.Auth.CreateGroup()
+		println(group.ID)
 	} else {
 		if group = r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr))); group == nil {
 			return util.NotFound

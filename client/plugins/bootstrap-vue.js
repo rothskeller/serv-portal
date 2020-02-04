@@ -19,7 +19,6 @@ import {
   BFormText,
   BFormTextarea,
   BLink,
-  BModal,
   BNav,
   BNavItem,
   BProgress,
@@ -27,9 +26,10 @@ import {
   BSpinner,
   BTab,
   BTabs,
-  VBModal,
+  ModalPlugin,
 } from 'bootstrap-vue'
 
+Vue.use(ModalPlugin)
 Vue.component('b-btn', BButton)
 Vue.component('b-btn-group', BButtonGroup)
 Vue.component('b-button', BButton)
@@ -50,7 +50,6 @@ Vue.component('b-form-text', BFormText)
 Vue.component('b-form-textarea', BFormTextarea)
 Vue.component('b-input', BFormInput)
 Vue.component('b-link', BLink)
-Vue.component('b-modal', BModal)
 Vue.component('b-nav', BNav)
 Vue.component('b-nav-item', BNavItem)
 Vue.component('b-progress', BProgress)
@@ -61,5 +60,4 @@ Vue.component('b-spinner', BSpinner)
 Vue.component('b-tab', BTab)
 Vue.component('b-tabs', BTabs)
 Vue.component('b-textarea', BFormTextarea)
-Vue.directive('b-modal', VBModal)
 
