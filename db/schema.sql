@@ -52,6 +52,17 @@ CREATE TABLE person (
     data          blob    NOT NULL
 );
 
+-- The person_email table maps email addresses to people; it is used when
+-- receiving an email to determine which of our people (if any) it is from.
+-- Note that people can have multiple email addresses, and that people can share
+-- email addresses.
+CREATE TABLE person_email (
+    email  text    NOT NULL,
+    person integer NOT NULL REFERENCES person ON DELETE CASCADE,
+    UNIQUE (email, person)
+);
+CREATE INDEX person_email_person_index ON person_email (person);
+
 -- The session table tracks all logged-in sessions.
 CREATE TABLE session (
     token   text    PRIMARY KEY,

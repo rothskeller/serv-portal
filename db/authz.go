@@ -1,10 +1,5 @@
 package db
 
-func (tx *Tx) CreateAuthorizer(data []byte) {
-	panicOnExecError(tx.tx.Exec(`DELETE FROM authorizer`))
-	panicOnExecError(tx.tx.Exec(`INSERT INTO authorizer (data) VALUES (?)`, data))
-}
-
 // FetchAuthorizer fetches the authorizer data from the database.  The authz
 // package handles unmarshaling it.
 func (tx *Tx) FetchAuthorizer() (data []byte) {

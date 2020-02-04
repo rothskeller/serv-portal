@@ -137,7 +137,14 @@ func (tx *Tx) SavePerson(p *model.Person) {
 	} else {
 		data, err = p.Marshal()
 		panicOnError(err)
-		panicOnExecError(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, data) = (?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data, p.ID))
+		panicOnNoRows(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, data) = (?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), data, p.ID))
+		panicOnExecError(tx.tx.Exec(`DELETE FROM person_email WHERE person=?`, p.ID))
+	}
+	if p.Email != "" {
+		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email))
+	}
+	if p.Email2 != "" {
+		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email2))
 	}
 	tx.audit("person", p.ID, data)
 }
