@@ -91,8 +91,6 @@ func PostRole(r *util.Request, idstr string) error {
 			key := fmt.Sprintf("%s:%d", model.PrivilegeNames[p], gid)
 			if len(r.Form[key]) != 0 {
 				privs |= p
-			} else if p != model.PrivMember && role.Tag == model.RoleWebmaster {
-				privs |= p
 			}
 		}
 		privs = validatePrivileges(privs)

@@ -48,7 +48,11 @@ func GetGroup(r *util.Request, idstr string) error {
 		out.String(role.Name)
 		for _, priv := range model.AllPrivileges {
 			out.RawString(`,"` + model.PrivilegeNames[priv] + `":`)
-			out.Bool(r.Auth.CanRAG(role.ID, priv, group.ID))
+			if role.Tag == model.RoleWebmaster && idstr == "NEW" && priv != model.PrivMember {
+				out.Bool(true)
+			} else {
+				out.Bool(r.Auth.CanRAG(role.ID, priv, group.ID))
+			}
 		}
 		out.RawByte('}')
 	}
@@ -93,14 +97,11 @@ func PostGroup(r *util.Request, idstr string) error {
 		}
 		return err
 	}
-	webmaster := r.Auth.FetchRoleByTag(model.RoleWebmaster)
 	for _, rid := range r.Auth.AllRoles() {
 		var privs model.Privilege
 		for _, p := range model.AllPrivileges {
 			key := fmt.Sprintf("%s:%d", model.PrivilegeNames[p], rid)
 			if len(r.Form[key]) != 0 {
-				privs |= p
-			} else if p != model.PrivMember && rid == webmaster.ID {
 				privs |= p
 			}
 		}
