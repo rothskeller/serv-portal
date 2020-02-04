@@ -47,6 +47,7 @@ func GetEvent(r *util.Request, idstr string) error {
 				canView = true
 			}
 			if r.Auth.CanAG(model.PrivManageEvents, group) {
+				canView = true
 				canAttendance = true
 			} else {
 				canEdit = false
