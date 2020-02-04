@@ -35,12 +35,14 @@ func loadGroups(tx *db.Tx, in *jlexer.Lexer) {
 			}
 			switch key {
 			case "id":
+				if !first {
+					fmt.Fprintf(os.Stderr, "ERROR: id must be first key in group\n")
+					os.Exit(1)
+				}
 				g.ID = model.GroupID(in.Int())
-				if g.ID != 0 {
-					if !first {
-						fmt.Fprintf(os.Stderr, "ERROR: id must be first key in group\n")
-						os.Exit(1)
-					}
+				if g.ID == 0 {
+					g = auth.CreateGroup()
+				} else {
 					gid := g.ID
 					if g = auth.FetchGroup(g.ID); g == nil {
 						fmt.Fprintf(os.Stderr, "ERROR: group %d does not exist\n", gid)
@@ -67,12 +69,13 @@ func loadGroups(tx *db.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
+		if first {
+			fmt.Fprintf(os.Stderr, "ERROR: id must be first key in group\n")
+			os.Exit(1)
+		}
 		if err := group.ValidateGroup(auth, g); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
-		}
-		if g.ID == 0 {
-			auth.CreateGroup(g)
 		}
 		record++
 	}

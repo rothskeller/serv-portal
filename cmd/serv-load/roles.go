@@ -35,12 +35,14 @@ func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
 			}
 			switch key {
 			case "id":
+				if !first {
+					fmt.Fprintf(os.Stderr, "ERROR: id must be first key in role\n")
+					os.Exit(1)
+				}
 				r.ID = model.RoleID(in.Int())
-				if r.ID != 0 {
-					if !first {
-						fmt.Fprintf(os.Stderr, "ERROR: id must be first key in role\n")
-						os.Exit(1)
-					}
+				if r.ID == 0 {
+					r = auth.CreateRole()
+				} else {
 					rid := r.ID
 					if r = auth.FetchRole(r.ID); r == nil {
 						fmt.Fprintf(os.Stderr, "ERROR: role %d does not exist\n", rid)
@@ -64,12 +66,13 @@ func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
+		if first {
+			fmt.Fprintf(os.Stderr, "ERROR: id must be first key in role\n")
+			os.Exit(1)
+		}
 		if err := role.ValidateRole(auth, r); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
-		}
-		if r.ID == 0 {
-			auth.CreateRole(r)
 		}
 		record++
 	}
