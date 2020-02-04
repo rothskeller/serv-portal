@@ -58,6 +58,8 @@ func loadGroups(tx *db.Tx, in *jlexer.Lexer) {
 				g.Name = in.String()
 			case "allowTextMessages":
 				g.AllowTextMessages = in.Bool()
+			case "email":
+				g.Email = in.String()
 			default:
 				in.SkipRecursive()
 			}

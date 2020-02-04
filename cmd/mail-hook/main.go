@@ -3,31 +3,27 @@
 //
 // Mail is handled as follows:
 //   - If its MessageID header is one we've seen before, ignore it.
-//   - If addressed to bounce@, it gets stored in the database as a bounced
-//     message, and a notification gets sent to the webmasters.  Exception: if
-//     the content of the bounced message is itself such a notification, no
-//     second notification is sent.
-//   - If addressed to a known, unmoderated email list, and the sender is on
-//     the list, it gets resent to the list.
-//   - If addressed to a known, moderated list, and the sender is a moderator of
-//     the list, and the sender is authenticated, it gets resent to the list.
-//   - If addressed to a known email list, and not handled above, it gets stored
-//     in the database as an email awaiting moderation, and a notification of
-//     that gets sent to the moderators of the list.
-//   - Any other message get stored in the database as an unknown message, and
-//     a notification of that is sent daily to the webmasters.
+//   - If addressed to one or more known lists, and the sender is allowed to
+//     send to all of those lists, resend the message to those lists and store
+//     it in the database as EmailSent.
+//   - If addressed to one or more known lists, and the sender is not allowed to
+//     send to all of those lists, store it in the database as EmailModerated,
+//     and send a notification to the email moderators.
+//   - If addressed to none of the known lists, store it in the database as
+//     EmailUnrecognized.
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"io/ioutil"
 	"log"
-	"net/textproto"
+	"net/mail"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
+	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 )
@@ -36,14 +32,16 @@ var removeAddressRE = regexp.MustCompile(`\s*<[^>]*>`)
 
 func main() {
 	var (
-		logf *os.File
-		tx   *db.Tx
-		raw  []byte
-		rdr  textproto.Reader
-		hdr  textproto.MIMEHeader
-		em   model.EmailMessage
-		err  error
+		logf       *os.File
+		tx         *db.Tx
+		auth       *authz.Authorizer
+		raw        []byte
+		msg        *mail.Message
+		em         model.EmailMessage
+		err        error
+		recipients = map[*model.Group]bool{}
 	)
+	// Set up execution environment.
 	if err = os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
 		panic(err)
 	}
@@ -56,26 +54,103 @@ func main() {
 	}
 	db.Open("serv.db")
 	tx = db.Begin()
+	auth = authz.NewAuthorizer(tx)
+	// Read and parse the email message.
+	em.Timestamp = time.Now()
 	if raw, err = ioutil.ReadAll(os.Stdin); err != nil {
 		log.Fatalf("can't read message from stdin: %s", err)
 		panic(err)
 	}
-	rdr.R = bufio.NewReader(bytes.NewReader(raw))
-	if hdr, err = rdr.ReadMIMEHeader(); err != nil {
-		log.Printf("can't parse headers of message: %s", err)
-		// We'll use an empty set of headers and go on, because we'll
-		// want to record the message in the database.  We have to give
-		// it a message ID, though, because the database requires those
-		// to be unique.
-		hdr = make(textproto.MIMEHeader)
-		hdr.Set("Message-Id", time.Now().Format(time.RFC3339Nano))
+	if msg, err = mail.ReadMessage(bytes.NewReader(raw)); err != nil {
+		// We'll want to record the bogus message in the database, so
+		// we'll need to make up a unique message ID for it.
+		em.MessageID = time.Now().Format(time.RFC3339Nano)
+		em.Type = model.EmailUnrecognized
+		em.Error = "ReadMessage: " + err.Error()
+		em.Attention = true
+		goto DONE
 	}
-	em.MessageID = hdr.Get("Message-Id")
-	em.Timestamp = time.Now()
-	em.Type = model.EmailUnrecognized // for now
-	em.Attention = true
-	em.From = removeAddressRE.ReplaceAllLiteralString(hdr.Get("From"), "")
-	em.Subject = hdr.Get("Subject")
+	em.Subject = msg.Header.Get("Subject")
+	if em.MessageID = msg.Header.Get("Message-Id"); em.MessageID == "" {
+		// A message without an ID is bogus; we'll treat it as
+		// unrecognized.  We need to make up a unique message ID to
+		// store it, though.
+		em.MessageID = time.Now().Format(time.RFC3339Nano)
+		em.Type = model.EmailUnrecognized
+		em.Error = "No Message-Id header"
+		em.Attention = true
+		goto DONE
+	}
+	if f, err := mail.ParseAddress(msg.Header.Get("From")); err == nil {
+		if f.Name != "" {
+			em.From = f.Name
+		} else {
+			em.From = f.Address
+		}
+	} else {
+		em.Type = model.EmailUnrecognized
+		em.Error = "ParseAddress(From): " + err.Error()
+		em.Attention = true
+		goto DONE
+	}
+	// If we have seen this MessageID before, ignore the message altogether.
+	if tx.FetchEmailMessageByMessageID(em.MessageID) != nil {
+		log.Printf("received and ignored duplicate of %s", em.MessageID)
+		tx.Rollback()
+		return
+	}
+	// Who is it addressed to?
+	for _, hdr := range []string{"To", "Cc"} {
+		if addrs, err := msg.Header.AddressList(hdr); err != nil && err != mail.ErrHeaderNotPresent {
+			em.Type = model.EmailUnrecognized
+			em.Error = "ParseAddressList(" + hdr + "): " + err.Error()
+			em.Attention = true
+			goto DONE
+		} else {
+			for _, addr := range addrs {
+				addr.Address = strings.ToLower(addr.Address)
+				if !strings.HasSuffix(addr.Address, "@sunnyvaleserv.org") {
+					continue
+				}
+				if addr.Address == "admin@sunnyvaleserv.org" {
+					continue
+				}
+				if group := auth.FetchGroupByEmail(addr.Address[:len(addr.Address)-len("@sunnyvaleserv.org")]); group == nil {
+					em.Type = model.EmailUnrecognized
+					em.Error = "Unknown recipient " + addr.Address
+					em.Attention = true
+					goto DONE
+				} else {
+					if !recipients[group] {
+						em.Groups = append(em.Groups, group.ID)
+						recipients[group] = true
+					}
+				}
+			}
+		}
+	}
+	if len(recipients) == 0 {
+		// No recognized group.
+		em.Type = model.EmailUnrecognized
+		em.Error = "No groups on To or Cc list"
+		em.Attention = true
+		goto DONE
+	}
+	// Does the sender have privilege to send to all of the recipient
+	// groups?
+	for group := range recipients {
+		_ = group
+		if true { // TODO check for privilege
+			em.Type = model.EmailModerated
+			em.Error = "Message requires moderation"
+			em.Attention = true
+			goto DONE
+		}
+	}
+	// Resend the message to every member of the recipient groups.
+	// TODO
+	panic("not reachable")
+DONE:
 	tx.CreateEmailMessage(&em, raw)
 	tx.Commit()
 	log.Printf("received and recorded %s", em.MessageID)

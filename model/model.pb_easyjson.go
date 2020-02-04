@@ -794,7 +794,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *P
 		case "date":
 			out.Date = string(in.String())
 		case "privilege":
-			out.Privilege = Privilege(in.Uint8())
+			(out.Privilege).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -833,7 +833,7 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in 
 		} else {
 			out.RawString(prefix)
 		}
-		out.Uint8(uint8(in.Privilege))
+		(in.Privilege).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -1495,6 +1495,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 			out.From = string(in.String())
 		case "subject":
 			out.Subject = string(in.String())
+		case "error":
+			out.Error = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1563,6 +1565,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 		const prefix string = ",\"subject\":"
 		out.RawString(prefix)
 		out.String(string(in.Subject))
+	}
+	if in.Error != "" {
+		const prefix string = ",\"error\":"
+		out.RawString(prefix)
+		out.String(string(in.Error))
 	}
 	out.RawByte('}')
 }

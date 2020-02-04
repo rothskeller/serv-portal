@@ -29,6 +29,7 @@ message EmailMessage {
   repeated int64            groups     = 6 [(gogoproto.casttype) = "GroupID"];
   string                    from       = 7;
   string                    subject    = 8;
+  string                    error      = 9;
 }
 
 message Event {

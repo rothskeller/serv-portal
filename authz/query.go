@@ -111,6 +111,17 @@ func (a *Authorizer) FetchGroup(id model.GroupID) *model.Group {
 	return nil
 }
 
+// FetchGroupByEmail returns the group with the specified email, or nil if there
+// is none.
+func (a *Authorizer) FetchGroupByEmail(email string) *model.Group {
+	for gid := range a.groups {
+		if a.groups[gid].Email == email {
+			return &a.groups[gid]
+		}
+	}
+	return nil
+}
+
 // FetchGroupByTag returns the group with the specified tag, or nil if there is
 // none.
 func (a *Authorizer) FetchGroupByTag(tag model.GroupTag) *model.Group {
