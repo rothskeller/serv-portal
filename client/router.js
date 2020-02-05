@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from './store'
 import MainMenu from './MainMenu'
+import Emails from './pages/Emails'
 import Events from './pages/Events'
 import Groups from './pages/Groups'
 import People from './pages/People'
@@ -35,6 +36,17 @@ const router = new Router({
       path: '*',
       component: MainMenu,
       children: [
+        {
+          path: '/emails',
+          component: Emails,
+          meta: { menuItem: 'emails', tabbed: true },
+          children: [
+            {
+              path: '',
+              component: () => import(/* webpackChunkName: "EmailsList" */ './pages/emails/EmailsList'),
+            },
+          ],
+        },
         {
           path: '/events',
           component: Events,

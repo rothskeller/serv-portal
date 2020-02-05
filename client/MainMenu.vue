@@ -22,6 +22,7 @@ it.
       b-nav-item(to="/people" :active="menuItem === 'people'") People
       b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
       b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
+      b-nav-item(v-if="me.webmaster" to="/emails" :active="menuItem === 'emails'") Emails
       b-nav-item(v-if="me.webmaster" to="/groups" :active="menuItem === 'groups'") Groups
       b-nav-item(v-if="me.webmaster" to="/roles" :active="menuItem === 'roles'") Roles
       b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`") Profile

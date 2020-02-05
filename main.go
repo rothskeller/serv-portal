@@ -20,6 +20,7 @@ import (
 	"sunnyvaleserv.org/portal/auth"
 	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/email"
 	"sunnyvaleserv.org/portal/event"
 	"sunnyvaleserv.org/portal/group"
 	"sunnyvaleserv.org/portal/person"
@@ -85,6 +86,10 @@ func router(r *util.Request) error {
 		return auth.GetLogin(r)
 	case r.Method == "POST" && c[1] == "logout" && c[2] == "":
 		return auth.PostLogout(r)
+	case r.Method == "GET" && c[1] == "emails" && c[2] == "":
+		return email.GetEmails(r)
+	case r.Method == "POST" && c[1] == "emails" && c[2] != "" && c[3] == "":
+		return email.PostEmail(r, c[2])
 	case r.Method == "GET" && c[1] == "events" && c[2] == "":
 		return event.GetEvents(r)
 	case r.Method == "GET" && c[1] == "events" && c[2] != "" && c[3] == "":
