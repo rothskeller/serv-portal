@@ -94,6 +94,6 @@ func (tx *Tx) UpdateEmailMessage(em *model.EmailMessage) {
 	)
 	data, err = em.Marshal()
 	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE event SET (message_id, timestamp, data) = (?,?,?,?,?) WHERE id=?`, em.MessageID, Time(em.Timestamp), data, em.ID))
+	panicOnNoRows(tx.tx.Exec(`UPDATE event SET (message_id, timestamp, data) = (?,?,?) WHERE id=?`, em.MessageID, Time(em.Timestamp), data, em.ID))
 	tx.audit("email_message", em.ID, data)
 }
