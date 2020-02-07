@@ -50,16 +50,39 @@ func loadGroups(tx *db.Tx, in *jlexer.Lexer) {
 					}
 					g.Name = ""
 					g.Tag = ""
-					g.AllowTextMessages = false
+					g.NoEmail = nil
+					g.NoText = nil
 				}
 			case "tag":
 				g.Tag = model.GroupTag(in.String())
 			case "name":
 				g.Name = in.String()
-			case "allowTextMessages":
-				g.AllowTextMessages = in.Bool()
 			case "email":
 				g.Email = in.String()
+			case "noEmail":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					pid := model.PersonID(in.Int())
+					if tx.FetchPerson(pid) == nil {
+						fmt.Fprintf(os.Stderr, "ERROR: person %d does not exist\n", pid)
+						os.Exit(1)
+					}
+					g.NoEmail = append(g.NoEmail, pid)
+					in.WantComma()
+				}
+				in.Delim(']')
+			case "noText":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					pid := model.PersonID(in.Int())
+					if tx.FetchPerson(pid) == nil {
+						fmt.Fprintf(os.Stderr, "ERROR: person %d does not exist\n", pid)
+						os.Exit(1)
+					}
+					g.NoText = append(g.NoEmail, pid)
+					in.WantComma()
+				}
+				in.Delim(']')
 			default:
 				in.SkipRecursive()
 			}

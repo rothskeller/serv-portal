@@ -55,6 +55,11 @@ div.mt-3.ml-2(v-if="!person")
     .person-view-note(v-for="n in person.notes")
       span.person-view-note-date(v-text="n.date")
       span(v-text="n.note")
+  #person-view-unsub(v-if="person.noEmail || person.noText")
+    div Unsubscribe:
+    div(v-if="person.noEmail && person.noText") from all emails and text messages
+    div(v-else-if="person.noEmail") from all emails
+    div(v-else) from all text messages
 </template>
 
 <script>
@@ -123,7 +128,7 @@ export default {
   margin-right 0.75rem
   color #888
   font-variant tabular-nums
-#person-view-notes
+#person-view-notes, #person-view-unsub
   margin-top 0.75rem
   line-height 1.2
 .person-view-note

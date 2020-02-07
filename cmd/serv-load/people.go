@@ -144,6 +144,10 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 					}
 					in.Delim(']')
 				}
+			case "noEmail":
+				p.NoEmail = in.Bool()
+			case "noText":
+				p.NoText = in.Bool()
 			default:
 				in.SkipRecursive()
 			}

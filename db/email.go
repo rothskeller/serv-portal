@@ -20,7 +20,6 @@ func (tx *Tx) FetchEmailMessage(id model.EmailMessageID) (e *model.EmailMessage)
 	default:
 		panic(err)
 	}
-
 }
 
 // FetchEmailMessageByMessageID returns the email message with the specified

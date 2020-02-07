@@ -40,8 +40,8 @@ func GetSMS(r *util.Request) error {
 	}
 	out.RawString(`],"groups":[`)
 	first := true
-	for _, g := range r.Auth.FetchGroups(r.Auth.AllGroups()) {
-		if g.AllowTextMessages {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
+		if r.Auth.CanAG(model.PrivSendTextMessages, g.ID) {
 			if first {
 				first = false
 			} else {

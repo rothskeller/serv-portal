@@ -28,18 +28,16 @@ func GetSMSNew(r *util.Request) error {
 	out.RawString(`{"groups":[`)
 	first := true
 	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
-		if g.AllowTextMessages {
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.RawString(`{"id":`)
-			out.Int(int(g.ID))
-			out.RawString(`,"name":`)
-			out.String(g.Name)
-			out.RawByte('}')
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
 		}
+		out.RawString(`{"id":`)
+		out.Int(int(g.ID))
+		out.RawString(`,"name":`)
+		out.String(g.Name)
+		out.RawByte('}')
 	}
 	out.RawString(`]}`)
 	r.Tx.Commit()
@@ -73,7 +71,7 @@ func PostSMS(r *util.Request) error {
 		return errors.New("missing message")
 	}
 	for _, g := range r.Form["group"] {
-		if group := r.Auth.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && group.AllowTextMessages && r.Auth.CanAG(model.PrivSendTextMessages, group.ID) {
+		if group := r.Auth.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && r.Auth.CanAG(model.PrivSendTextMessages, group.ID) {
 			groups[group] = true
 			message.Groups = append(message.Groups, group.ID)
 		} else {
@@ -85,8 +83,20 @@ func PostSMS(r *util.Request) error {
 	}
 PEOPLE:
 	for _, p := range r.Tx.FetchPeople() {
+		var blocked bool
+	GROUPS:
 		for group := range groups {
 			if r.Auth.MemberPG(p.ID, group.ID) {
+				if p.NoText {
+					blocked = true
+					break GROUPS
+				}
+				for _, nt := range group.NoText {
+					if p.ID == nt {
+						blocked = true
+						continue GROUPS
+					}
+				}
 				if p.CellPhone != "" {
 					message.Recipients = append(message.Recipients, &model.TextRecipient{
 						Recipient: p.ID,
@@ -100,6 +110,12 @@ PEOPLE:
 				}
 				continue PEOPLE
 			}
+		}
+		if blocked {
+			message.Recipients = append(message.Recipients, &model.TextRecipient{
+				Recipient: p.ID,
+				Status:    "Texting Blocked",
+			})
 		}
 	}
 	r.Tx.SaveTextMessage(&message)

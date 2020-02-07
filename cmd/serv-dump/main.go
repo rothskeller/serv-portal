@@ -349,6 +349,12 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
+	if p.NoEmail {
+		out.RawString(`,"noEmail":true`)
+	}
+	if p.NoText {
+		out.RawString(`,"noText":true`)
+	}
 	out.RawByte('}')
 }
 

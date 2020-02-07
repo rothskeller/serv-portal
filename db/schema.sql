@@ -22,6 +22,12 @@ CREATE TABLE authorizer (data BLOB);
 -- all of the groups, roles, and privileges for the SERV portal.
 CREATE TABLE authz (data BLOB);
 
+-- The email_list table tracks all email distribution lists.
+CREATE TABLE email_list (
+    id   text PRIMARY KEY,
+    data blob NOT NULL
+);
+
 -- The email_message table tracks all email messages handled by the portal.
 CREATE TABLE email_message (
     id         integer PRIMARY KEY,

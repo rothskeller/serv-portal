@@ -46,11 +46,12 @@ message Event {
 }
 
 message Group {
-  int64  id                  = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
-  string tag                 = 2 [(gogoproto.casttype) = "GroupTag"];
-  string name                = 3;
-  bool   allow_text_messages = 4 [(gogoproto.jsontag) = "allowTextMessages"];
-  string email               = 5;
+  int64          id       = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
+  string         tag      = 2 [(gogoproto.casttype) = "GroupTag"];
+  string         name     = 3;
+  string         email    = 5;
+  repeated int64 no_email = 6 [(gogoproto.casttype) = "PersonID"];
+  repeated int64 no_text  = 7 [(gogoproto.casttype) = "PersonID"];
 }
 
 message Person {
@@ -74,6 +75,8 @@ message Person {
   string                    pwreset_token   = 10 [(gogoproto.customname) = "PWResetToken", (gogoproto.jsontag) = "pwresetToken,omitempty"];
   google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
   repeated PersonNote       notes           = 27;
+  bool                      no_email        = 28;
+  bool                      no_text         = 29;
 }
 
 message PersonNote {

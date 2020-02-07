@@ -168,6 +168,10 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
+	out.RawString(`,"noEmail":`)
+	out.Bool(person.NoEmail)
+	out.RawString(`,"noText":`)
+	out.Bool(person.NoText)
 	out.RawByte('}')
 	if wantEdit {
 		out.RawString(`,"canEditRoles":`)

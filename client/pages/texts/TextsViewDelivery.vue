@@ -33,6 +33,7 @@ export default {
         case 'undelivered': return 'texts-view-delivery-failed'
         case 'failed': return 'texts-view-delivery-failed'
         case 'No Cell Phone': return 'texts-view-delivery-failed'
+        case 'Texting Blocked': return 'texts-view-delivery-failed'
         default: return 'texts-view-delivery-pending'
       }
     },
@@ -45,11 +46,12 @@ export default {
         case 'undelivered': return 'Not Delivered'
         case 'failed': return 'Failed'
         case 'No Cell Phone': return 'No Cell Phone'
+        case 'Texting Blocked': return 'Texting Blocked'
         default: return 'Pending'
       }
     },
     formatTimestamp() {
-      if (!this.delivery.status || this.delivery.status === 'No Cell Phone') return ''
+      if (!this.delivery.status || this.delivery.status === 'No Cell Phone' || this.delivery.status === 'Texting Blocked') return ''
       return `as of ${this.delivery.timestamp.substr(11, 8)}`
     },
   },

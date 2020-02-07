@@ -2,7 +2,7 @@ package group
 
 import (
 	"fmt"
-	"strconv"
+	"sort"
 
 	"github.com/mailru/easyjson/jwriter"
 
@@ -32,8 +32,36 @@ func GetGroup(r *util.Request, idstr string) error {
 	out.String(group.Name)
 	out.RawString(`,"email":`)
 	out.String(group.Email)
-	out.RawString(`,"allowTextMessages":`)
-	out.Bool(group.AllowTextMessages)
+	if len(group.NoEmail) != 0 {
+		people := make([]*model.Person, len(group.NoEmail))
+		for i := range group.NoEmail {
+			people[i] = r.Tx.FetchPerson(group.NoEmail[i])
+		}
+		sort.Sort(model.PersonSort(people))
+		out.RawString(`,"noEmail":[`)
+		for i, p := range people {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(p.SortName)
+		}
+		out.RawByte(']')
+	}
+	if len(group.NoText) != 0 {
+		people := make([]*model.Person, len(group.NoText))
+		for i := range group.NoText {
+			people[i] = r.Tx.FetchPerson(group.NoText[i])
+		}
+		sort.Sort(model.PersonSort(people))
+		out.RawString(`,"noText":[`)
+		for i, p := range people {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(p.SortName)
+		}
+		out.RawByte(']')
+	}
 	out.RawString(`},"canDelete":`)
 	out.Bool(group.Tag == "")
 	out.RawString(`,"privs":[`)
@@ -82,7 +110,6 @@ func PostGroup(r *util.Request, idstr string) error {
 	}
 	group.Name = r.FormValue("name")
 	group.Email = r.FormValue("email")
-	group.AllowTextMessages, _ = strconv.ParseBool(r.FormValue("allowTextMessages"))
 	if err := ValidateGroup(r.Auth, group); err != nil {
 		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")
