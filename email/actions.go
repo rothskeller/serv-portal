@@ -39,8 +39,8 @@ func PostEmail(r *util.Request, idstr string) error {
 		r.Tx.UpdateEmailMessage(msg)
 		r.Tx.Commit()
 		return nil
-	case "forward":
-		ForwardMessage(r, msg)
+	case "sendToMe":
+		SendMessageToMe(r, msg)
 		r.Tx.Commit()
 		return nil
 	case "discard":
@@ -250,23 +250,17 @@ func quoteIfNeeded(s string) string {
 	return `"` + strings.Replace(s, `"`, `\"`, -1) + `"`
 }
 
-// ForwardMessage forwards an email message to the caller's primary email
-// address.
-func ForwardMessage(r *util.Request, email *model.EmailMessage) {
+// SendMessageToMe sends an email message to the caller's primary email address
+// (rather than to the list(s) it was addressed to).
+func SendMessageToMe(r *util.Request, email *model.EmailMessage) {
 	var (
-		raw      []byte
-		msg      bytes.Buffer
-		login    loginAuth
-		boundary string
+		raw   []byte
+		login loginAuth
 	)
 	login.username = config.Get("sendGridUsername")
 	login.password = config.Get("sendGridPassword")
 	raw = r.Tx.FetchEmailMessageBody(email.ID)
-	boundary = util.RandomToken()
-	fmt.Fprintf(&msg, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: %s <%s>\r\nSubject: Forward of moderated email\r\nContent-Type: multipart/mixed; boundary=%s\r\n\r\n\r\n--%[3]s\r\nContent-Type: text/plain\r\n\r\nThe attached email was forwarded at your request from the SunnyvaleSERV.org portal.\r\n\r\n--%[3]s\r\nContent-Type: message/rfc822\r\n\r\n", quoteIfNeeded(r.Person.InformalName), r.Person.Email, boundary)
-	msg.Write(raw)
-	fmt.Fprintf(&msg, "\r\n--%s--\r\n", boundary)
-	smtp.SendMail(config.Get("sendGridServerPort"), &login, "admin@sunnyvaleserv.org", []string{r.Person.Email}, msg.Bytes())
+	smtp.SendMail(config.Get("sendGridServerPort"), &login, "admin@sunnyvaleserv.org", []string{r.Person.Email}, raw)
 }
 
 type loginAuth struct{ username, password string }

@@ -38,9 +38,8 @@ EmailsList displays the list of emails.
     .emails-list-buttons
       b-btn(size="sm" variant="primary") View
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="success" @click="onAccept(email)") Accept
-      b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="warning") Reject
       b-btn.ml-2(v-if="email.type !== 'sent'" size="sm" variant="danger" @click="onDiscard(email)") Discard
-      b-btn.ml-2(size="sm" variant="info" @click="onForward(email)") Forward
+      b-btn.ml-2(size="sm" variant="info" @click="onSendToMe(email)") Send to Me
 </template>
 
 <script>
@@ -63,9 +62,9 @@ export default {
       await this.$axios.post(`/api/emails/${email.id}?action=discard`)
       this.emails = (await this.$axios.get(`/api/emails`)).data
     },
-    async onForward(email) {
-      await this.$axios.post(`/api/emails/${email.id}?action=forward`)
-      this.$bvModal.msgBoxOk("This message has been forwarded to your primary email address.")
+    async onSendToMe(email) {
+      await this.$axios.post(`/api/emails/${email.id}?action=sendToMe`)
+      this.$bvModal.msgBoxOk("This message has been sent to your primary email address.  Because it is being sent from a different mailbox than its From: line, it may be delivered to your Spam folder.")
     },
   },
 }
