@@ -40,7 +40,7 @@ EmailsList displays the list of emails.
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="success" @click="onAccept(email)") Accept
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="warning") Reject
       b-btn.ml-2(v-if="email.type !== 'sent'" size="sm" variant="danger") Discard
-      b-btn.ml-2(size="sm" variant="info") Forward
+      b-btn.ml-2(size="sm" variant="info" @click="onForward(email)") Forward
 </template>
 
 <script>
