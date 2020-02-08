@@ -1,0 +1,26 @@
+MVP:
+  Policy and copyright page
+  Unsubscribe page
+  Invite member by email with random password
+  Combine roles, groups, email into admin page
+  Clone roles and groups rather than making new ones
+  Require old password when changing password
+  Change auditing and daily report
+  Notification of email needing attention
+  Automatic resend of email from approved sender
+  Don't keep db locked while sending email
+Eliminate Samariteam:
+  SARES import
+  Files area
+  Import files from Samariteam
+Goodies:
+  UI to configure scc-ares-races calendar synch
+  Skills and other person data
+  Events tagged with which volunteer bucket their hours go in
+  Calendar sharing
+  Volunteer hours report
+  People editing their volunteer hours
+  Credentials and clearances tracking
+  Change text report to show delivered time
+  Event signups and RSVPs
+  Data export
