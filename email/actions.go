@@ -43,6 +43,11 @@ func PostEmail(r *util.Request, idstr string) error {
 		ForwardMessage(r, msg)
 		r.Tx.Commit()
 		return nil
+	case "discard":
+		msg.Attention = false
+		r.Tx.UpdateEmailMessage(msg)
+		r.Tx.Commit()
+		return nil
 	default:
 		return errors.New("invalid action")
 	}

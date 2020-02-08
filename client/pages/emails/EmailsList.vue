@@ -39,7 +39,7 @@ EmailsList displays the list of emails.
       b-btn(size="sm" variant="primary") View
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="success" @click="onAccept(email)") Accept
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="warning") Reject
-      b-btn.ml-2(v-if="email.type !== 'sent'" size="sm" variant="danger") Discard
+      b-btn.ml-2(v-if="email.type !== 'sent'" size="sm" variant="danger" @click="onDiscard(email)") Discard
       b-btn.ml-2(size="sm" variant="info" @click="onForward(email)") Forward
 </template>
 
@@ -57,6 +57,10 @@ export default {
   methods: {
     async onAccept(email) {
       await this.$axios.post(`/api/emails/${email.id}?action=accept`)
+      this.emails = (await this.$axios.get(`/api/emails`)).data
+    },
+    async onDiscard(email) {
+      await this.$axios.post(`/api/emails/${email.id}?action=discard`)
       this.emails = (await this.$axios.get(`/api/emails`)).data
     },
     async onForward(email) {
