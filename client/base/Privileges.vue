@@ -44,7 +44,7 @@ Privileges displays the privilege choices for a role acting on a group.
       :variant="privs.bcc ? 'primary' : 'outline-primary'"
       size="sm"
       @click="toggleBCC"
-    ) @
+    ) B
 </template>
 
 <script>
