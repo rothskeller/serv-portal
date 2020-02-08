@@ -6,7 +6,7 @@ EmailsList displays the list of emails.
 #emails-list
   #emails-list-spinner(v-if="loading")
     b-spinner(small)
-  .emails-list-email(v-for="email in emails")
+  .emails-list-email(v-for="email in emails" :key="email.id")
     template(v-if="email.from")
       .emails-list-heading From:
       div(v-text="email.from")
@@ -57,7 +57,7 @@ export default {
   methods: {
     async onAccept(email) {
       await this.$axios.post(`/api/emails/${email.id}?action=accept`)
-      this.emails = (await this.$axios.get(`/api/emails`))
+      this.emails = (await this.$axios.get(`/api/emails`)).data
     },
   },
 }
