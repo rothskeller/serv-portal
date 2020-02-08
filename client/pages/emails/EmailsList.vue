@@ -59,6 +59,9 @@ export default {
       await this.$axios.post(`/api/emails/${email.id}?action=accept`)
       this.emails = (await this.$axios.get(`/api/emails`)).data
     },
+    async onForward(email) {
+      await this.$axios.post(`/api/emails/${email.id}?action=forward`)
+    },
   },
 }
 </script>
