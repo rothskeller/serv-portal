@@ -65,6 +65,7 @@ export default {
     },
     async onForward(email) {
       await this.$axios.post(`/api/emails/${email.id}?action=forward`)
+      this.$bvModal.msgBoxOk("This message has been forwarded to your primary email address.")
     },
   },
 }
