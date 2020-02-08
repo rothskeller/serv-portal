@@ -36,7 +36,6 @@ EmailsList displays the list of emails.
       .emails-list-heading Error:
       .emails-list-error Message not recognized
     .emails-list-buttons
-      b-btn(size="sm" variant="primary") View
       b-btn.ml-2(v-if="email.type === 'moderated'" size="sm" variant="success" @click="onAccept(email)") Accept
       b-btn.ml-2(v-if="email.type !== 'sent'" size="sm" variant="danger" @click="onDiscard(email)") Discard
       b-btn.ml-2(size="sm" variant="info" @click="onSendToMe(email)") Send to Me
