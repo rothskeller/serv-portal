@@ -176,7 +176,7 @@ func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddre
 		}
 	}
 	if mp.html {
-		if _, err = fmt.Fprintf(w, "<div style=\"height:1em;width:5em;bottom-border:1px solid #888\"></div><div style=\"color:#888\">This message was sent to %s &lt;%s&gt; via the %s@SunnyvaleSERV.org mailing list.<br>To unsubscribe, visit <a href=\"https://SunnyvaleSERV.org/unsubscribe/%[2]s\">https://SunnyvaleSERV.org/unsubscribe/%[2]s</a>.</div>", html.EscapeString(personName), html.EscapeString(personAddress), groupAddress); err != nil {
+		if _, err = fmt.Fprintf(w, "<div style=\"height:1em;width:5em;border-bottom:1px solid #888\"></div><div style=\"color:#888\">This message was sent to %s &lt;<a style=\"color:#888\">%s</a>&gt; via the <a style=\"color:#888\">%s@SunnyvaleSERV.org</a> mailing list.<br>To unsubscribe, visit <a style=\"color:#888\" href=\"https://SunnyvaleSERV.org/unsubscribe/%[2]s\">https://SunnyvaleSERV.org/unsubscribe/%[2]s</a>.</div>", html.EscapeString(personName), html.EscapeString(personAddress), groupAddress); err != nil {
 			return err
 		}
 	}
