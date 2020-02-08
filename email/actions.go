@@ -209,19 +209,19 @@ func emitHeader(buf io.Writer, name string, value string) {
 		idx := strings.LastIndex(str[:78], ", ")
 		if idx >= 0 {
 			fmt.Fprint(buf, str[:idx], ",\r\n ")
-			str = str[idx:]
+			str = str[idx+2:]
 			continue
 		}
 		idx = strings.LastIndex(str[:78], " ")
 		if idx >= 0 {
 			fmt.Fprint(buf, str[:idx], "\r\n ")
-			str = str[idx:]
+			str = str[idx+1:]
 			continue
 		}
 		idx = strings.IndexByte(str, ' ')
 		if idx >= 0 {
 			fmt.Fprint(buf, str[:idx], "\r\n ")
-			str = str[idx:]
+			str = str[idx+1:]
 			continue
 		}
 		fmt.Fprint(buf, str, "\r\n")
