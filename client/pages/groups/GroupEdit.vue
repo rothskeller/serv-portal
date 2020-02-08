@@ -101,6 +101,8 @@ export default {
         if (r.admin) body.append(`admin:${r.id}`, true)
         if (r.events) body.append(`events:${r.id}`, true)
         if (r.texts) body.append(`texts:${r.id}`, true)
+        if (r.emails) body.append(`emails:${r.id}`, true)
+        if (r.bcc) body.append(`bcc:${r.id}`, true)
       })
       const resp = (await this.$axios.post(`/api/groups/${this.$route.params.id}`, body)).data
       if (resp) {

@@ -92,6 +92,8 @@ export default {
         if (g.admin) body.append(`admin:${g.id}`, true)
         if (g.events) body.append(`events:${g.id}`, true)
         if (g.texts) body.append(`texts:${g.id}`, true)
+        if (g.emails) body.append(`emails:${g.id}`, true)
+        if (g.bcc) body.append(`bcc:${g.id}`, true)
       })
       const resp = (await this.$axios.post(`/api/roles/${this.$route.params.id}`, body)).data
       if (resp && resp.duplicateName)

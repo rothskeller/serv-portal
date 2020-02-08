@@ -330,6 +330,17 @@ func (a *Authorizer) PeopleG(group model.GroupID) (people []model.PersonID) {
 	return people
 }
 
+// PeopleR returns the list of people who have the specified role.
+func (a *Authorizer) PeopleR(role model.RoleID) (people []model.PersonID) {
+	for person := 0; person < int(a.numPeople); person++ {
+		if a.holdsPR(model.PersonID(person), role) {
+			people = append(people, model.PersonID(person))
+			break
+		}
+	}
+	return people
+}
+
 // RolesIndividuallyHeld returns the roles that are individual, and currently
 // held by a person.  They are returned in a map from role ID to person ID of
 // the person holding it.
@@ -343,6 +354,17 @@ func (a *Authorizer) RolesIndividuallyHeld() (roles map[model.RoleID]model.Perso
 			if a.holdsPR(model.PersonID(person), model.RoleID(rid)) {
 				roles[model.RoleID(rid)] = model.PersonID(person)
 			}
+		}
+	}
+	return roles
+}
+
+// RolesAG returns the list of roles that grant the specified privilege(s) on
+// the specified group.
+func (a *Authorizer) RolesAG(actions model.Privilege, group model.GroupID) (roles []model.RoleID) {
+	for role := model.RoleID(1); role < model.RoleID(len(a.roles)); role++ {
+		if a.CanRAG(role, actions, group) {
+			roles = append(roles, role)
 		}
 	}
 	return roles

@@ -35,6 +35,16 @@ Privileges displays the privilege choices for a role acting on a group.
       size="sm"
       @click="toggleTexts"
     ) T
+    b-btn(
+      :variant="privs.emails ? 'primary' : 'outline-primary'"
+      size="sm"
+      @click="toggleEmails"
+    ) @
+    b-btn(
+      :variant="privs.bcc ? 'primary' : 'outline-primary'"
+      size="sm"
+      @click="toggleBCC"
+    ) @
 </template>
 
 <script>
@@ -81,6 +91,12 @@ export default {
       if (np.texts)
         np.roster = np.contact = true
       this.$emit('change', np)
+    },
+    toggleEmails() {
+      this.$emit('change', { ...this.privs, emails: !this.privs.emails })
+    },
+    toggleBCC() {
+      this.$emit('change', { ...this.privs, bcc: !this.privs.bcc })
     },
   },
 }

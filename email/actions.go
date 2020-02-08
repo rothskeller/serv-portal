@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/mail"
 	"net/smtp"
-	"os"
+	"net/textproto"
 	"regexp"
 	"strings"
 
@@ -50,6 +50,7 @@ func SendMessage(tx *db.Tx, auth *authz.Authorizer, email *model.EmailMessage) {
 		raw     []byte
 		msg     *mail.Message
 		body    []byte
+		root    *messagePart
 		client  *smtp.Client
 		tlsconf tls.Config
 		login   loginAuth
@@ -60,6 +61,7 @@ func SendMessage(tx *db.Tx, auth *authz.Authorizer, email *model.EmailMessage) {
 		panic(err)
 	}
 	body, _ = ioutil.ReadAll(msg.Body)
+	root, _ = makeMessagePart(textproto.MIMEHeader(msg.Header), body)
 	for hdr := range msg.Header {
 		switch hdr {
 		case "Cc", "Content-Transfer-Encoding", "Content-Type", "Date", "In-Reply-To", "Message-Id", "Mime-Version",
@@ -88,7 +90,7 @@ func SendMessage(tx *db.Tx, auth *authz.Authorizer, email *model.EmailMessage) {
 		goto SEND_ERROR
 	}
 	for _, group := range email.Groups {
-		if err = sendMessageToGroup(tx, auth, client, email, msg, body, group); err != nil {
+		if err = sendMessageToGroup(tx, auth, client, email, msg, root, group); err != nil {
 			goto SEND_ERROR
 		}
 	}
@@ -104,13 +106,31 @@ SEND_ERROR:
 }
 
 func sendMessageToGroup(
-	tx *db.Tx, auth *authz.Authorizer, client *smtp.Client, email *model.EmailMessage, msg *mail.Message, body []byte,
+	tx *db.Tx, auth *authz.Authorizer, client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart,
 	gid model.GroupID,
 ) error {
 	group := auth.FetchGroup(gid)
+	pids := make(map[model.PersonID]bool)
 	for _, pid := range auth.PeopleG(gid) {
+		pids[pid] = true
+	}
+	for _, rid := range auth.RolesAG(model.PrivBCC, gid) {
+		for _, pid := range auth.PeopleR(rid) {
+			pids[pid] = true
+		}
+	}
+PEOPLE:
+	for pid := range pids {
+		for _, ne := range group.NoEmail {
+			if pid == ne {
+				continue PEOPLE
+			}
+		}
 		person := tx.FetchPerson(pid)
-		if err := sendMessageToPerson(client, email, msg, body, group, person); err != nil {
+		if person.NoEmail {
+			continue
+		}
+		if err := sendMessageToPerson(client, email, msg, root, group, person); err != nil {
 			return err
 		}
 	}
@@ -118,15 +138,16 @@ func sendMessageToGroup(
 }
 
 func sendMessageToPerson(
-	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, body []byte, group *model.Group, person *model.Person,
+	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
+	person *model.Person,
 ) error {
 	if person.Email != "" {
-		if err := sendMessageToEmail(client, email, msg, body, group, person, person.Email); err != nil {
+		if err := sendMessageToEmail(client, email, msg, root, group, person, person.Email); err != nil {
 			return err
 		}
 	}
 	if person.Email2 != "" {
-		if err := sendMessageToEmail(client, email, msg, body, group, person, person.Email2); err != nil {
+		if err := sendMessageToEmail(client, email, msg, root, group, person, person.Email2); err != nil {
 			return err
 		}
 	}
@@ -134,8 +155,8 @@ func sendMessageToPerson(
 }
 
 func sendMessageToEmail(
-	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, body []byte, group *model.Group, person *model.Person,
-	address string,
+	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
+	person *model.Person, address string,
 ) error {
 	var (
 		buf bytes.Buffer
@@ -146,9 +167,7 @@ func sendMessageToEmail(
 	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(group.Name), group.Email)
 	fmt.Fprintf(&buf, "Errors-To: admin@sunnyvaleserv.org\r\n")
 	emitHeaders(&buf, msg.Header)
-	buf.Write(body)
-	fmt.Fprintf(os.Stderr, string(buf.Bytes()))
-	// TODO modify body to add destination and unsubscribe information.
+	rewrite(&buf, root, group.Email, person.InformalName, address)
 	if err = client.Mail(group.Email + "@sunnyvaleserv.org"); err != nil {
 		return err
 	}
@@ -167,7 +186,7 @@ func sendMessageToEmail(
 	return nil
 }
 
-func emitFrom(buf *bytes.Buffer, email *model.EmailMessage, group *model.Group) {
+func emitFrom(buf io.Writer, email *model.EmailMessage, group *model.Group) {
 	var from = email.From
 	if idx := strings.IndexByte(from, '@'); idx >= 0 {
 		from = from[:idx]
@@ -175,7 +194,7 @@ func emitFrom(buf *bytes.Buffer, email *model.EmailMessage, group *model.Group) 
 	fmt.Fprintf(buf, "From: %s via %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(from), quoteIfNeeded(group.Name), group.Email)
 }
 
-func emitHeaders(buf *bytes.Buffer, headers mail.Header) {
+func emitHeaders(buf io.Writer, headers mail.Header) {
 	for h, va := range headers {
 		for _, v := range va {
 			emitHeader(buf, h, v)
@@ -184,7 +203,7 @@ func emitHeaders(buf *bytes.Buffer, headers mail.Header) {
 	fmt.Fprint(buf, "\r\n")
 }
 
-func emitHeader(buf *bytes.Buffer, name string, value string) {
+func emitHeader(buf io.Writer, name string, value string) {
 	str := name + ": " + value
 	for len(str) > 78 {
 		idx := strings.LastIndex(str[:78], ", ")

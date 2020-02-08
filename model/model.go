@@ -213,19 +213,32 @@ const (
 	// PrivSendTextMessages denotes the ability to send text messages to the
 	// members of the target group.
 	PrivSendTextMessages
+
+	// PrivSendEmailMessages denotes the ability to send unmoderated email
+	// messages to the members of the target group.
+	PrivSendEmailMessages
+
+	// PrivBCC denotes that holders of the actor role receive BCC copies of
+	// emails sent to the target group.
+	PrivBCC
 )
 
 // AllPrivileges lists all possible privileges.
-var AllPrivileges = []Privilege{PrivMember, PrivViewMembers, PrivViewContactInfo, PrivManageMembers, PrivManageEvents, PrivSendTextMessages}
+var AllPrivileges = []Privilege{
+	PrivMember, PrivViewMembers, PrivViewContactInfo, PrivManageMembers, PrivManageEvents, PrivSendTextMessages,
+	PrivSendEmailMessages, PrivBCC,
+}
 
 // PrivilegeNames gives the names of all of the privileges.
 var PrivilegeNames = map[Privilege]string{
-	PrivMember:           "member",
-	PrivViewMembers:      "roster",
-	PrivViewContactInfo:  "contact",
-	PrivManageMembers:    "admin",
-	PrivManageEvents:     "events",
-	PrivSendTextMessages: "texts",
+	PrivMember:            "member",
+	PrivViewMembers:       "roster",
+	PrivViewContactInfo:   "contact",
+	PrivManageMembers:     "admin",
+	PrivManageEvents:      "events",
+	PrivSendTextMessages:  "texts",
+	PrivSendEmailMessages: "emails",
+	PrivBCC:               "bcc",
 }
 
 // MarshalEasyJSON encodes the privilege into JSON.
