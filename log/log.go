@@ -83,7 +83,7 @@ func (e *Entry) ToJSON(out *jwriter.Writer) {
 		e.Elapsed = time.Since(e.Timestamp)
 	}
 	out.RawString(`{"time":`)
-	e.Timestamp.In(time.Local).AppendFormat(timebuf[:], `"2006-01-02 15:04:05"`)
+	e.Timestamp.In(time.Local).AppendFormat(timebuf[:0], `"2006-01-02 15:04:05"`)
 	out.Raw(timebuf[:], nil)
 	if e.Session != "" {
 		out.RawString(`,"session":`)
