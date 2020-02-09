@@ -87,6 +87,7 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 		var p model.Person
 		panicOnError(rows.Scan(&data))
 		p.Unmarshal(data)
+		people = append(people, &p)
 	}
 	panicOnError(rows.Err())
 	sort.Sort(model.PersonSort(people))

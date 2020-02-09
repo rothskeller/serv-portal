@@ -88,7 +88,6 @@ PEOPLE:
 	GROUPS:
 		for group := range groups {
 			if r.Auth.MemberPG(p.ID, group.ID) {
-				println("person", p.ID, "in group", group.ID)
 				if p.NoText {
 					blocked = true
 					break GROUPS
@@ -119,9 +118,6 @@ PEOPLE:
 				Recipient: p.ID,
 				Status:    "Texting Blocked",
 			})
-		}
-		if p.ID == 635 && !added {
-			println("person 635 not in groups")
 		}
 	}
 	r.Tx.CreateTextMessage(&message)
