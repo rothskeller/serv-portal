@@ -84,9 +84,11 @@ func PostSMS(r *util.Request) error {
 PEOPLE:
 	for _, p := range r.Tx.FetchPeople() {
 		var blocked bool
+		var added bool
 	GROUPS:
 		for group := range groups {
 			if r.Auth.MemberPG(p.ID, group.ID) {
+				println("person", p.ID, "in group", group.ID)
 				if p.NoText {
 					blocked = true
 					break GROUPS
@@ -97,6 +99,7 @@ PEOPLE:
 						continue GROUPS
 					}
 				}
+				added = true
 				if p.CellPhone != "" {
 					message.Recipients = append(message.Recipients, &model.TextRecipient{
 						Recipient: p.ID,
@@ -111,11 +114,14 @@ PEOPLE:
 				continue PEOPLE
 			}
 		}
-		if blocked {
+		if blocked && !added {
 			message.Recipients = append(message.Recipients, &model.TextRecipient{
 				Recipient: p.ID,
 				Status:    "Texting Blocked",
 			})
+		}
+		if p.ID == 635 && !added {
+			println("person 635 not in groups")
 		}
 	}
 	r.Tx.CreateTextMessage(&message)
