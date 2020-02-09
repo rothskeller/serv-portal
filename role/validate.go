@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store/authz"
 )
 
 // ValidateRole verifies that the role passes all consistency checks.

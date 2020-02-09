@@ -1,0 +1,159 @@
+package store
+
+import (
+	"fmt"
+	"strings"
+
+	"sunnyvaleserv.org/portal/model"
+)
+
+// FetchEvent retrieves a single event from the database by ID.  It returns nil
+// if no such event exists.
+func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
+	return tx.tx.FetchEvent(id)
+}
+
+// FetchEventBySccAresID retrieves a single event from the database by its
+// scc-ares-races.org ID.  It returns nil if no such event exists.
+func (tx *Tx) FetchEventBySccAresID(id string) (e *model.Event) {
+	return tx.tx.FetchEventBySccAresID(id)
+}
+
+// FetchEvents returns all of the events within the specified time range, in
+// chronological order.  The time range is inclusive; each time must be in
+// 2006-01-02 format.
+func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
+	return tx.tx.FetchEvents(from, to)
+}
+
+// CreateEvent creates a new event in the database.
+func (tx *Tx) CreateEvent(e *model.Event) {
+	var (
+		etstr []string
+		gstr  []string
+	)
+	tx.tx.CreateEvent(e)
+	tx.entry.Change("create event [%d]", e.ID)
+	tx.entry.Change("set event [%d] name to %q", e.ID, e.Name)
+	tx.entry.Change("set event [%d] date to %s", e.ID, e.Date)
+	tx.entry.Change("set event [%d] start to %s", e.ID, e.Start)
+	tx.entry.Change("set event [%d] end to %s", e.ID, e.End)
+	if e.Venue != 0 {
+		tx.entry.Change("set event [%d] venue to %q [%d]", e.ID, tx.FetchVenue(e.Venue).Name, e.Venue)
+	}
+	if e.Details != "" {
+		tx.entry.Change("set event [%d] details to %q", e.ID, e.Details)
+	}
+	for _, et := range model.AllEventTypes {
+		if e.Type&et != 0 {
+			etstr = append(etstr, model.EventTypeNames[et])
+		}
+	}
+	if len(etstr) == 1 {
+		tx.entry.Change("set event [%d] type to %s", e.ID, etstr[0])
+	} else if len(etstr) > 1 {
+		tx.entry.Change("set event [%d] types to %s", e.ID, strings.Join(etstr, ", "))
+	}
+	if len(e.Groups) != 0 {
+		for _, g := range e.Groups {
+			gstr = append(gstr, fmt.Sprintf("%q [%d]", tx.Authorizer().FetchGroup(g).Name, g))
+		}
+		tx.entry.Change("set event [%d] groups to %s", e.ID, strings.Join(gstr, ", "))
+	}
+	if e.SccAresID != "" {
+		tx.entry.Change("set event [%d] sccAresID to %q", e.ID, e.SccAresID)
+	}
+}
+
+// UpdateEvent updates an existing event in the database.
+func (tx *Tx) UpdateEvent(e *model.Event) {
+	var oe *model.Event
+
+	oe = tx.tx.FetchEvent(e.ID)
+	tx.tx.UpdateEvent(e)
+	if e.Name != oe.Name {
+		tx.entry.Change("set event %s %q [%d] name to %q", e.Date, e.Name, e.ID, e.Name)
+	}
+	if e.Date != oe.Date {
+		tx.entry.Change("set event %s %q [%d] date to %s", e.Date, e.Name, e.ID, e.Date)
+	}
+	if e.Start != oe.Start {
+		tx.entry.Change("set event %s %q [%d] start to %s", e.Date, e.Name, e.ID, e.Start)
+	}
+	if e.End != oe.End {
+		tx.entry.Change("set event %s %q [%d] end to %s", e.Date, e.Name, e.ID, e.End)
+	}
+	if e.Venue != oe.Venue {
+		if e.Venue != 0 {
+			tx.entry.Change("set event %s %q [%d] venue to %q [%d]", e.Date, e.Name, e.ID, tx.FetchVenue(e.Venue).Name, e.Venue)
+		} else {
+			tx.entry.Change("remove event %s %q [%d] venue", e.Date, e.Name, e.ID)
+		}
+	}
+	if e.Details != oe.Details {
+		tx.entry.Change("set event %s %q [%d] details to %q", e.Date, e.Name, e.ID, e.Details)
+	}
+	for _, et := range model.AllEventTypes {
+		if e.Type&et != oe.Type&et {
+			if e.Type&et != 0 {
+				tx.entry.Change("add event %s %q [%d] type %s", e.Date, e.Name, e.ID, model.EventTypeNames[et])
+			} else {
+				tx.entry.Change("remove event %s %q [%d] type %s", e.Date, e.Name, e.ID, model.EventTypeNames[et])
+			}
+		}
+	}
+GROUPS1:
+	for _, og := range oe.Groups {
+		for _, g := range e.Groups {
+			if og == g {
+				continue GROUPS1
+			}
+		}
+		tx.entry.Change("remove event %s %q [%d] group %q [%d]", e.Date, e.Name, e.ID, tx.Authorizer().FetchGroup(og).Name, og)
+	}
+GROUPS2:
+	for _, g := range e.Groups {
+		for _, og := range oe.Groups {
+			if og == g {
+				continue GROUPS2
+			}
+		}
+		tx.entry.Change("add event %s %q [%d] group %q [%d]", e.Date, e.Name, e.ID, tx.Authorizer().FetchGroup(g).Name, g)
+	}
+	if e.SccAresID != oe.SccAresID {
+		tx.entry.Change("set event %s %q [%d] sccAresID to %q", e.Date, e.Name, e.ID, e.SccAresID)
+	}
+}
+
+// DeleteEvent deletes an event from the database.
+func (tx *Tx) DeleteEvent(e *model.Event) {
+	tx.tx.DeleteEvent(e)
+	tx.entry.Change("delete event %s %q [%d]", e.Date, e.Name, e.ID)
+}
+
+// FetchAttendanceByEvent retrieves the attendance at a specific event.
+func (tx *Tx) FetchAttendanceByEvent(e *model.Event) (attend map[model.PersonID]model.AttendanceInfo) {
+	return tx.tx.FetchAttendanceByEvent(e)
+}
+
+// SaveEventAttendance saves the attendance for a specific event.
+func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]model.AttendanceInfo) {
+	var oattend = tx.tx.FetchAttendanceByEvent(e)
+	tx.tx.SaveEventAttendance(e, attend)
+	for pid, ai := range attend {
+		oai := oattend[pid]
+		if ai.Minutes != oai.Minutes || ai.Type != oai.Type {
+			tx.entry.Change("set event %s %q [%d] person %q [%d] attendance to %s %d min", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid, model.AttendanceTypeNames[ai.Type], ai.Minutes)
+		}
+	}
+	for pid := range oattend {
+		if _, ok := attend[pid]; !ok {
+			tx.entry.Change("remove event %s %q [%d] person %q [%d] attendance", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid)
+		}
+	}
+}
+
+// FetchAttendanceByPerson retrieves the attendance for a specific person.
+func (tx *Tx) FetchAttendanceByPerson(p *model.Person) (attend map[model.EventID]model.AttendanceInfo) {
+	return tx.tx.FetchAttendanceByPerson(p)
+}

@@ -1,22 +1,17 @@
 package util
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
-	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
-	"syscall"
-	"time"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/authz"
 )
-
-const logfilename = "request.log"
 
 // RunRequest handles an incoming HTTP request, described by the Go standard
 // library http.Request and http.ResponseWriter parameters.  It generates a
@@ -40,79 +35,49 @@ func RunRequest(w http.ResponseWriter, r *http.Request, handler RequestHandler) 
 		request *Request
 		err     error
 	)
-	defer func() {
-		var (
-			panicked interface{}
-			logfile  *os.File
-			logmsg   string
-			logbuf   bytes.Buffer
-			code     int
-			end      time.Time
-		)
-		if panicked = recover(); panicked != nil {
-			logmsg = "PANIC"
-			code = http.StatusInternalServerError
-			err = HTTPError(http.StatusInternalServerError, "Internal Server Error")
-		} else if hsce, ok := err.(hasStatusCode); ok {
-			logmsg = err.Error()
-			code = hsce.StatusCode()
-		} else if err != nil {
-			logmsg = err.Error()
-			code = http.StatusBadRequest
-		} else {
-			code = http.StatusNoContent
-		}
-		if request.StatusCode == 0 {
-			if code == http.StatusNoContent {
-				request.WriteHeader(http.StatusNoContent)
-			} else {
-				http.Error(&request.Response, err.Error(), code)
-			}
-		}
-		if f, ok := request.Response.ResponseWriter.(http.Flusher); ok {
-			f.Flush()
-		}
-		end = time.Now().In(time.Local)
-		fmt.Fprintf(&logbuf, "%s %s %s", request.Start.Format("2006-01-02 15:04:05"), request.Method, request.Path)
-		if request.Person != nil {
-			fmt.Fprintf(&logbuf, " [u=%s]", request.Person.Username)
-		}
-		if request.Form != nil {
-			for k, vs := range request.Form {
-				if k == "auth" || k == "password" {
-					continue
-				}
-				for _, v := range vs {
-					fmt.Fprintf(&logbuf, " %s=%q", k, v)
-				}
-			}
-		}
-		fmt.Fprintf(&logbuf, " => %d", request.StatusCode)
-		if logmsg != "" {
-			fmt.Fprintf(&logbuf, " (%s)", logmsg)
-		}
-		fmt.Fprintf(&logbuf, ", %dms\n", end.Sub(request.Start)/time.Millisecond)
-		if panicked != nil {
-			fmt.Fprintln(&logbuf, panicked)
-			fmt.Fprintln(&logbuf, string(debug.Stack()))
-		}
-		if logfile, err = os.OpenFile(logfilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
-			panic(err)
-		}
-		if err = syscall.Flock(int(logfile.Fd()), syscall.LOCK_EX); err != nil {
-			panic(err)
-		}
-		logbuf.WriteTo(logfile)
-		logfile.Close()
-	}()
 	request = &Request{
 		Request: r,
 		Response: Response{
 			ResponseWriter: w,
 		},
-		Start: time.Now().In(time.Local),
-		Path:  path.Clean("/" + r.URL.Path),
+		Path: path.Clean("/" + r.URL.Path),
 	}
+	request.LogEntry = log.New(request.Method, request.Path)
+	defer func() {
+		var panicked interface{}
+
+		if panicked = recover(); panicked != nil {
+			request.LogEntry.Error = fmt.Sprintf("PANIC: %v", panicked)
+			request.LogEntry.Status = http.StatusInternalServerError
+			request.LogEntry.Stack = debug.Stack()
+			err = HTTPError(http.StatusInternalServerError, "Internal Server Error")
+		} else if hsce, ok := err.(hasStatusCode); ok {
+			request.LogEntry.Error = err.Error()
+			request.LogEntry.Status = hsce.StatusCode()
+		} else if err != nil {
+			request.LogEntry.Error = err.Error()
+			request.LogEntry.Status = http.StatusBadRequest
+		} else if request.StatusCode != 0 {
+			request.LogEntry.Status = request.StatusCode
+		} else {
+			request.LogEntry.Status = http.StatusNoContent
+		}
+		if request.StatusCode == 0 {
+			if request.LogEntry.Status == http.StatusNoContent {
+				request.WriteHeader(http.StatusNoContent)
+			} else {
+				http.Error(&request.Response, err.Error(), request.LogEntry.Status)
+			}
+		}
+		if f, ok := request.Response.ResponseWriter.(http.Flusher); ok {
+			f.Flush()
+		}
+		if request.Session != nil {
+			request.LogEntry.Session = string(request.Session.Token)
+		}
+		request.LogEntry.Params = request.Form
+		request.LogEntry.Log()
+	}()
 	err = handler(request)
 }
 
@@ -122,12 +87,12 @@ func RunRequest(w http.ResponseWriter, r *http.Request, handler RequestHandler) 
 type Request struct {
 	*http.Request
 	Response
-	Session *model.Session
-	Person  *model.Person
-	Auth    *authz.Authorizer
-	Start   time.Time
-	Path    string
-	Tx      *db.Tx
+	Session  *model.Session
+	Person   *model.Person
+	Auth     *authz.Authorizer
+	Path     string
+	Tx       *store.Tx
+	LogEntry *log.Entry
 }
 
 // Header and Write on Request resolve the ambiguities between http.Request

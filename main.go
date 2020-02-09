@@ -18,20 +18,19 @@ import (
 	"strings"
 
 	"sunnyvaleserv.org/portal/auth"
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/email"
 	"sunnyvaleserv.org/portal/event"
 	"sunnyvaleserv.org/portal/group"
 	"sunnyvaleserv.org/portal/person"
 	"sunnyvaleserv.org/portal/report"
 	"sunnyvaleserv.org/portal/role"
+	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/text"
 	"sunnyvaleserv.org/portal/util"
 )
 
 var (
-	txh db.Tx
+	txh store.Tx
 )
 
 func main() {
@@ -53,13 +52,12 @@ func main() {
 // properly validated.
 func txWrapper(r *util.Request) error {
 	// Open the database and start a transaction.
-	db.Open("serv.db")
-	r.Tx = db.Begin()
+	store.Open("serv.db")
+	r.Tx = store.Begin(r.LogEntry)
 	defer func() {
 		r.Tx.Rollback()
 	}()
-	r.Auth = authz.NewAuthorizer(r.Tx)
-	r.Tx.SetRequest(r.Method + " " + r.Path)
+	r.Auth = r.Tx.Authorizer()
 	util.ValidateSession(r)
 	return router(r)
 }

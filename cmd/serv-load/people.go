@@ -7,14 +7,13 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/person"
+	"sunnyvaleserv.org/portal/store"
 )
 
-func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
-	auth := authz.NewAuthorizer(tx)
+func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
+	auth := tx.Authorizer()
 	var authDirty = false
 	var record = 1
 	for {
@@ -159,16 +158,15 @@ func loadPeople(tx *db.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
-		if err := person.ValidatePerson(tx, auth, p, nil); err != nil {
+		if err := person.ValidatePerson(tx, p, nil); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
 		if p.ID == 0 {
-			tx.SavePerson(p)
-			auth.AddPerson(p.ID)
+			tx.CreatePerson(p)
 			authDirty = true
 		} else {
-			tx.SavePerson(p)
+			tx.UpdatePerson(p)
 		}
 		record++
 	}

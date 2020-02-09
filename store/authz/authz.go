@@ -8,17 +8,18 @@ import (
 	"reflect"
 	"unsafe"
 
-	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store/internal/db"
 )
 
 // NewAuthorizer returns a new Authorizer backed by the specified database
 // transaction, which must be open throughout the lifetime of the Authorizer.
 // This call fetches all of the authorizer data from the database.
-func NewAuthorizer(tx *db.Tx) (a *Authorizer) {
+func NewAuthorizer(tx *db.Tx, entry *log.Entry) (a *Authorizer) {
 	var data []byte
 
-	a = &Authorizer{tx: tx}
+	a = &Authorizer{tx: tx, entry: entry}
 	data = tx.FetchAuthorizer()
 	if err := a.Unmarshal(data); err != nil {
 		panic(fmt.Sprintf("error reading authorizer data: %s", err))
@@ -50,6 +51,7 @@ func NewAuthorizer(tx *db.Tx) (a *Authorizer) {
 // without an A argument, the action is assumed to be PrivMember.
 type Authorizer struct {
 	tx             *db.Tx
+	entry          *log.Entry
 	me             model.PersonID
 	roles          []model.Role
 	groups         []model.Group

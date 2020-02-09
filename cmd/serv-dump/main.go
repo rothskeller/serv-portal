@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/mailru/easyjson/jwriter"
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
+
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
 )
 
 func usage() {
@@ -31,40 +30,35 @@ func usage() {
 }
 
 func main() {
-	var (
-		tx   *db.Tx
-		auth *authz.Authorizer
-	)
+	var tx *store.Tx
+
 	if len(os.Args) != 2 || len(os.Args[1]) == 0 {
 		usage()
 	}
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
-		db.Open("/home/snyserv/sunnyvaleserv.org/data/serv.db")
+		store.Open("/home/snyserv/sunnyvaleserv.org/data/serv.db")
 	case "/Users/stever":
-		db.Open("/Users/stever/src/serv-portal/data/serv.db")
+		store.Open("/Users/stever/src/serv-portal/data/serv.db")
 	default:
-		db.Open("./serv.db")
+		store.Open("./serv.db")
 	}
-	tx = db.Begin()
-	auth = authz.NewAuthorizer(tx)
+	tx = store.Begin(nil)
 	switch {
-	case strings.HasPrefix("audit", os.Args[1]):
-		dumpAudit(tx, auth)
 	case (strings.HasPrefix("email_messages", os.Args[1]) && len(os.Args[1]) > 1) || os.Args[1] == "emails":
-		dumpEmailMessages(tx, auth)
+		dumpEmailMessages(tx)
 	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
-		dumpEvents(tx, auth)
+		dumpEvents(tx)
 	case strings.HasPrefix("groups", os.Args[1]):
-		dumpGroups(tx, auth)
+		dumpGroups(tx)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		dumpPeople(tx)
 	case strings.HasPrefix("roles", os.Args[1]):
-		dumpRoles(tx, auth)
+		dumpRoles(tx)
 	case strings.HasPrefix("sessions", os.Args[1]):
 		dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
-		dumpTextMessages(tx, auth)
+		dumpTextMessages(tx)
 	case strings.HasPrefix("venues", os.Args[1]):
 		dumpVenues(tx)
 	default:
@@ -73,68 +67,18 @@ func main() {
 	tx.Rollback()
 }
 
-func dumpAudit(tx *db.Tx, auth *authz.Authorizer) {
-	tx.FetchAudit(func(timestamp time.Time, username, request, otype string, id, data interface{}) {
-		var out jwriter.Writer
-		out.NoEscapeHTML = true
-		out.RawString(`{"timestamp":`)
-		out.Raw(timestamp.MarshalJSON())
-		out.RawString(`,"username":`)
-		out.String(username)
-		out.RawString(`,"request":`)
-		out.String(request)
-		out.RawString(`,"type":`)
-		out.String(otype)
-		switch otype {
-		case "email_message":
-			out.RawString(`,"emailMessage":`)
-			var email = data.(model.EmailMessage)
-			dumpEmailMessage(tx, auth, &out, &email)
-		case "event":
-			out.RawString(`,"event":`)
-			var event = data.(model.Event)
-			dumpEvent(tx, auth, &out, &event)
-		case "person":
-			out.RawString(`,"person":`)
-			var person = data.(model.Person)
-			dumpPerson(tx, &out, &person)
-		case "session":
-			out.RawString(`,"session":`)
-			var session = data.(model.Session)
-			dumpSession(tx, &out, &session)
-		case "text_message":
-			out.RawString(`,"textMessage":`)
-			var textMessage = data.(model.TextMessage)
-			dumpTextMessage(tx, auth, &out, &textMessage)
-		case "venues":
-			out.RawString(`,"venues":[`)
-			for i, v := range data.(model.Venues).Venues {
-				if i != 0 {
-					out.RawByte(',')
-				}
-				v.MarshalEasyJSON(&out)
-			}
-		default:
-			panic("unknown object type in audit record: " + otype)
-		}
-		out.RawByte('}')
-		out.DumpTo(os.Stdout)
-		os.Stdout.Write([]byte{'\n'})
-	})
-}
-
-func dumpEmailMessages(tx *db.Tx, auth *authz.Authorizer) {
+func dumpEmailMessages(tx *store.Tx) {
 	tx.FetchEmailMessages(func(em *model.EmailMessage) bool {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
-		dumpEmailMessage(tx, auth, &out, em)
+		dumpEmailMessage(tx, &out, em)
 		out.DumpTo(os.Stdout)
 		os.Stdout.Write([]byte{'\n'})
 		return true
 	})
 }
 
-func dumpEmailMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, em *model.EmailMessage) {
+func dumpEmailMessage(tx *store.Tx, out *jwriter.Writer, em *model.EmailMessage) {
 	out.RawString(`{"id":`)
 	out.Int(int(em.ID))
 	out.RawString(`,"messageID":`)
@@ -153,7 +97,7 @@ func dumpEmailMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, em
 		out.RawString(`{"id":`)
 		out.Int(int(g))
 		out.RawString(`,"name":`)
-		out.String(groupName(auth, g))
+		out.String(groupName(tx, g))
 		out.RawByte('}')
 	}
 	out.RawString(`],"from":`)
@@ -163,17 +107,17 @@ func dumpEmailMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, em
 	out.RawByte('}')
 }
 
-func dumpEvents(tx *db.Tx, auth *authz.Authorizer) {
+func dumpEvents(tx *store.Tx) {
 	for _, e := range tx.FetchEvents("2000-01-01", "2099-12-31") {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
-		dumpEvent(tx, auth, &out, e)
+		dumpEvent(tx, &out, e)
 		out.DumpTo(os.Stdout)
 		os.Stdout.Write([]byte{'\n'})
 	}
 }
 
-func dumpEvent(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, e *model.Event) {
+func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 	out.RawString(`{"id":`)
 	out.Int(int(e.ID))
 	out.RawString(`,"name":`)
@@ -215,7 +159,7 @@ func dumpEvent(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, e *model.
 		out.RawString(`{"id":`)
 		out.Int(int(g))
 		out.RawString(`,"name":`)
-		out.String(groupName(auth, g))
+		out.String(groupName(tx, g))
 		out.RawByte('}')
 	}
 	out.RawByte(']')
@@ -244,8 +188,8 @@ func dumpEvent(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, e *model.
 	out.RawString(`]}`)
 }
 
-func dumpGroups(tx *db.Tx, auth *authz.Authorizer) {
-	for _, g := range auth.FetchGroups(auth.AllGroups()) {
+func dumpGroups(tx *store.Tx) {
+	for _, g := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
 		g.MarshalEasyJSON(&out)
@@ -254,7 +198,7 @@ func dumpGroups(tx *db.Tx, auth *authz.Authorizer) {
 	}
 }
 
-func dumpPeople(tx *db.Tx) {
+func dumpPeople(tx *store.Tx) {
 	for _, p := range tx.FetchPeople() {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
@@ -264,7 +208,7 @@ func dumpPeople(tx *db.Tx) {
 	}
 }
 
-func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
+func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	out.RawString(`{"id":`)
 	out.Int(int(p.ID))
 	if p.Username != "" {
@@ -358,8 +302,8 @@ func dumpPerson(tx *db.Tx, out *jwriter.Writer, p *model.Person) {
 	out.RawByte('}')
 }
 
-func dumpRoles(tx *db.Tx, auth *authz.Authorizer) {
-	for _, r := range auth.FetchRoles(auth.AllRoles()) {
+func dumpRoles(tx *store.Tx) {
+	for _, r := range tx.Authorizer().FetchRoles(tx.Authorizer().AllRoles()) {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
 		dumpRole(tx, &out, r)
@@ -368,7 +312,7 @@ func dumpRoles(tx *db.Tx, auth *authz.Authorizer) {
 	}
 }
 
-func dumpRole(tx *db.Tx, out *jwriter.Writer, r *model.Role) {
+func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 	out.RawString(`{"id":`)
 	out.Int(int(r.ID))
 	if r.Tag != "" {
@@ -384,7 +328,7 @@ func dumpRole(tx *db.Tx, out *jwriter.Writer, r *model.Role) {
 	out.RawByte('}')
 }
 
-func dumpSessions(tx *db.Tx) {
+func dumpSessions(tx *store.Tx) {
 	for _, s := range tx.FetchSessions() {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
@@ -394,7 +338,7 @@ func dumpSessions(tx *db.Tx) {
 	}
 }
 
-func dumpSession(tx *db.Tx, out *jwriter.Writer, s *model.Session) {
+func dumpSession(tx *store.Tx, out *jwriter.Writer, s *model.Session) {
 	out.RawString(`{"token":`)
 	out.String(string(s.Token))
 	out.RawString(`,"person":`)
@@ -406,17 +350,17 @@ func dumpSession(tx *db.Tx, out *jwriter.Writer, s *model.Session) {
 	out.RawByte('}')
 }
 
-func dumpTextMessages(tx *db.Tx, auth *authz.Authorizer) {
+func dumpTextMessages(tx *store.Tx) {
 	for _, t := range tx.FetchTextMessages() {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
-		dumpTextMessage(tx, auth, &out, t)
+		dumpTextMessage(tx, &out, t)
 		out.DumpTo(os.Stdout)
 		os.Stdout.Write([]byte{'\n'})
 	}
 }
 
-func dumpTextMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, t *model.TextMessage) {
+func dumpTextMessage(tx *store.Tx, out *jwriter.Writer, t *model.TextMessage) {
 	out.RawString(`{"id":`)
 	out.Int(int(t.ID))
 	out.RawString(`,"sender":{"id":`)
@@ -431,7 +375,7 @@ func dumpTextMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, t *
 		out.RawString(`{"id":`)
 		out.Int(int(g))
 		out.RawString(`,"name":`)
-		out.String(groupName(auth, g))
+		out.String(groupName(tx, g))
 		out.RawByte('}')
 	}
 	out.RawString(`],"timestamp":`)
@@ -469,7 +413,7 @@ func dumpTextMessage(tx *db.Tx, auth *authz.Authorizer, out *jwriter.Writer, t *
 	out.RawString(`]}`)
 }
 
-func dumpVenues(tx *db.Tx) {
+func dumpVenues(tx *store.Tx) {
 	for _, v := range tx.FetchVenues() {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
@@ -479,25 +423,25 @@ func dumpVenues(tx *db.Tx) {
 	}
 }
 
-func groupName(auth *authz.Authorizer, id model.GroupID) string {
-	if v := auth.FetchGroup(id); v != nil {
+func groupName(tx *store.Tx, id model.GroupID) string {
+	if v := tx.Authorizer().FetchGroup(id); v != nil {
 		return v.Name
 	}
 	return ""
 }
-func personName(tx *db.Tx, id model.PersonID) string {
+func personName(tx *store.Tx, id model.PersonID) string {
 	if v := tx.FetchPerson(id); v != nil {
 		return v.SortName
 	}
 	return ""
 }
-func roleName(auth *authz.Authorizer, id model.RoleID) string {
-	if v := auth.FetchRole(id); v != nil {
+func roleName(tx *store.Tx, id model.RoleID) string {
+	if v := tx.Authorizer().FetchRole(id); v != nil {
 		return v.Name
 	}
 	return ""
 }
-func venueName(tx *db.Tx, id model.VenueID) string {
+func venueName(tx *store.Tx, id model.VenueID) string {
 	if v := tx.FetchVenue(id); v != nil {
 		return v.Name
 	}

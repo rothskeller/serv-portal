@@ -13,9 +13,10 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/authz"
 )
 
 var eventDetailHrefRE = regexp.MustCompile(`eventdetail\.php\?id=(\d+)`)
@@ -42,7 +43,7 @@ func main() {
 	if eventsBody, err = html.Parse(eventsResponse.Body); err != nil {
 		panicf("parse events.php: %s", err)
 	}
-	db.Open("serv.db")
+	store.Open("serv.db")
 	if eventIDs = getEventIDs(eventsBody); len(eventIDs) == 0 {
 		panicf("no events found in events.php")
 	}
@@ -55,7 +56,7 @@ func main() {
 }
 
 func getEventIDs(node *html.Node) (ids map[string]model.EventType) {
-	tx := db.Begin()
+	tx := store.Begin(nil)
 	typemap := tx.FetchSccAresEventTypes()
 	tx.Commit()
 	ids = make(map[string]model.EventType)
@@ -186,14 +187,14 @@ func getEvent(eventID string, eventType model.EventType) (event *eventData) {
 
 func applyRewrites(events []*eventData) {
 	var (
-		tx     *db.Tx
+		tx     *store.Tx
 		auth   *authz.Authorizer
 		groups []model.GroupID
 		vmap   map[string]*model.Venue
 		nmap   map[string]string
 	)
-	tx = db.Begin()
-	auth = authz.NewAuthorizer(tx)
+	tx = store.Begin(nil)
+	auth = tx.Authorizer()
 	nmap = tx.FetchSccAresEventNames()
 	vmap = tx.FetchSccAresEventVenues()
 	groups = []model.GroupID{auth.FetchGroupByTag(model.GroupSccAres).ID}
@@ -222,7 +223,8 @@ func saveEvents(events []*eventData) {
 	var (
 		dbe     *model.Event
 		futures []*model.Event
-		tx      = db.Begin()
+		entry   = log.New("", "scrape-scc-ares")
+		tx      = store.Begin(entry)
 		emap    = map[string]bool{}
 	)
 	for _, e := range events {
@@ -237,7 +239,11 @@ func saveEvents(events []*eventData) {
 			fmt.Printf("ADD: new event %s %s\n", e.Date, e.Name)
 		}
 		if e.Name != "" {
-			tx.SaveEvent(&e.Event)
+			if e.ID != 0 {
+				tx.UpdateEvent(&e.Event)
+			} else {
+				tx.CreateEvent(&e.Event)
+			}
 			emap[e.SccAresID] = true
 		}
 	}
@@ -250,6 +256,7 @@ func saveEvents(events []*eventData) {
 		}
 	}
 	tx.Commit()
+	entry.Log()
 }
 
 func uninterestingNode(node *html.Node) bool {

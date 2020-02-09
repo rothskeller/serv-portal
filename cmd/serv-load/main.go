@@ -13,7 +13,9 @@ import (
 	"strings"
 
 	"github.com/mailru/easyjson/jlexer"
-	"sunnyvaleserv.org/portal/db"
+
+	"sunnyvaleserv.org/portal/log"
+	"sunnyvaleserv.org/portal/store"
 )
 
 func usage() {
@@ -34,10 +36,11 @@ func usage() {
 
 func main() {
 	var (
-		tx  *db.Tx
-		buf []byte
-		in  *jlexer.Lexer
-		err error
+		tx    *store.Tx
+		entry *log.Entry
+		buf   []byte
+		in    *jlexer.Lexer
+		err   error
 	)
 	if len(os.Args) != 2 || len(os.Args[1]) == 0 {
 		usage()
@@ -59,8 +62,10 @@ func main() {
 		os.Exit(1)
 	}
 	maybeMakeBackup()
-	db.Open("./serv.db")
-	tx = db.Begin()
+	store.Open("./serv.db")
+	entry = log.New("", "serv-load")
+	defer entry.Log()
+	tx = store.Begin(entry)
 	in = &jlexer.Lexer{Data: buf}
 	switch {
 	// case strings.HasPrefix("audit", os.Args[1]):

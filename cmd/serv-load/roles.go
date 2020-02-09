@@ -7,14 +7,13 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/role"
+	"sunnyvaleserv.org/portal/store"
 )
 
-func loadRoles(tx *db.Tx, in *jlexer.Lexer) {
-	auth := authz.NewAuthorizer(tx)
+func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
+	auth := tx.Authorizer()
 	var record = 1
 	for {
 		var r = new(model.Role)

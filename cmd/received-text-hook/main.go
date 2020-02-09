@@ -14,8 +14,9 @@ import (
 	"os"
 	"time"
 
-	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
 )
 
 func main() {
@@ -33,10 +34,12 @@ func main() {
 			body    = r.FormValue("Body")
 			message *model.TextMessage
 		)
-		db.Open("serv.db")
-		tx := db.Begin()
+		store.Open("serv.db")
+		entry := log.New("", "received-text-hook")
+		defer entry.Log()
+		tx := store.Begin(entry)
 		if message = tx.FetchTextMessageByNumber(number); message == nil {
-			println("received-text-hook: incoming message from unknown phone number: ", number)
+			entry.Error = "incoming message from unknown phone number: " + number
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -49,7 +52,7 @@ func main() {
 				break
 			}
 		}
-		tx.SaveTextMessage(message)
+		tx.UpdateTextMessage(message)
 		tx.Commit()
 		w.WriteHeader(http.StatusNoContent)
 	}))

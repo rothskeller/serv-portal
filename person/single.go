@@ -280,7 +280,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		}
 		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
 	}
-	if err = ValidatePerson(r.Tx, r.Auth, person, roles); err != nil {
+	if err = ValidatePerson(r.Tx, person, roles); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {
 			// These need to be sent back to the client as 200
 			// responses with error details.
@@ -303,10 +303,9 @@ func PostPerson(r *util.Request, idstr string) error {
 		auth.SetPassword(r, person, password)
 	}
 	if person.ID == 0 {
-		r.Tx.SavePerson(person)
-		r.Auth.AddPerson(person.ID)
+		r.Tx.CreatePerson(person)
 	} else {
-		r.Tx.SavePerson(person)
+		r.Tx.UpdatePerson(person)
 	}
 	r.Auth.SetPersonRoles(person.ID, roles)
 	r.Auth.Save()

@@ -18,14 +18,24 @@ func (a *Authorizer) Save() {
 
 // SetPersonRoles sets the list of roles held by a person.
 func (a *Authorizer) SetPersonRoles(person model.PersonID, roles []model.RoleID) {
-	for by := 0; by < a.bytesPerPerson; by++ {
-		a.personRoles[int(person)*a.bytesPerPerson+by] = 0
-	}
+	var npr = make([]byte, a.bytesPerPerson)
 	for _, role := range roles {
 		if int(role) >= len(a.roles) || role < 1 {
 			panic("role out of range")
 		}
-		a.personRoles[int(person)*a.bytesPerPerson+int(role/8)] |= 1 << int(role%8)
+		npr[int(role/8)] |= 1 << int(role%8)
+	}
+	for by := 0; by < a.bytesPerPerson; by++ {
+		for bit := 0; bit < 8; bit++ {
+			o := a.personRoles[int(person)*a.bytesPerPerson+by]&(1<<bit) != 0
+			n := npr[by]&(1<<bit) != 0
+			if o && !n {
+				a.entry.Change("remove person [%d] role %q [%d]", person, a.roles[by*8+bit].Name, by*8+bit)
+			} else if n && !o {
+				a.entry.Change("add person [%d] role %q [%d]", person, a.roles[by*8+bit].Name, by*8+bit)
+			}
+		}
+		a.personRoles[int(person)*a.bytesPerPerson+by] = npr[by]
 	}
 }
 
@@ -49,9 +59,11 @@ func (a *Authorizer) CreateGroup() *model.Group {
 	for id = 1; id < len(a.groups); id++ {
 		if a.groups[id].ID == 0 {
 			a.groups[id] = model.Group{ID: model.GroupID(id)}
+			a.entry.Change("create group [%d]", id)
 			return &a.groups[id]
 		}
 	}
+	a.entry.Change("create group [%d]", id)
 	newlen := len(a.groups) + 1
 	nrp := make([]model.Privilege, len(a.roles)*newlen)
 	for rid := range a.roles {
@@ -70,9 +82,11 @@ func (a *Authorizer) CreateRole() *model.Role {
 	for id = 1; int(id) < len(a.roles); id++ {
 		if a.roles[id].ID == 0 {
 			a.roles[id] = model.Role{ID: model.RoleID(id)}
+			a.entry.Change("create role [%d]", id)
 			return &a.roles[id]
 		}
 	}
+	a.entry.Change("create role [%d]", id)
 	nrp := make([]model.Privilege, (len(a.roles)+1)*len(a.groups))
 	copy(nrp, a.rolePrivs)
 	a.rolePrivs = nrp
@@ -99,6 +113,7 @@ func (a *Authorizer) DeleteGroup(group model.GroupID) {
 		a.rolePrivs[rid*len(a.groups)+int(group)] = 0
 	}
 	a.groups[group] = model.Group{}
+	a.entry.Change("delete group [%d]", group)
 }
 
 // DeleteRole deletes a role.
@@ -113,9 +128,18 @@ func (a *Authorizer) DeleteRole(role model.RoleID) {
 		a.personRoles[pid*a.bytesPerPerson+int(role/8)] &^= 1 << int(role%8)
 	}
 	a.roles[role] = model.Role{}
+	a.entry.Change("delete role [%d]", role)
 }
 
 // SetPrivileges sets a role's privileges on a group.
 func (a *Authorizer) SetPrivileges(role model.RoleID, actions model.Privilege, group model.GroupID) {
+	o := a.rolePrivs[int(role)*len(a.groups)+int(group)]
+	for _, priv := range model.AllPrivileges {
+		if o&priv != 0 && actions&priv == 0 {
+			a.entry.Change("remove role %q [%d] group %q [%d] privilege %s", a.roles[role].Name, role, a.groups[group].Name, group, model.PrivilegeNames[priv])
+		} else if o&priv == 0 && actions&priv != 0 {
+			a.entry.Change("add role %q [%d] group %q [%d] privilege %s", a.roles[role].Name, role, a.groups[group].Name, group, model.PrivilegeNames[priv])
+		}
+	}
 	a.rolePrivs[int(role)*len(a.groups)+int(group)] = actions
 }

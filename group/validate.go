@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store/authz"
 )
 
 var groupEmailRE = regexp.MustCompile(`^[a-z][-a-z0-9]*$`)

@@ -47,7 +47,7 @@ func PostPasswordReset(r *util.Request) error {
 	person.PWResetToken = util.RandomToken()
 	person.BadLoginCount = 0
 	person.PWResetTime = time.Now()
-	r.Tx.SavePerson(person)
+	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
 	fmt.Fprintf(&body, "From: %s\r\nTo: ", config.Get("fromEmail"))
 	for i, e := range emails {
@@ -144,7 +144,7 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	}
 	SetPassword(r, person, password)
 	person.PWResetToken = ""
-	r.Tx.SavePerson(person)
+	r.Tx.UpdatePerson(person)
 	r.Person = person
 	r.Auth.SetMe(person)
 	util.CreateSession(r)

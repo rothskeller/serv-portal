@@ -13,10 +13,9 @@ import (
 	"regexp"
 	"strings"
 
-	"sunnyvaleserv.org/portal/authz"
 	"sunnyvaleserv.org/portal/config"
-	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -33,7 +32,7 @@ func PostEmail(r *util.Request, idstr string) error {
 		if msg.Type != model.EmailModerated {
 			return errors.New("can't accept message that isn't waiting for moderation")
 		}
-		SendMessage(r.Tx, r.Auth, msg)
+		SendMessage(r.Tx, msg)
 		msg.Type = model.EmailSent
 		msg.Attention = false
 		r.Tx.UpdateEmailMessage(msg)
@@ -54,7 +53,7 @@ func PostEmail(r *util.Request, idstr string) error {
 }
 
 // SendMessage sends an email message to the groups to which it's addressed.
-func SendMessage(tx *db.Tx, auth *authz.Authorizer, email *model.EmailMessage) {
+func SendMessage(tx *store.Tx, email *model.EmailMessage) {
 	var (
 		raw     []byte
 		msg     *mail.Message
@@ -99,7 +98,7 @@ func SendMessage(tx *db.Tx, auth *authz.Authorizer, email *model.EmailMessage) {
 		goto SEND_ERROR
 	}
 	for _, group := range email.Groups {
-		if err = sendMessageToGroup(tx, auth, client, email, msg, root, group); err != nil {
+		if err = sendMessageToGroup(tx, client, email, msg, root, group); err != nil {
 			goto SEND_ERROR
 		}
 	}
@@ -115,16 +114,15 @@ SEND_ERROR:
 }
 
 func sendMessageToGroup(
-	tx *db.Tx, auth *authz.Authorizer, client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart,
-	gid model.GroupID,
+	tx *store.Tx, client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, gid model.GroupID,
 ) error {
-	group := auth.FetchGroup(gid)
+	group := tx.Authorizer().FetchGroup(gid)
 	pids := make(map[model.PersonID]bool)
-	for _, pid := range auth.PeopleG(gid) {
+	for _, pid := range tx.Authorizer().PeopleG(gid) {
 		pids[pid] = true
 	}
-	for _, rid := range auth.RolesAG(model.PrivBCC, gid) {
-		for _, pid := range auth.PeopleR(rid) {
+	for _, rid := range tx.Authorizer().RolesAG(model.PrivBCC, gid) {
+		for _, pid := range tx.Authorizer().PeopleR(rid) {
 			pids[pid] = true
 		}
 	}

@@ -153,7 +153,7 @@ func deleteGroup(r *util.Request, group *model.Group) error {
 		}
 		if found {
 			event.Groups = event.Groups[:j]
-			r.Tx.SaveEvent(event)
+			r.Tx.UpdateEvent(event)
 		}
 	}
 	r.Auth.DeleteGroup(group.ID)

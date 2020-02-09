@@ -67,7 +67,7 @@ func PostLogin(r *util.Request) error {
 	r.Auth.SetMe(person)
 	if person.BadLoginCount > 0 {
 		person.BadLoginCount = 0
-		r.Tx.SavePerson(person)
+		r.Tx.UpdatePerson(person)
 	}
 	util.CreateSession(r)
 	r.Tx.Commit()
@@ -82,7 +82,7 @@ FAIL:
 			person.BadLoginCount = 1
 		}
 		person.BadLoginTime = time.Now()
-		r.Tx.SavePerson(person)
+		r.Tx.UpdatePerson(person)
 	}
 	r.Tx.Commit()
 	return util.HTTPError(http.StatusUnauthorized, "401 Unauthorized")

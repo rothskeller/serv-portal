@@ -118,7 +118,7 @@ PEOPLE:
 			})
 		}
 	}
-	r.Tx.SaveTextMessage(&message)
+	r.Tx.CreateTextMessage(&message)
 	params.Set("From", config.Get("twilioPhoneNumber"))
 	params.Set("Body", message.Message)
 	params.Set("StatusCallback", "https://sunnyvaleserv.org/text-status-hook")
@@ -149,7 +149,7 @@ PEOPLE:
 		recip.Timestamp, _ = time.Parse(time.RFC1123Z, tmessage.DateUpdated)
 	}
 	message.Timestamp = time.Now()
-	r.Tx.SaveTextMessage(&message)
+	r.Tx.UpdateTextMessage(&message)
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(r, `{"id":%d}`, message.ID)

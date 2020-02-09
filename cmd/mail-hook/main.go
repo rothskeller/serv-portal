@@ -15,25 +15,26 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/mail"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
+	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/authz"
 )
 
 var removeAddressRE = regexp.MustCompile(`\s*<[^>]*>`)
 
 func main() {
 	var (
-		logf       *os.File
-		tx         *db.Tx
+		entry      *log.Entry
+		tx         *store.Tx
 		auth       *authz.Authorizer
 		raw        []byte
 		msg        *mail.Message
@@ -45,21 +46,17 @@ func main() {
 	if err = os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
 		panic(err)
 	}
-	if logf, err = os.OpenFile("mail-hook.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666); err != nil {
-		panic(err)
-	} else {
-		os.Stderr = logf
-		log.SetOutput(logf)
-		log.SetFlags(log.Ldate | log.Ltime)
-	}
-	db.Open("serv.db")
-	tx = db.Begin()
-	auth = authz.NewAuthorizer(tx)
+	entry = log.New("", "mail-hook")
+	store.Open("serv.db")
+	tx = store.Begin(entry)
+	auth = tx.Authorizer()
 	// Read and parse the email message.
 	em.Timestamp = time.Now()
 	if raw, err = ioutil.ReadAll(os.Stdin); err != nil {
-		log.Fatalf("can't read message from stdin: %s", err)
-		panic(err)
+		entry.Error = fmt.Sprintf("can't read message from stdin: %s", err)
+		tx.Rollback()
+		entry.Log()
+		return
 	}
 	if msg, err = mail.ReadMessage(bytes.NewReader(raw)); err != nil {
 		// We'll want to record the bogus message in the database, so
@@ -95,8 +92,9 @@ func main() {
 	}
 	// If we have seen this MessageID before, ignore the message altogether.
 	if tx.FetchEmailMessageByMessageID(em.MessageID) != nil {
-		log.Printf("received and ignored duplicate of %s", em.MessageID)
+		entry.Change("received and ignored duplicate of %s", em.MessageID)
 		tx.Rollback()
+		entry.Log()
 		return
 	}
 	// Who is it addressed to?
@@ -153,5 +151,5 @@ func main() {
 DONE:
 	tx.CreateEmailMessage(&em, raw)
 	tx.Commit()
-	log.Printf("received and recorded %s", em.MessageID)
+	entry.Log()
 }

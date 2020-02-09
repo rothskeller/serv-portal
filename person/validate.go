@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"strings"
 
-	"sunnyvaleserv.org/portal/authz"
-	"sunnyvaleserv.org/portal/db"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -16,7 +16,7 @@ var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01
 
 // ValidatePerson validates a Person record, except for its Password field.  It
 // enforces all data consistency rules, but does not enforce privileges.
-func ValidatePerson(tx *db.Tx, auth *authz.Authorizer, person *model.Person, roles []model.RoleID) error {
+func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) error {
 	var (
 		individualHeld map[model.RoleID]model.PersonID
 		people         []*model.Person
@@ -120,10 +120,10 @@ func ValidatePerson(tx *db.Tx, auth *authz.Authorizer, person *model.Person, rol
 			return errors.New("duplicate cellPhone")
 		}
 	}
-	individualHeld = cacheIndividuallyHeldRoles(auth, person.ID)
+	individualHeld = cacheIndividuallyHeldRoles(tx.Authorizer(), person.ID)
 	roleMap = make(map[model.RoleID]bool)
 	for _, rid := range roles {
-		if auth.FetchRole(rid) == nil {
+		if tx.Authorizer().FetchRole(rid) == nil {
 			return errors.New("invalid role")
 		}
 		if roleMap[rid] {

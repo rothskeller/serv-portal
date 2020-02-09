@@ -255,7 +255,7 @@ func PostEvent(r *util.Request, idstr string) error {
 		if venue.URL != "" && !strings.HasPrefix(venue.URL, "https://www.google.com/maps/") {
 			return errors.New("invalid venue URL")
 		}
-		r.Tx.SaveVenue(venue)
+		r.Tx.CreateVenue(venue)
 		event.Venue = venue.ID
 	} else if vidstr == "0" {
 		event.Venue = 0
@@ -292,7 +292,11 @@ func PostEvent(r *util.Request, idstr string) error {
 			return nil
 		}
 	}
-	r.Tx.SaveEvent(event)
+	if event.ID != 0 {
+		r.Tx.UpdateEvent(event)
+	} else {
+		r.Tx.CreateEvent(event)
+	}
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(r, `{"id":%d}`, event.ID)
