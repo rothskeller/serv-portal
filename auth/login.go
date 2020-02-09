@@ -59,7 +59,7 @@ func PostLogin(r *util.Request) error {
 			goto FAIL // locked out
 		}
 	}
-	if !checkPassword(person, password) {
+	if !CheckPassword(person, password) {
 		goto FAIL // password mismatch
 	}
 	// The login is valid.  Record it and create a session.

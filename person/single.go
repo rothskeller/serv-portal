@@ -38,7 +38,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) {
+		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) && person != r.Person {
 			return util.Forbidden
 		}
 		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
@@ -295,6 +295,11 @@ func PostPerson(r *util.Request, idstr string) error {
 	// fields as password hints.
 	if password := r.FormValue("password"); password != "" && canEditDetails {
 		if !r.Auth.IsWebmaster() {
+			if oldPassword := r.FormValue("oldPassword"); !auth.CheckPassword(person, oldPassword) {
+				r.Header().Set("Content-Type", "application/json; charset=utf-8")
+				r.Write([]byte(`{"wrongOldPassword":true}`))
+				return nil
+			}
 			if !auth.StrongPassword(person, password) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"weakPassword":true}`))

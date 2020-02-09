@@ -23,7 +23,7 @@ var SERVPasswordHints = []string{"sunnyvale", "serv", "cert", "listos", "pep", "
 
 // CheckPassword verifies that the password is correct for the specified person.
 // It returns true if the username and password are valid.
-func checkPassword(p *model.Person, password string) bool {
+func CheckPassword(p *model.Person, password string) bool {
 	var (
 		hashed  [32]byte
 		encoded []byte

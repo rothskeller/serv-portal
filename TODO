@@ -1,14 +1,14 @@
 MVP:
-  Policy and copyright page
+  Test privileges of student role
+  Daily report from log
+  Notification of email needing attention
   Unsubscribe page
   Invite member by email with random password
-  Combine roles, groups, email into admin page
-  Clone roles and groups rather than making new ones
-  Require old password when changing password
-  Change auditing and daily report
-  Notification of email needing attention
-  Automatic resend of email from approved sender
+  Policy and copyright page
   Don't keep db locked while sending email
+  Automatic resend of email from approved sender
+  Clone roles and groups rather than making new ones
+  Combine roles, groups, email into admin page
 Eliminate Samariteam:
   SARES import
   Files area
