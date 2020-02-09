@@ -47,6 +47,7 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 						fmt.Fprintf(os.Stderr, "ERROR: group %d does not exist\n", gid)
 						os.Exit(1)
 					}
+					auth.WillUpdateGroup(g)
 					g.Name = ""
 					g.Tag = ""
 					g.NoEmail = nil
@@ -101,6 +102,7 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
+		auth.UpdateGroup(g)
 		record++
 	}
 }

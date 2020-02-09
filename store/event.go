@@ -7,32 +7,13 @@ import (
 	"sunnyvaleserv.org/portal/model"
 )
 
-// FetchEvent retrieves a single event from the database by ID.  It returns nil
-// if no such event exists.
-func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
-	return tx.tx.FetchEvent(id)
-}
-
-// FetchEventBySccAresID retrieves a single event from the database by its
-// scc-ares-races.org ID.  It returns nil if no such event exists.
-func (tx *Tx) FetchEventBySccAresID(id string) (e *model.Event) {
-	return tx.tx.FetchEventBySccAresID(id)
-}
-
-// FetchEvents returns all of the events within the specified time range, in
-// chronological order.  The time range is inclusive; each time must be in
-// 2006-01-02 format.
-func (tx *Tx) FetchEvents(from, to string) (events []*model.Event) {
-	return tx.tx.FetchEvents(from, to)
-}
-
 // CreateEvent creates a new event in the database.
 func (tx *Tx) CreateEvent(e *model.Event) {
 	var (
 		etstr []string
 		gstr  []string
 	)
-	tx.tx.CreateEvent(e)
+	tx.Tx.CreateEvent(e)
 	tx.entry.Change("create event [%d]", e.ID)
 	tx.entry.Change("set event [%d] name to %q", e.ID, e.Name)
 	tx.entry.Change("set event [%d] date to %s", e.ID, e.Date)
@@ -69,8 +50,8 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 func (tx *Tx) UpdateEvent(e *model.Event) {
 	var oe *model.Event
 
-	oe = tx.tx.FetchEvent(e.ID)
-	tx.tx.UpdateEvent(e)
+	oe = tx.Tx.FetchEvent(e.ID)
+	tx.Tx.UpdateEvent(e)
 	if e.Name != oe.Name {
 		tx.entry.Change("set event %s %q [%d] name to %q", e.Date, e.Name, e.ID, e.Name)
 	}
@@ -127,19 +108,14 @@ GROUPS2:
 
 // DeleteEvent deletes an event from the database.
 func (tx *Tx) DeleteEvent(e *model.Event) {
-	tx.tx.DeleteEvent(e)
+	tx.Tx.DeleteEvent(e)
 	tx.entry.Change("delete event %s %q [%d]", e.Date, e.Name, e.ID)
-}
-
-// FetchAttendanceByEvent retrieves the attendance at a specific event.
-func (tx *Tx) FetchAttendanceByEvent(e *model.Event) (attend map[model.PersonID]model.AttendanceInfo) {
-	return tx.tx.FetchAttendanceByEvent(e)
 }
 
 // SaveEventAttendance saves the attendance for a specific event.
 func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]model.AttendanceInfo) {
-	var oattend = tx.tx.FetchAttendanceByEvent(e)
-	tx.tx.SaveEventAttendance(e, attend)
+	var oattend = tx.Tx.FetchAttendanceByEvent(e)
+	tx.Tx.SaveEventAttendance(e, attend)
 	for pid, ai := range attend {
 		oai := oattend[pid]
 		if ai.Minutes != oai.Minutes || ai.Type != oai.Type {
@@ -151,9 +127,4 @@ func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]mode
 			tx.entry.Change("remove event %s %q [%d] person %q [%d] attendance", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid)
 		}
 	}
-}
-
-// FetchAttendanceByPerson retrieves the attendance for a specific person.
-func (tx *Tx) FetchAttendanceByPerson(p *model.Person) (attend map[model.EventID]model.AttendanceInfo) {
-	return tx.tx.FetchAttendanceByPerson(p)
 }

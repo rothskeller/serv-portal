@@ -101,6 +101,7 @@ func PostGroup(r *util.Request, idstr string) error {
 		if group = r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr))); group == nil {
 			return util.NotFound
 		}
+		r.Auth.WillUpdateGroup(group)
 	}
 	if !r.Auth.IsWebmaster() {
 		return util.Forbidden
@@ -134,6 +135,7 @@ func PostGroup(r *util.Request, idstr string) error {
 		privs = validatePrivileges(privs)
 		r.Auth.SetPrivileges(rid, privs, group.ID)
 	}
+	r.Auth.UpdateGroup(group)
 	r.Auth.Save()
 	r.Tx.Commit()
 	return nil

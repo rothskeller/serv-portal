@@ -10,16 +10,20 @@ import (
 
 	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/store/internal/db"
+	"sunnyvaleserv.org/portal/store/internal/cache"
 )
 
 // NewAuthorizer returns a new Authorizer backed by the specified database
 // transaction, which must be open throughout the lifetime of the Authorizer.
 // This call fetches all of the authorizer data from the database.
-func NewAuthorizer(tx *db.Tx, entry *log.Entry) (a *Authorizer) {
+func NewAuthorizer(tx *cache.Tx, entry *log.Entry) (a *Authorizer) {
 	var data []byte
 
-	a = &Authorizer{tx: tx, entry: entry}
+	a = &Authorizer{
+		tx: tx, entry: entry,
+		originalRoles:  make(map[model.RoleID]*model.Role),
+		originalGroups: make(map[model.GroupID]*model.Group),
+	}
 	data = tx.FetchAuthorizer()
 	if err := a.Unmarshal(data); err != nil {
 		panic(fmt.Sprintf("error reading authorizer data: %s", err))
@@ -50,7 +54,7 @@ func NewAuthorizer(tx *db.Tx, entry *log.Entry) (a *Authorizer) {
 // argument, the query is satisfied by any target group.  In a non-Actions call
 // without an A argument, the action is assumed to be PrivMember.
 type Authorizer struct {
-	tx             *db.Tx
+	tx             *cache.Tx
 	entry          *log.Entry
 	me             model.PersonID
 	roles          []model.Role
@@ -59,6 +63,8 @@ type Authorizer struct {
 	rolePrivs      []model.Privilege
 	personRoles    []byte
 	bytesPerPerson int
+	originalGroups map[model.GroupID]*model.Group
+	originalRoles  map[model.RoleID]*model.Role
 }
 
 // SetMe sets the identity of the API caller in the authorizer.

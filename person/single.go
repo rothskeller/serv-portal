@@ -218,6 +218,7 @@ func PostPerson(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
+		r.Tx.WillUpdatePerson(person)
 		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
 	}
 	if !canEditDetails && !r.Auth.CanA(model.PrivManageMembers) {

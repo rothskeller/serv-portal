@@ -66,6 +66,7 @@ func PostRole(r *util.Request, idstr string) error {
 		if role = r.Auth.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return util.NotFound
 		}
+		r.Auth.WillUpdateRole(role)
 	}
 	if !r.Auth.IsWebmaster() {
 		return util.Forbidden
@@ -94,6 +95,7 @@ func PostRole(r *util.Request, idstr string) error {
 		privs = validatePrivileges(privs)
 		r.Auth.SetPrivileges(role.ID, privs, gid)
 	}
+	r.Auth.UpdateRole(role)
 	r.Auth.Save()
 	r.Tx.Commit()
 	return nil

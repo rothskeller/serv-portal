@@ -48,6 +48,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 						fmt.Fprintf(os.Stderr, "ERROR: group %d does not exist\n", pid)
 						os.Exit(1)
 					}
+					tx.WillUpdatePerson(p)
 					*p = model.Person{ID: pid}
 				}
 			case "username":

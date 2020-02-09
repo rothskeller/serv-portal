@@ -47,6 +47,7 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 						fmt.Fprintf(os.Stderr, "ERROR: role %d does not exist\n", rid)
 						os.Exit(1)
 					}
+					auth.WillUpdateRole(r)
 					r.Name = ""
 					r.Individual = false
 				}
@@ -73,6 +74,7 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
+		auth.UpdateRole(r)
 		record++
 	}
 }

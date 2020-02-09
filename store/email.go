@@ -7,36 +7,12 @@ import (
 	"sunnyvaleserv.org/portal/model"
 )
 
-// FetchEmailMessage returns the email message with the specified ID, or nil if
-// there is none.
-func (tx *Tx) FetchEmailMessage(id model.EmailMessageID) (e *model.EmailMessage) {
-	return tx.tx.FetchEmailMessage(id)
-}
-
-// FetchEmailMessageByMessageID returns the email message with the specified
-// MessageID header, or nil if there is none.
-func (tx *Tx) FetchEmailMessageByMessageID(messageID string) (e *model.EmailMessage) {
-	return tx.tx.FetchEmailMessageByMessageID(messageID)
-}
-
-// FetchEmailMessageBody returns the body of the email message with the
-// specified ID.
-func (tx *Tx) FetchEmailMessageBody(id model.EmailMessageID) (body []byte) {
-	return tx.tx.FetchEmailMessageBody(id)
-}
-
-// FetchEmailMessages calls the supplied function for all email messages, in
-// reverse chronological order.  It stops when the function return false.
-func (tx *Tx) FetchEmailMessages(handler func(*model.EmailMessage) bool) {
-	tx.tx.FetchEmailMessages(handler)
-}
-
 // CreateEmailMessage creates an email message in the database, including
 // saving its body.
 func (tx *Tx) CreateEmailMessage(em *model.EmailMessage, body []byte) {
 	var gstr []string
 
-	tx.tx.CreateEmailMessage(em, body)
+	tx.Tx.CreateEmailMessage(em, body)
 	tx.entry.Change("create email [%d]", em.ID)
 	tx.entry.Change("set email [%d] messageID to %q", em.ID, em.MessageID)
 	tx.entry.Change("set email [%d] timestamp to %s", em.ID, em.Timestamp.Format("2006-01-02 15:04:05"))
@@ -66,8 +42,8 @@ func (tx *Tx) CreateEmailMessage(em *model.EmailMessage, body []byte) {
 func (tx *Tx) UpdateEmailMessage(em *model.EmailMessage) {
 	var oem *model.EmailMessage
 
-	oem = tx.tx.FetchEmailMessage(em.ID)
-	tx.tx.UpdateEmailMessage(em)
+	oem = tx.Tx.FetchEmailMessage(em.ID)
+	tx.Tx.UpdateEmailMessage(em)
 	if em.MessageID != oem.MessageID {
 		tx.entry.Change("set email [%d] messageID to %q", em.ID, em.MessageID)
 	}

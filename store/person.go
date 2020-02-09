@@ -6,72 +6,9 @@ import (
 	"sunnyvaleserv.org/portal/model"
 )
 
-// FetchPerson retrieves a single person from the database by ID.  It returns
-// nil if no such person exists.
-func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
-	if p = tx.people[id]; p != nil {
-		return p
-	}
-	if p = tx.tx.FetchPerson(id); p != nil {
-		tx.people[id] = p
-	}
-	return p
-}
-
-// FetchPersonByUsername retrieves a single person from the database, given
-// their username.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
-	if p = tx.tx.FetchPersonByUsername(username); p != nil {
-		if p2 := tx.people[p.ID]; p2 != nil {
-			return p2
-		}
-		tx.people[p.ID] = p
-	}
-	return p
-}
-
-// FetchPersonByPWResetToken retrieves a single person from the database, given
-// a password reset token.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
-	if p = tx.tx.FetchPersonByPWResetToken(token); p != nil {
-		if p2 := tx.people[p.ID]; p2 != nil {
-			return p2
-		}
-		tx.people[p.ID] = p
-	}
-	return p
-}
-
-// FetchPersonByCellPhone retrieves a single person from the database, given a
-// cell phone number.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByCellPhone(number string) (p *model.Person) {
-	if p = tx.tx.FetchPersonByCellPhone(number); p != nil {
-		if p2 := tx.people[p.ID]; p2 != nil {
-			return p2
-		}
-		tx.people[p.ID] = p
-	}
-	return p
-}
-
-// FetchPeople returns all of the people in the database, in order by sortname.
-func (tx *Tx) FetchPeople() (people []*model.Person) {
-	if tx.personList == nil {
-		tx.personList = tx.tx.FetchPeople()
-		for i, p := range tx.personList {
-			if p2 := tx.people[p.ID]; p2 != nil {
-				tx.personList[i] = p2
-			} else {
-				tx.people[p.ID] = p
-			}
-		}
-	}
-	return tx.personList
-}
-
 // CreatePerson creates a new person in the database.
 func (tx *Tx) CreatePerson(p *model.Person) {
-	tx.tx.CreatePerson(p)
+	tx.Tx.CreatePerson(p)
 	if tx.auth != nil {
 		tx.auth.AddPerson(p.ID)
 	}
@@ -139,14 +76,31 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	}
 }
 
+// WillUpdatePerson saves a copy of a person before it's updated, so that we can
+// compare against it to generate audit log entries.
+func (tx *Tx) WillUpdatePerson(p *model.Person) {
+	if tx.originalPeople[p.ID] != nil {
+		return
+	}
+	var op = *p
+	if p.Notes != nil {
+		op.Notes = make([]*model.PersonNote, len(p.Notes))
+		for i := range p.Notes {
+			opn := *p.Notes[i]
+			op.Notes[i] = &opn
+		}
+	}
+	tx.originalPeople[p.ID] = &op
+}
+
 // UpdatePerson updates a person in the database.
 func (tx *Tx) UpdatePerson(p *model.Person) {
-	var op = tx.tx.FetchPerson(p.ID)
+	var op = tx.originalPeople[p.ID]
 
-	if tx.people[p.ID] != p {
-		panic("must modify people in place")
+	if op == nil {
+		panic("must call WillUpdatePerson before UpdatePerson")
 	}
-	tx.tx.UpdatePerson(p)
+	tx.Tx.UpdatePerson(p)
 	if p.Username != op.Username {
 		tx.entry.Change("set person %q [%d] username to %q", p.ID, p.InformalName, p.Username)
 	}
@@ -247,4 +201,5 @@ NOTES2:
 		}
 		tx.entry.Change("add person %q [%d] note %q at %s with privilege %s", p.ID, p.InformalName, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
 	}
+	delete(tx.originalPeople, p.ID)
 }

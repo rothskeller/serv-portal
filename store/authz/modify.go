@@ -30,9 +30,9 @@ func (a *Authorizer) SetPersonRoles(person model.PersonID, roles []model.RoleID)
 			o := a.personRoles[int(person)*a.bytesPerPerson+by]&(1<<bit) != 0
 			n := npr[by]&(1<<bit) != 0
 			if o && !n {
-				a.entry.Change("remove person [%d] role %q [%d]", person, a.roles[by*8+bit].Name, by*8+bit)
+				a.entry.Change("remove person %q [%d] role %q [%d]", a.tx.FetchPerson(person).InformalName, person, a.roles[by*8+bit].Name, by*8+bit)
 			} else if n && !o {
-				a.entry.Change("add person [%d] role %q [%d]", person, a.roles[by*8+bit].Name, by*8+bit)
+				a.entry.Change("add person %q [%d] role %q [%d]", a.tx.FetchPerson(person).InformalName, person, a.roles[by*8+bit].Name, by*8+bit)
 			}
 		}
 		a.personRoles[int(person)*a.bytesPerPerson+by] = npr[by]
@@ -60,10 +60,12 @@ func (a *Authorizer) CreateGroup() *model.Group {
 		if a.groups[id].ID == 0 {
 			a.groups[id] = model.Group{ID: model.GroupID(id)}
 			a.entry.Change("create group [%d]", id)
+			a.WillUpdateGroup(&a.groups[id])
 			return &a.groups[id]
 		}
 	}
 	a.entry.Change("create group [%d]", id)
+	a.WillUpdateGroup(&a.groups[id])
 	newlen := len(a.groups) + 1
 	nrp := make([]model.Privilege, len(a.roles)*newlen)
 	for rid := range a.roles {
@@ -76,6 +78,97 @@ func (a *Authorizer) CreateGroup() *model.Group {
 	return &a.groups[id]
 }
 
+// WillUpdateGroup saves a copy of a group that's about to be updated, so that
+// we can compare against it later for audit logging.
+func (a *Authorizer) WillUpdateGroup(group *model.Group) {
+	if a.originalGroups[group.ID] != nil {
+		return
+	}
+	if group != &a.groups[group.ID] {
+		panic("must update groups in place")
+	}
+	var og = *group
+	if group.NoEmail != nil {
+		og.NoEmail = make([]model.PersonID, len(group.NoEmail))
+		copy(og.NoEmail, group.NoEmail)
+	}
+	if group.NoText != nil {
+		og.NoText = make([]model.PersonID, len(group.NoText))
+		copy(og.NoText, group.NoText)
+	}
+	a.originalGroups[group.ID] = &og
+}
+
+// UpdateGroup logs the changes made to a group.  (It doesn't actually save
+// anything; that's done by the Save call.)
+func (a *Authorizer) UpdateGroup(group *model.Group) {
+	var og = a.originalGroups[group.ID]
+	if og == nil {
+		panic("must call WillUpdateGroup before calling UpdateGroup")
+	}
+	if group != &a.groups[group.ID] {
+		panic("must update groups in place")
+	}
+	if group.Tag != og.Tag {
+		a.entry.Change("set group %q [%d] tag to %q", group.Name, group.ID, group.Tag)
+	}
+	if group.Name != og.Name {
+		a.entry.Change("set group %q [%d] name to %q", group.Name, group.ID, group.Name)
+	}
+	if group.Email != og.Email {
+		a.entry.Change("set group %q [%d] email to %q", group.Name, group.ID, group.Email)
+	}
+NOEMAIL1:
+	for _, op := range og.NoEmail {
+		for _, p := range group.NoEmail {
+			if op == p {
+				continue NOEMAIL1
+			}
+		}
+		a.entry.Change("remove group %q [%d] noEmail person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(op).InformalName, op)
+	}
+NOEMAIL2:
+	for _, p := range group.NoEmail {
+		for _, op := range og.NoEmail {
+			if op == p {
+				continue NOEMAIL2
+			}
+		}
+		a.entry.Change("add group %q [%d] noEmail person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(p).InformalName, p)
+	}
+NOTEXT1:
+	for _, op := range og.NoText {
+		for _, p := range group.NoText {
+			if op == p {
+				continue NOTEXT1
+			}
+		}
+		a.entry.Change("remove group %q [%d] noText person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(op).InformalName, op)
+	}
+NOTEXT2:
+	for _, p := range group.NoText {
+		for _, op := range og.NoText {
+			if op == p {
+				continue NOTEXT2
+			}
+		}
+		a.entry.Change("add group %q [%d] noText person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(p).InformalName, p)
+	}
+	delete(a.originalGroups, group.ID)
+}
+
+// DeleteGroup deletes a group.
+func (a *Authorizer) DeleteGroup(group model.GroupID) {
+	if group < 1 || int(group) >= len(a.groups) {
+		panic("group out of range")
+	}
+	for rid := range a.roles {
+		a.rolePrivs[rid*len(a.groups)+int(group)] = 0
+	}
+	a.groups[group] = model.Group{}
+	a.entry.Change("delete group [%d]", group)
+}
+
 // CreateRole creates a new role.
 func (a *Authorizer) CreateRole() *model.Role {
 	var id int
@@ -83,10 +176,12 @@ func (a *Authorizer) CreateRole() *model.Role {
 		if a.roles[id].ID == 0 {
 			a.roles[id] = model.Role{ID: model.RoleID(id)}
 			a.entry.Change("create role [%d]", id)
+			a.WillUpdateRole(&a.roles[id])
 			return &a.roles[id]
 		}
 	}
 	a.entry.Change("create role [%d]", id)
+	a.WillUpdateRole(&a.roles[id])
 	nrp := make([]model.Privilege, (len(a.roles)+1)*len(a.groups))
 	copy(nrp, a.rolePrivs)
 	a.rolePrivs = nrp
@@ -104,16 +199,43 @@ func (a *Authorizer) CreateRole() *model.Role {
 	return &a.roles[id]
 }
 
-// DeleteGroup deletes a group.
-func (a *Authorizer) DeleteGroup(group model.GroupID) {
-	if group < 1 || int(group) >= len(a.groups) {
-		panic("group out of range")
+// WillUpdateRole saves a copy of a role that's about to be updated, so that
+// we can compare against it later for audit logging.
+func (a *Authorizer) WillUpdateRole(role *model.Role) {
+	if a.originalRoles[role.ID] != nil {
+		return
 	}
-	for rid := range a.roles {
-		a.rolePrivs[rid*len(a.groups)+int(group)] = 0
+	if role != &a.roles[role.ID] {
+		panic("must update roles in place")
 	}
-	a.groups[group] = model.Group{}
-	a.entry.Change("delete group [%d]", group)
+	var og = *role
+	a.originalRoles[role.ID] = &og
+}
+
+// UpdateRole logs the changes made to a role.  (It doesn't actually save
+// anything; that's done by the Save call.)
+func (a *Authorizer) UpdateRole(role *model.Role) {
+	var or = a.originalRoles[role.ID]
+	if or == nil {
+		panic("must call WillUpdateRole before calling UpdateRole")
+	}
+	if role != &a.roles[role.ID] {
+		panic("must update roles in place")
+	}
+	if role.Tag != or.Tag {
+		a.entry.Change("set role %q [%d] tag to %q", role.Name, role.ID, role.Tag)
+	}
+	if role.Name != or.Name {
+		a.entry.Change("set role %q [%d] name to %q", role.Name, role.ID, role.Name)
+	}
+	if role.Individual != or.Individual {
+		if role.Individual {
+			a.entry.Change("set role %q [%d] individual flag", role.Name, role.ID)
+		} else {
+			a.entry.Change("clear role %q [%d] individual flag", role.Name, role.ID)
+		}
+	}
+	delete(a.originalRoles, role.ID)
 }
 
 // DeleteRole deletes a role.
