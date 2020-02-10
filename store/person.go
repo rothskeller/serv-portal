@@ -102,86 +102,86 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	}
 	tx.Tx.UpdatePerson(p)
 	if p.Username != op.Username {
-		tx.entry.Change("set person %q [%d] username to %q", p.ID, p.InformalName, p.Username)
+		tx.entry.Change("set person %q [%d] username to %q", p.InformalName, p.ID, p.Username)
 	}
 	if p.InformalName != op.InformalName {
-		tx.entry.Change("set person %q [%d] informalName to %q", p.ID, p.InformalName, p.InformalName)
+		tx.entry.Change("set person %q [%d] informalName to %q", p.InformalName, p.ID, p.InformalName)
 	}
 	if p.FormalName != op.FormalName {
-		tx.entry.Change("set person %q [%d] formalName to %q", p.ID, p.InformalName, p.FormalName)
+		tx.entry.Change("set person %q [%d] formalName to %q", p.InformalName, p.ID, p.FormalName)
 	}
 	if p.SortName != op.SortName {
-		tx.entry.Change("set person %q [%d] sortName to %q", p.ID, p.InformalName, p.SortName)
+		tx.entry.Change("set person %q [%d] sortName to %q", p.InformalName, p.ID, p.SortName)
 	}
 	if p.CallSign != op.CallSign {
-		tx.entry.Change("set person %q [%d] callSign to %q", p.ID, p.InformalName, p.CallSign)
+		tx.entry.Change("set person %q [%d] callSign to %q", p.InformalName, p.ID, p.CallSign)
 	}
 	if p.Email != op.Email {
-		tx.entry.Change("set person %q [%d] email to %q", p.ID, p.InformalName, p.Email)
+		tx.entry.Change("set person %q [%d] email to %q", p.InformalName, p.ID, p.Email)
 	}
 	if p.Email2 != op.Email2 {
-		tx.entry.Change("set person %q [%d] email2 to %q", p.ID, p.InformalName, p.Email2)
+		tx.entry.Change("set person %q [%d] email2 to %q", p.InformalName, p.ID, p.Email2)
 	}
 	if p.NoEmail != op.NoEmail {
 		if p.NoEmail {
-			tx.entry.Change("set person %q [%d] noEmail flag", p.ID, p.InformalName)
+			tx.entry.Change("set person %q [%d] noEmail flag", p.InformalName, p.ID)
 		} else {
-			tx.entry.Change("clear person %q [%d] noEmail flag", p.ID, p.InformalName)
+			tx.entry.Change("clear person %q [%d] noEmail flag", p.InformalName, p.ID)
 		}
 	}
 	if p.HomeAddress.Address != op.HomeAddress.Address {
 		if p.HomeAddress.FireDistrict != 0 {
-			tx.entry.Change("set person %q [%d] homeAddress to %q (%f, %f) (district %d)", p.ID, p.InformalName, p.HomeAddress.Address, p.HomeAddress.Latitude, p.HomeAddress.Longitude, p.HomeAddress.FireDistrict)
+			tx.entry.Change("set person %q [%d] homeAddress to %q (%f, %f) (district %d)", p.InformalName, p.ID, p.HomeAddress.Address, p.HomeAddress.Latitude, p.HomeAddress.Longitude, p.HomeAddress.FireDistrict)
 		} else if p.HomeAddress.Latitude != 0 {
-			tx.entry.Change("set person %q [%d] homeAddress to %q (%f, %f)", p.ID, p.InformalName, p.HomeAddress.Address, p.HomeAddress.Latitude, p.HomeAddress.Longitude)
+			tx.entry.Change("set person %q [%d] homeAddress to %q (%f, %f)", p.InformalName, p.ID, p.HomeAddress.Address, p.HomeAddress.Latitude, p.HomeAddress.Longitude)
 		} else {
-			tx.entry.Change("set person %q [%d] homeAddress to %q", p.ID, p.InformalName, p.HomeAddress.Address)
+			tx.entry.Change("set person %q [%d] homeAddress to %q", p.InformalName, p.ID, p.HomeAddress.Address)
 		}
 	}
 	if p.WorkAddress.SameAsHome {
 		if !op.WorkAddress.SameAsHome {
-			tx.entry.Change("set person %q [%d] workAddress sameAsHome flag", p.ID, p.InformalName)
+			tx.entry.Change("set person %q [%d] workAddress sameAsHome flag", p.InformalName, p.ID)
 		}
 	} else if op.WorkAddress.SameAsHome && p.WorkAddress.Address == "" {
 		tx.entry.Change("clear person %q [%d] workAddress sameAsHome flag", p.InformalName, p.ID)
 	} else if p.WorkAddress.Address != op.WorkAddress.Address {
 		if p.WorkAddress.FireDistrict != 0 {
-			tx.entry.Change("set person %q [%d] workAddress to %q (%f, %f) (district %d)", p.ID, p.InformalName, p.WorkAddress.Address, p.WorkAddress.Latitude, p.WorkAddress.Longitude, p.WorkAddress.FireDistrict)
+			tx.entry.Change("set person %q [%d] workAddress to %q (%f, %f) (district %d)", p.InformalName, p.ID, p.WorkAddress.Address, p.WorkAddress.Latitude, p.WorkAddress.Longitude, p.WorkAddress.FireDistrict)
 		} else if p.WorkAddress.Latitude != 0 {
-			tx.entry.Change("set person %q [%d] workAddress to %q (%f, %f)", p.ID, p.InformalName, p.WorkAddress.Address, p.WorkAddress.Latitude, p.WorkAddress.Longitude)
+			tx.entry.Change("set person %q [%d] workAddress to %q (%f, %f)", p.InformalName, p.ID, p.WorkAddress.Address, p.WorkAddress.Latitude, p.WorkAddress.Longitude)
 		} else {
-			tx.entry.Change("set person %q [%d] workAddress to %q", p.ID, p.InformalName, p.WorkAddress.Address)
+			tx.entry.Change("set person %q [%d] workAddress to %q", p.InformalName, p.ID, p.WorkAddress.Address)
 		}
 	}
 	if p.MailAddress.SameAsHome {
 		if !op.MailAddress.SameAsHome {
-			tx.entry.Change("set person %q [%d] mailAddress sameAsHome flag", p.ID, p.InformalName)
+			tx.entry.Change("set person %q [%d] mailAddress sameAsHome flag", p.InformalName, p.ID)
 		}
 	} else if op.MailAddress.SameAsHome && p.MailAddress.Address == "" {
 		tx.entry.Change("clear person %q [%d] mailAddress sameAsHome flag", p.InformalName, p.ID)
 	} else if p.MailAddress.Address != op.MailAddress.Address {
-		tx.entry.Change("set person %q [%d] mailAddress to %q", p.ID, p.InformalName, p.MailAddress.Address)
+		tx.entry.Change("set person %q [%d] mailAddress to %q", p.InformalName, p.ID, p.MailAddress.Address)
 	}
 	if p.CellPhone != op.CellPhone {
-		tx.entry.Change("set person %q [%d] cellPhone to %q", p.ID, p.InformalName, p.CellPhone)
+		tx.entry.Change("set person %q [%d] cellPhone to %q", p.InformalName, p.ID, p.CellPhone)
 	}
 	if p.HomePhone != op.HomePhone {
-		tx.entry.Change("set person %q [%d] homePhone to %q", p.ID, p.InformalName, p.HomePhone)
+		tx.entry.Change("set person %q [%d] homePhone to %q", p.InformalName, p.ID, p.HomePhone)
 	}
 	if p.WorkPhone != op.WorkPhone {
-		tx.entry.Change("set person %q [%d] workPhone to %q", p.ID, p.InformalName, p.WorkPhone)
+		tx.entry.Change("set person %q [%d] workPhone to %q", p.InformalName, p.ID, p.WorkPhone)
 	}
 	if p.NoText != op.NoText {
 		if p.NoText {
-			tx.entry.Change("set person %q [%d] noText flag", p.ID, p.InformalName)
+			tx.entry.Change("set person %q [%d] noText flag", p.InformalName, p.ID)
 		} else {
-			tx.entry.Change("clear person %q [%d] noText flag", p.ID, p.InformalName)
+			tx.entry.Change("clear person %q [%d] noText flag", p.InformalName, p.ID)
 		}
 	}
 	if len(op.Password) == 0 && len(p.Password) != 0 {
-		tx.entry.Change("set person %q [%d] password", p.ID, p.InformalName)
+		tx.entry.Change("set person %q [%d] password", p.InformalName, p.ID)
 	} else if !bytes.Equal(p.Password, op.Password) {
-		tx.entry.Change("change person %q [%d] password", p.ID, p.InformalName)
+		tx.entry.Change("change person %q [%d] password", p.InformalName, p.ID)
 	}
 NOTES1:
 	for _, on := range op.Notes {
@@ -190,7 +190,7 @@ NOTES1:
 				continue NOTES1
 			}
 		}
-		tx.entry.Change("remove person %q [%d] note %q at %s with privilege %s", p.ID, p.InformalName, on.Note, on.Date, model.PrivilegeNames[on.Privilege])
+		tx.entry.Change("remove person %q [%d] note %q at %s with privilege %s", p.InformalName, p.ID, on.Note, on.Date, model.PrivilegeNames[on.Privilege])
 	}
 NOTES2:
 	for _, n := range p.Notes {
@@ -199,7 +199,7 @@ NOTES2:
 				continue NOTES2
 			}
 		}
-		tx.entry.Change("add person %q [%d] note %q at %s with privilege %s", p.ID, p.InformalName, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
+		tx.entry.Change("add person %q [%d] note %q at %s with privilege %s", p.InformalName, p.ID, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
 	}
 	delete(tx.originalPeople, p.ID)
 }
