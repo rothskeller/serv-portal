@@ -27,6 +27,7 @@ import (
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/util/log"
+	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
 var removeAddressRE = regexp.MustCompile(`\s*<[^>]*>`)
@@ -39,6 +40,7 @@ func main() {
 		raw        []byte
 		msg        *mail.Message
 		em         model.EmailMessage
+		notify     bytes.Buffer
 		err        error
 		recipients = map[*model.Group]bool{}
 	)
@@ -150,6 +152,19 @@ func main() {
 	panic("not reachable")
 DONE:
 	tx.CreateEmailMessage(&em, raw)
+	var toLists []string
+	for _, g := range em.Groups {
+		toLists = append(toLists, tx.Authorizer().FetchGroup(g).Name)
+	}
 	tx.Commit()
+	if em.Attention {
+		fmt.Fprintf(&notify, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: Email Needs Attention\r\n\r\nSunnyvaleSERV.org has received an email that needs attention:\n\nFrom: %s\nTo: %s\nSubject: %s\nType: %s\n",
+			em.From, strings.Join(toLists, ", "), em.Subject, model.EmailMessageTypeNames[em.Type])
+		if em.Error != "" {
+			fmt.Fprintf(&notify, "Error: %s\n", em.Error)
+		}
+		fmt.Fprintf(&notify, "\nPlease visit https://SunnyvaleSERV.org/admin/email to address it.\n")
+		sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, notify.Bytes())
+	}
 	entry.Log()
 }

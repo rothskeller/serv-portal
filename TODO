@@ -1,9 +1,7 @@
 MVP:
-  Notification of email needing attention
   Unsubscribe page
   Invite member by email with random password
   Policy and copyright page
-  Don't keep db locked while sending email
   Automatic resend of email from approved sender
 Eliminate Samariteam:
   SARES import

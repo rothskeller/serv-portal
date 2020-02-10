@@ -38,7 +38,6 @@ func PostEmail(r *util.Request, idstr string) error {
 		return nil
 	case "sendToMe":
 		SendMessageToMe(r, msg)
-		r.Tx.Commit()
 		return nil
 	case "discard":
 		msg.Attention = false
@@ -91,7 +90,6 @@ func SendMessage(tx *store.Tx, email *model.EmailMessage) {
 	}
 	email.Type = model.EmailSent
 	email.Attention = false
-	tx.UpdateEmailMessage(email)
 	return
 
 SEND_ERROR:
@@ -222,5 +220,6 @@ func quoteIfNeeded(s string) string {
 // (rather than to the list(s) it was addressed to).
 func SendMessageToMe(r *util.Request, email *model.EmailMessage) {
 	raw := r.Tx.FetchEmailMessageBody(email.ID)
+	r.Tx.Commit()
 	sendmail.SendMessage("admin@sunnyvaleserv.org", []string{r.Person.Email}, raw)
 }
