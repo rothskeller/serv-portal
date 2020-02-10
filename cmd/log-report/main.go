@@ -35,6 +35,7 @@ func main() {
 		requestCount        int
 		requestElapsedCount int
 		requestElapsedSum   time.Duration
+		requestElapsedAvg   time.Duration
 		requestElapsedMax   time.Duration
 		changes             []map[string]interface{}
 		errors              []map[string]interface{}
@@ -117,8 +118,11 @@ func main() {
 	}
 	fmt.Fprintf(&out, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: SunnyvaleSERV.org Usage Report for %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n", date)
 	qpw = quotedprintable.NewWriter(&out)
+	if requestElapsedCount != 0 {
+		requestElapsedAvg = requestElapsedSum / time.Duration(requestElapsedCount)
+	}
 	fmt.Fprintf(qpw, `<!DOCTYPE html><html><body><div>%d requests in %d sessions, average %dms, max %dms.</div>`,
-		requestCount, len(sessions), int(requestElapsedSum/time.Millisecond)/requestElapsedCount, requestElapsedMax/time.Millisecond)
+		requestCount, len(sessions), requestElapsedAvg/time.Millisecond, requestElapsedMax/time.Millisecond)
 	if len(errors) != 0 {
 		fmt.Fprintf(qpw, `<div style="margin-top:1em;font-weight:bold">Errors</div>`)
 		for _, e := range errors {
