@@ -163,7 +163,7 @@ DONE:
 		if em.Error != "" {
 			fmt.Fprintf(&notify, "Error: %s\n", em.Error)
 		}
-		fmt.Fprintf(&notify, "\nPlease visit https://SunnyvaleSERV.org/admin/email to address it.\n")
+		fmt.Fprintf(&notify, "\nPlease visit https://SunnyvaleSERV.org/admin/emails to address it.\n")
 		sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, notify.Bytes())
 	}
 	entry.Log()
