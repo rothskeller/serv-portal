@@ -299,6 +299,8 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	if p.NoText {
 		out.RawString(`,"noText":true`)
 	}
+	out.RawString(`,"unsubscribeToken":`)
+	out.String(p.UnsubscribeToken)
 	out.RawByte('}')
 }
 

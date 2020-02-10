@@ -38,6 +38,7 @@ CREATE TABLE person (
     username      text    UNIQUE COLLATE NOCASE,
     pwreset_token text    UNIQUE,
     cell_phone    text    UNIQUE,
+    unsubscribe   text    NOT NULL UNIQUE,
     data          blob    NOT NULL
 );
 

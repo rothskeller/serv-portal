@@ -74,6 +74,7 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	for _, n := range p.Notes {
 		tx.entry.Change("add person [%d] note %q at %s with privilege %s", p.ID, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
 	}
+	tx.entry.Change("set person [%d] unsubscribeToken to %s", p.ID, p.UnsubscribeToken)
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -200,6 +201,9 @@ NOTES2:
 			}
 		}
 		tx.entry.Change("add person %q [%d] note %q at %s with privilege %s", p.InformalName, p.ID, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
+	}
+	if p.UnsubscribeToken != op.UnsubscribeToken {
+		tx.entry.Change("change person %q [%d] unsubscribeToken to %s", p.InformalName, p.ID, p.UnsubscribeToken)
 	}
 	delete(tx.originalPeople, p.ID)
 }

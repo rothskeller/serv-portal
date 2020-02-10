@@ -962,6 +962,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 			out.NoEmail = bool(in.Bool())
 		case "no_text":
 			out.NoText = bool(in.Bool())
+		case "unsubscribe_token":
+			out.UnsubscribeToken = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1109,6 +1111,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 		const prefix string = ",\"no_text\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.NoText))
+	}
+	if in.UnsubscribeToken != "" {
+		const prefix string = ",\"unsubscribe_token\":"
+		out.RawString(prefix)
+		out.String(string(in.UnsubscribeToken))
 	}
 	out.RawByte('}')
 }

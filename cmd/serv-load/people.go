@@ -148,6 +148,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.NoEmail = in.Bool()
 			case "noText":
 				p.NoText = in.Bool()
+			case "unsubscribeToken":
+				p.UnsubscribeToken = in.String()
 			default:
 				in.SkipRecursive()
 			}

@@ -214,6 +214,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			return util.Forbidden
 		}
 		person = new(model.Person)
+		person.UnsubscribeToken = util.RandomToken()
 		canEditDetails = true
 	} else {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {

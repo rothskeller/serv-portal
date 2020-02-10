@@ -55,28 +55,29 @@ message Group {
 }
 
 message Person {
-  int64                     id              =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "PersonID"];
-  string                    username        =  2;
-  string                    informal_name   = 17 [(gogoproto.jsontag) = "informalName"];
-  string                    formal_name     =  3 [(gogoproto.jsontag) = "formalName"];
-  string                    sort_name       =  4 [(gogoproto.jsontag) = "sortName"];
-  string                    call_sign       =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
-  string                    email           = 25;
-  string                    email2          = 26;
-  Address                   home_address    = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
-  Address                   work_address    = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
-  Address                   mail_address    = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
-  string                    cell_phone      = 21 [(gogoproto.jsontag) = "cellPhone"];
-  string                    home_phone      = 22 [(gogoproto.jsontag) = "homePhone"];
-  string                    work_phone      = 23 [(gogoproto.jsontag) = "workPhone"];
-  bytes                     password        =  7;
-  int64                     bad_login_count =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
-  google.protobuf.Timestamp bad_login_time  =  9 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "badLoginTime"];
-  string                    pwreset_token   = 10 [(gogoproto.customname) = "PWResetToken", (gogoproto.jsontag) = "pwresetToken,omitempty"];
-  google.protobuf.Timestamp pwreset_time    = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
-  repeated PersonNote       notes           = 27;
-  bool                      no_email        = 28;
-  bool                      no_text         = 29;
+  int64                     id                =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "PersonID"];
+  string                    username          =  2;
+  string                    informal_name     = 17 [(gogoproto.jsontag) = "informalName"];
+  string                    formal_name       =  3 [(gogoproto.jsontag) = "formalName"];
+  string                    sort_name         =  4 [(gogoproto.jsontag) = "sortName"];
+  string                    call_sign         =  6 [(gogoproto.jsontag) = "callSign,omitempty"];
+  string                    email             = 25;
+  string                    email2            = 26;
+  Address                   home_address      = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "homeAddress"];
+  Address                   work_address      = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "workAddress"];
+  Address                   mail_address      = 20 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "mailAddress"];
+  string                    cell_phone        = 21 [(gogoproto.jsontag) = "cellPhone"];
+  string                    home_phone        = 22 [(gogoproto.jsontag) = "homePhone"];
+  string                    work_phone        = 23 [(gogoproto.jsontag) = "workPhone"];
+  bytes                     password          =  7;
+  int64                     bad_login_count   =  8 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "badLoginCount,omitempty"];
+  google.protobuf.Timestamp bad_login_time    =  9 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = "badLoginTime"];
+  string                    pwreset_token     = 10 [(gogoproto.customname) = "PWResetToken", (gogoproto.jsontag) = "pwresetToken,omitempty"];
+  google.protobuf.Timestamp pwreset_time      = 11 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (gogoproto.customname) = "PWResetTime", (gogoproto.jsontag) = "pwresetTime"];
+  repeated PersonNote       notes             = 27;
+  bool                      no_email          = 28;
+  bool                      no_text           = 29;
+  string                    unsubscribe_token = 30;
 }
 
 message PersonNote {

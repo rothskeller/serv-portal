@@ -102,6 +102,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		person.WorkAddress.Longitude = 0
 		person.WorkAddress.FireDistrict = 0
 	}
+	if person.UnsubscribeToken == "" {
+		person.UnsubscribeToken = util.RandomToken()
+	}
 	people = tx.FetchPeople()
 	for _, p := range people {
 		if p.ID == person.ID {
@@ -118,6 +121,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		}
 		if p.CellPhone != "" && p.CellPhone == person.CellPhone {
 			return errors.New("duplicate cellPhone")
+		}
+		if p.UnsubscribeToken == person.UnsubscribeToken {
+			return errors.New("duplicate unsubscribeToken")
 		}
 	}
 	individualHeld = cacheIndividuallyHeldRoles(tx.Authorizer(), person.ID)
