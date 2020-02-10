@@ -18,13 +18,13 @@ it.
       br
       b(v-text="me.informalName")
     b-nav#page-nav(pills vertical)
-      b-nav-item(to="/events" :active="menuItem === 'events'") Events
-      b-nav-item(to="/people" :active="menuItem === 'people' && !isProfile") People
-      b-nav-item(v-if="me.canViewReports" to="/reports" :active="menuItem === 'reports'") Reports
-      b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
-      b-nav-item(v-if="me.webmaster" to="/admin" :active="menuItem === 'admin'") Admin
-      b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`" :active="isProfile") Profile
-      b-nav-item(to="/logout") Logout
+      b-nav-item(to="/events" :active="menuItem === 'events'" @click="onMenuClick") Events
+      b-nav-item(to="/people" :active="menuItem === 'people' && !isProfile" @click="onMenuClick") People
+      b-nav-item(v-if="me.canViewReports" to="/reports" :active="menuItem === 'reports'" @click="onMenuClick") Reports
+      b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'" @click="onMenuClick") Texts
+      b-nav-item(v-if="me.webmaster" to="/admin" :active="menuItem === 'admin'" @click="onMenuClick") Admin
+      b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`" :active="isProfile" @click="onMenuClick") Profile
+      b-nav-item(to="/logout" @click="onMenuClick") Logout
   #page-content(:class="tabbed ? 'page-no-padding': null")
     #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
     router-view
@@ -43,6 +43,7 @@ export default {
     tabbed() { return this.$route.matched.some(rec => rec.meta.tabbed) },
   },
   methods: {
+    onMenuClick() { this.menuOpen = false },
     onMenuTrigger() { this.menuOpen = !this.menuOpen },
   },
 }
