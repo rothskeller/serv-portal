@@ -3,10 +3,10 @@
 package store
 
 import (
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/store/internal/cache"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 // Open opens the database.

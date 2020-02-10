@@ -14,9 +14,9 @@ import (
 	"os"
 	"time"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 func main() {

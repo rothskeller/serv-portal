@@ -7,8 +7,8 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
+	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/person"
 	"sunnyvaleserv.org/portal/store"
 )
 

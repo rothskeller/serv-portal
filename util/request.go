@@ -7,10 +7,10 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/authz"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 // RunRequest handles an incoming HTTP request, described by the Go standard

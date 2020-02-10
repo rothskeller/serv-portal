@@ -1,17 +1,18 @@
-package auth
+package authn
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/smtp"
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
-	"sunnyvaleserv.org/portal/config"
+
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/config"
+	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
 // Time during which the password reset sequence must be completed.
@@ -58,13 +59,7 @@ func PostPasswordReset(r *util.Request) error {
 	}
 	fmt.Fprintf(&body, "\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
 		person.InformalName, config.Get("siteURL"), person.PWResetToken)
-	if err := smtp.SendMail(
-		config.Get("smtpServer"),
-		&loginAuth{config.Get("smtpUsername"), config.Get("smtpPassword")},
-		config.Get("fromAddr"),
-		append(emails, config.Get("adminEmail")),
-		body.Bytes(),
-	); err != nil {
+	if err := sendmail.SendMessage(config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
 		panic(err)
 	}
 	return nil
@@ -150,24 +145,4 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	util.CreateSession(r)
 	r.Tx.Commit()
 	return GetLogin(r)
-}
-
-type loginAuth struct{ username, password string }
-
-func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
-	return "LOGIN", []byte(a.username), nil
-}
-
-func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
-		switch string(fromServer) {
-		case "Username:":
-			return []byte(a.username), nil
-		case "Password:":
-			return []byte(a.password), nil
-		default:
-			return nil, errors.New("Unknown fromServer")
-		}
-	}
-	return nil, nil
 }

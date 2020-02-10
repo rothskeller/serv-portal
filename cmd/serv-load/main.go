@@ -14,8 +14,8 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 func usage() {

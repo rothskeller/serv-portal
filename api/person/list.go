@@ -5,7 +5,7 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/auth"
+	"sunnyvaleserv.org/portal/api/authn"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -32,7 +32,7 @@ func GetPeople(r *util.Request) error {
 	out.RawString(`{"people":[`)
 	first := true
 	for _, p := range people {
-		if focus != nil && focus.Tag == model.GroupDisabled && auth.IsEnabled(r, p) {
+		if focus != nil && focus.Tag == model.GroupDisabled && authn.IsEnabled(r, p) {
 			// Special case because the lack of *any* role also means disabled.
 			continue
 		}

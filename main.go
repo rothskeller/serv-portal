@@ -17,15 +17,15 @@ import (
 	"os"
 	"strings"
 
-	"sunnyvaleserv.org/portal/auth"
-	"sunnyvaleserv.org/portal/email"
-	"sunnyvaleserv.org/portal/event"
-	"sunnyvaleserv.org/portal/group"
-	"sunnyvaleserv.org/portal/person"
-	"sunnyvaleserv.org/portal/report"
-	"sunnyvaleserv.org/portal/role"
+	"sunnyvaleserv.org/portal/api/authn"
+	"sunnyvaleserv.org/portal/api/email"
+	"sunnyvaleserv.org/portal/api/event"
+	"sunnyvaleserv.org/portal/api/group"
+	"sunnyvaleserv.org/portal/api/person"
+	"sunnyvaleserv.org/portal/api/report"
+	"sunnyvaleserv.org/portal/api/role"
+	"sunnyvaleserv.org/portal/api/text"
 	"sunnyvaleserv.org/portal/store"
-	"sunnyvaleserv.org/portal/text"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -71,19 +71,19 @@ func router(r *util.Request) error {
 	}
 	switch {
 	case r.Method == "POST" && c[1] == "login" && c[2] == "":
-		return auth.PostLogin(r)
+		return authn.PostLogin(r)
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] == "":
-		return auth.PostPasswordReset(r)
+		return authn.PostPasswordReset(r)
 	case r.Method == "GET" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
-		return auth.GetPasswordResetToken(r, c[2])
+		return authn.GetPasswordResetToken(r, c[2])
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
-		return auth.PostPasswordResetToken(r, c[2])
+		return authn.PostPasswordResetToken(r, c[2])
 	case r.Person == nil:
 		return util.HTTPError(http.StatusUnauthorized, "401 Unauthorized")
 	case r.Method == "GET" && c[1] == "login" && c[2] == "":
-		return auth.GetLogin(r)
+		return authn.GetLogin(r)
 	case r.Method == "POST" && c[1] == "logout" && c[2] == "":
-		return auth.PostLogout(r)
+		return authn.PostLogout(r)
 	case r.Method == "GET" && c[1] == "emails" && c[2] == "":
 		return email.GetEmails(r)
 	case r.Method == "POST" && c[1] == "emails" && c[2] != "" && c[3] == "":

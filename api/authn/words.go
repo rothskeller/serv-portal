@@ -1,4 +1,4 @@
-package auth
+package authn
 
 var wordlist = []string{
 	"aaron",
@@ -5359,7 +5359,6 @@ var wordlist = []string{
 	"smoke",
 	"smoking",
 	"smooth",
-	"smtp",
 	"snake",
 	"snap",
 	"snapshot",

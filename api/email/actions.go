@@ -2,21 +2,19 @@ package email
 
 import (
 	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/mail"
-	"net/smtp"
 	"net/textproto"
 	"regexp"
 	"strings"
 
-	"sunnyvaleserv.org/portal/config"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
 // PostEmail handles POST /api/emails/$id requests.
@@ -55,14 +53,12 @@ func PostEmail(r *util.Request, idstr string) error {
 // SendMessage sends an email message to the groups to which it's addressed.
 func SendMessage(tx *store.Tx, email *model.EmailMessage) {
 	var (
-		raw     []byte
-		msg     *mail.Message
-		body    []byte
-		root    *messagePart
-		client  *smtp.Client
-		tlsconf tls.Config
-		login   loginAuth
-		err     error
+		raw    []byte
+		msg    *mail.Message
+		body   []byte
+		root   *messagePart
+		mailer *sendmail.Mailer
+		err    error
 	)
 	raw = tx.FetchEmailMessageBody(email.ID)
 	if msg, err = mail.ReadMessage(bytes.NewReader(raw)); err != nil {
@@ -84,21 +80,12 @@ func SendMessage(tx *store.Tx, email *model.EmailMessage) {
 			delete(msg.Header, hdr)
 		}
 	}
-	if client, err = smtp.Dial(config.Get("sendGridServerPort")); err != nil {
+	if mailer, err = sendmail.OpenMailer(); err != nil {
 		goto SEND_ERROR
 	}
-	defer client.Close()
-	tlsconf.ServerName = config.Get("sendGridServer")
-	if err = client.StartTLS(&tlsconf); err != nil {
-		goto SEND_ERROR
-	}
-	login.username = config.Get("sendGridUsername")
-	login.password = config.Get("sendGridPassword")
-	if err = client.Auth(&login); err != nil {
-		goto SEND_ERROR
-	}
+	defer mailer.Close()
 	for _, group := range email.Groups {
-		if err = sendMessageToGroup(tx, client, email, msg, root, group); err != nil {
+		if err = sendMessageToGroup(tx, mailer, email, msg, root, group); err != nil {
 			goto SEND_ERROR
 		}
 	}
@@ -114,7 +101,7 @@ SEND_ERROR:
 }
 
 func sendMessageToGroup(
-	tx *store.Tx, client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, gid model.GroupID,
+	tx *store.Tx, mailer *sendmail.Mailer, email *model.EmailMessage, msg *mail.Message, root *messagePart, gid model.GroupID,
 ) error {
 	group := tx.Authorizer().FetchGroup(gid)
 	pids := make(map[model.PersonID]bool)
@@ -137,7 +124,7 @@ PEOPLE:
 		if person.NoEmail {
 			continue
 		}
-		if err := sendMessageToPerson(client, email, msg, root, group, person); err != nil {
+		if err := sendMessageToPerson(mailer, email, msg, root, group, person); err != nil {
 			return err
 		}
 	}
@@ -145,16 +132,16 @@ PEOPLE:
 }
 
 func sendMessageToPerson(
-	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
+	mailer *sendmail.Mailer, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
 	person *model.Person,
 ) error {
 	if person.Email != "" {
-		if err := sendMessageToEmail(client, email, msg, root, group, person, person.Email); err != nil {
+		if err := sendMessageToEmail(mailer, email, msg, root, group, person, person.Email); err != nil {
 			return err
 		}
 	}
 	if person.Email2 != "" {
-		if err := sendMessageToEmail(client, email, msg, root, group, person, person.Email2); err != nil {
+		if err := sendMessageToEmail(mailer, email, msg, root, group, person, person.Email2); err != nil {
 			return err
 		}
 	}
@@ -162,35 +149,18 @@ func sendMessageToPerson(
 }
 
 func sendMessageToEmail(
-	client *smtp.Client, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
+	mailer *sendmail.Mailer, email *model.EmailMessage, msg *mail.Message, root *messagePart, group *model.Group,
 	person *model.Person, address string,
 ) error {
 	var (
 		buf bytes.Buffer
-		wr  io.WriteCloser
-		err error
 	)
 	emitFrom(&buf, email, group)
 	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(group.Name), group.Email)
 	fmt.Fprintf(&buf, "Errors-To: admin@sunnyvaleserv.org\r\n")
 	emitHeaders(&buf, msg.Header)
 	rewrite(&buf, root, group.Email, person.InformalName, address)
-	if err = client.Mail(group.Email + "@sunnyvaleserv.org"); err != nil {
-		return err
-	}
-	if err = client.Rcpt(address); err != nil {
-		return err
-	}
-	if wr, err = client.Data(); err != nil {
-		return err
-	}
-	if _, err = wr.Write(buf.Bytes()); err != nil {
-		return err
-	}
-	if err = wr.Close(); err != nil {
-		return err
-	}
-	return nil
+	return mailer.SendMessage(group.Email+"@sunnyvaleserv.org", []string{address}, buf.Bytes())
 }
 
 func emitFrom(buf io.Writer, email *model.EmailMessage, group *model.Group) {
@@ -251,32 +221,6 @@ func quoteIfNeeded(s string) string {
 // SendMessageToMe sends an email message to the caller's primary email address
 // (rather than to the list(s) it was addressed to).
 func SendMessageToMe(r *util.Request, email *model.EmailMessage) {
-	var (
-		raw   []byte
-		login loginAuth
-	)
-	login.username = config.Get("sendGridUsername")
-	login.password = config.Get("sendGridPassword")
-	raw = r.Tx.FetchEmailMessageBody(email.ID)
-	smtp.SendMail(config.Get("sendGridServerPort"), &login, "admin@sunnyvaleserv.org", []string{r.Person.Email}, raw)
-}
-
-type loginAuth struct{ username, password string }
-
-func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
-	return "LOGIN", []byte(a.username), nil
-}
-
-func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
-		switch string(fromServer) {
-		case "Username:":
-			return []byte(a.username), nil
-		case "Password:":
-			return []byte(a.password), nil
-		default:
-			return nil, errors.New("Unknown fromServer")
-		}
-	}
-	return nil, nil
+	raw := r.Tx.FetchEmailMessageBody(email.ID)
+	sendmail.SendMessage("admin@sunnyvaleserv.org", []string{r.Person.Email}, raw)
 }

@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/authz"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 var removeAddressRE = regexp.MustCompile(`\s*<[^>]*>`)

@@ -12,9 +12,9 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/config"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/config"
 )
 
 // GetSMSNew handles GET /api/sms/NEW requests.

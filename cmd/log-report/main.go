@@ -4,18 +4,16 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html"
 	"mime/quotedprintable"
-	"net/smtp"
 	"os"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
 
-	"sunnyvaleserv.org/portal/config"
+	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
 type sessionData struct {
@@ -41,7 +39,6 @@ func main() {
 		errors              []map[string]interface{}
 		out                 bytes.Buffer
 		qpw                 *quotedprintable.Writer
-		login               loginAuth
 		err                 error
 		sessions            = map[string]*sessionData{}
 	)
@@ -173,30 +170,8 @@ func main() {
 	}
 	fmt.Fprintf(qpw, `</body></html>`)
 	qpw.Close()
-	login.username = config.Get("sendGridUsername")
-	login.password = config.Get("sendGridPassword")
-	if err = smtp.SendMail(config.Get("sendGridServerPort"), &login, "admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, out.Bytes()); err != nil {
+	if err = sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, out.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sendmail: %s\n", err)
 		os.Exit(1)
 	}
-}
-
-type loginAuth struct{ username, password string }
-
-func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
-	return "LOGIN", []byte(a.username), nil
-}
-
-func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
-		switch string(fromServer) {
-		case "Username:":
-			return []byte(a.username), nil
-		case "Password:":
-			return []byte(a.password), nil
-		default:
-			return nil, errors.New("Unknown fromServer")
-		}
-	}
-	return nil, nil
 }

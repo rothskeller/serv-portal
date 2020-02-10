@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
-	"sunnyvaleserv.org/portal/auth"
+
+	"sunnyvaleserv.org/portal/api/authn"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -184,7 +185,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.Bool(r.Auth.IsWebmaster())
 		if canEditDetails {
 			out.RawString(`,"passwordHints":[`)
-			for i, h := range auth.SERVPasswordHints {
+			for i, h := range authn.SERVPasswordHints {
 				if i != 0 {
 					out.RawByte(',')
 				}
@@ -295,18 +296,18 @@ func PostPerson(r *util.Request, idstr string) error {
 	// fields as password hints.
 	if password := r.FormValue("password"); password != "" && canEditDetails {
 		if !r.Auth.IsWebmaster() {
-			if oldPassword := r.FormValue("oldPassword"); !auth.CheckPassword(person, oldPassword) {
+			if oldPassword := r.FormValue("oldPassword"); !authn.CheckPassword(person, oldPassword) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"wrongOldPassword":true}`))
 				return nil
 			}
-			if !auth.StrongPassword(person, password) {
+			if !authn.StrongPassword(person, password) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"weakPassword":true}`))
 				return nil
 			}
 		}
-		auth.SetPassword(r, person, password)
+		authn.SetPassword(r, person, password)
 	}
 	if person.ID == 0 {
 		r.Tx.CreatePerson(person)

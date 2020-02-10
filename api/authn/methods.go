@@ -1,4 +1,4 @@
-package auth
+package authn
 
 import (
 	"sunnyvaleserv.org/portal/model"

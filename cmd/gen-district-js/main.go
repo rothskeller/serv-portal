@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/paulmach/orb"
-	"sunnyvaleserv.org/portal/person"
+
+	"sunnyvaleserv.org/portal/api/person"
 )
 
 func main() {

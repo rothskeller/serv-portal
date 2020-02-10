@@ -7,7 +7,7 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
-	"sunnyvaleserv.org/portal/group"
+	"sunnyvaleserv.org/portal/api/group"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 )

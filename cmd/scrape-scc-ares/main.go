@@ -13,10 +13,10 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/authz"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 var eventDetailHrefRE = regexp.MustCompile(`eventdetail\.php\?id=(\d+)`)

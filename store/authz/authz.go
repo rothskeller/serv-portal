@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"unsafe"
 
-	"sunnyvaleserv.org/portal/log"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store/internal/cache"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 // NewAuthorizer returns a new Authorizer backed by the specified database
