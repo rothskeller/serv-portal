@@ -36,6 +36,9 @@ func GetPeople(r *util.Request) error {
 			// Special case because the lack of *any* role also means disabled.
 			continue
 		}
+		if !r.Auth.CanAP(model.PrivViewMembers, p.ID) && p != r.Person {
+			continue
+		}
 		if first {
 			first = false
 		} else {
@@ -49,7 +52,7 @@ func GetPeople(r *util.Request) error {
 		out.String(p.SortName)
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
-		if r.Auth.CanAP(model.PrivViewContactInfo, p.ID) {
+		if r.Auth.CanAP(model.PrivViewContactInfo, p.ID) || p == r.Person {
 			out.RawString(`,"email":`)
 			out.String(p.Email)
 			out.RawString(`,"email2":`)

@@ -19,13 +19,13 @@ it.
       b(v-text="me.informalName")
     b-nav#page-nav(pills vertical)
       b-nav-item(to="/events" :active="menuItem === 'events'") Events
-      b-nav-item(to="/people" :active="menuItem === 'people'") People
-      b-nav-item(to="/reports" :active="menuItem === 'reports'") Reports
+      b-nav-item(to="/people" :active="menuItem === 'people' && !isProfile") People
+      b-nav-item(v-if="me.canViewReports" to="/reports" :active="menuItem === 'reports'") Reports
       b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'") Texts
       b-nav-item(v-if="me.webmaster" to="/emails" :active="menuItem === 'emails'") Emails
       b-nav-item(v-if="me.webmaster" to="/groups" :active="menuItem === 'groups'") Groups
       b-nav-item(v-if="me.webmaster" to="/roles" :active="menuItem === 'roles'") Roles
-      b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`") Profile
+      b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`" :active="isProfile") Profile
       b-nav-item(to="/logout") Logout
   #page-content(:class="tabbed ? 'page-no-padding': null")
     #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
@@ -36,6 +36,7 @@ it.
 export default {
   data: () => ({ menuOpen: false }),
   computed: {
+    isProfile() { return this.$route.path === `/people/${this.me.id}/edit` },
     me() { return this.$store.state.me || {} },
     menuItem() {
       const record = this.$route.matched.find(rec => rec.meta.menuItem)

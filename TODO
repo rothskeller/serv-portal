@@ -1,5 +1,4 @@
 MVP:
-  Test privileges of student role
   Daily report from log
   Notification of email needing attention
   Unsubscribe page
@@ -7,6 +6,7 @@ MVP:
   Policy and copyright page
   Don't keep db locked while sending email
   Automatic resend of email from approved sender
+  Close menu after selecting from it
   Clone roles and groups rather than making new ones
   Combine roles, groups, email into admin page
 Eliminate Samariteam:
@@ -14,6 +14,8 @@ Eliminate Samariteam:
   Files area
   Import files from Samariteam
 Goodies:
+  Public events
+  View mailing list archives
   UI to configure scc-ares-races calendar synch
   Skills and other person data
   Events tagged with which volunteer bucket their hours go in

@@ -5,7 +5,7 @@ Reports displays the index page for generating reports.
 <template lang="pug">
 div.mt-3(v-if="loading")
   b-spinner(small)
-CERTAttendanceForm(v-else v-bind="certAtt")
+CERTAttendanceForm(v-else-if="certAtt" v-bind="certAtt")
 </template>
 
 <script>
