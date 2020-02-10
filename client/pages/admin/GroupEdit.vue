@@ -39,7 +39,8 @@ form#group-edit(v-else @submit.prevent="onSubmit")
   div.mt-3
     b-btn(type="submit" variant="primary" :disabled="!valid" v-text="newg ? 'Create Group' : 'Save Group'")
     b-btn.ml-2(@click="onCancel") Cancel
-    b-btn.ml-5(v-if="canDelete" variant="danger" @click="onDelete") Delete Group
+    b-btn.ml-5(v-if="!newg" @click="onClone") Clone Group
+    b-btn.ml-2(v-if="canDelete" variant="danger" @click="onDelete") Delete Group
 </template>
 
 <script>
@@ -61,22 +62,30 @@ export default {
     duplicateEmail: null,
   }),
   computed: {
-    newg() { return this.$route.params.id === 'NEW' },
+    newg() { return this.$route.params.gid === 'NEW' },
     valid() { return !this.nameError },
   },
   watch: {
+    $route: 'onChangeRoute',
     'group.name': 'validate',
     'group.email': 'validate',
   },
-  async created() {
-    const data = (await this.$axios.get(`/api/groups/${this.$route.params.id}`)).data
-    this.group = data.group
-    this.privs = data.privs
-    this.canDelete = data.canDelete
-    this.onLoadGroup(this.group)
+  created() {
+    this.onChangeRoute()
   },
   methods: {
     onCancel() { this.$router.go(-1) },
+    async onChangeRoute() {
+      const gid = this.$route.params.clone || this.$route.params.gid
+      const data = (await this.$axios.get(`/api/groups/${gid}`)).data
+      this.group = data.group
+      this.privs = data.privs
+      this.canDelete = data.canDelete && this.$route.params.gid !== 'NEW'
+      this.onLoadGroup(this.group)
+    },
+    onClone() {
+      this.$router.push({ name: 'groups-gid', params: { gid: 'NEW', clone: this.$route.params.gid } })
+    },
     async onDelete() {
       const resp = await this.$bvModal.msgBoxConfirm(
         'Are you sure you want to delete this group?  All associated data, including privileges and memberships, will be permanently lost.', {
@@ -86,7 +95,7 @@ export default {
       if (!resp) return
       const body = new FormData
       body.append('delete', 'true')
-      await this.$axios.post(`/api/groups/${this.$route.params.id}`, body)
+      await this.$axios.post(`/api/groups/${this.$route.params.gid}`, body)
       this.$router.push('/groups')
     },
     async onSubmit() {
@@ -106,7 +115,7 @@ export default {
         if (r.emails) body.append(`emails:${r.id}`, true)
         if (r.bcc) body.append(`bcc:${r.id}`, true)
       })
-      const resp = (await this.$axios.post(`/api/groups/${this.$route.params.id}`, body)).data
+      const resp = (await this.$axios.post(`/api/groups/${this.$route.params.gid}`, body)).data
       if (resp) {
         if (resp.duplicateName) this.duplicateName = this.group.name
         if (resp.duplicateEmail) this.duplicateEmail = this.group.email

@@ -65,7 +65,6 @@ func (a *Authorizer) CreateGroup() *model.Group {
 		}
 	}
 	a.entry.Change("create group [%d]", id)
-	a.WillUpdateGroup(&a.groups[id])
 	newlen := len(a.groups) + 1
 	nrp := make([]model.Privilege, len(a.roles)*newlen)
 	for rid := range a.roles {
@@ -75,6 +74,7 @@ func (a *Authorizer) CreateGroup() *model.Group {
 	}
 	a.groups = append(a.groups, model.Group{ID: model.GroupID(id)})
 	a.rolePrivs = nrp
+	a.WillUpdateGroup(&a.groups[id])
 	return &a.groups[id]
 }
 
@@ -181,12 +181,12 @@ func (a *Authorizer) CreateRole() *model.Role {
 		}
 	}
 	a.entry.Change("create role [%d]", id)
-	a.WillUpdateRole(&a.roles[id])
 	nrp := make([]model.Privilege, (len(a.roles)+1)*len(a.groups))
 	copy(nrp, a.rolePrivs)
 	a.rolePrivs = nrp
 	a.roles = append(a.roles, model.Role{ID: model.RoleID(id)})
 	if len(a.roles)%8 != 1 {
+		a.WillUpdateRole(&a.roles[id])
 		return &a.roles[id]
 	}
 	nbpp := a.bytesPerPerson + 1
@@ -196,6 +196,7 @@ func (a *Authorizer) CreateRole() *model.Role {
 	}
 	a.bytesPerPerson = nbpp
 	a.personRoles = npr
+	a.WillUpdateRole(&a.roles[id])
 	return &a.roles[id]
 }
 

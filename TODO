@@ -7,8 +7,6 @@ MVP:
   Don't keep db locked while sending email
   Automatic resend of email from approved sender
   Close menu after selecting from it
-  Clone roles and groups rather than making new ones
-  Combine roles, groups, email into admin page
 Eliminate Samariteam:
   SARES import
   Files area

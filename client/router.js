@@ -2,11 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from './store'
 import MainMenu from './MainMenu'
-import Emails from './pages/Emails'
+import Admin from './pages/Admin'
 import Events from './pages/Events'
-import Groups from './pages/Groups'
 import People from './pages/People'
-import Roles from './pages/Roles'
 import Texts from './pages/Texts'
 
 Vue.use(Router)
@@ -37,13 +35,35 @@ const router = new Router({
       component: MainMenu,
       children: [
         {
-          path: '/emails',
-          component: Emails,
-          meta: { menuItem: 'emails', tabbed: true },
+          path: '/admin',
+          component: Admin,
+          meta: { menuItem: 'admin', tabbed: true },
           children: [
             {
               path: '',
-              component: () => import(/* webpackChunkName: "EmailsList" */ './pages/emails/EmailsList'),
+              redirect: '/admin/groups'
+            },
+            {
+              path: 'emails',
+              component: () => import(/* webpackChunkName: "EmailsList" */ './pages/admin/EmailsList'),
+            },
+            {
+              path: 'groups',
+              component: () => import(/* webpackChunkName: "GroupsList" */ './pages/admin/GroupsList'),
+            },
+            {
+              name: 'groups-gid',
+              path: 'groups/:gid',
+              component: () => import(/* webpackChunkName: "GroupEdit" */ './pages/admin/GroupEdit'),
+            },
+            {
+              path: 'roles',
+              component: () => import(/* webpackChunkName: "RolesList" */ './pages/admin/RolesList'),
+            },
+            {
+              name: 'roles-rid',
+              path: 'roles/:rid',
+              component: () => import(/* webpackChunkName: "RoleEdit" */ './pages/admin/RoleEdit'),
             },
           ],
         },
@@ -77,21 +97,6 @@ const router = new Router({
               component: () => import(/* webpackChunkName: "EventAttendance" */ './pages/event/EventAttendance'),
             },
           ]
-        },
-        {
-          path: '/groups',
-          component: Groups,
-          meta: { menuItem: 'groups', tabbed: true },
-          children: [
-            {
-              path: '',
-              component: () => import(/* webpackChunkName: "GroupsList" */ './pages/groups/GroupsList'),
-            },
-            {
-              path: ':id',
-              component: () => import(/* webpackChunkName: "GroupEdit" */ './pages/groups/GroupEdit'),
-            },
-          ],
         },
         {
           path: '/logout',
@@ -134,21 +139,6 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "CERTAttendance" */ './pages/reports/CERTAttendance'),
           props: route => route.query,
           meta: { menuItem: 'reports' },
-        },
-        {
-          path: '/roles',
-          component: Roles,
-          meta: { menuItem: 'roles', tabbed: true },
-          children: [
-            {
-              path: '',
-              component: () => import(/* webpackChunkName: "RolesList" */ './pages/roles/RolesList'),
-            },
-            {
-              path: ':id',
-              component: () => import(/* webpackChunkName: "RoleEdit" */ './pages/roles/RoleEdit'),
-            },
-          ],
         },
         {
           path: '/texts',

@@ -11,7 +11,7 @@ RolesList displays the list of roles.
     .roles-list-groups.roles-list-heading Member of Groups
     template(v-for="r in roles")
       .roles-list-name
-        router-link(:to="`/roles/${r.id}`" v-text="r.name")
+        router-link(:to="`/admin/roles/${r.id}`" v-text="r.name")
       .roles-list-groups
         div(v-for="g in r.groups" v-text="g")
 </template>

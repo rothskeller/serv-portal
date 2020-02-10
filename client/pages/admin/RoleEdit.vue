@@ -33,7 +33,8 @@ form#role-edit(v-else @submit.prevent="onSubmit")
   div.mt-3
     b-btn(type="submit" variant="primary" :disabled="!valid" v-text="newr ? 'Create Role' : 'Save Role'")
     b-btn.ml-2(@click="onCancel") Cancel
-    b-btn.ml-5(v-if="canDelete" variant="danger" @click="onDelete") Delete Role
+    b-btn.ml-5(v-if="!newr" @click="onClone") Clone Role
+    b-btn.ml-2(v-if="canDelete" variant="danger" @click="onDelete") Delete Role
 </template>
 
 <script>
@@ -53,21 +54,29 @@ export default {
     duplicateName: null,
   }),
   computed: {
-    newr() { return this.$route.params.id === 'NEW' },
+    newr() { return this.$route.params.rid === 'NEW' },
     valid() { return !this.nameError },
   },
   watch: {
+    $route: 'onChangeRoute',
     'role.name': 'validate',
   },
-  async created() {
-    const data = (await this.$axios.get(`/api/roles/${this.$route.params.id}`)).data
-    this.role = data.role
-    this.privs = data.privs
-    this.canDelete = data.canDelete
-    this.onLoadRole(this.role)
+  created() {
+    this.onChangeRoute()
   },
   methods: {
     onCancel() { this.$router.go(-1) },
+    async onChangeRoute() {
+      const rid = this.$route.params.clone || this.$route.params.rid
+      const data = (await this.$axios.get(`/api/roles/${rid}`)).data
+      this.role = data.role
+      this.privs = data.privs
+      this.canDelete = data.canDelete && this.$route.params.rid !== 'NEW'
+      this.onLoadRole(this.role)
+    },
+    onClone() {
+      this.$router.push({ name: 'roles-rid', params: { rid: 'NEW', clone: this.$route.params.rid } })
+    },
     async onDelete() {
       const resp = await this.$bvModal.msgBoxConfirm(
         'Are you sure you want to delete this role?  All associated data, including privileges and memberships, will be permanently lost.', {
@@ -77,7 +86,7 @@ export default {
       if (!resp) return
       const body = new FormData
       body.append('delete', 'true')
-      await this.$axios.post(`/api/roles/${this.$route.params.id}`, body)
+      await this.$axios.post(`/api/roles/${this.$route.params.rid}`, body)
       this.$router.push('/roles')
     },
     async onSubmit() {
@@ -97,7 +106,7 @@ export default {
         if (g.emails) body.append(`emails:${g.id}`, true)
         if (g.bcc) body.append(`bcc:${g.id}`, true)
       })
-      const resp = (await this.$axios.post(`/api/roles/${this.$route.params.id}`, body)).data
+      const resp = (await this.$axios.post(`/api/roles/${this.$route.params.rid}`, body)).data
       if (resp && resp.duplicateName)
         this.duplicateName = this.role.name
       else
