@@ -157,7 +157,7 @@ func sendMessageToEmail(
 	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(group.Name), group.Email)
 	fmt.Fprintf(&buf, "Errors-To: admin@sunnyvaleserv.org\r\n")
 	emitHeaders(&buf, msg.Header)
-	rewrite(&buf, root, group.Email, person.InformalName, address)
+	rewrite(&buf, root, group.Email, person.InformalName, address, person.UnsubscribeToken)
 	return mailer.SendMessage(group.Email+"@sunnyvaleserv.org", []string{address}, buf.Bytes())
 }
 

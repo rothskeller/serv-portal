@@ -141,7 +141,7 @@ func makeMultiMessagePart(header textproto.MIMEHeader, body []byte, boundary str
 	return mp, rewritable
 }
 
-func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddress string) (err error) {
+func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddress, unsubscribe string) (err error) {
 	if len(mp.parts) != 0 {
 		var (
 			mpw *multipart.Writer
@@ -154,7 +154,7 @@ func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddre
 				return err
 			}
 			if mp.alternative || mp.lastPart == c {
-				err = rewrite(cp, c, groupAddress, personName, personAddress)
+				err = rewrite(cp, c, groupAddress, personName, personAddress, unsubscribe)
 			} else {
 				err = copyPart(cp, c)
 			}
@@ -171,12 +171,12 @@ func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddre
 		return err
 	}
 	if mp.plain {
-		if _, err = fmt.Fprintf(w, "________\r\nThis message was sent to %s via the %s@SunnyvaleSERV.org mailing list.\r\nTo unsubscribe, visit https://SunnyvaleSERV.org/unsubscribe/%[1]s.\r\n", personAddress, groupAddress); err != nil {
+		if _, err = fmt.Fprintf(w, "________\r\nThis message was sent to %s via the %s@SunnyvaleSERV.org mailing list.\r\nTo unsubscribe, visit https://SunnyvaleSERV.org/unsubscribe/%s.\r\n", personAddress, groupAddress, unsubscribe); err != nil {
 			return err
 		}
 	}
 	if mp.html {
-		if _, err = fmt.Fprintf(w, "<div style=\"height:1em;width:5em;border-bottom:1px solid #888\"></div><div style=\"color:#888\">This message was sent to <a style=\"color:#888\">%s</a> via the <a style=\"color:#888\">%s@SunnyvaleSERV.org</a> mailing list.<br>To unsubscribe, visit <a style=\"color:#888\" href=\"https://SunnyvaleSERV.org/unsubscribe/%[1]s\">https://SunnyvaleSERV.org/unsubscribe/%[1]s</a>.</div>", html.EscapeString(personAddress), groupAddress); err != nil {
+		if _, err = fmt.Fprintf(w, "<div style=\"height:1em;width:5em;border-bottom:1px solid #888\"></div><div style=\"color:#888\">This message was sent to <a style=\"color:#888\">%s</a> via the <a style=\"color:#888\">%s@SunnyvaleSERV.org</a> mailing list.<br>To unsubscribe, visit <a style=\"color:#888\" href=\"https://SunnyvaleSERV.org/unsubscribe/%[1]s\">https://SunnyvaleSERV.org/unsubscribe/%s</a>.</div>", html.EscapeString(personAddress), groupAddress, unsubscribe); err != nil {
 			return err
 		}
 	}
