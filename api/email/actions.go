@@ -154,7 +154,7 @@ func sendMessageToEmail(
 		buf bytes.Buffer
 	)
 	emitFrom(&buf, email, group)
-	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(group.Name), group.Email)
+	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", QuoteIfNeeded(group.Name), group.Email)
 	fmt.Fprintf(&buf, "Errors-To: admin@sunnyvaleserv.org\r\n")
 	fmt.Fprintf(&buf, "List-Unsubscribe: <https://sunnyvaleserv.org/unsubscribe/%s/%s>\r\n", person.UnsubscribeToken, group.Email)
 	fmt.Fprintf(&buf, "List-Unsubscribe-Post: List-Unsubscribe=One-Click\r\n")
@@ -168,7 +168,7 @@ func emitFrom(buf io.Writer, email *model.EmailMessage, group *model.Group) {
 	if idx := strings.IndexByte(from, '@'); idx >= 0 {
 		from = from[:idx]
 	}
-	fmt.Fprintf(buf, "From: %s via %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(from), quoteIfNeeded(group.Name), group.Email)
+	fmt.Fprintf(buf, "From: %s via %s <%s@sunnyvaleserv.org>\r\n", QuoteIfNeeded(from), QuoteIfNeeded(group.Name), group.Email)
 }
 
 func emitHeaders(buf io.Writer, headers mail.Header) {
@@ -211,7 +211,9 @@ func emitHeader(buf io.Writer, name string, value string) {
 
 var unquotedRE = regexp.MustCompile("^[-a-zA-Z0-9!#$%&'*+/=?^_`{}|~.]+$")
 
-func quoteIfNeeded(s string) string {
+// QuoteIfNeeded returns the string passed to it, quoted appropriately for
+// inclusion in an email header if quoting is needed.
+func QuoteIfNeeded(s string) string {
 	if unquotedRE.MatchString(s) {
 		return s
 	}

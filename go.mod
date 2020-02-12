@@ -16,7 +16,7 @@ require (
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/tealeg/xlsx v1.0.5
 	github.com/test-go/testify v1.1.4 // indirect
-	github.com/toorop/go-dkim v0.0.0-20191019073156-897ad64a2eeb // indirect
+	github.com/toorop/go-dkim v0.0.0-20191019073156-897ad64a2eeb
 	github.com/trustelem/zxcvbn v1.0.1
 	golang.org/x/crypto v0.0.0-20191219195013-becbf705a915
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
