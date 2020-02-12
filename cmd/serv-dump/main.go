@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -139,6 +140,10 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawString(`,"details":`)
 		out.String(e.Details)
 	}
+	if e.Organization != model.OrgNone {
+		out.RawString(`,"organization":`)
+		out.String(model.OrganizationNames[e.Organization])
+	}
 	out.RawString(`,"types":[`)
 	first := true
 	for _, t := range model.AllEventTypes {
@@ -168,18 +173,22 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.String(e.SccAresID)
 	}
 	out.RawString(`,"attendance":[`)
-	first = true
-	for p, ai := range tx.FetchAttendanceByEvent(e) {
-		if first {
-			first = false
-		} else {
+	var eattend = tx.FetchAttendanceByEvent(e)
+	var pids = make([]model.PersonID, 0, len(eattend))
+	for p := range eattend {
+		pids = append(pids, p)
+	}
+	sort.Slice(pids, func(i, j int) bool { return pids[i] < pids[j] })
+	for i, pid := range pids {
+		if i != 0 {
 			out.RawByte(',')
 		}
 		out.RawString(`{"person":`)
-		out.Int(int(p))
+		out.Int(int(pid))
 		out.RawString(`,"sortName":`)
-		out.String(personName(tx, p))
+		out.String(personName(tx, pid))
 		out.RawString(`,"type":`)
+		var ai = eattend[pid]
 		out.String(model.AttendanceTypeNames[ai.Type])
 		out.RawString(`,"minutes":`)
 		out.Uint16(ai.Minutes)

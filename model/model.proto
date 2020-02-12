@@ -33,16 +33,17 @@ message EmailMessage {
 }
 
 message Event {
-  int64          id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
-  string         name      = 2;
-  string         date      = 3;
-  string         start     = 4;
-  string         end       = 5;
-  int64          venue     = 6 [(gogoproto.casttype) = "VenueID"];
-  string         details   = 7;
-  int32          type      = 8 [(gogoproto.casttype) = "EventType"];
-  repeated int64 groups    = 9 [(gogoproto.casttype) = "GroupID"];
-  string         sccAresID = 10;
+  int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
+  string         name         = 2;
+  string         date         = 3;
+  string         start        = 4;
+  string         end          = 5;
+  int64          venue        = 6 [(gogoproto.casttype) = "VenueID"];
+  string         details      = 7;
+  int32          type         = 8 [(gogoproto.casttype) = "EventType"];
+  repeated int64 groups       = 9 [(gogoproto.casttype) = "GroupID"];
+  string         sccAresID    = 10;
+  int32          organization = 11 [(gogoproto.casttype) = "Organization"];
 }
 
 message Group {

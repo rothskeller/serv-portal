@@ -178,6 +178,9 @@ func getEvent(eventID string, eventType model.EventType) (event *eventData) {
 	} else {
 		panicf("time doesn't look like a time")
 	}
+	if event.End == "00:00" {
+		event.End = "23:59"
+	}
 	node = expectElement(node.NextSibling, atom.Td)
 	n = expectElement(node.FirstChild, atom.Strong)
 	n = expectNode(n.NextSibling, html.TextNode)

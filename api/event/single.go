@@ -3,22 +3,13 @@ package event
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
-	"github.com/microcosm-cc/bluemonday"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
-
-var htmlSanitizer = bluemonday.NewPolicy().
-	RequireParseableURLs(true).
-	AllowURLSchemes("http", "https").
-	RequireNoFollowOnLinks(true).
-	AllowAttrs("href").OnElements("a").
-	AddTargetBlankToFullyQualifiedLinks(true)
 
 // GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
 func GetEvent(r *util.Request, idstr string) error {
@@ -89,6 +80,8 @@ func GetEvent(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"details":`)
 	out.String(event.Details)
+	out.RawString(`,"organization":`)
+	out.String(model.OrganizationNames[event.Organization])
 	out.RawString(`,"types":[`)
 	first := true
 	for _, et := range model.AllEventTypes {
@@ -143,6 +136,13 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(v.Name)
 			out.RawByte('}')
 		}
+		out.RawString(`],"organizations":[`)
+		for i, o := range model.AllOrganizations {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(model.OrganizationNames[o])
+		}
 		out.RawByte(']')
 	}
 	if canAttendance && wantAttendance {
@@ -192,14 +192,12 @@ func GetEvent(r *util.Request, idstr string) error {
 	return nil
 }
 
-var dateRE = regexp.MustCompile(`^20\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$`)
-var timeRE = regexp.MustCompile(`^(?:[01][0-9]|2[0-3]):[0-5][0-9]$`)
-var yearRE = regexp.MustCompile(`^20\d\d$`)
-
 // PostEvent handles POST /events/$id requests (where $id may be "NEW").
 func PostEvent(r *util.Request, idstr string) error {
-	var event *model.Event
-
+	var (
+		event *model.Event
+		org   string
+	)
 	if idstr == "NEW" {
 		if !r.Auth.CanA(model.PrivManageEvents) {
 			return util.Forbidden
@@ -220,27 +218,10 @@ func PostEvent(r *util.Request, idstr string) error {
 		r.Tx.Commit()
 		return nil
 	}
-	if event.Name = strings.TrimSpace(r.FormValue("name")); event.Name == "" {
-		return errors.New("missing name")
-	}
-	if event.Date = r.FormValue("date"); event.Date == "" {
-		return errors.New("missing date")
-	} else if !dateRE.MatchString(event.Date) {
-		return errors.New("invalid date (YYYY-MM-DD)")
-	}
-	if event.Start = r.FormValue("start"); event.Start == "" {
-		return errors.New("missing start")
-	} else if !timeRE.MatchString(event.Start) {
-		return errors.New("invalid start (HH:MM)")
-	}
-	if event.End = r.FormValue("end"); event.End == "" {
-		return errors.New("missing end")
-	} else if !timeRE.MatchString(event.End) {
-		return errors.New("invalid end (HH:MM)")
-	}
-	if event.End < event.Start {
-		return errors.New("end before start")
-	}
+	event.Name = r.FormValue("name")
+	event.Date = r.FormValue("date")
+	event.Start = r.FormValue("start")
+	event.End = r.FormValue("end")
 	vidstr := r.FormValue("venue")
 	if vidstr == "NEW" {
 		venue := &model.Venue{
@@ -259,38 +240,51 @@ func PostEvent(r *util.Request, idstr string) error {
 		event.Venue = venue.ID
 	} else if vidstr == "0" {
 		event.Venue = 0
-	} else if event.Venue = model.VenueID(util.ParseID(vidstr)); r.Tx.FetchVenue(event.Venue) == nil {
-		return errors.New("nonexistent venue")
+	} else if event.Venue = model.VenueID(util.ParseID(vidstr)); event.Venue == 0 {
+		return errors.New("invalid venue")
 	}
-	event.Details = htmlSanitizer.Sanitize(strings.TrimSpace(r.FormValue("details")))
+	event.Details = r.FormValue("details")
+	org = r.FormValue("organization")
+	event.Organization = model.OrgNone
+	if org != "" {
+		for _, o := range model.AllOrganizations {
+			if org == model.OrganizationNames[o] {
+				event.Organization = o
+			}
+		}
+		if event.Organization == 0 {
+			return errors.New("invalid organization")
+		}
+	}
 	event.Type = 0
-	for _, et := range model.AllEventTypes {
-		for _, v := range r.Form["type"] {
+	for _, v := range r.Form["type"] {
+		var matched bool
+		for _, et := range model.AllEventTypes {
 			if model.EventTypeNames[et] == v {
 				event.Type |= et
+				matched = true
+				break
 			}
+		}
+		if !matched {
+			return errors.New("invalid type")
 		}
 	}
 	event.Groups = event.Groups[:0]
 	for _, idstr := range r.Form["group"] {
-		group := r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr)))
-		if group == nil {
-			return errors.New("invalid group")
-		}
-		if !r.Auth.CanAG(model.PrivManageEvents, group.ID) {
+		var gid = model.GroupID(util.ParseID(idstr))
+		if !r.Auth.CanAG(model.PrivManageEvents, gid) {
 			return util.Forbidden
 		}
-		event.Groups = append(event.Groups, group.ID)
+		event.Groups = append(event.Groups, gid)
 	}
-	if len(event.Groups) == 0 {
-		return errors.New("missing group")
-	}
-	for _, e := range r.Tx.FetchEvents(event.Date, event.Date) {
-		if e.ID != event.ID && e.Name == event.Name {
+	if err := ValidateEvent(r.Tx, event); err != nil {
+		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")
 			r.Write([]byte(`{"nameError":true}`))
 			return nil
 		}
+		return err
 	}
 	if event.ID != 0 {
 		r.Tx.UpdateEvent(event)

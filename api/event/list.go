@@ -63,6 +63,8 @@ func GetEvents(r *util.Request) error {
 		} else {
 			out.RawString(`null`)
 		}
+		out.RawString(`,"organization":`)
+		out.String(model.OrganizationNames[e.Organization])
 		out.RawString(`,"types":[`)
 		innerFirst := true
 		for _, t := range model.AllEventTypes {

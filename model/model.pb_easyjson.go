@@ -1390,6 +1390,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *E
 			}
 		case "sccAresID":
 			out.SccAresID = string(in.String())
+		case "organization":
+			out.Organization = Organization(in.Uint8())
 		default:
 			in.SkipRecursive()
 		}
@@ -1508,6 +1510,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		out.String(string(in.SccAresID))
+	}
+	if in.Organization != 0 {
+		const prefix string = ",\"organization\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Uint8(uint8(in.Organization))
 	}
 	out.RawByte('}')
 }

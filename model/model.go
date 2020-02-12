@@ -114,23 +114,6 @@ var EventTypeNames = map[EventType]string{
 	EventWork:     "Work Event",
 }
 
-/*
-// An Event structure contains the data describing an event at which SERV
-// volunteers may participate.
-type Event struct {
-	ID        EventID
-	Name      string
-	Date      string // 2006-01-02
-	Start     string // 13:45
-	End       string // 14:45
-	Venue     *Venue
-	Details   string
-	Type      EventType
-	Roles     []*Role
-	SccAresID string
-}
-*/
-
 // Hours returns the number of hours the event lasted.
 func (e *Event) Hours() float64 {
 	start, _ := time.Parse("15:04", e.Start)
@@ -157,30 +140,38 @@ const (
 	GroupSccAres = "scc-ares"
 )
 
+// An Organization identifies one of the SERV volunteer organizations.
+type Organization uint8
+
+// Values for Organization.
+const (
+	OrgNone Organization = iota
+	OrgAdmin
+	OrgCERT
+	OrgLISTOS
+	OrgOutreach
+	OrgPEP
+	OrgSARES
+	OrgSNAP
+)
+
+// AllOrganizations gives the list of all Organizations.
+var AllOrganizations = []Organization{OrgAdmin, OrgCERT, OrgLISTOS, OrgOutreach, OrgPEP, OrgSARES, OrgSNAP}
+
+// OrganizationNames gives the names of the various Organizations.
+var OrganizationNames = map[Organization]string{
+	OrgNone:     "",
+	OrgAdmin:    "Admin",
+	OrgCERT:     "CERT",
+	OrgLISTOS:   "LISTOS",
+	OrgOutreach: "Outreach",
+	OrgPEP:      "PEP",
+	OrgSARES:    "SARES",
+	OrgSNAP:     "SNAP",
+}
+
 // A PersonID is a positive integer uniquely identifying a Person.
 type PersonID int
-
-/*
-// A Person structure contains the data describing a person involved (or
-// formerly involved) with SERV, and therefore a person with a (potentially
-// disabled) login to the SERV portal.
-type Person struct {
-	ID            PersonID
-	FirstName     string
-	LastName      string
-	Nickname      string
-	Suffix        string
-	Email         string
-	Phone         string
-	Password      string
-	BadLoginCount int
-	BadLoginTime  time.Time
-	PWResetToken  string
-	PWResetTime   time.Time
-	Roles         []*Role
-	PrivMap       PrivilegeMap // transient, transitive
-}
-*/
 
 // A Privilege is something holders of a role get to do to a target group.  The
 // type can be used as a single privilege or a bitmask of multiple privileges.
@@ -292,14 +283,3 @@ type TextMessageID int
 
 // A VenueID uniquely identifies an event Venue.
 type VenueID int
-
-/*
-// A Venue is a place where Events occur.
-type Venue struct {
-	ID      VenueID
-	Name    string
-	Address string
-	City    string
-	URL     string
-}
-*/

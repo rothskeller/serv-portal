@@ -72,7 +72,8 @@ func main() {
 	// 	dumpAudit(tx)
 	// case (strings.HasPrefix("email_messages", os.Args[1]) && len(os.Args[1]) > 1) || os.Args[1] == "emails":
 	// 	dumpEmailMessages(tx)
-	// case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
+	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
+		loadEvents(tx, in)
 	case strings.HasPrefix("groups", os.Args[1]):
 		loadGroups(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
