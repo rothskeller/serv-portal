@@ -68,6 +68,7 @@ func PostLogin(r *util.Request) error {
 	r.Person = person
 	r.Auth.SetMe(person)
 	if person.BadLoginCount > 0 {
+		r.Tx.WillUpdatePerson(person)
 		person.BadLoginCount = 0
 		r.Tx.UpdatePerson(person)
 	}
@@ -78,6 +79,7 @@ func PostLogin(r *util.Request) error {
 FAIL:
 	if person != nil {
 		// Record the bad login attempt.
+		r.Tx.WillUpdatePerson(person)
 		if time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
 			person.BadLoginCount++
 		} else {

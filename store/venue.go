@@ -8,14 +8,14 @@ import (
 func (tx *Tx) CreateVenue(venue *model.Venue) {
 	tx.Tx.CreateVenue(venue)
 	tx.entry.Change("create venue [%d]", venue.ID)
-	tx.entry.Change("set venue [%d] name to %q", venue.Name)
+	tx.entry.Change("set venue [%d] name to %q", venue.ID, venue.Name)
 	if venue.Address != "" {
-		tx.entry.Change("set venue [%d] address to %q", venue.Address)
+		tx.entry.Change("set venue [%d] address to %q", venue.ID, venue.Address)
 	}
 	if venue.City != "" {
-		tx.entry.Change("set venue [%d] city to %q", venue.City)
+		tx.entry.Change("set venue [%d] city to %q", venue.ID, venue.City)
 	}
 	if venue.URL != "" {
-		tx.entry.Change("set venue [%d] URL to %q", venue.URL)
+		tx.entry.Change("set venue [%d] URL to %q", venue.ID, venue.URL)
 	}
 }

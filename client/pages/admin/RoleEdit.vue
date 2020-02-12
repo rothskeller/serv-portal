@@ -87,7 +87,7 @@ export default {
       const body = new FormData
       body.append('delete', 'true')
       await this.$axios.post(`/api/roles/${this.$route.params.rid}`, body)
-      this.$router.push('/roles')
+      this.$router.push('/admin/roles')
     },
     async onSubmit() {
       this.submitted = true
@@ -110,7 +110,7 @@ export default {
       if (resp && resp.duplicateName)
         this.duplicateName = this.role.name
       else
-        this.$router.push('/roles')
+        this.$router.push('/admin/roles')
     },
     validate() {
       if (!this.submitted) return

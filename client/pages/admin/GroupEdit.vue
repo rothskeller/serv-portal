@@ -96,7 +96,7 @@ export default {
       const body = new FormData
       body.append('delete', 'true')
       await this.$axios.post(`/api/groups/${this.$route.params.gid}`, body)
-      this.$router.push('/groups')
+      this.$router.push('/admin/groups')
     },
     async onSubmit() {
       this.submitted = true
@@ -120,7 +120,7 @@ export default {
         if (resp.duplicateName) this.duplicateName = this.group.name
         if (resp.duplicateEmail) this.duplicateEmail = this.group.email
       } else {
-        this.$router.push('/groups')
+        this.$router.push('/admin/groups')
       }
     },
     validate() {
