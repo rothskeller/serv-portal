@@ -3,7 +3,7 @@ Login displays the login page.
 -->
 
 <template lang="pug">
-PublicPage(title="SERV Portal")
+PublicPage(title="Sunnyvale SERV")
   #login-top
     #login-banner Please log in.
     #login-forserv

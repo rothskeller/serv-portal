@@ -3,7 +3,7 @@ PWReset displays the password reset page.
 -->
 
 <template lang="pug">
-PublicPage(title="SERV Portal")
+PublicPage(title="Sunnyvale SERV")
   #pwreset-top
     #pwreset-banner Password Reset
     template(v-if="!finished")

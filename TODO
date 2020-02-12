@@ -1,23 +1,31 @@
 MVP:
-  Unsubscribe page
   Invite member by email with random password
   Policy and copyright page
   Automatic resend of email from approved sender
+  Introductory / home page
 Eliminate Samariteam:
-  SARES import
   Files area
   Import files from Samariteam
+  (Don't need monthly calendar email)
 Goodies:
-  Search engine
-  Public events
-  View mailing list archives
-  UI to configure scc-ares-races calendar synch
-  Skills and other person data
   Events tagged with which volunteer bucket their hours go in
-  Calendar sharing
-  Volunteer hours report
   People editing their volunteer hours
+  Volunteer hours report
+  Search engine
   Credentials and clearances tracking
-  Change text report to show delivered time
+  Skills and other person data
   Event signups and RSVPs
+  Calendar sharing
+  SARES import
+  Public events
+  View mailing list archives (maybe leads only)
+  UI to configure scc-ares-races calendar synch
   Data export
+  Change text report to show delivered time
+
+Rollout:
+  Step 1: Liz on 18th
+  Step 2: Leads on 19th
+  Step 3: All volunteers, about a week later
+  Samariteam shutdown: June 1
+  Step 4: All students, beginning class 56 (i.e. no later than Sept. 1)

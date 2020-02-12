@@ -78,6 +78,12 @@ func router(r *util.Request) error {
 		return authn.GetPasswordResetToken(r, c[2])
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
 		return authn.PostPasswordResetToken(r, c[2])
+	case r.Method == "GET" && c[1] == "unsubscribe" && c[2] != "":
+		return email.GetUnsubscribe(r, c[2])
+	case r.Method == "POST" && c[1] == "unsubscribe" && c[2] != "" && c[3] == "":
+		return email.PostUnsubscribe(r, c[2])
+	case r.Method == "POST" && c[1] == "unsubscribe" && c[2] != "" && c[3] != "" && c[4] == "":
+		return email.PostUnsubscribeList(r, c[2], c[3])
 	case r.Person == nil:
 		return util.HTTPError(http.StatusUnauthorized, "401 Unauthorized")
 	case r.Method == "GET" && c[1] == "login" && c[2] == "":

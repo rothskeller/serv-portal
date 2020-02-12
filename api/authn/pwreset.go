@@ -57,7 +57,7 @@ func PostPasswordReset(r *util.Request) error {
 		}
 		fmt.Fprintf(&body, "%s <%s>", person.FormalName, e)
 	}
-	fmt.Fprintf(&body, "\r\nSubject: SERV Portal Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on the SERV Portal, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
+	fmt.Fprintf(&body, "\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
 		person.InformalName, config.Get("siteURL"), person.PWResetToken)
 	if err := sendmail.SendMessage(config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
 		panic(err)

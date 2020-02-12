@@ -27,6 +27,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "PWResetToken" */ './pages/PWResetToken'),
     },
     {
+      path: '/unsubscribe/:token/:email?',
+      component: () => import(/* webpackChunkName: "Unsubscribe" */ './pages/Unsubscribe'),
+    },
+    {
       path: '/',
       redirect: '/events/calendar',
     },

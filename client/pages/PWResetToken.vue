@@ -3,7 +3,7 @@ PWResetToken displays the second password reset page (the one the email links to
 -->
 
 <template lang="pug">
-PublicPage(title="SERV Portal")
+PublicPage(title="Sunnyvale SERV")
   #pwreset-token-top
     #pwreset-token-banner Password Reset
     template(v-if="invalid")

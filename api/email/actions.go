@@ -156,6 +156,8 @@ func sendMessageToEmail(
 	emitFrom(&buf, email, group)
 	fmt.Fprintf(&buf, "Sender: %s <%s@sunnyvaleserv.org>\r\n", quoteIfNeeded(group.Name), group.Email)
 	fmt.Fprintf(&buf, "Errors-To: admin@sunnyvaleserv.org\r\n")
+	fmt.Fprintf(&buf, "List-Unsubscribe: <https://sunnyvaleserv.org/unsubscribe/%s/%s>\r\n", person.UnsubscribeToken, group.Email)
+	fmt.Fprintf(&buf, "List-Unsubscribe-Post: List-Unsubscribe=One-Click\r\n")
 	emitHeaders(&buf, msg.Header)
 	rewrite(&buf, root, group.Email, person.InformalName, address, person.UnsubscribeToken)
 	return mailer.SendMessage(group.Email+"@sunnyvaleserv.org", []string{address}, buf.Bytes())
