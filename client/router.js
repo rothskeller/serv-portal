@@ -35,13 +35,14 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "Unsubscribe" */ './pages/Unsubscribe'),
     },
     {
-      path: '/',
-      redirect: '/events/calendar',
-    },
-    {
       path: '*',
       component: MainMenu,
       children: [
+        {
+          path: '',
+          component: () => import(/* webpackChunkName: "Home" */ './pages/Home'),
+          meta: { tabbed: true }, // OK not really but this inhibits padding
+        },
         {
           path: '/admin',
           component: Admin,
