@@ -90,6 +90,29 @@ func (tx *Tx) FetchPersonByUnsubscribe(token string) (p *model.Person) {
 	}
 }
 
+// FetchPersonByEmail retrieves a single person from the database, given an
+// email address.  It returns nil if no such person exists or if more than one
+// person has that email address.
+func (tx *Tx) FetchPersonByEmail(email string) (p *model.Person) {
+	var (
+		rows *sql.Rows
+		pid  model.PersonID
+		err  error
+	)
+	p = new(model.Person)
+	rows, err = tx.tx.Query(`SELECT person FROM person_email WHERE email=?`, email)
+	panicOnError(err)
+	for rows.Next() {
+		if pid != 0 {
+			rows.Close()
+			return nil
+		}
+		panicOnError(rows.Scan(&pid))
+	}
+	panicOnError(rows.Err())
+	return tx.FetchPerson(pid)
+}
+
 // FetchPeople returns all of the people in the database, in order by sortname.
 func (tx *Tx) FetchPeople() (people []*model.Person) {
 	var (

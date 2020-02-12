@@ -42,7 +42,7 @@ func (a *Authorizer) CanA(actions model.Privilege) bool {
 // CanAG returns whether the API caller has the specified privilege(s) on the
 // specified target group.
 func (a *Authorizer) CanAG(actions model.Privilege, group model.GroupID) bool {
-	return a.canPAG(a.me, actions, group)
+	return a.CanPAG(a.me, actions, group)
 }
 
 // CanAP returns whether the API caller has the specified privilege(s) on any
@@ -62,7 +62,7 @@ func (a *Authorizer) CanAP(actions model.Privilege, person model.PersonID) (foun
 // group to which the specified role grants membership.
 func (a *Authorizer) CanAR(actions model.Privilege, role model.RoleID) (found bool) {
 	for gid := range a.groups {
-		if a.CanRAG(role, model.PrivMember, model.GroupID(gid)) && a.canPAG(a.me, actions, model.GroupID(gid)) {
+		if a.CanRAG(role, model.PrivMember, model.GroupID(gid)) && a.CanPAG(a.me, actions, model.GroupID(gid)) {
 			return true
 		}
 	}
@@ -84,9 +84,9 @@ func (a *Authorizer) CanPA(person model.PersonID, actions model.Privilege) (foun
 	return found
 }
 
-// canPAG returns whether the specified person has the specified privilege(s) on
+// CanPAG returns whether the specified person has the specified privilege(s) on
 // the specified target group.
-func (a *Authorizer) canPAG(person model.PersonID, actions model.Privilege, group model.GroupID) (found bool) {
+func (a *Authorizer) CanPAG(person model.PersonID, actions model.Privilege, group model.GroupID) (found bool) {
 	a.forPersonRoles(person, func(rid model.RoleID) bool {
 		if a.CanRAG(rid, actions, group) {
 			found = true

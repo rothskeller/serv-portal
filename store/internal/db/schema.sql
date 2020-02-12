@@ -47,7 +47,7 @@ CREATE TABLE person (
 -- Note that people can have multiple email addresses, and that people can share
 -- email addresses.
 CREATE TABLE person_email (
-    email  text    NOT NULL,
+    email  text    NOT NULL COLLATE NOCASE,
     person integer NOT NULL REFERENCES person ON DELETE CASCADE,
     UNIQUE (email, person)
 );

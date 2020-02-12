@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/toorop/go-dkim"
+	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/authz"
@@ -40,6 +42,8 @@ func main() {
 		raw        []byte
 		msg        *mail.Message
 		em         model.EmailMessage
+		sender     *model.Person
+		unauth     string
 		notify     bytes.Buffer
 		err        error
 		recipients = map[*model.Group]bool{}
@@ -49,6 +53,7 @@ func main() {
 		panic(err)
 	}
 	entry = log.New("", "mail-hook")
+	defer entry.Log()
 	store.Open("serv.db")
 	tx = store.Begin(entry)
 	auth = tx.Authorizer()
@@ -85,6 +90,9 @@ func main() {
 			em.From = f.Name
 		} else {
 			em.From = f.Address
+		}
+		if sender = tx.FetchPersonByEmail(strings.ToLower(f.Address)); sender == nil {
+			unauth = "unknown sender"
 		}
 	} else {
 		em.Type = model.EmailUnrecognized
@@ -124,6 +132,9 @@ func main() {
 					if !recipients[group] {
 						em.Groups = append(em.Groups, group.ID)
 						recipients[group] = true
+						if unauth == "" && !auth.CanPAG(sender.ID, model.PrivSendEmailMessages, group.ID) {
+							unauth = "sender not authorized to send to " + group.Email
+						}
 					}
 				}
 			}
@@ -136,28 +147,34 @@ func main() {
 		em.Attention = true
 		goto DONE
 	}
-	// Does the sender have privilege to send to all of the recipient
-	// groups?
-	for group := range recipients {
-		_ = group
-		if true { // TODO check for privilege
-			em.Type = model.EmailModerated
-			em.Error = "Message requires moderation"
-			em.Attention = true
-			goto DONE
+	// We checked above whether the sender has privilege to send to all of
+	// the recipient groups.  If so, let's take the time to verify that the
+	// sender isn't spoofed.
+	if unauth == "" {
+		if valid, err := dkim.Verify(&raw); err != nil || valid != dkim.SUCCESS {
+			unauth = "sender not DKIM-verified"
 		}
 	}
+	// If not authorized, mark it as moderated and set the attention flag.
+	if unauth != "" {
+		em.Type = model.EmailModerated
+		em.Error = "Message requires moderation: " + unauth
+		em.Attention = true
+		goto DONE
+	}
 	// Resend the message to every member of the recipient groups.
-	// TODO
-	panic("not reachable")
+	tx.CreateEmailMessage(&em, raw)
+	email.SendMessage(tx, &em)
+	tx.Commit()
+	return
 DONE:
 	tx.CreateEmailMessage(&em, raw)
-	var toLists []string
-	for _, g := range em.Groups {
-		toLists = append(toLists, tx.Authorizer().FetchGroup(g).Name)
-	}
 	tx.Commit()
 	if em.Attention {
+		var toLists []string
+		for _, g := range em.Groups {
+			toLists = append(toLists, tx.Authorizer().FetchGroup(g).Name)
+		}
 		fmt.Fprintf(&notify, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: Email Needs Attention\r\n\r\nSunnyvaleSERV.org has received an email that needs attention:\n\nFrom: %s\nTo: %s\nSubject: %s\nType: %s\n",
 			em.From, strings.Join(toLists, ", "), em.Subject, model.EmailMessageTypeNames[em.Type])
 		if em.Error != "" {
@@ -166,5 +183,4 @@ DONE:
 		fmt.Fprintf(&notify, "\nPlease visit https://SunnyvaleSERV.org/admin/emails to address it.\n")
 		sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, notify.Bytes())
 	}
-	entry.Log()
 }
