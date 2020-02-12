@@ -27,6 +27,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "PWResetToken" */ './pages/PWResetToken'),
     },
     {
+      path: '/policies',
+      component: () => import(/* webpackChunkName: "Policies" */ './pages/Policies'),
+    },
+    {
       path: '/unsubscribe/:token/:email?',
       component: () => import(/* webpackChunkName: "Unsubscribe" */ './pages/Unsubscribe'),
     },
@@ -105,6 +109,10 @@ const router = new Router({
         {
           path: '/logout',
           component: () => import(/* webpackChunkName: "Logout" */ './pages/Logout'),
+        },
+        {
+          path: '/policies-m',
+          component: () => import(/* webpackChunkName: "Policies" */ './base/Policies'),
         },
         {
           path: '/people',

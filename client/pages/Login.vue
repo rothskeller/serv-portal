@@ -23,6 +23,7 @@ PublicPage(title="Sunnyvale SERV")
       #login-failed(v-if="failed") Login incorrect. Please try again.
     #login-reset
       b-btn(to="/password-reset") Reset my password
+    b-link#login-policies(to="/policies") Site Policies / Legal Stuff
 </template>
 
 <script>
@@ -52,10 +53,13 @@ export default {
 }
 </script>
 
-<style lang="stylus" scoped>
+<style lang="stylus">
 #login-top
+  display flex
+  flex-direction column
   margin 0 auto
   padding 0 0.75rem
+  min-height calc(100vh - 3rem - 40px)
   max-width 0.75rem + 7rem + 20rem + 0.75rem
   // #login-top.padding-left .form-label.width #login-email.max-width #login-top.padding-right
 #login-banner
@@ -86,4 +90,12 @@ export default {
 #login-reset
   margin-top 1rem
   text-align center
+#login-policies
+  display flex
+  flex 1 1 auto
+  flex-direction column
+  justify-content flex-end
+  align-self center
+  margin-top 3rem
+  text-decoration none
 </style>

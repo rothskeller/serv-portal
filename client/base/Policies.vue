@@ -63,9 +63,17 @@ Policies displays the site policies and legal information.
   p.
     The OES staff may share anonymized, aggregate data derived from the above
     information with anyone at their discretion.
+  h2 Cookies
+  p.
+    This site uses browser cookies.  While you are logged in, a browser cookie
+    contains your session identification; this cookie goes away when you log out
+    or your login session expires.  More permanent cookies are used to store
+    some of your user interface preferences, such as whether you prefer to see
+    the events page in calendar or list form.  No personally identifiable
+    information is ever stored in browser cookies.
   h2 Credits and Copyrights
   p.
-    This site was developed by Steven Roth, acting pro bono for the Sunnyvale
+    This site was developed by Steven Roth, as a volunteer for the Sunnyvale
     Department of Public Safety.  The site software is copyrighted © 2020 by
     Steven Roth.  Steven Roth has granted the Sunnyvale Department of Public
     Safety a non-exclusive, perpetual, royalty-free, worldwide license to use
@@ -90,7 +98,13 @@ Policies displays the site policies and legal information.
 
 <script>
 export default {
+  created() {
+    this.$store.commit('setPage', { title: 'Policies / Legal' })
+  },
 }
 </script>
 
-<style lang="stylus"></style>
+<style lang="stylus">
+#policies
+  max-width 40rem
+</style>

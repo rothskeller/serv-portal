@@ -25,6 +25,7 @@ it.
       b-nav-item(v-if="me.webmaster" to="/admin" :active="menuItem === 'admin'" @click="onMenuClick") Admin
       b-nav-item(v-if="me.id" :to="`/people/${me.id}/edit`" :active="isProfile" @click="onMenuClick") Profile
       b-nav-item(to="/logout" @click="onMenuClick") Logout
+    b-link#page-policies(to="/policies-m" @click="onMenuClick") Policies/Legal
   #page-content(:class="tabbed ? 'page-no-padding': null")
     #page-subtitle(v-if="$store.state.page.subtitle" v-text="$store.state.page.subtitle")
     router-view
@@ -90,15 +91,18 @@ sidebarWidth = 7em
   font-size 1.5rem
 #page-menu
   display none
+  flex-direction column
   overflow visible
   border-right 1px solid #888
   background-color #ccc
   grid-area menu
   .page-menu-open &
     z-index 1
-    display block
+    display flex
+    flex-direction column
   @media (min-width: 576px)
-    display block
+    display flex
+    flex-direction column
   @media print
     display none
 #page-menu-welcome
@@ -116,6 +120,14 @@ sidebarWidth = 7em
     color black
     &.active
       color white
+#page-policies
+  display flex
+  flex 1 1 auto
+  flex-direction column
+  justify-content flex-end
+  align-self center
+  margin-bottom 0.5rem
+  font-size 0.75rem
 #page-content
   overflow auto
   padding 1.5rem 0.75rem
