@@ -39,11 +39,6 @@ const router = new Router({
       component: MainMenu,
       children: [
         {
-          path: '',
-          component: () => import(/* webpackChunkName: "Home" */ './pages/Home'),
-          meta: { tabbed: true }, // OK not really but this inhibits padding
-        },
-        {
           path: '/admin',
           component: Admin,
           meta: { menuItem: 'admin', tabbed: true },
@@ -171,6 +166,11 @@ const router = new Router({
               component: () => import(/* webpackChunkName: "TextsView" */ './pages/texts/TextsView'),
             }
           ]
+        },
+        {
+          path: '',
+          component: () => import(/* webpackChunkName: "Home" */ './pages/Home'),
+          meta: { tabbed: true }, // OK not really but this inhibits padding
         },
       ],
       beforeEnter: (to, from, next) => {
