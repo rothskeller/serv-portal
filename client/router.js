@@ -103,6 +103,15 @@ const router = new Router({
           ]
         },
         {
+          path: '/files',
+          redirect: '/files/0',
+        },
+        {
+          path: '/files/:id',
+          component: () => import(/* webpackChunkName: "Files" */ './pages/Files'),
+          meta: { menuItem: 'files', tabbed: true },
+        },
+        {
           path: '/logout',
           component: () => import(/* webpackChunkName: "Logout" */ './pages/Logout'),
         },

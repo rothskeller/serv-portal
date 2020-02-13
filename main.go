@@ -20,6 +20,7 @@ import (
 	"sunnyvaleserv.org/portal/api/authn"
 	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/api/event"
+	"sunnyvaleserv.org/portal/api/folder"
 	"sunnyvaleserv.org/portal/api/group"
 	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/api/report"
@@ -102,6 +103,10 @@ func router(r *util.Request) error {
 		return event.PostEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
 		return event.PostEventAttendance(r, c[2])
+	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
+		return folder.GetFolder(r, c[2])
+	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
+		return folder.GetDocument(r, c[2], c[3])
 	case r.Method == "GET" && c[1] == "groups" && c[2] == "":
 		return group.GetGroups(r)
 	case r.Method == "GET" && c[1] == "groups" && c[2] != "" && c[3] == "":

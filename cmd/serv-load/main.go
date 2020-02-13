@@ -74,6 +74,8 @@ func main() {
 	// 	dumpEmailMessages(tx)
 	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
 		loadEvents(tx, in)
+	case strings.HasPrefix("folders", os.Args[1]):
+		loadFolders(tx, in)
 	case strings.HasPrefix("groups", os.Args[1]):
 		loadGroups(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
