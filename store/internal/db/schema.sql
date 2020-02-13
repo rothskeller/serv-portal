@@ -27,6 +27,13 @@ CREATE TABLE email_message_body (
     body blob    NOT NULL
 );
 
+-- The folder table tracks all document folders.  The data column contains most
+-- of the folder data, in protocol buffer encoding of model.Folder.
+CREATE TABLE folder (
+    id   integer PRIMARY KEY,
+    data blob    NOT NULL
+);
+
 -- The person table tracks all people associated (or formerly associated) with
 -- SERV.  There is one row in this table for each such person.  Since each such
 -- person has a (potentially disabled) login to the SERV portal, this table also

@@ -20,6 +20,11 @@ message Address {
   uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
 }
 
+message Document {
+  int64  id   = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "DocumentID"];
+  string name = 2;
+}
+
 message EmailMessage {
   int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
   string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
@@ -45,6 +50,14 @@ message Event {
   string         sccAresID    = 10;
   int32          organization = 11 [(gogoproto.casttype) = "Organization"];
   bool           private      = 12;
+}
+
+message Folder {
+  int64             id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "FolderID"];
+  int64             parent    = 2 [(gogoproto.casttype) = "FolderID"];
+  string            name      = 3;
+  int64             group     = 4 [(gogoproto.casttype) = "GroupID"];
+  repeated Document documents = 5;
 }
 
 message Group {

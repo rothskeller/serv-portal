@@ -19,6 +19,12 @@ func (es EventSort) Less(i, j int) bool {
 }
 func (es EventSort) Swap(i, j int) { es[i], es[j] = es[j], es[i] }
 
+type FolderSort []*Folder
+
+func (fs FolderSort) Len() int           { return len(fs) }
+func (fs FolderSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
+func (fs FolderSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
+
 type GroupSort []*Group
 
 func (gs GroupSort) Len() int           { return len(gs) }

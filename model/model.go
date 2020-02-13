@@ -39,6 +39,11 @@ var AttendanceTypeNames = map[AttendanceType]string{
 	AttendAsAuditor:   "Audit",
 }
 
+// A DocumentID is a positive integer uniquely identifying a document within its
+// folder.  For cache-busting purposes, each new revision of a document gets a
+// new DocumentID.
+type DocumentID int
+
 // An EmailMessageID is a positive integer uniquely identifying an email message
 // handled by the portal.
 type EmailMessageID int
@@ -120,6 +125,9 @@ func (e *Event) Hours() float64 {
 	end, _ := time.Parse("15:04", e.End)
 	return float64(end.Sub(start)) / float64(time.Hour)
 }
+
+// A FolderID is a positive integer uniquely identifying a Folder.
+type FolderID int
 
 // A GroupID is a positive integer uniquely identifying a Group.
 type GroupID int
