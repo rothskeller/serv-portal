@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1
+	github.com/arran4/golang-ical v0.0.0-20200125013057-acb7a6972c90
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/gogo/protobuf v1.3.1
