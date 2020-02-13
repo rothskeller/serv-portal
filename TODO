@@ -10,7 +10,6 @@ Goodies:
   Credentials and clearances tracking
   Skills and other person data
   Event signups and RSVPs
-  Calendar sharing
   SARES import
   Public events
   View mailing list archives (maybe leads only)
@@ -18,6 +17,10 @@ Goodies:
   Data export
   Change text report to show delivered time
   Shared Notes area (see Kent text 2/11)
+Cosmetics:
+  Show instructions for calendar sharing.
+  Render links in iCal in plain text.
+  Prefix iCal event titles with [ORG] when not obvious.
 
 Rollout:
   Step 1: Liz on 18th

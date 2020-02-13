@@ -40,6 +40,9 @@ func main() {
 	now = time.Now()
 	start = time.Date(now.Year(), now.Month()-6, now.Day(), 0, 0, 0, 0, time.Local).Format("2006-01-02")
 	for _, e := range tx.FetchEvents(start, "2099-12-31") {
+		if e.Private {
+			continue
+		}
 		ie := cal.AddEvent(fmt.Sprintf("%d@sunnyvaleserv.org", e.ID))
 		ie.SetDtStampTime(time.Now())
 		ie.SetSummary(e.Name)
