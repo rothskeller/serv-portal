@@ -23,25 +23,25 @@ EventsCalendar displays the events in a calendar form.
     .events-calendar-day(v-for="date in dates" :class="date ? null : 'empty'" @mouseover="onHoverDate(date)" @mouseout="onNoHoverDate" @click="onClickDate(date)")
       div(v-text="date ? date.date() : null")
       .events-calendar-day-dots
-        EventTypeDots(:types="typesOn(date)")
+        EventOrgDot(v-for="e in eventsOn(date)" :key="e.id" :organization="e.organization")
       .events-calendar-day-event(v-for="event in eventsOn(date)" :key="event.id")
-        EventTypeDots.mr-1(:types="event.types")
+        EventOrgDot.mr-1(:organization="event.organization")
         span(v-if="$store.state.touch" v-text="event.name")
         b-link(v-else :to="`/events/${event.id}`" :title="event.name" v-text="event.name")
   #events-calendar-footer(v-if="date")
     #events-calendar-date(v-text="date.format('dddd, MMMM D, YYYY')")
     .events-calendar-event(v-for="e in eventsOn(date)" :key="e.id")
-      EventTypeDots.mr-1(:types="e.types")
+      EventOrgDot.mr-1(:organization="e.organization")
       b-link(:to="`/events/${e.id}`" v-text="e.name")
     .events-calendar-event(v-if="!eventsOn(date).length") No events scheduled.
 </template>
 
 <script>
 import moment from 'moment-mini'
-import EventTypeDots from '@/base/EventTypeDots'
+import EventOrgDot from '@/base/EventOrgDot'
 
 export default {
-  components: { EventTypeDots },
+  components: { EventOrgDot },
   data: () => ({
     month: moment(),
     dates: [],
@@ -56,11 +56,6 @@ export default {
   methods: {
     eventsOn(date) {
       return date ? this.events[date.format('YYYY-MM-DD')] || [] : []
-    },
-    typesOn(date) {
-      const types = {}
-      this.eventsOn(date).forEach(e => { e.types.forEach(t => { types[t] = true }) })
-      return Object.keys(types)
     },
     async newMonth() {
       if (!this.year || this.year != this.month.year()) {

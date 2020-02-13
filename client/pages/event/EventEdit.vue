@@ -43,6 +43,10 @@ form#event-edit(v-else @submit.prevent="onSubmit")
       | This may contain HTML &lt;a&gt; tags for links, but no other tags.
   b-form-group(label="Event has these types:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-checkbox-group(stacked :options="types" v-model="event.types")
+  b-form-group(label="Event is for this organization:")
+    b-form-radio-group(stacked :options="organizations" v-model="event.organization")
+      template(v-slot:first)
+        b-form-radio(value="") (none)
   b-form-group(label="Event is for these groups:" :state="groupsError ? false : null" :invalid-feedback="groupsError")
     b-form-checkbox-group(stacked :options="groups" text-field="name" value-field="id" v-model="event.groups")
   div.mt-3
@@ -59,6 +63,7 @@ export default {
   data: () => ({
     event: null,
     groups: null,
+    organizations: null,
     venues: null,
     types: null,
     submitted: false,
@@ -99,6 +104,7 @@ export default {
     this.groups = data.groups
     this.venues = data.venues
     this.types = data.types
+    this.organizations = data.organizations
     this.onLoadEvent(this.event)
   },
   methods: {
@@ -124,6 +130,7 @@ export default {
       body.append('date', this.event.date)
       body.append('start', this.event.start)
       body.append('end', this.event.end)
+      body.append('organization', this.event.organization)
       body.append('venue', this.event.venue.id)
       if (this.event.venue.id === 'NEW') {
         body.append('venueName', this.event.venue.name)

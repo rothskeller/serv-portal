@@ -40,10 +40,12 @@ export default {
         return `${date.format('dddd, MMMM D, YYYY')}\n${start.format('h:mm')} to ${end.format('h:mma')}`
     },
     types() {
-      if (this.event.types.length)
+      if (this.event.organization && this.event.types.length)
+        return `${this.event.organization} ${this.event.types.join(', ')}`
+      else if (this.event.types.length)
         return this.event.types.join(', ')
       else
-        return null
+        return this.event.organization
     }
   },
   async created() {

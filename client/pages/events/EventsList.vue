@@ -21,7 +21,7 @@ EventsList displays the list of events.
         span(v-text="e.date.substr(5)")
         span.events-list-start(v-text="e.start")
       .events-list-event
-        EventTypeDots.mr-1(:types="e.types")
+        EventOrgDot.mr-1(:organization="e.organization")
         router-link(:to="`/events/${e.id}`" v-text="e.name")
       .events-list-location
         a(v-if="e.venue && e.venue.url" target="_blank" :href="e.venue.url" v-text="e.venue.name")
@@ -31,10 +31,10 @@ EventsList displays the list of events.
 
 <script>
 import range from 'lodash/range'
-import EventTypeDots from '@/base/EventTypeDots'
+import EventOrgDot from '@/base/EventOrgDot'
 
 export default {
-  components: { EventTypeDots },
+  components: { EventOrgDot },
   data: () => ({
     year: null,
     years: range(2013, new Date().getFullYear() + 2),

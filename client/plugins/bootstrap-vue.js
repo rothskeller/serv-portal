@@ -13,6 +13,7 @@ import {
   BFormCheckboxGroup,
   BFormGroup,
   BFormInput,
+  BFormRadio,
   BFormRadioGroup,
   BFormSelect,
   BFormSelectOption,
@@ -43,6 +44,7 @@ Vue.component('b-form-checkbox', BFormCheckbox)
 Vue.component('b-form-checkbox-group', BFormCheckboxGroup)
 Vue.component('b-form-group', BFormGroup)
 Vue.component('b-form-input', BFormInput)
+Vue.component('b-form-radio', BFormRadio)
 Vue.component('b-form-radio-group', BFormRadioGroup)
 Vue.component('b-form-select', BFormSelect)
 Vue.component('b-form-select-option', BFormSelectOption)
@@ -54,6 +56,7 @@ Vue.component('b-nav', BNav)
 Vue.component('b-nav-item', BNavItem)
 Vue.component('b-progress', BProgress)
 Vue.component('b-progress-bar', BProgressBar)
+Vue.component('b-radio', BFormRadio)
 Vue.component('b-select-option', BFormSelectOption)
 Vue.component('b-select', BFormSelect)
 Vue.component('b-spinner', BSpinner)
