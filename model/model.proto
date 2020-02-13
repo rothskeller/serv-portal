@@ -44,6 +44,7 @@ message Event {
   repeated int64 groups       = 9 [(gogoproto.casttype) = "GroupID"];
   string         sccAresID    = 10;
   int32          organization = 11 [(gogoproto.casttype) = "Organization"];
+  bool           private      = 12;
 }
 
 message Group {

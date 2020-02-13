@@ -25,6 +25,12 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	if e.Details != "" {
 		tx.entry.Change("set event [%d] details to %q", e.ID, e.Details)
 	}
+	if e.Organization != model.OrgNone {
+		tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
+	}
+	if e.Private {
+		tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
+	}
 	for _, et := range model.AllEventTypes {
 		if e.Type&et != 0 {
 			etstr = append(etstr, model.EventTypeNames[et])
@@ -73,6 +79,16 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 	}
 	if e.Details != oe.Details {
 		tx.entry.Change("set event %s %q [%d] details to %q", e.Date, e.Name, e.ID, e.Details)
+	}
+	if e.Organization != oe.Organization {
+		tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
+	}
+	if e.Private != oe.Private {
+		if e.Private {
+			tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
+		} else {
+			tx.entry.Change("clear event %s %q [%d] private flag", e.Date, e.Name, e.ID)
+		}
 	}
 	for _, et := range model.AllEventTypes {
 		if e.Type&et != oe.Type&et {

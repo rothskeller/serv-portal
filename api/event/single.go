@@ -3,6 +3,7 @@ package event
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -33,6 +34,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			return util.NotFound
 		}
 		canEdit = true
+		canView = !event.Private
 		for _, group := range event.Groups {
 			if r.Auth.MemberG(group) {
 				canView = true
@@ -82,6 +84,8 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.String(event.Details)
 	out.RawString(`,"organization":`)
 	out.String(model.OrganizationNames[event.Organization])
+	out.RawString(`,"private":`)
+	out.Bool(event.Private)
 	out.RawString(`,"types":[`)
 	first := true
 	for _, et := range model.AllEventTypes {
@@ -256,6 +260,7 @@ func PostEvent(r *util.Request, idstr string) error {
 			return errors.New("invalid organization")
 		}
 	}
+	event.Private, _ = strconv.ParseBool(r.FormValue("private"))
 	event.Type = 0
 	for _, v := range r.Form["type"] {
 		var matched bool

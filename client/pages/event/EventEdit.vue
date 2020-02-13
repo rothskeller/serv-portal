@@ -49,6 +49,10 @@ form#event-edit(v-else @submit.prevent="onSubmit")
         b-form-radio(value="") (none)
   b-form-group(label="Event is for these groups:" :state="groupsError ? false : null" :invalid-feedback="groupsError")
     b-form-checkbox-group(stacked :options="groups" text-field="name" value-field="id" v-model="event.groups")
+  b-form-group(label="Visibility" label-for="event-private" label-cols-sm="auto" label-class="event-edit-label pt-0")
+    b-form-radio-group(stacked v-model="event.private")
+      b-form-radio(:value="false") Visible to everyone
+      b-form-radio(:value="true") Visible only to selected groups
   div.mt-3
     b-btn(type="submit" variant="primary" :disabled="!valid" v-text="event.id ? 'Save Event' : 'Create Event'")
     b-btn.ml-2(@click="onCancel") Cancel
@@ -131,6 +135,7 @@ export default {
       body.append('start', this.event.start)
       body.append('end', this.event.end)
       body.append('organization', this.event.organization)
+      body.append('private', this.event.private)
       body.append('venue', this.event.venue.id)
       if (this.event.venue.id === 'NEW') {
         body.append('venueName', this.event.venue.name)

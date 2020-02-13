@@ -27,11 +27,13 @@ func GetEvents(r *util.Request) error {
 	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"events":[`)
 	for _, e := range events {
-		var canView bool
-		for _, group := range e.Groups {
-			if r.Auth.MemberG(group) || r.Auth.CanAG(model.PrivManageEvents, group) {
-				canView = true
-				break
+		var canView = !e.Private
+		if !canView {
+			for _, group := range e.Groups {
+				if r.Auth.MemberG(group) || r.Auth.CanAG(model.PrivManageEvents, group) {
+					canView = true
+					break
+				}
 			}
 		}
 		if !canView {

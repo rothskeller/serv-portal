@@ -95,6 +95,8 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 				if org != "" && e.Organization == 0 {
 					in.AddError(errors.New("invalid organization"))
 				}
+			case "private":
+				e.Private = in.Bool()
 			case "types":
 				in.Delim('[')
 				for !in.IsDelim(']') {

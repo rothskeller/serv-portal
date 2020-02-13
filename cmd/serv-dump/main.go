@@ -144,6 +144,9 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawString(`,"organization":`)
 		out.String(model.OrganizationNames[e.Organization])
 	}
+	if e.Private {
+		out.RawString(`,"private":true`)
+	}
 	out.RawString(`,"types":[`)
 	first := true
 	for _, t := range model.AllEventTypes {

@@ -122,6 +122,7 @@ func getEvent(eventID string, eventType model.EventType) (event *eventData) {
 	event = new(eventData)
 	event.SccAresID = eventID
 	event.Type = eventType
+	event.Organization = model.OrgSARES
 	event.Details = fmt.Sprintf(`For details and to register, visit <a href="https://www.scc-ares-races.org/activities/eventdetail.php?id=%s" target="_blank" rel="nofollow noopener">scc-ares-races.org</a>.`, eventID)
 	if eventResponse, err = http.Get(fmt.Sprintf("https://scc-ares-races.org/activities/eventdetail.php?id=%s", eventID)); err != nil {
 		panicf("get eventdetail.php?id=%s: %s", eventID, err)
@@ -232,7 +233,7 @@ func saveEvents(events []*eventData) {
 	)
 	for _, e := range events {
 		if dbe = tx.FetchEventBySccAresID(e.SccAresID); dbe != nil {
-			if e.Name == dbe.Name && e.Date == dbe.Date && e.Start == dbe.Start && e.End == dbe.End && e.Venue == dbe.Venue && e.Details == dbe.Details && e.Type == dbe.Type {
+			if e.Name == dbe.Name && e.Date == dbe.Date && e.Start == dbe.Start && e.End == dbe.End && e.Venue == dbe.Venue && e.Details == dbe.Details && e.Organization == dbe.Organization && e.Type == dbe.Type {
 				// Nothing's changed; don't save it so we don't audit.
 				emap[e.SccAresID] = true
 				continue
