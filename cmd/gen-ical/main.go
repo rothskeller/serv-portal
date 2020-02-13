@@ -43,9 +43,9 @@ func main() {
 		ie := cal.AddEvent(fmt.Sprintf("%d@sunnyvaleserv.org", e.ID))
 		ie.SetDtStampTime(time.Now())
 		ie.SetSummary(e.Name)
-		start, _ := time.ParseInLocation("2006-01-02 15:04:05", e.Date+" "+e.Start, time.Local)
+		start, _ := time.ParseInLocation("2006-01-02 15:04", e.Date+" "+e.Start, time.Local)
 		ie.SetStartAt(start)
-		end, _ := time.ParseInLocation("2006-01-02 15:04:05", e.Date+" "+e.End, time.Local)
+		end, _ := time.ParseInLocation("2006-01-02 15:04", e.Date+" "+e.End, time.Local)
 		ie.SetEndAt(end)
 		ie.SetURL(fmt.Sprintf("https://sunnyvaleserv.org/events/%d", e.ID))
 		if e.Organization != model.OrgNone {
