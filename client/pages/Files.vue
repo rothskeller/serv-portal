@@ -46,8 +46,8 @@ export default {
     },
     onMove(folderID) { this.$router.push(`/files/${folderID}`) },
     onOpen(doc) {
-      if (doc.name.endsWith('.pdf')) window.open(`/api/folders/${this.folder.id}/${docID}`, '_blank')
-      else window.location.href = `/api/folders/${this.folder.id}/${docID}`
+      if (doc.name.endsWith('.pdf')) window.open(`/api/folders/${this.folder.id}/${doc.id}`, '_blank')
+      else window.location.href = `/api/folders/${this.folder.id}/${doc.id}`
     },
   },
 }
