@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
 
@@ -117,7 +118,11 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if stat, err = fh.Stat(); err != nil {
 		return err
 	}
-	r.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", doc.Name))
+	if strings.HasSuffix(doc.Name, ".pdf") {
+		r.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", doc.Name))
+	} else {
+		r.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", doc.Name))
+	}
 	http.ServeContent(r, r.Request, doc.Name, stat.ModTime(), fh)
 	return nil
 }
