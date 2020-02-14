@@ -183,7 +183,7 @@ type PersonID int
 
 // A Privilege is something holders of a role get to do to a target group.  The
 // type can be used as a single privilege or a bitmask of multiple privileges.
-type Privilege uint8
+type Privilege uint16
 
 // Known privilege values.
 const (
@@ -220,12 +220,16 @@ const (
 	// PrivBCC denotes that holders of the actor role receive BCC copies of
 	// emails sent to the target group.
 	PrivBCC
+
+	// PrivManageFolders denotes the ability to manage folders (and the
+	// documents within them) belonging to the target group.
+	PrivManageFolders
 )
 
 // AllPrivileges lists all possible privileges.
 var AllPrivileges = []Privilege{
 	PrivMember, PrivViewMembers, PrivViewContactInfo, PrivManageMembers, PrivManageEvents, PrivSendTextMessages,
-	PrivSendEmailMessages, PrivBCC,
+	PrivSendEmailMessages, PrivBCC, PrivManageFolders,
 }
 
 // PrivilegeNames gives the names of all of the privileges.
@@ -238,6 +242,7 @@ var PrivilegeNames = map[Privilege]string{
 	PrivSendTextMessages:  "texts",
 	PrivSendEmailMessages: "emails",
 	PrivBCC:               "bcc",
+	PrivManageFolders:     "folders",
 }
 
 // MarshalEasyJSON encodes the privilege into JSON.

@@ -384,7 +384,38 @@ func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 		out.RawString(`,"individual":`)
 		out.Bool(r.Individual)
 	}
-	out.RawByte('}')
+	out.RawString(`,"privileges":[`)
+	first := true
+	for _, g := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {
+		privs := tx.Authorizer().ActionsRG(r.ID, g.ID)
+		if privs == 0 {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(g.ID))
+		out.RawString(`,"name":`)
+		out.String(g.Name)
+		out.RawString(`,"privileges":[`)
+		first2 := true
+		for _, p := range model.AllPrivileges {
+			if privs&p == 0 {
+				continue
+			}
+			if first2 {
+				first2 = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(model.PrivilegeNames[p])
+		}
+		out.RawString(`]}`)
+	}
+	out.RawString(`]}`)
 }
 
 func dumpSessions(tx *store.Tx) {

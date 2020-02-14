@@ -17,6 +17,7 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	for {
 		var r = new(model.Role)
+		var privSeen = make(map[model.GroupID]bool)
 		var first = true
 
 		in.Delim('{')
@@ -55,6 +56,51 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 				r.Name = in.String()
 			case "individual":
 				r.Individual = in.Bool()
+			case "privileges":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						var gid model.GroupID
+						var privs model.Privilege
+						in.Delim('{')
+						for !in.IsDelim('}') {
+							key := in.UnsafeString()
+							in.WantColon()
+							if in.IsNull() {
+								in.Skip()
+								in.WantComma()
+								continue
+							}
+							switch key {
+							case "id":
+								gid = model.GroupID(in.Int())
+							case "privileges":
+								in.Delim('[')
+								for !in.IsDelim(']') {
+									if in.IsNull() {
+										in.Skip()
+									} else {
+										var priv model.Privilege
+										priv.UnmarshalEasyJSON(in)
+										privs |= priv
+									}
+									in.WantComma()
+								}
+								in.Delim(']')
+							default:
+								in.SkipRecursive()
+							}
+							in.WantComma()
+						}
+						in.Delim('}')
+						auth.SetPrivileges(r.ID, privs, gid)
+						privSeen[gid] = true
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
 			default:
 				in.SkipRecursive()
 			}
@@ -75,6 +121,11 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 			os.Exit(1)
 		}
 		auth.UpdateRole(r)
+		for _, gid := range auth.AllGroups() {
+			if !privSeen[gid] {
+				auth.SetPrivileges(r.ID, 0, gid)
+			}
+		}
 		record++
 	}
 }

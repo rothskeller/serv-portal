@@ -76,65 +76,6 @@ func (a *Authorizer) SetMe(me *model.Person) {
 	}
 }
 
-/*
-func (a *Authorizer) Transition() {
-	var (
-		roles       []*model.Role
-		maxRoleID   model.RoleID
-		groups      []*model.Group
-		maxGroupID  model.GroupID
-		people      []*model.Person
-		maxPersonID model.PersonID
-		data        []byte
-		err         error
-	)
-	roles = a.tx.FetchRoles()
-	groups = a.tx.FetchGroups()
-	people = a.tx.FetchPeople()
-	for _, role := range roles {
-		if role.ID > maxRoleID {
-			maxRoleID = role.ID
-		}
-	}
-	for _, group := range groups {
-		if group.ID > maxGroupID {
-			maxGroupID = group.ID
-		}
-	}
-	for _, person := range people {
-		if person.ID > maxPersonID {
-			maxPersonID = person.ID
-		}
-	}
-	a.roles = make([]model.Role, maxRoleID+1)
-	a.groups = make([]model.Group, maxGroupID+1)
-	a.rolePrivs = make([]model.Privilege, len(a.roles)*len(a.groups))
-	a.bytesPerPerson = (len(a.roles) + 7) / 8
-	a.personRoles = make([]byte, int(maxPersonID+1)*a.bytesPerPerson)
-	for _, role := range roles {
-		a.roles[role.ID] = *role
-	}
-	for _, group := range groups {
-		a.groups[group.ID] = *group
-	}
-	for _, role := range roles {
-		for _, group := range groups {
-			a.rolePrivs[int(role.ID)*len(a.groups)+int(group.ID)] = role.Privileges.Get(group)
-		}
-		role.Privileges = model.PrivilegeMap{}
-	}
-	for _, person := range people {
-		for _, rid := range person.Roles {
-			a.personRoles[int(person.ID)*a.bytesPerPerson+int(rid/8)] |= 1 << int(rid%8)
-		}
-	}
-	if data, err = a.Marshal(); err != nil {
-		panic(err)
-	}
-	a.tx.CreateAuthorizer(data)
-}
-*/
-
 // Marshal renders the authorizer data in protocol buffer format.
 func (a *Authorizer) Marshal() (buf []byte, err error) {
 	size := a.Size()
@@ -347,14 +288,26 @@ func (a *Authorizer) Unmarshal(buf []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			a.rolePrivs = make([]model.Privilege, msglen/int(unsafe.Sizeof(model.PrivMember)))
-			var bytes []byte
-			var bhdr = (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
-			var phdr = (*reflect.SliceHeader)(unsafe.Pointer(&a.rolePrivs))
-			bhdr.Data = phdr.Data
-			bhdr.Len = msglen
-			bhdr.Cap = msglen
-			copy(bytes, buf[idx:])
+			if msglen == len(a.roles)*len(a.groups)*int(unsafe.Sizeof(model.PrivMember)) {
+				a.rolePrivs = make([]model.Privilege, msglen/int(unsafe.Sizeof(model.PrivMember)))
+				var bytes []byte
+				var bhdr = (*reflect.SliceHeader)(unsafe.Pointer(&bytes))
+				var phdr = (*reflect.SliceHeader)(unsafe.Pointer(&a.rolePrivs))
+				bhdr.Data = phdr.Data
+				bhdr.Len = msglen
+				bhdr.Cap = msglen
+				copy(bytes, buf[idx:])
+			} else if msglen == len(a.roles)*len(a.groups) {
+				// Convert from old single-byte to new double-byte layout.
+				a.rolePrivs = make([]model.Privilege, len(a.roles)*len(a.groups))
+				for r := range a.roles {
+					for g := range a.groups {
+						a.rolePrivs[r*len(a.groups)+g] = model.Privilege(buf[idx+r*len(a.groups)+g])
+					}
+				}
+			} else {
+				return errors.New("wrong rolePrivs length")
+			}
 			idx = postIndex
 		case 4:
 			if wireType != 2 {

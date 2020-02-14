@@ -45,6 +45,11 @@ Privileges displays the privilege choices for a role acting on a group.
       size="sm"
       @click="toggleBCC"
     ) B
+    b-btn(
+      :variant="privs.folders ? 'primary' : 'outline-primary'"
+      size="sm"
+      @click="toggleFolders"
+    ) F
 </template>
 
 <script>
@@ -97,6 +102,9 @@ export default {
     },
     toggleBCC() {
       this.$emit('change', { ...this.privs, bcc: !this.privs.bcc })
+    },
+    toggleFolders() {
+      this.$emit('change', { ...this.privs, bcc: !this.privs.folders })
     },
   },
 }
