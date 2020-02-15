@@ -105,8 +105,20 @@ func router(r *util.Request) error {
 		return event.PostEventAttendance(r, c[2])
 	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
 		return folder.GetFolder(r, c[2])
+	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "":
+		return folder.PostFolder(r, c[2])
+	case r.Method == "PUT" && c[1] == "folders" && c[2] != "" && c[3] == "":
+		return folder.PutFolder(r, c[2])
+	case r.Method == "DELETE" && c[1] == "folders" && c[2] != "" && c[3] == "":
+		return folder.DeleteFolder(r, c[2])
 	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
 		return folder.GetDocument(r, c[2], c[3])
+	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "NEW" && c[4] == "":
+		return folder.PostNewDocuments(r, c[2])
+	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
+		return folder.PostDocument(r, c[2], c[3])
+	case r.Method == "DELETE" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
+		return folder.DeleteDocument(r, c[2], c[3])
 	case r.Method == "GET" && c[1] == "groups" && c[2] == "":
 		return group.GetGroups(r)
 	case r.Method == "GET" && c[1] == "groups" && c[2] != "" && c[3] == "":

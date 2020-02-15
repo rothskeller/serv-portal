@@ -18,6 +18,7 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	var (
 		folderID model.FolderID
 		folder   *model.Folder
+		canEdit  bool
 		out      jwriter.Writer
 	)
 	if idstr != "0" {
@@ -25,7 +26,7 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 		if folder = r.Tx.FetchFolder(folderID); folder == nil {
 			return util.NotFound
 		}
-		if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.IsWebmaster() {
+		if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 			return util.Forbidden
 		}
 	}
@@ -40,6 +41,8 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 			out.String(r.Tx.FetchFolder(folder.Parent).Name)
 			out.RawByte('}')
 		}
+		out.RawString(`,"group":`)
+		out.Int(int(folder.Group))
 		out.RawString(`,"name":`)
 		out.String(folder.Name)
 		out.RawString(`,"documents":[`)
@@ -54,31 +57,66 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 			out.RawByte('}')
 		}
 		out.RawByte(']')
+	} else {
+		out.RawString(`"group":0`)
 	}
 	first := true
 	for _, f := range r.Tx.FetchFolders() {
 		if f.Parent != folderID {
 			continue
 		}
-		if f.Group != 0 && !r.Auth.MemberG(f.Group) && !r.Auth.IsWebmaster() {
+		if f.Group != 0 && !r.Auth.MemberG(f.Group) && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
 			continue
 		}
-		switch {
-		case first && folder == nil:
-			out.RawString(`"children":[`)
-		case first && folder != nil:
+		if first {
 			out.RawString(`,"children":[`)
-		case !first:
+			first = false
+		} else {
 			out.RawByte(',')
 		}
-		first = false
 		out.RawString(`{"id":`)
 		out.Int(int(f.ID))
 		out.RawString(`,"name":`)
 		out.String(f.Name)
+		out.RawString(`,"group":`)
+		out.Int(int(f.Group))
 		out.RawByte('}')
 	}
 	if !first {
+		out.RawByte(']')
+	}
+	if (folder == nil || folder.Group == 0) && r.Auth.IsWebmaster() {
+		canEdit = true
+	} else if folder != nil && folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
+		canEdit = true
+	}
+	if canEdit {
+		out.RawString(`,"canEdit":true,"allowedGroups":[`)
+		first := true
+		if r.Auth.IsWebmaster() {
+			out.RawString(`{"id":0,"name":"Public"}`)
+			first = false
+		}
+		for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivManageFolders)) {
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(g.ID))
+			out.RawString(`,"name":`)
+			out.String(g.Name)
+			out.RawByte('}')
+		}
+		out.RawString(`],"allowedParents":[`)
+		folders := r.Tx.FetchFolders()
+		if r.Auth.IsWebmaster() {
+			out.RawString(`{"id":0,"name":"Files"}`)
+			emitAllowedParents(r, folders, &out, 0, 1, false)
+		} else {
+			emitAllowedParents(r, folders, &out, 0, 0, true)
+		}
 		out.RawByte(']')
 	}
 	out.RawByte('}')
@@ -86,6 +124,34 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
+}
+
+func emitAllowedParents(r *util.Request, folders []*model.Folder, out *jwriter.Writer, parent model.FolderID, indent int, first bool) bool {
+	for _, f := range folders {
+		if f.Parent != parent {
+			continue
+		}
+		if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(f.ID))
+		out.RawString(`,"name":`)
+		out.String(strings.Repeat("\u00A0", indent*4) + f.Name)
+		out.RawString(`,"indent":`)
+		out.Int(indent)
+		if f.Group == 0 && !r.Auth.IsWebmaster() {
+			out.RawString(`,"disabled":true`)
+		}
+		out.RawByte('}')
+		emitAllowedParents(r, folders, out, f.ID, indent+1, first)
+	}
+	return first
 }
 
 // GetDocument handles GET /api/folders/$fid/$did requests.
@@ -110,7 +176,7 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if doc == nil {
 		return util.NotFound
 	}
-	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.IsWebmaster() {
+	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
 	fh = r.Tx.FetchDocument(folder, docID)

@@ -10,12 +10,10 @@ import (
 
 // ValidateFolder verifies the consistency of the folder.
 func ValidateFolder(tx *store.Tx, folder *model.Folder) (err error) {
-	if folder.ID < 1 {
-		return errors.New("invalid id")
-	}
-	if folder.Parent < 0 {
+	if folder.Parent < 0 || folder.Parent == folder.ID {
 		return errors.New("invalid parent")
 	}
+	// TODO check for folder ancestry loop
 	if folder.Parent > 0 && tx.FetchFolder(folder.Parent) == nil {
 		return errors.New("nonexistent parent")
 	}

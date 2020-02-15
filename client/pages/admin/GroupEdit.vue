@@ -24,6 +24,7 @@ form#group-edit(v-else @submit.prevent="onSubmit")
           div C = Role allows viewing contact info of group members
           div A = Role allows administration of group (adding/removing members)
           div E = Role allows management of events for group
+          div F = Role allows management of files for group
           div T = Role allows sending text messages to group
           div @ = Role allows sending email messages to group
           div B = Role gets bcc'd on email messages to group
@@ -114,6 +115,7 @@ export default {
         if (r.texts) body.append(`texts:${r.id}`, true)
         if (r.emails) body.append(`emails:${r.id}`, true)
         if (r.bcc) body.append(`bcc:${r.id}`, true)
+        if (r.folders) body.append(`folders:${r.id}`, true)
       })
       const resp = (await this.$axios.post(`/api/groups/${this.$route.params.gid}`, body)).data
       if (resp) {

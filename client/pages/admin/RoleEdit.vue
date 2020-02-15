@@ -24,6 +24,7 @@ form#role-edit(v-else @submit.prevent="onSubmit")
           div C = Role allows viewing contact info of group members
           div A = Role allows administration of group (adding/removing members)
           div E = Role allows management of events for group
+          div F = Role allows management of files for group
           div T = Role allows sending text messages to group
           div @ = Role allows sending email messages to group
           div B = Role gets bcc'd on email messages to group
@@ -105,6 +106,7 @@ export default {
         if (g.texts) body.append(`texts:${g.id}`, true)
         if (g.emails) body.append(`emails:${g.id}`, true)
         if (g.bcc) body.append(`bcc:${g.id}`, true)
+        if (g.folders) body.append(`folders:${g.id}`, true)
       })
       const resp = (await this.$axios.post(`/api/roles/${this.$route.params.rid}`, body)).data
       if (resp && resp.duplicateName)

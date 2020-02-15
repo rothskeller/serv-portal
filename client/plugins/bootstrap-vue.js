@@ -8,10 +8,13 @@ import {
   BCard,
   BCardBody,
   BCardHeader,
+  BDropdown,
+  BDropdownItem,
   BForm,
   BFormCheckbox,
   BFormCheckboxGroup,
   BFormGroup,
+  BFormFile,
   BFormInput,
   BFormRadio,
   BFormRadioGroup,
@@ -39,10 +42,13 @@ Vue.component('b-card', BCard)
 Vue.component('b-card-body', BCardBody)
 Vue.component('b-card-header', BCardHeader)
 Vue.component('b-checkbox', BFormCheckbox)
+Vue.component('b-dropdown', BDropdown)
+Vue.component('b-dropdown-item', BDropdownItem)
 Vue.component('b-form', BForm)
 Vue.component('b-form-checkbox', BFormCheckbox)
 Vue.component('b-form-checkbox-group', BFormCheckboxGroup)
 Vue.component('b-form-group', BFormGroup)
+Vue.component('b-form-file', BFormFile)
 Vue.component('b-form-input', BFormInput)
 Vue.component('b-form-radio', BFormRadio)
 Vue.component('b-form-radio-group', BFormRadioGroup)
