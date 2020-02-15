@@ -184,6 +184,8 @@ export default {
     },
     async loadFolder() {
       this.folder = (await this.$axios.get(`/api/folders/${this.$route.params.id}`)).data
+      if (!this.folder.children) this.folder.children = []
+      if (!this.folder.documents) this.folder.documents = []
       this.$store.commit('setPage', { title: this.folder.name || 'Files' })
     },
     onAddDocument() {
