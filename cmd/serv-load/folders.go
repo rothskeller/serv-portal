@@ -125,6 +125,35 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 								d.ID = model.DocumentID(in.Int())
 							case "name":
 								d.Name = in.String()
+							case "postedBy":
+								if in.IsDelim('{') {
+									in.Delim('{')
+									for !in.IsDelim('}') {
+										key := in.UnsafeString()
+										in.WantColon()
+										if in.IsNull() {
+											in.Skip()
+											in.WantComma()
+											continue
+										}
+										switch key {
+										case "id":
+											d.PostedBy = model.PersonID(in.Int())
+										default:
+											in.SkipRecursive()
+										}
+										in.WantComma()
+									}
+									in.Delim('}')
+								} else {
+									d.PostedBy = model.PersonID(in.Int())
+								}
+							case "postedAt":
+								if data := in.Raw(); in.Ok() {
+									in.AddError(d.PostedAt.UnmarshalJSON(data))
+								}
+							case "needsApproval":
+								d.NeedsApproval = in.Bool()
 							default:
 								in.SkipRecursive()
 							}

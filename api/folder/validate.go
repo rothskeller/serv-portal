@@ -38,6 +38,12 @@ func ValidateFolder(tx *store.Tx, folder *model.Folder) (err error) {
 		if doc.Name = strings.TrimSpace(doc.Name); doc.Name == "" {
 			return errors.New("missing document name")
 		}
+		if p := tx.FetchPerson(doc.PostedBy); p == nil {
+			return errors.New("nonexistent postedBy person")
+		}
+		if doc.PostedAt.IsZero() {
+			return errors.New("missing postedAt")
+		}
 		for _, doc2 := range folder.Documents {
 			if doc == doc2 {
 				continue

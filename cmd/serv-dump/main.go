@@ -240,6 +240,20 @@ func dumpFolder(tx *store.Tx, out *jwriter.Writer, f *model.Folder) {
 		out.Int(int(d.ID))
 		out.RawString(`,"name":`)
 		out.String(d.Name)
+		if d.PostedBy != 0 {
+			out.RawString(`,"postedBy":{"id":`)
+			out.Int(int(d.PostedBy))
+			out.RawString(`,"sortName":`)
+			out.String(tx.FetchPerson(d.PostedBy).SortName)
+			out.RawByte('}')
+		}
+		if !d.PostedAt.IsZero() {
+			out.RawString(`,"postedAt":`)
+			out.Raw(d.PostedAt.MarshalJSON())
+		}
+		if d.NeedsApproval {
+			out.RawString(`,"needsApproval":true`)
+		}
 		out.RawByte('}')
 	}
 	out.RawString(`]}`)

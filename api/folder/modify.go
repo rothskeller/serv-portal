@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"time"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
@@ -111,8 +112,7 @@ func DeleteFolder(r *util.Request, idstr string) (err error) {
 	return GetFolder(r, strconv.Itoa(int(folder.Parent)))
 }
 
-// PostDocument handles POST /api/folders/$fid/$did requests (where $did may be
-// 'NEW').
+// PostDocument handles POST /api/folders/$fid/$did requests (but not $did="NEW").
 func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 	var (
 		folder      *model.Folder
@@ -140,6 +140,8 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 		return util.NotFound
 	}
 	doc.Name = r.FormValue("name")
+	doc.PostedBy = r.Person.ID
+	doc.PostedAt = time.Now()
 	newFolderID = model.FolderID(util.ParseID(r.FormValue("folder")))
 	if newFolderID != folder.ID {
 		var (
@@ -223,6 +225,8 @@ func PostNewDocuments(r *util.Request, idstr string) (err error) {
 		maxDocID++
 		doc.ID = maxDocID
 		doc.Name = file.Filename
+		doc.PostedBy = r.Person.ID
+		doc.PostedAt = time.Now()
 		if fh, err = file.Open(); err != nil {
 			goto ERROR
 		}

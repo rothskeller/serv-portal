@@ -1,5 +1,10 @@
 -- Database schema for serve.rothskeller.net/portal.
 
+-- The approval table is a single-row, single-column table containing a BLOB.
+-- The BLOB is the protocol buffer encoding of model.Approvals, which contains a
+-- list of all outstanding requests needing approval.
+CREATE TABLE approval (data BLOB);
+
 -- The authorizer table is a single-row, single-column table containing a BLOB.
 -- The BLOB is the protocol buffer encoding of authz.Authorizer, which contains
 -- all of the groups, roles, and privileges for the SERV portal.
