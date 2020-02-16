@@ -1,7 +1,3 @@
-Eliminate Samariteam:
-  Files area
-  Import files from Samariteam
-  (Don't need monthly calendar email)
 Goodies:
   Events tagged with which volunteer bucket their hours go in
   People editing their volunteer hours
@@ -17,7 +13,10 @@ Goodies:
   Data export
   Change text report to show delivered time
   Shared Notes area (see Kent text 2/11)
+  Generate sign-in sheet for event
 Cosmetics:
+  Allow people to upload files to public folders, and hold them for moderation
+  Maybe an approvals page, for email moderation, uploaded files, possibly also events?
   Show instructions for calendar sharing.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.

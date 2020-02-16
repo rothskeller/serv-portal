@@ -5,7 +5,8 @@ Files displays the Files browser.
 <template lang="pug">
 div(v-if="!folder")
   b-spinner(small)
-#files(v-else @drop="onDrop" @dragover="onDragOver")
+#files(v-else :class="dragging ? 'dragging' : null" @drop="onDrop" @dragover="onDragOver" @dragleave="onDragLeave")
+  b-progress#files-progress(v-if="uploadProgress !== null" :value="uploadProgress" :max="1")
   .files-line(v-if="folder.id")
     .files-icon
       svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512")
@@ -40,7 +41,7 @@ div(v-if="!folder")
     b-btn(size="sm" variant="primary" @click="onAddFolder") Add Folder
     b-btn.ml-2(size="sm" variant="primary" @click="onAddDocument") Add File
   b-modal#files-edit-folder(:title="editFolder ? 'Edit Folder' : 'Add Folder'" @shown="onEditFolderShown" @ok="onEditFolderOK")
-    form(@select.prevent="doEditFolder")
+    form(@submit.prevent="doEditFolder")
       b-form-group(label="Name" label-for="files-edit-folder-name" :state="editFolderNameError ? false : null" :invalid-feedback="editFolderNameError")
         b-input#files-edit-folder-name(ref="editFolderName" :state="editFolderNameError ? false : null" trim v-model="editFolderName")
       b-form-group(label="Group" label-for="files-edit-folder-group")
@@ -52,13 +53,14 @@ div(v-if="!folder")
       b-btn(@click="cancel()") Cancel
       b-btn(variant="primary" @click="ok()") OK
   b-modal#files-edit-doc(:title="editDocument ? 'Edit File' : 'Add File'" @shown="onEditDocumentShown" @ok="onEditDocumentOK")
-    form(@select.prevent="doEditDocument")
+    form(@submit.prevent="doEditDocument")
       b-form-group(v-if="editDocument" label="Name" label-for="files-edit-doc-name" :state="editDocumentNameError ? false : null" :invalid-feedback="editDocumentNameError")
         b-input#files-edit-doc-name(ref="editDocumentName" :state="editDocumentNameError ? false : null" trim v-model="editDocumentName")
       b-form-group(v-else :state="editDocumentFilesError ? false : null" :invalid-feedback="editDocumentFilesError")
         b-form-file#files-edit-doc-files(multiple :state="editDocumentFilesError ? false : null" v-model="editDocumentFiles")
       b-form-group(v-if="editDocument" label="In Folder" label-for="files-edit-doc-folder")
         b-select#files-edit-doc-folder(:options="folder.allowedParents" v-model="editDocumentFolder" text-field="name" value-field="id")
+    b-progress(v-if="uploadProgress !== null" :value="uploadProgress" :max="1")
     template(v-slot:modal-footer="{ok, cancel, hide}")
       b-btn.mr-5(v-if="editDocument" variant="danger" @click="onDeleteDocument(editDocument, hide)") Delete
       b-btn(@click="cancel()") Cancel
@@ -87,6 +89,8 @@ export default {
     editFolderParent: null,
     hoverDocument: null,
     hoverFolder: null,
+    dragging: false,
+    uploadProgress: null,
   }),
   computed: {
     allowedParents() {
@@ -160,7 +164,11 @@ export default {
         }
         this.editDocumentFiles.forEach(nf => { body.append('file', nf) })
       }
-      this.folder = (await this.$axios.post(`/api/folders/${this.$route.params.id}/${docID}`, body)).data
+      this.folder = (await this.$axios.post(`/api/folders/${this.$route.params.id}/${docID}`, body, {
+        onUploadProgress: this.onUploadProgress,
+      })).data
+      this.uploadProgress = null
+      this.$bvModal.hide('files-edit-doc')
       return true
     },
     doEditFolder() {
@@ -180,6 +188,7 @@ export default {
         this.$axios.put(`/api/folders/${this.editFolder.id}`, body).then(r => { this.folder = r.data })
       else
         this.$axios.post(`/api/folders/${this.$route.params.id}`, body).then(r => { this.folder = r.data })
+      this.$bvModal.hide('files-edit-folder')
       return true
     },
     async loadFolder() {
@@ -203,10 +212,15 @@ export default {
       this.editFolderGroup = this.folder.group
       this.$bvModal.show('files-edit-folder')
     },
-    onDragOver(evt) { evt.preventDefault() },
+    onDragLeave(evt) { this.dragging = false },
+    onDragOver(evt) {
+      evt.preventDefault()
+      this.dragging = true
+    },
     async onDrop(evt) {
       if (!this.folder.canEdit) return
       evt.preventDefault()
+      this.dragging = false
       const body = new FormData
       const replace = []
       for (let i = 0; i < evt.dataTransfer.files.length; i++) {
@@ -232,7 +246,10 @@ export default {
       for (let i = 0; i < evt.dataTransfer.files.length; i++) {
         body.append('file', evt.dataTransfer.files[i])
       }
-      this.folder = (await this.$axios.post(`/api/folders/${this.$route.params.id}/NEW`, body)).data
+      this.folder = (await this.$axios.post(`/api/folders/${this.$route.params.id}/NEW`, body, {
+        onUploadProgress: this.onUploadProgress,
+      })).data
+      this.uploadProgress = null
     },
     onEditDocument(doc) {
       if (!this.folder.canEdit) return
@@ -290,15 +307,26 @@ export default {
     },
     onHoverDocument(id) { this.hoverDocument = id },
     onHoverFolder(id) { this.hoverFolder = id },
+    onUploadProgress(evt) {
+      if (evt.lengthComputable && evt.total) this.uploadProgress = evt.loaded / evt.total
+    },
   },
 }
 </script>
 
 <style lang="stylus">
 #files
-  min-height calc(100vh - 40px)
+  position relative
+  height 100%
   .mouse &
-    margin 1.5rem 0.75rem
+    padding 1.5rem 0.75rem
+  &.dragging
+    box-shadow inset 0 0 0 0.25rem #006600
+#files-progress
+  position absolute
+  top 0
+  right 0
+  left 0
 .files-line
   display flex
   align-items center
