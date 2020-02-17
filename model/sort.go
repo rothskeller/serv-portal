@@ -25,6 +25,12 @@ func (fs FolderSort) Len() int           { return len(fs) }
 func (fs FolderSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
 func (fs FolderSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
 
+type FolderNodeSort []*FolderNode
+
+func (fs FolderNodeSort) Len() int           { return len(fs) }
+func (fs FolderNodeSort) Less(i, j int) bool { return fs[i].Folder.Name < fs[j].Folder.Name }
+func (fs FolderNodeSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
+
 type GroupSort []*Group
 
 func (gs GroupSort) Len() int           { return len(gs) }

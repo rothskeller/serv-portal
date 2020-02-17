@@ -16,18 +16,17 @@ import (
 func PostFolder(r *util.Request, idstr string) (err error) {
 	var (
 		parentID model.FolderID
-		parent   *model.Folder
-		folder   model.Folder
+		folder   = model.FolderNode{Folder: new(model.Folder)}
 	)
 	if idstr != "0" {
 		parentID = model.FolderID(util.ParseID(idstr))
-		if parent = r.Tx.FetchFolder(parentID); parent == nil {
+		if folder.ParentNode = r.Tx.FetchFolder(parentID); folder.ParentNode == nil {
 			return util.NotFound
 		}
-		if parent.Group == 0 && !r.Auth.IsWebmaster() {
+		if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
 			return util.Forbidden
 		}
-		if parent.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, parent.Group) {
+		if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
 			return util.Forbidden
 		}
 	} else if !r.Auth.IsWebmaster() {
@@ -52,8 +51,7 @@ func PostFolder(r *util.Request, idstr string) (err error) {
 // PutFolder handles PUT /api/folders/$id requests.
 func PutFolder(r *util.Request, idstr string) (err error) {
 	var (
-		folder     *model.Folder
-		parent     *model.Folder
+		folder     *model.FolderNode
 		prevParent model.FolderID
 	)
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
@@ -65,6 +63,7 @@ func PutFolder(r *util.Request, idstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
+	r.Tx.WillUpdateFolder(folder)
 	prevParent = folder.Parent
 	folder.Name = r.FormValue("name")
 	folder.Group = model.GroupID(util.ParseID(r.FormValue("group")))
@@ -78,27 +77,26 @@ func PutFolder(r *util.Request, idstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
-	if folder.Parent == 0 && !r.Auth.IsWebmaster() {
+	if folder.ParentNode == nil && !r.Auth.IsWebmaster() {
 		return util.Forbidden
 	}
-	if folder.Parent != 0 {
-		parent = r.Tx.FetchFolder(folder.Parent)
-		if parent.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.ParentNode != nil {
+		if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
 			return util.Forbidden
 		}
-		if parent.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, parent.Group) {
+		if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
 			return util.Forbidden
 		}
 	}
 	r.Tx.UpdateFolder(folder)
+	propagateApprovalCounts(r, folder.ParentNode)
 	return GetFolder(r, strconv.Itoa(int(prevParent)))
 }
 
 // DeleteFolder handles DELETE /api/folders/$id requests.
 func DeleteFolder(r *util.Request, idstr string) (err error) {
-	var (
-		folder *model.Folder
-	)
+	var folder *model.FolderNode
+
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
 		return util.NotFound
 	}
@@ -108,14 +106,16 @@ func DeleteFolder(r *util.Request, idstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
+	pn := folder.ParentNode
 	r.Tx.DeleteFolder(folder)
+	propagateApprovalCounts(r, pn)
 	return GetFolder(r, strconv.Itoa(int(folder.Parent)))
 }
 
 // PostDocument handles POST /api/folders/$fid/$did requests (but not $did="NEW").
 func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 	var (
-		folder      *model.Folder
+		folder      *model.FolderNode
 		newFolderID model.FolderID
 		docID       model.DocumentID
 		doc         *model.Document
@@ -139,13 +139,13 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if doc == nil {
 		return util.NotFound
 	}
+	r.Tx.WillUpdateFolder(folder)
 	doc.Name = r.FormValue("name")
-	doc.PostedBy = r.Person.ID
-	doc.PostedAt = time.Now()
+	doc.NeedsApproval = false
 	newFolderID = model.FolderID(util.ParseID(r.FormValue("folder")))
 	if newFolderID != folder.ID {
 		var (
-			newFolder *model.Folder
+			newFolder *model.FolderNode
 			newDoc    model.Document
 			maxDocID  model.DocumentID
 			contents  *os.File
@@ -153,6 +153,7 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 		if newFolder = r.Tx.FetchFolder(newFolderID); newFolder == nil {
 			return errors.New("nonexistent folder")
 		}
+		r.Tx.WillUpdateFolder(newFolder)
 		for _, d := range newFolder.Documents {
 			if d.ID > maxDocID {
 				maxDocID = d.ID
@@ -169,6 +170,7 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 		r.Tx.CreateDocument(newFolder, newDoc.ID, contents)
 		contents.Close()
 		r.Tx.UpdateFolder(newFolder)
+		propagateApprovalCounts(r, newFolder.ParentNode)
 		r.Tx.DeleteDocument(folder, doc.ID)
 		j := 0
 		for _, d := range folder.Documents {
@@ -178,13 +180,28 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 			}
 		}
 		folder.Documents = folder.Documents[:j]
+		if err = ValidateFolder(r.Tx, folder); err != nil {
+			return err
+		}
 		r.Tx.UpdateFolder(folder)
+		propagateApprovalCounts(r, folder.ParentNode)
 	} else {
+		j := 0
+		for _, d := range folder.Documents {
+			if d.Name != doc.Name || d.ID == doc.ID {
+				folder.Documents[j] = d
+				j++
+			} else {
+				r.Tx.DeleteDocument(folder, d.ID)
+			}
+		}
+		folder.Documents = folder.Documents[:j]
 		if err = ValidateFolder(r.Tx, folder); err != nil {
 			return err
 		}
 		sort.Slice(folder.Documents, func(i, j int) bool { return folder.Documents[i].Name < folder.Documents[j].Name })
 		r.Tx.UpdateFolder(folder)
+		propagateApprovalCounts(r, folder.ParentNode)
 	}
 	return GetFolder(r, fidstr)
 }
@@ -192,20 +209,24 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 // PostNewDocuments handles POST /api/folders/$id/NEW requests.
 func PostNewDocuments(r *util.Request, idstr string) (err error) {
 	var (
-		folder   *model.Folder
-		files    []*multipart.FileHeader
-		docs     []*model.Document
-		maxDocID model.DocumentID
-		j        int
+		folder        *model.FolderNode
+		files         []*multipart.FileHeader
+		docs          []*model.Document
+		maxDocID      model.DocumentID
+		needsApproval bool
 	)
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
 		return util.NotFound
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if !r.Auth.CanA(model.PrivManageFolders) {
 		return util.Forbidden
 	}
+	r.Tx.WillUpdateFolder(folder)
+	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+		needsApproval = true
+	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
-		return util.Forbidden
+		needsApproval = true
 	}
 	for _, doc := range folder.Documents {
 		if doc.ID > maxDocID {
@@ -227,31 +248,39 @@ func PostNewDocuments(r *util.Request, idstr string) (err error) {
 		doc.Name = file.Filename
 		doc.PostedBy = r.Person.ID
 		doc.PostedAt = time.Now()
+		doc.NeedsApproval = needsApproval
 		if fh, err = file.Open(); err != nil {
 			goto ERROR
 		}
 		r.Tx.CreateDocument(folder, doc.ID, fh)
 		docs = append(docs, &doc)
 	}
-	j = 0
-	for _, doc := range folder.Documents {
-		found := false
-		for _, file := range files {
-			if file.Filename == doc.Name {
-				found = true
-				break
+	if !needsApproval {
+		j := 0
+		for _, doc := range folder.Documents {
+			found := false
+			for _, file := range files {
+				if file.Filename == doc.Name {
+					found = true
+					break
+				}
+			}
+			if found {
+				r.Tx.DeleteDocument(folder, doc.ID)
+			} else {
+				folder.Documents[j] = doc
+				j++
 			}
 		}
-		if found {
-			r.Tx.DeleteDocument(folder, doc.ID)
-		} else {
-			folder.Documents[j] = doc
-			j++
-		}
+		folder.Documents = folder.Documents[:j]
 	}
-	folder.Documents = append(folder.Documents[:j], docs...)
+	folder.Documents = append(folder.Documents, docs...)
+	if err = ValidateFolder(r.Tx, folder); err != nil {
+		goto ERROR
+	}
 	sort.Slice(folder.Documents, func(i, j int) bool { return folder.Documents[i].Name < folder.Documents[j].Name })
 	r.Tx.UpdateFolder(folder)
+	propagateApprovalCounts(r, folder.ParentNode)
 	return GetFolder(r, idstr)
 ERROR:
 	for _, doc := range docs {
@@ -263,7 +292,7 @@ ERROR:
 // DeleteDocument handles DELETE /api/folders/$fid/$did requests.
 func DeleteDocument(r *util.Request, fidstr, didstr string) (err error) {
 	var (
-		folder *model.Folder
+		folder *model.FolderNode
 		docID  model.DocumentID
 		j      int
 	)
@@ -276,6 +305,7 @@ func DeleteDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
+	r.Tx.WillUpdateFolder(folder)
 	docID = model.DocumentID(util.ParseID(didstr))
 	j = 0
 	for _, doc := range folder.Documents {
@@ -290,6 +320,31 @@ func DeleteDocument(r *util.Request, fidstr, didstr string) (err error) {
 		return util.NotFound
 	}
 	folder.Documents = folder.Documents[:j]
+	if err = ValidateFolder(r.Tx, folder); err != nil {
+		return err
+	}
 	r.Tx.UpdateFolder(folder)
+	propagateApprovalCounts(r, folder.ParentNode)
 	return GetFolder(r, fidstr)
+}
+
+func propagateApprovalCounts(r *util.Request, folder *model.FolderNode) {
+	if folder == nil {
+		return
+	}
+	newApprovals := 0
+	for _, cf := range folder.ChildNodes {
+		newApprovals += cf.Approvals
+	}
+	for _, d := range folder.Documents {
+		if d.NeedsApproval {
+			newApprovals++
+		}
+	}
+	if folder.Approvals != newApprovals {
+		r.Tx.WillUpdateFolder(folder)
+		folder.Approvals = newApprovals
+		r.Tx.UpdateFolder(folder)
+		propagateApprovalCounts(r, folder.ParentNode)
+	}
 }

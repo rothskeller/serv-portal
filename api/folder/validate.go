@@ -9,20 +9,36 @@ import (
 )
 
 // ValidateFolder verifies the consistency of the folder.
-func ValidateFolder(tx *store.Tx, folder *model.Folder) (err error) {
-	if folder.Parent < 0 || (folder.ID != 0 && folder.Parent == folder.ID) {
+func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
+	if folder.Parent < 0 {
 		return errors.New("invalid parent")
 	}
-	// TODO check for folder ancestry loop
-	if folder.Parent > 0 && tx.FetchFolder(folder.Parent) == nil {
-		return errors.New("nonexistent parent")
+	if folder.Parent == 0 {
+		folder.ParentNode = nil
+	} else if folder.ParentNode == nil || folder.ParentNode.ID != folder.Parent {
+		if folder.ParentNode = tx.FetchFolder(folder.Parent); folder.ParentNode == nil {
+			return errors.New("nonexistent parent")
+		}
+	}
+	for parent := folder.ParentNode; parent != nil; parent = parent.ParentNode {
+		if parent.ID == folder.ID {
+			return errors.New("loop in folder ancestry")
+		}
 	}
 	if folder.Name = strings.TrimSpace(folder.Name); folder.Name == "" {
 		return errors.New("missing name")
 	}
-	for _, f := range tx.FetchFolders() {
-		if f.ID != folder.ID && f.Parent == folder.Parent && f.Name == folder.Name {
-			return errors.New("duplicate name")
+	if folder.ParentNode == nil {
+		for _, f := range tx.FetchFolders() {
+			if f.ID != folder.ID && f.Name == folder.Name {
+				return errors.New("duplicate name")
+			}
+		}
+	} else {
+		for _, f := range folder.ParentNode.ChildNodes {
+			if f.ID != folder.ID && f.Name == folder.Name {
+				return errors.New("duplicate name")
+			}
 		}
 	}
 	if folder.Group < 0 {
@@ -31,7 +47,14 @@ func ValidateFolder(tx *store.Tx, folder *model.Folder) (err error) {
 	if folder.Group > 0 && tx.Authorizer().FetchGroup(folder.Group) == nil {
 		return errors.New("nonexistent group")
 	}
+	folder.Approvals = 0
+	for _, cf := range folder.ChildNodes {
+		folder.Approvals += cf.Approvals
+	}
 	for _, doc := range folder.Documents {
+		if doc.NeedsApproval {
+			folder.Approvals++
+		}
 		if doc.ID < 1 {
 			return errors.New("invalid document ID")
 		}
@@ -51,7 +74,7 @@ func ValidateFolder(tx *store.Tx, folder *model.Folder) (err error) {
 			if doc.ID == doc2.ID {
 				return errors.New("duplicate document ID")
 			}
-			if doc.Name == doc2.Name {
+			if doc.Name == doc2.Name && doc.NeedsApproval == doc2.NeedsApproval && (doc.PostedBy == doc2.PostedBy || !doc.NeedsApproval) {
 				return errors.New("duplicate document name")
 			}
 		}

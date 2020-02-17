@@ -16,56 +16,58 @@ import (
 // the virtual parent of the top-level folders.
 func GetFolder(r *util.Request, idstr string) (err error) {
 	var (
-		folderID model.FolderID
-		folder   *model.Folder
-		canEdit  bool
-		out      jwriter.Writer
+		folderID   model.FolderID
+		folder     *model.FolderNode
+		canEdit    bool
+		canApprove bool
+		out        jwriter.Writer
 	)
-	if idstr != "0" {
-		folderID = model.FolderID(util.ParseID(idstr))
-		if folder = r.Tx.FetchFolder(folderID); folder == nil {
-			return util.NotFound
-		}
-		if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
-			return util.Forbidden
-		}
+	folderID = model.FolderID(util.ParseID(idstr))
+	if folder = r.Tx.FetchFolder(folderID); folder == nil {
+		return util.NotFound
+	}
+	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
+		return util.Forbidden
 	}
 	out.RawByte('{')
-	if folder != nil {
-		out.RawString(`"id":`)
-		out.Int(int(folder.ID))
-		if folder.Parent != 0 {
-			out.RawString(`,"parent":{"id":`)
-			out.Int(int(folder.Parent))
-			out.RawString(`,"name":`)
-			out.String(r.Tx.FetchFolder(folder.Parent).Name)
-			out.RawByte('}')
-		}
-		out.RawString(`,"group":`)
-		out.Int(int(folder.Group))
+	canApprove = r.Auth.CanA(model.PrivManageFolders)
+	out.RawString(`"id":`)
+	out.Int(int(folder.ID))
+	if folder.ParentNode != nil {
+		out.RawString(`,"parent":{"id":`)
+		out.Int(int(folder.Parent))
 		out.RawString(`,"name":`)
-		out.String(folder.Name)
-		out.RawString(`,"documents":[`)
-		for i, d := range folder.Documents {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.RawString(`{"id":`)
-			out.Int(int(d.ID))
-			out.RawString(`,"name":`)
-			out.String(d.Name)
-			out.RawByte('}')
-		}
-		out.RawByte(']')
-	} else {
-		out.RawString(`"group":0`)
+		out.String(folder.ParentNode.Name)
+		out.RawByte('}')
 	}
+	out.RawString(`,"group":`)
+	out.Int(int(folder.Group))
+	out.RawString(`,"name":`)
+	out.String(folder.Name)
+	out.RawString(`,"documents":[`)
 	first := true
-	for _, f := range r.Tx.FetchFolders() {
-		if f.Parent != folderID {
+	for _, d := range folder.Documents {
+		if d.NeedsApproval && !canApprove {
 			continue
 		}
-		if f.Group != 0 && !r.Auth.MemberG(f.Group) && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(d.ID))
+		out.RawString(`,"name":`)
+		out.String(d.Name)
+		if d.NeedsApproval {
+			out.RawString(`,"needsApproval":true`)
+		}
+		out.RawByte('}')
+	}
+	out.RawByte(']')
+	first = true
+	for _, cf := range folder.ChildNodes {
+		if cf.Group != 0 && !r.Auth.MemberG(cf.Group) && !r.Auth.CanAG(model.PrivManageFolders, cf.Group) {
 			continue
 		}
 		if first {
@@ -75,19 +77,23 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
-		out.Int(int(f.ID))
+		out.Int(int(cf.ID))
 		out.RawString(`,"name":`)
-		out.String(f.Name)
+		out.String(cf.Name)
 		out.RawString(`,"group":`)
-		out.Int(int(f.Group))
+		out.Int(int(cf.Group))
+		if cf.Approvals > 0 && canApprove {
+			out.RawString(`,"approvals":`)
+			out.Int(cf.Approvals)
+		}
 		out.RawByte('}')
 	}
 	if !first {
 		out.RawByte(']')
 	}
-	if (folder == nil || folder.Group == 0) && r.Auth.IsWebmaster() {
+	if folder.Group == 0 && r.Auth.IsWebmaster() {
 		canEdit = true
-	} else if folder != nil && folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
+	} else if folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		canEdit = true
 	}
 	if canEdit {
@@ -110,14 +116,11 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 			out.RawByte('}')
 		}
 		out.RawString(`],"allowedParents":[`)
-		folders := r.Tx.FetchFolders()
-		if r.Auth.IsWebmaster() {
-			out.RawString(`{"id":0,"name":"Files"}`)
-			emitAllowedParents(r, folders, &out, 0, 1, false)
-		} else {
-			emitAllowedParents(r, folders, &out, 0, 0, true)
-		}
+		emitAllowedParents(r, r.Tx.FetchRootFolder(), &out, 0, true)
 		out.RawByte(']')
+	}
+	if r.Auth.CanA(model.PrivManageFolders) {
+		out.RawString(`,"canAdd":true`)
 	}
 	out.RawByte('}')
 	r.Tx.Commit()
@@ -126,11 +129,8 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	return nil
 }
 
-func emitAllowedParents(r *util.Request, folders []*model.Folder, out *jwriter.Writer, parent model.FolderID, indent int, first bool) bool {
-	for _, f := range folders {
-		if f.Parent != parent {
-			continue
-		}
+func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Writer, indent int, first bool) bool {
+	for _, f := range root.ChildNodes {
 		if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
 			continue
 		}
@@ -149,7 +149,7 @@ func emitAllowedParents(r *util.Request, folders []*model.Folder, out *jwriter.W
 			out.RawString(`,"disabled":true`)
 		}
 		out.RawByte('}')
-		emitAllowedParents(r, folders, out, f.ID, indent+1, first)
+		emitAllowedParents(r, f, out, indent+1, first)
 	}
 	return first
 }
@@ -157,7 +157,7 @@ func emitAllowedParents(r *util.Request, folders []*model.Folder, out *jwriter.W
 // GetDocument handles GET /api/folders/$fid/$did requests.
 func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	var (
-		folder *model.Folder
+		folder *model.FolderNode
 		docID  model.DocumentID
 		doc    *model.Document
 		fh     *os.File
@@ -178,6 +178,11 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	}
 	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
+	}
+	if doc.NeedsApproval {
+		if !r.Auth.CanAG(model.PrivManageFolders, folder.Group) && doc.PostedBy != r.Person.ID {
+			return util.Forbidden
+		}
 	}
 	fh = r.Tx.FetchDocument(folder, docID)
 	r.Tx.Commit()

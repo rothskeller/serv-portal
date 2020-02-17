@@ -17,14 +17,20 @@ func Open(path string) {
 // Tx is a handle to a transaction on the data store.
 type Tx struct {
 	*cache.Tx
-	entry          *log.Entry
-	auth           *authz.Authorizer
-	originalPeople map[model.PersonID]*model.Person
+	entry           *log.Entry
+	auth            *authz.Authorizer
+	originalFolders map[model.FolderID]*model.Folder
+	originalPeople  map[model.PersonID]*model.Person
 }
 
 // Begin starts a transaction, returning our Tx wrapper.
 func Begin(entry *log.Entry) (tx *Tx) {
-	return &Tx{Tx: cache.Begin(), entry: entry, originalPeople: make(map[model.PersonID]*model.Person)}
+	return &Tx{
+		Tx:              cache.Begin(),
+		entry:           entry,
+		originalPeople:  make(map[model.PersonID]*model.Person),
+		originalFolders: make(map[model.FolderID]*model.Folder),
+	}
 }
 
 // Authorizer returns an authorizer for the transaction.

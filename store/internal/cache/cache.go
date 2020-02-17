@@ -14,6 +14,8 @@ func Open(path string) {
 // Tx is a handle to a transaction on the data store.
 type Tx struct {
 	*db.Tx
+	folders    map[model.FolderID]*model.FolderNode
+	rootFolder *model.FolderNode
 	people     map[model.PersonID]*model.Person
 	personList []*model.Person
 	venues     map[model.VenueID]*model.Venue

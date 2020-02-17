@@ -203,16 +203,12 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 }
 
 func dumpFolders(tx *store.Tx) {
-	for _, f := range tx.FetchFolders() {
-		var out jwriter.Writer
-		out.NoEscapeHTML = true
-		dumpFolder(tx, &out, f)
-		out.DumpTo(os.Stdout)
-		os.Stdout.Write([]byte{'\n'})
-	}
+	dumpFolder(tx, tx.FetchRootFolder())
 }
 
-func dumpFolder(tx *store.Tx, out *jwriter.Writer, f *model.Folder) {
+func dumpFolder(tx *store.Tx, f *model.FolderNode) {
+	var out jwriter.Writer
+	out.NoEscapeHTML = true
 	out.RawString(`{"id":`)
 	out.Int(int(f.ID))
 	if f.Parent != 0 {
@@ -230,6 +226,10 @@ func dumpFolder(tx *store.Tx, out *jwriter.Writer, f *model.Folder) {
 		out.RawString(`,"name":`)
 		out.String(tx.Authorizer().FetchGroup(f.Group).Name)
 		out.RawByte('}')
+	}
+	if f.Approvals != 0 {
+		out.RawString(`,"approvals":`)
+		out.Int(f.Approvals)
 	}
 	out.RawString(`,"documents":[`)
 	for i, d := range f.Documents {
@@ -256,7 +256,11 @@ func dumpFolder(tx *store.Tx, out *jwriter.Writer, f *model.Folder) {
 		}
 		out.RawByte('}')
 	}
-	out.RawString(`]}`)
+	out.RawString("]}\n")
+	out.DumpTo(os.Stdout)
+	for _, cf := range f.ChildNodes {
+		dumpFolder(tx, cf)
+	}
 }
 
 func dumpGroups(tx *store.Tx) {

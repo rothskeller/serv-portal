@@ -13,22 +13,8 @@ import (
 	jwriter "github.com/mailru/easyjson/jwriter"
 )
 
-// An ApprovalType indicates the type of an item needing approval.
-type ApprovalType uint8
-
-// Values for ApprovalType.
-const (
-	ApproveEmailMessage ApprovalType = iota
-	ApproveEvent
-	ApproveFile
-)
-
-// ApprovalTypeNames gives the names for the approval types.
-var ApprovalTypeNames = map[ApprovalType]string{
-	ApproveEmailMessage: "emailMessage",
-	ApproveEvent:        "event",
-	ApproveFile:         "file",
-}
+// An ApprovalID identifies an item waiting for approval.
+type ApprovalID int
 
 // An AttendanceInfo structure gives information about a person's attendance at
 // an event.
@@ -145,6 +131,14 @@ func (e *Event) Hours() float64 {
 
 // A FolderID is a positive integer uniquely identifying a Folder.
 type FolderID int
+
+// A FolderNode is a Folder, plus the link fields necessary to construct the
+// tree of folders.
+type FolderNode struct {
+	*Folder
+	ParentNode *FolderNode
+	ChildNodes []*FolderNode
+}
 
 // A GroupID is a positive integer uniquely identifying a Group.
 type GroupID int

@@ -106,5 +106,5 @@ func (tx *Tx) DeleteDocument(folder *model.Folder, document model.DocumentID) {
 // of its documents.
 func (tx *Tx) DeleteFolder(f *model.Folder) {
 	panicOnError(os.RemoveAll(fmt.Sprintf("folders/%d", f.ID)))
-	panicOnNoRows(tx.tx.Exec(`DELETE FROM Folder WHERE id=?`, f.ID))
+	panicOnNoRows(tx.tx.Exec(`DELETE FROM folder WHERE id=?`, f.ID))
 }

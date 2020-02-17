@@ -20,17 +20,6 @@ message Address {
   uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
 }
 
-message Approval {
-  int64 id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "int"];
-  int64 subid     = 2 [(gogoproto.customname) = "SubID", (gogoproto.casttype) = "int"];
-  int64 privilege = 3 [(gogoproto.casttype) = "Privilege"];
-  int64 group     = 4 [(gogoproto.casttype) = "GroupID"];
-}
-
-message Approvals {
-  repeated Approval approvals = 1;
-}
-
 message Document {
   int64                     id             = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "DocumentID"];
   string                    name           = 2;
@@ -72,6 +61,7 @@ message Folder {
   string            name      = 3;
   int64             group     = 4 [(gogoproto.casttype) = "GroupID"];
   repeated Document documents = 5;
+  int64             approvals = 6 [(gogoproto.casttype) = "int"];
 }
 
 message Group {

@@ -16,7 +16,7 @@ import (
 func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	for {
-		var f = new(model.Folder)
+		var f = new(model.FolderNode)
 		var first = true
 
 		in.Delim('{')
@@ -44,7 +44,8 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 						fmt.Fprintf(os.Stderr, "ERROR: folder %d does not exist\n", fid)
 						os.Exit(1)
 					}
-					*f = model.Folder{ID: fid}
+					tx.WillUpdateFolder(f)
+					*f.Folder = model.Folder{ID: fid}
 				}
 			case "parent":
 				if in.IsDelim('{') {
@@ -165,6 +166,8 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "approvals":
+				f.Approvals = in.Int()
 			default:
 				in.SkipRecursive()
 			}
