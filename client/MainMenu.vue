@@ -19,7 +19,7 @@ it.
       b(v-text="me.informalName")
     b-nav#page-nav(pills vertical)
       b-nav-item(to="/events" :active="menuItem === 'events'" @click="onMenuClick") Events
-      b-nav-item(to="/people" :active="menuItem === 'people' && !isProfile" @click="onMenuClick") People
+      b-nav-item(v-if="me.canViewRosters" to="/people" :active="menuItem === 'people' && !isProfile" @click="onMenuClick") People
       b-nav-item(to="/files/0" :active="menuItem === 'files'" @click="onMenuClick") Files
       b-nav-item(v-if="me.canViewReports" to="/reports" :active="menuItem === 'reports'" @click="onMenuClick") Reports
       b-nav-item(v-if="me.canSendTextMessages" to="/texts" :active="menuItem === 'texts'" @click="onMenuClick") Texts

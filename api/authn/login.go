@@ -36,6 +36,8 @@ func GetLogin(r *util.Request) error {
 	out.Bool(r.Auth.CanA(model.PrivSendTextMessages))
 	out.RawString(`,"canViewReports":`)
 	out.Bool(r.Auth.CanAG(model.PrivManageEvents, r.Auth.FetchGroupByTag("cert-teams").ID))
+	out.RawString(`,"canViewRosters":`)
+	out.Bool(r.Auth.CanA(model.PrivViewMembers))
 	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)
