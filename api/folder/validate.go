@@ -20,9 +20,11 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 			return errors.New("nonexistent parent")
 		}
 	}
-	for parent := folder.ParentNode; parent != nil; parent = parent.ParentNode {
-		if parent.ID == folder.ID {
-			return errors.New("loop in folder ancestry")
+	if folder.ID != 0 {
+		for parent := folder.ParentNode; parent != nil; parent = parent.ParentNode {
+			if parent.ID == folder.ID {
+				return errors.New("loop in folder ancestry")
+			}
 		}
 	}
 	if folder.Name = strings.TrimSpace(folder.Name); folder.Name == "" {

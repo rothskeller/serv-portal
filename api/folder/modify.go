@@ -18,18 +18,14 @@ func PostFolder(r *util.Request, idstr string) (err error) {
 		parentID model.FolderID
 		folder   = model.FolderNode{Folder: new(model.Folder)}
 	)
-	if idstr != "0" {
-		parentID = model.FolderID(util.ParseID(idstr))
-		if folder.ParentNode = r.Tx.FetchFolder(parentID); folder.ParentNode == nil {
-			return util.NotFound
-		}
-		if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
-			return util.Forbidden
-		}
-		if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
-			return util.Forbidden
-		}
-	} else if !r.Auth.IsWebmaster() {
+	parentID = model.FolderID(util.ParseID(idstr))
+	if folder.ParentNode = r.Tx.FetchFolder(parentID); folder.ParentNode == nil {
+		return util.NotFound
+	}
+	if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
+		return util.Forbidden
+	}
+	if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
 		return util.Forbidden
 	}
 	folder.Name = r.FormValue("name")
@@ -56,6 +52,9 @@ func PutFolder(r *util.Request, idstr string) (err error) {
 	)
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
 		return util.NotFound
+	}
+	if folder.ID == 0 {
+		return util.Forbidden
 	}
 	if folder.Group == 0 && !r.Auth.IsWebmaster() {
 		return util.Forbidden
@@ -99,6 +98,9 @@ func DeleteFolder(r *util.Request, idstr string) (err error) {
 
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
 		return util.NotFound
+	}
+	if folder.ID == 0 {
+		return util.Forbidden
 	}
 	if folder.Group == 0 && !r.Auth.IsWebmaster() {
 		return util.Forbidden
@@ -217,6 +219,9 @@ func PostNewDocuments(r *util.Request, idstr string) (err error) {
 	)
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(idstr))); folder == nil {
 		return util.NotFound
+	}
+	if folder.ID == 0 {
+		return util.Forbidden
 	}
 	if !r.Auth.CanA(model.PrivManageFolders) {
 		return util.Forbidden
