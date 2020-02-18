@@ -26,22 +26,22 @@ div.mt-3.ml-2(v-if="!person")
   .person-view-phone(v-if="person.workPhone")
       a(:href="`tel:${person.workPhone}`" v-text="person.workPhone")
       span.person-view-phone-label (Work)
-  .person-view-address(v-if="person.homeAddress.address")
+  .person-view-address(v-if="person.homeAddress && person.homeAddress.address")
     div
-      span(v-if="person.workAddress.sameAsHome") Home Address (all day):
+      span(v-if="person.workAddress && person.workAddress.sameAsHome") Home Address (all day):
       span(v-else) Home Address:
       a.person-view-map(target="_blank" :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(person.homeAddress.address)}`") Map
     div(v-text="person.homeAddress.address.split(',')[0]")
     div(v-text="person.homeAddress.address.replace(/^[^,]*, */, '')")
     div(v-if="person.homeAddress.fireDistrict" v-text="`Sunnyvale Fire District ${person.homeAddress.fireDistrict}`")
-  .person-view-address(v-if="person.workAddress.address")
+  .person-view-address(v-if="person.workAddress && person.workAddress.address")
     div
       span Work Address:
       a.person-view-map(target="_blank" :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(person.workAddress.address)}`") Map
     div(v-text="person.workAddress.address.split(',')[0]")
     div(v-text="person.workAddress.address.replace(/^[^,]*, */, '')")
     div(v-if="person.workAddress.fireDistrict" v-text="`Sunnyvale Fire District ${person.workAddress.fireDistrict}`")
-  .person-view-address(v-if="person.mailAddress.address")
+  .person-view-address(v-if="person.mailAddress && person.mailAddress.address")
     div Mailing Address:
     div(v-text="person.mailAddress.address.split(',')[0]")
     div(v-text="person.mailAddress.address.replace(/^[^,]*, */, '')")

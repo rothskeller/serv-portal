@@ -13,6 +13,7 @@ Goodies:
   Change text report to show delivered time
   Shared Notes area (see Kent text 2/11)
   Generate sign-in sheet for event
+  Rearrange files and folders with drag-and-drop
 Cosmetics:
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
