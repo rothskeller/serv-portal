@@ -41,7 +41,7 @@ export default {
       try {
         const data = (await this.$axios.post('/api/login', body)).data
         this.$store.commit('login', data)
-        this.$router.replace(this.$route.query.redirect || '/events')
+        this.$router.replace(this.$route.query.redirect || '/')
       } catch (err) {
         console.error(err)
         this.failed = true
