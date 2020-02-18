@@ -101,13 +101,14 @@ SEND_ERROR:
 func sendMessageToGroup(
 	tx *store.Tx, mailer *sendmail.Mailer, email *model.EmailMessage, msg *mail.Message, root *messagePart, gid model.GroupID,
 ) error {
-	group := tx.Authorizer().FetchGroup(gid)
+	auth := tx.Authorizer()
+	group := auth.FetchGroup(gid)
 	pids := make(map[model.PersonID]bool)
-	for _, pid := range tx.Authorizer().PeopleG(gid) {
+	for _, pid := range auth.PeopleG(gid) {
 		pids[pid] = true
 	}
-	for _, rid := range tx.Authorizer().RolesAG(model.PrivBCC, gid) {
-		for _, pid := range tx.Authorizer().PeopleR(rid) {
+	for _, rid := range auth.RolesAG(model.PrivBCC, gid) {
+		for _, pid := range auth.PeopleR(rid) {
 			pids[pid] = true
 		}
 	}
@@ -117,6 +118,9 @@ PEOPLE:
 			if pid == ne {
 				continue PEOPLE
 			}
+		}
+		if auth.MemberPG(pid, auth.FetchGroupByTag(model.GroupDisabled).ID) {
+			continue
 		}
 		person := tx.FetchPerson(pid)
 		if person.NoEmail {
