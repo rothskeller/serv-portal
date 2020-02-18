@@ -179,7 +179,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					}
 					in.WantComma()
 				}
-				in.IsDelim(']')
+				in.Delim(']')
 			default:
 				in.SkipRecursive()
 			}
