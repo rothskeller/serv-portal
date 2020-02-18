@@ -8,7 +8,7 @@ b-card#people-card(no-body)
     b-nav(card-header tabs)
       b-nav-item(to="/people/list" exact exact-active-class="active") List
       b-nav-item(to="/people/map" exact exact-active-class="active") Map
-      b-nav-item(v-if="canAdd" to="/people/NEW") Add Person
+      b-nav-item(v-if="canAdd" to="/people/NEW/edit") Add Person
       b-nav-item(v-if="canView" :to="`/people/${$route.params.id}`" exact exact-active-class="active") Details
       b-nav-item(v-if="canEdit" :to="`/people/${$route.params.id}/edit`" exact exact-active-class="active") {{editLabel}}
   #people-scroll
