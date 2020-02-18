@@ -116,7 +116,16 @@ export default {
       return this.newp ? 'Create Person' : 'Save Person'
     },
     valid() {
-      return !this.informalNameError && !this.formalNameError && !this.sortNameError && !this.usernameError && !this.callSignError && !this.emailError && !this.email2Error && !this.cellPhoneError && !this.homePhoneError && !this.workPhoneError && !this.rolesError && !this.oldPasswordError && this.password !== null && this.person.homeAddress && this.person.mailAddress && this.person.workAddress
+      if (this.canEditDetails) {
+        if (this.informalNameError || this.formalNameError || this.sortNameError || this.callSignError || this.emailError ||
+          this.email2Error || this.cellPhoneError || this.homePhoneError || this.workPhoneError || !this.person.homeAddress ||
+          !this.person.mailAddress || !this.person.workAddress || this.password === null)
+          return false
+        if (!this.allowBadPassword && this.oldPasswordError) return false
+      }
+      if (this.canEditUsername && this.usernameError) return false
+      if (this.canEditRoles && this.rolesError) return false
+      return true
     },
   },
   async created() {
