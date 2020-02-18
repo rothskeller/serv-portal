@@ -7,7 +7,6 @@ Goodies:
   Skills and other person data
   Event signups and RSVPs
   SARES import
-  Public events
   View mailing list archives (maybe leads only)
   UI to configure scc-ares-races calendar synch
   Data export
@@ -15,14 +14,12 @@ Goodies:
   Shared Notes area (see Kent text 2/11)
   Generate sign-in sheet for event
 Cosmetics:
-  Allow people to upload files to public folders, and hold them for moderation
-  Maybe an approvals page, for email moderation, uploaded files, possibly also events?
   Show instructions for calendar sharing.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
 
 Rollout:
-  Step 1: Liz on 18th
+  Step 1: Liz on 19th
   Step 2: Leads on 19th
   Step 3: All volunteers, about a week later
   Samariteam shutdown: June 1

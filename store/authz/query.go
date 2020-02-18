@@ -205,6 +205,11 @@ func (a *Authorizer) GroupsA(actions model.Privilege) (groups []model.GroupID) {
 	return a.groupsPA(a.me, actions)
 }
 
+// GroupsP returns the list of groups to which the specified person belongs.
+func (a *Authorizer) GroupsP(person model.PersonID) (groups []model.GroupID) {
+	return a.groupsPA(person, model.PrivMember)
+}
+
 // groupsPA returns the list of groups on which the specified person has the
 // specified privilege(s).
 func (a *Authorizer) groupsPA(person model.PersonID, actions model.Privilege) (groups []model.GroupID) {

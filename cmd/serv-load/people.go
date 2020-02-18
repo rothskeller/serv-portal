@@ -14,17 +14,15 @@ import (
 
 func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 	auth := tx.Authorizer()
-	var authDirty = false
 	var record = 1
 	for {
 		var p = new(model.Person)
+		var roles []model.RoleID
 		var first = true
 
 		in.Delim('{')
 		if in.Error() == io.EOF {
-			if authDirty {
-				auth.Save()
-			}
+			auth.Save()
 			return
 		}
 		for !in.IsDelim('}') {
@@ -150,6 +148,38 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.NoText = in.Bool()
 			case "unsubscribeToken":
 				p.UnsubscribeToken = in.String()
+			case "roles":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						if in.IsDelim('{') {
+							in.Delim('{')
+							for !in.IsDelim('}') {
+								key := in.UnsafeString()
+								in.WantColon()
+								if in.IsNull() {
+									in.Skip()
+									in.WantComma()
+									continue
+								}
+								switch key {
+								case "id":
+									roles = append(roles, model.RoleID(in.Int()))
+								default:
+									in.SkipRecursive()
+								}
+								in.WantComma()
+							}
+							in.Delim('}')
+						} else {
+							roles = append(roles, model.RoleID(in.Int()))
+						}
+					}
+					in.WantComma()
+				}
+				in.IsDelim(']')
 			default:
 				in.SkipRecursive()
 			}
@@ -167,10 +197,10 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 		}
 		if p.ID == 0 {
 			tx.CreatePerson(p)
-			authDirty = true
 		} else {
 			tx.UpdatePerson(p)
 		}
+		tx.Authorizer().SetPersonRoles(p.ID, roles)
 		record++
 	}
 }
