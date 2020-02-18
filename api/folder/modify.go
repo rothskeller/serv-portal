@@ -163,6 +163,8 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 		}
 		newDoc.ID = maxDocID + 1
 		newDoc.Name = doc.Name
+		newDoc.PostedBy = doc.PostedBy
+		newDoc.PostedAt = doc.PostedAt
 		newFolder.Documents = append(newFolder.Documents, &newDoc)
 		if err = ValidateFolder(r.Tx, newFolder); err != nil {
 			return err
