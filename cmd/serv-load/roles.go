@@ -50,8 +50,11 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 					}
 					auth.WillUpdateRole(r)
 					r.Name = ""
+					r.Tag = ""
 					r.Individual = false
 				}
+			case "tag":
+				r.Tag = model.RoleTag(in.String())
 			case "name":
 				r.Name = in.String()
 			case "individual":
