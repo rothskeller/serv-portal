@@ -290,6 +290,11 @@ const (
 	// RoleWebmaster identifies the webmaster role.  People holding this
 	// role have all privileges on all groups.
 	RoleWebmaster = "webmaster"
+
+	// RoleDisabled identifies the role assigned to disabled users.  People
+	// holding this role are in the Disabled Users group and therefore are
+	// blocked from logging in.
+	RoleDisabled = "disabled"
 )
 
 // A SessionToken is a string that uniquely identifies a login session.

@@ -140,8 +140,8 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		}
 		roleMap[rid] = true
 	}
-	if roles != nil && len(roles) == 0 && person.ID == 0 {
-		return errors.New("new user with no roles")
+	if len(roles) == 0 {
+		return errors.New("person must have at least one role")
 	}
 	if person.BadLoginCount < 0 {
 		return errors.New("invalid badLoginCount")

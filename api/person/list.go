@@ -5,7 +5,6 @@ import (
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/api/authn"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -24,7 +23,7 @@ func GetPeople(r *util.Request) error {
 	if focus != nil && !r.Auth.CanAG(model.PrivViewMembers, focus.ID) {
 		focus = nil
 	}
-	if focus != nil && focus.Tag != model.GroupDisabled {
+	if focus != nil {
 		people = r.Auth.FetchPeople(r.Auth.PeopleG(focus.ID))
 	} else {
 		people = r.Tx.FetchPeople()
@@ -32,10 +31,6 @@ func GetPeople(r *util.Request) error {
 	out.RawString(`{"people":[`)
 	first := true
 	for _, p := range people {
-		if focus != nil && focus.Tag == model.GroupDisabled && authn.IsEnabled(r, p) {
-			// Special case because the lack of *any* role also means disabled.
-			continue
-		}
 		if !r.Auth.CanAP(model.PrivViewMembers, p.ID) && p != r.Person {
 			continue
 		}

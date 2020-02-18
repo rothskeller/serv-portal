@@ -65,7 +65,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "ERROR: person already has a username and password\n")
 		os.Exit(1)
 	}
-	if !authn.IsEnabled(&util.Request{Auth: tx.Authorizer()}, person) {
+	if tx.Authorizer().MemberPG(person.ID, tx.Authorizer().FetchGroupByTag(model.GroupDisabled).ID) {
 		fmt.Fprintf(os.Stderr, "ERROR: person is disabled\n")
 		os.Exit(1)
 	}

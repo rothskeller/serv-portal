@@ -54,7 +54,7 @@ func PostLogin(r *util.Request) error {
 		goto FAIL // no person with that username
 	}
 	if username != "admin" { // admin cannot be disabled or locked out
-		if !IsEnabled(r, person) {
+		if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
 			goto FAIL // person is disabled
 		}
 		if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {

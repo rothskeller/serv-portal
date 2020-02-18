@@ -246,6 +246,10 @@ func PostPerson(r *util.Request, idstr string) error {
 			return errors.New("bad role")
 		}
 	}
+	// If there are no resulting roles, add the disabled role.
+	if len(roles) == 0 {
+		roles = append(roles, r.Auth.FetchRoleByTag(model.RoleDisabled).ID)
+	}
 	if canEditDetails {
 		person.InformalName = r.FormValue("informalName")
 		person.FormalName = r.FormValue("formalName")

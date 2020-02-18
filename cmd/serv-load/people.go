@@ -191,7 +191,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
-		if err := person.ValidatePerson(tx, p, nil); err != nil {
+		if err := person.ValidatePerson(tx, p, roles); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
