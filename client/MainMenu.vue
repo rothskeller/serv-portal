@@ -44,6 +44,9 @@ export default {
     },
     tabbed() { return this.$route.matched.some(rec => rec.meta.tabbed) },
   },
+  watch: {
+    $route() { this.menuOpen = false },
+  },
   methods: {
     onMenuClick() { this.menuOpen = false },
     onMenuTrigger() { this.menuOpen = !this.menuOpen },

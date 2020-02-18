@@ -112,6 +112,14 @@ const router = new Router({
           meta: { menuItem: 'files', tabbed: true },
         },
         {
+          path: '/help/email-lists',
+          component: () => import(/* webpackChunkName: "Help" */ './pages/help/EmailLists'),
+        },
+        {
+          path: '/help/subscribe-calendar',
+          component: () => import(/* webpackChunkName: "Help" */ './pages/help/SubscribeCalendar'),
+        },
+        {
           path: '/logout',
           component: () => import(/* webpackChunkName: "Logout" */ './pages/Logout'),
         },
