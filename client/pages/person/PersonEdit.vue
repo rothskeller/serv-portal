@@ -175,36 +175,40 @@ export default {
       this.validate()
       if (!this.valid) return
       const body = new FormData
-      body.append('informalName', this.person.informalName)
-      body.append('formalName', this.person.formalName)
-      body.append('sortName', this.person.sortName)
-      body.append('username', this.person.username)
-      body.append('callSign', this.person.callSign)
-      body.append('email', this.person.email || this.person.email2)
-      body.append('email2', this.person.email ? this.person.email2 : '')
-      body.append('cellPhone', this.person.cellPhone)
-      body.append('homePhone', this.person.homePhone)
-      body.append('workPhone', this.person.workPhone)
-      if (this.oldPassword) body.append('oldPassword', this.oldPassword)
-      if (this.password) body.append('password', this.password)
-      if (this.person.homeAddress.address) {
-        body.append('homeAddress', this.person.homeAddress.address)
-        body.append('homeAddressLatitude', this.person.homeAddress.latitude)
-        body.append('homeAddressLongitude', this.person.homeAddress.longitude)
+      if (this.canEditDetails) {
+        body.append('informalName', this.person.informalName)
+        body.append('formalName', this.person.formalName)
+        body.append('sortName', this.person.sortName)
+        body.append('username', this.person.username)
+        body.append('callSign', this.person.callSign)
+        body.append('email', this.person.email || this.person.email2)
+        body.append('email2', this.person.email ? this.person.email2 : '')
+        body.append('cellPhone', this.person.cellPhone)
+        body.append('homePhone', this.person.homePhone)
+        body.append('workPhone', this.person.workPhone)
+        if (this.oldPassword) body.append('oldPassword', this.oldPassword)
+        if (this.password) body.append('password', this.password)
+        if (this.person.homeAddress.address) {
+          body.append('homeAddress', this.person.homeAddress.address)
+          body.append('homeAddressLatitude', this.person.homeAddress.latitude)
+          body.append('homeAddressLongitude', this.person.homeAddress.longitude)
+        }
+        if (this.person.workAddress.address) {
+          body.append('workAddress', this.person.workAddress.address)
+          body.append('workAddressLatitude', this.person.workAddress.latitude)
+          body.append('workAddressLongitude', this.person.workAddress.longitude)
+        } else {
+          body.append('workAddressSameAsHome', this.person.workAddress.sameAsHome)
+        }
+        if (this.person.mailAddress.address) {
+          body.append('mailAddress', this.person.mailAddress.address)
+        } else {
+          body.append('mailAddressSameAsHome', this.person.mailAddress.sameAsHome)
+        }
       }
-      if (this.person.workAddress.address) {
-        body.append('workAddress', this.person.workAddress.address)
-        body.append('workAddressLatitude', this.person.workAddress.latitude)
-        body.append('workAddressLongitude', this.person.workAddress.longitude)
-      } else {
-        body.append('workAddressSameAsHome', this.person.workAddress.sameAsHome)
+      if (this.canEditRoles) {
+        this.person.roles.filter(role => role.held && role.canAssign).forEach(role => { body.append('role', role.id) })
       }
-      if (this.person.mailAddress.address) {
-        body.append('mailAddress', this.person.mailAddress.address)
-      } else {
-        body.append('mailAddressSameAsHome', this.person.mailAddress.sameAsHome)
-      }
-      this.person.roles.filter(role => role.held && role.canAssign).forEach(role => { body.append('role', role.id) })
       const resp = (await this.$axios.post(`/api/people/${this.$route.params.id}`, body)).data
       if (resp) {
         if (resp.duplicateSortName) this.duplicateSortName = this.person.sortName
@@ -220,68 +224,72 @@ export default {
     },
     validate() {
       if (!this.submitted) return
-      if (!this.person.informalName)
-        this.informalNameError = 'A name is required.'
-      else
-        this.informalNameError = null
-      if (!this.person.formalName)
-        this.formalNameError = 'A name is required.'
-      else
-        this.formalNameError = null
-      if (!this.person.sortName)
-        this.sortNameError = 'A name is required.'
-      else if (this.duplicateSortName === this.person.sortName)
-        this.sortNameError = 'A different person has this name.'
-      else
-        this.sortNameError = null
-      if (this.duplicateUsername && this.person.username === this.duplicateUsername)
-        this.usernameError = 'A different person has this username.'
-      else
-        this.usernameError = null
-      if (this.person.callSign && !this.person.callSign.match(/^[AKNW][A-Z]?[0-9][A-Z]{1,3}$/))
-        this.callSignError = 'This is not a valid call sign.'
-      else if (this.duplicateCallSign === this.person.callSign)
-        this.callSignError = 'A different person has this call sign.'
-      else
-        this.callSignError = null
-      if (this.password && !this.oldPassword && !this.allowBadPassword)
-        this.oldPasswordError = 'You must supply your old password in order to change your password.'
-      else if (this.oldPassword && this.oldPassword === this.wrongOldPassword)
-        this.oldPasswordError = 'This is not the correct old password.'
-      else
-        this.oldPasswordError = null
-      if (!this.person.email)
-        this.emailError = null
-      else if (!this.person.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
-        this.emailError = 'This is not a valid email address.'
-      else
-        this.emailError = null
-      if (!this.person.email2)
-        this.email2Error = null
-      else if (!this.person.email2.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
-        this.email2Error = 'This is not a valid email address.'
-      else if (this.person.email2 == this.person.email)
-        this.email2Error = 'The two email addresses should not be the same.  (Leave this field empty if you only have one.)'
-      else
-        this.email2Error = null
-      if (this.person.cellPhone && this.person.cellPhone.replace(/[^0-9]/g, '').length !== 10)
-        this.cellPhoneError = 'A valid phone number must have 10 digits.'
-      else if (this.duplicateCellPhone === this.person.cellPhone)
-        this.cellPhoneError = 'A different person has this cell phone number.'
-      else
-        this.cellPhoneError = null
-      if (this.person.homePhone && this.person.homePhone.replace(/[^0-9]/g, '').length !== 10)
-        this.homePhoneError = 'A valid phone number must have 10 digits.'
-      else
-        this.homePhoneError = null
-      if (this.person.workPhone && this.person.workPhone.replace(/[^0-9]/g, '').length !== 10)
-        this.workPhoneError = 'A valid phone number must have 10 digits.'
-      else
-        this.workPhoneError = null
-      if (this.newp && !this.person.roles.some(role => role.held))
-        this.rolesError = 'At least one role must be selected.'
-      else
-        this.rolesError = null
+      if (this.canEditDetails) {
+        if (!this.person.informalName)
+          this.informalNameError = 'A name is required.'
+        else
+          this.informalNameError = null
+        if (!this.person.formalName)
+          this.formalNameError = 'A name is required.'
+        else
+          this.formalNameError = null
+        if (!this.person.sortName)
+          this.sortNameError = 'A name is required.'
+        else if (this.duplicateSortName === this.person.sortName)
+          this.sortNameError = 'A different person has this name.'
+        else
+          this.sortNameError = null
+        if (this.duplicateUsername && this.person.username === this.duplicateUsername)
+          this.usernameError = 'A different person has this username.'
+        else
+          this.usernameError = null
+        if (this.person.callSign && !this.person.callSign.match(/^[AKNW][A-Z]?[0-9][A-Z]{1,3}$/))
+          this.callSignError = 'This is not a valid call sign.'
+        else if (this.duplicateCallSign === this.person.callSign)
+          this.callSignError = 'A different person has this call sign.'
+        else
+          this.callSignError = null
+        if (this.password && !this.oldPassword && !this.allowBadPassword)
+          this.oldPasswordError = 'You must supply your old password in order to change your password.'
+        else if (this.oldPassword && this.oldPassword === this.wrongOldPassword)
+          this.oldPasswordError = 'This is not the correct old password.'
+        else
+          this.oldPasswordError = null
+        if (!this.person.email)
+          this.emailError = null
+        else if (!this.person.email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
+          this.emailError = 'This is not a valid email address.'
+        else
+          this.emailError = null
+        if (!this.person.email2)
+          this.email2Error = null
+        else if (!this.person.email2.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/))
+          this.email2Error = 'This is not a valid email address.'
+        else if (this.person.email2 == this.person.email)
+          this.email2Error = 'The two email addresses should not be the same.  (Leave this field empty if you only have one.)'
+        else
+          this.email2Error = null
+        if (this.person.cellPhone && this.person.cellPhone.replace(/[^0-9]/g, '').length !== 10)
+          this.cellPhoneError = 'A valid phone number must have 10 digits.'
+        else if (this.duplicateCellPhone === this.person.cellPhone)
+          this.cellPhoneError = 'A different person has this cell phone number.'
+        else
+          this.cellPhoneError = null
+        if (this.person.homePhone && this.person.homePhone.replace(/[^0-9]/g, '').length !== 10)
+          this.homePhoneError = 'A valid phone number must have 10 digits.'
+        else
+          this.homePhoneError = null
+        if (this.person.workPhone && this.person.workPhone.replace(/[^0-9]/g, '').length !== 10)
+          this.workPhoneError = 'A valid phone number must have 10 digits.'
+        else
+          this.workPhoneError = null
+      }
+      if (this.canEditRoles) {
+        if (this.newp && !this.person.roles.some(role => role.held))
+          this.rolesError = 'At least one role must be selected.'
+        else
+          this.rolesError = null
+      }
     },
   },
 }
