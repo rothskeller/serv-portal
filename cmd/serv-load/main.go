@@ -84,8 +84,8 @@ func main() {
 		loadRoles(tx, in)
 	// case strings.HasPrefix("sessions", os.Args[1]):
 	// 	dumpSessions(tx)
-	// case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
-	// 	dumpTextMessages(tx)
+	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
+		loadTextMessages(tx, in)
 	// case strings.HasPrefix("venues", os.Args[1]):
 	// 	dumpVenues(tx)
 	default:
