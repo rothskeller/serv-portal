@@ -101,11 +101,11 @@ An account has been created for you on the SunnyvaleSERV.org web site.  Thi=
 s web site, run by the Sunnyvale Department of Public Safety, provides info=
 rmation to volunteers and students in the Sunnyvale Emergency Response Volu=
 nteers (SERV) programs, including:
-Community Emergency Response Team (CERT)
-LISTOS (disaster preparedness in Spanish)
-Personal Emergency Preparedness (PEP)
-Sunnyvale Amateur Radio Emergency Service (SARES)
-Sunnyvale Neighborhoods Actively Prepare (SNAP)
+    Community Emergency Response Team (CERT)
+    LISTOS (disaster preparedness in Spanish)
+    Personal Emergency Preparedness (PEP)
+    Sunnyvale Amateur Radio Emergency Service (SARES)
+    Sunnyvale Neighborhoods Actively Prepare (SNAP)
 On this web site, you will find a calendar of SERV events, course materials=
  for SERV classes, and a wealth of other information.
 
