@@ -2,6 +2,7 @@ package email
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"html"
 	"io"
@@ -22,6 +23,7 @@ type messagePart struct {
 	parts           []*messagePart
 	lastPart        *messagePart
 	quotedPrintable bool
+	base64          bool
 	plain           bool
 	html            bool
 }
@@ -52,6 +54,7 @@ func makeMessagePart(header textproto.MIMEHeader, body []byte) (mp *messagePart,
 func makePlainMessagePart(header textproto.MIMEHeader, body []byte) (mp *messagePart, rewritable bool) {
 	var (
 		qpr *quotedprintable.Reader
+		br  io.Reader
 		err error
 	)
 	mp = &messagePart{header: header}
@@ -68,6 +71,15 @@ func makePlainMessagePart(header textproto.MIMEHeader, body []byte) (mp *message
 		}
 		mp.quotedPrintable = true
 		mp.plain = true
+	case "base64":
+		br = base64.NewDecoder(base64.StdEncoding, bytes.NewReader(body))
+		mp.prefix, err = ioutil.ReadAll(br)
+		if err != nil {
+			mp.prefix = body
+			break
+		}
+		mp.base64 = true
+		mp.plain = true
 	default:
 		mp.prefix = body
 	}
@@ -77,6 +89,7 @@ func makePlainMessagePart(header textproto.MIMEHeader, body []byte) (mp *message
 func makeHTMLMessagePart(header textproto.MIMEHeader, body []byte) (mp *messagePart, rewritable bool) {
 	var (
 		qpr     *quotedprintable.Reader
+		br      io.Reader
 		decoded []byte
 		idx     int
 		err     error
@@ -93,6 +106,14 @@ func makeHTMLMessagePart(header textproto.MIMEHeader, body []byte) (mp *messageP
 			return mp, false
 		}
 		mp.quotedPrintable = true
+	case "base64":
+		br = base64.NewDecoder(base64.StdEncoding, bytes.NewReader(body))
+		decoded, err = ioutil.ReadAll(br)
+		if err != nil {
+			mp.prefix = body
+			return mp, false
+		}
+		mp.base64 = true
 	default:
 		mp.prefix = body
 		return mp, false
@@ -167,6 +188,9 @@ func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddre
 	if mp.quotedPrintable {
 		w = quotedprintable.NewWriter(w)
 	}
+	if mp.base64 {
+		w = base64.NewEncoder(base64.StdEncoding, w)
+	}
 	if _, err = w.Write(mp.prefix); err != nil {
 		return err
 	}
@@ -185,6 +209,11 @@ func rewrite(w io.Writer, mp *messagePart, groupAddress, personName, personAddre
 	}
 	if mp.quotedPrintable {
 		if err = w.(*quotedprintable.Writer).Close(); err != nil {
+			return err
+		}
+	}
+	if mp.base64 {
+		if err = w.(io.WriteCloser).Close(); err != nil {
 			return err
 		}
 	}
@@ -212,6 +241,9 @@ func copyPart(w io.Writer, mp *messagePart) (err error) {
 	if mp.quotedPrintable {
 		w = quotedprintable.NewWriter(w)
 	}
+	if mp.base64 {
+		w = base64.NewEncoder(base64.StdEncoding, w)
+	}
 	if _, err = w.Write(mp.prefix); err != nil {
 		return err
 	}
@@ -220,6 +252,11 @@ func copyPart(w io.Writer, mp *messagePart) (err error) {
 	}
 	if mp.quotedPrintable {
 		if err = w.(*quotedprintable.Writer).Close(); err != nil {
+			return err
+		}
+	}
+	if mp.base64 {
+		if err = w.(io.WriteCloser).Close(); err != nil {
 			return err
 		}
 	}
