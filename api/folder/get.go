@@ -131,7 +131,7 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 
 func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Writer, indent int, first bool) bool {
 	for _, f := range root.ChildNodes {
-		if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
+		if f.Group != 0 && !r.Auth.MemberG(f.Group) {
 			continue
 		}
 		if first {
@@ -147,6 +147,8 @@ func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Wr
 		out.Int(indent)
 		if f.Group == 0 && !r.Auth.IsWebmaster() {
 			out.RawString(`,"disabled":true`)
+		} else if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
+			out.RawString(`,"disabled:true"`)
 		}
 		out.RawByte('}')
 		emitAllowedParents(r, f, out, indent+1, first)
