@@ -52,7 +52,9 @@ export default {
     @media print
       display none
 #people-scroll
+  display flex
   flex auto
+  flex-direction column
   overflow-x hidden
   overflow-y auto
 </style>

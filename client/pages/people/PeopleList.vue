@@ -90,6 +90,8 @@ export default {
 .people-person
   overflow hidden
   margin-top 0.25rem
+  padding-left 1.5rem
+  text-indent -1.5rem
   text-overflow ellipsis
   white-space nowrap
   @media (min-width: 576px)

@@ -75,12 +75,14 @@ export default {
 
 <style lang="stylus">
 #people-map
-  display grid
+  display flex
+  flex auto
+  flex-direction column
   padding 0.75rem 0 0 0
   height 100%
-  grid max-content 1fr / 100%
 #people-map-title
   display flex
+  flex none
   flex-direction row
   flex-wrap wrap
   align-items center
@@ -92,4 +94,6 @@ export default {
   font-size 1rem
   @media (min-width: 576px)
     margin-left 1rem
+#people-map-map
+  flex auto
 </style>

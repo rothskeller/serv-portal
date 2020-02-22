@@ -90,6 +90,7 @@ export default {
 .events-list-date
   flex none
   margin 0.25rem 0.75rem 0 0
+  white-space nowrap
   font-variant tabular-nums
 .events-list-year
   display none
