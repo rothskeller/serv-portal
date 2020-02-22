@@ -148,7 +148,7 @@ func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Wr
 		if f.Group == 0 && !r.Auth.IsWebmaster() {
 			out.RawString(`,"disabled":true`)
 		} else if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
-			out.RawString(`,"disabled:true"`)
+			out.RawString(`,"disabled":true`)
 		}
 		out.RawByte('}')
 		emitAllowedParents(r, f, out, indent+1, first)
