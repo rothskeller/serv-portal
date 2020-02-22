@@ -17,8 +17,21 @@ func GetSMS(r *util.Request) error {
 		return util.Forbidden
 	}
 	out.RawString(`{"messages":[`)
-	for i, m := range r.Tx.FetchTextMessages() {
-		if i != 0 {
+	first := true
+	for _, m := range r.Tx.FetchTextMessages() {
+		var visible bool
+		for _, g := range m.Groups {
+			if r.Auth.CanAG(model.PrivSendTextMessages, g) {
+				visible = true
+				break
+			}
+		}
+		if !visible {
+			continue
+		}
+		if first {
+			first = false
+		} else {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
@@ -39,7 +52,7 @@ func GetSMS(r *util.Request) error {
 		out.RawByte('}')
 	}
 	out.RawString(`],"groups":[`)
-	first := true
+	first = true
 	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
 		if r.Auth.CanAG(model.PrivSendTextMessages, g.ID) {
 			if first {

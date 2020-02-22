@@ -12,6 +12,7 @@ import (
 func GetSMS1(r *util.Request, idstr string) (err error) {
 	var (
 		message *model.TextMessage
+		visible bool
 		out     jwriter.Writer
 	)
 	if !r.Auth.CanA(model.PrivSendTextMessages) {
@@ -19,6 +20,15 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 	}
 	if message = r.Tx.FetchTextMessage(model.TextMessageID(util.ParseID(idstr))); message == nil {
 		return util.NotFound
+	}
+	for _, gid := range message.Groups {
+		if r.Auth.CanAG(model.PrivSendTextMessages, gid) {
+			visible = true
+			break
+		}
+	}
+	if !visible {
+		return util.Forbidden
 	}
 	out.RawString(`{"id":`)
 	out.Int(int(message.ID))
