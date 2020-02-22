@@ -1,4 +1,6 @@
 Goodies:
+  Why no unsubscribe footer in my email to serv-leads?  Maybe because attachment?
+  Why didn't my serv-leads email go to my gmail account?
   Events tagged with which volunteer bucket their hours go in
   People editing their volunteer hours
   Volunteer hours report
@@ -6,6 +8,7 @@ Goodies:
   Credentials and clearances tracking
   Skills and other person data
   Event signups and RSVPs
+    Send text messages to people who signed up for an event
   SARES import
   View mailing list archives (maybe leads only)
   UI to configure scc-ares-races calendar synch
@@ -14,6 +17,10 @@ Goodies:
   Shared Notes area (see Kent text 2/11)
   Generate sign-in sheet for event
   Rearrange files and folders with drag-and-drop
+  Email lists that people can choose to sign up for
+  Place to request print runs for documents e.g. brochures
+  Contacts download to phone etc.
+  Wolfgang's feedback
 Cosmetics:
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.

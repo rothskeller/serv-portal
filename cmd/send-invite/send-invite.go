@@ -135,7 +135,7 @@ Content-Transfer-Encoding: quoted-printable
 <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=utf-8">
 </head>
 <body>
-<div>Hello, Fred Flintstone,</div>
+<div>Hello, %[3]s,</div>
 <div><br></div>
 <div>An account has been created for you on the SunnyvaleSERV.org web site.=
  This web site, run by the Sunnyvale Department of Public Safety, provides =
