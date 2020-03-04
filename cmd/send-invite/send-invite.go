@@ -109,8 +109,12 @@ nteers (SERV) programs, including:
 On this web site, you will find a calendar of SERV events, course materials=
  for SERV classes, and a wealth of other information.
 
-To log in to this web site, visit https://SunnyvaleSERV.org and provide the=
- following credentials:
+SunnyvaleSERV.org is our replacement for Samariteam, which is no longer ser=
+ving our needs well.  We will be transitioning to it gradually over the nex=
+t few months.
+
+To log in, visit https://SunnyvaleSERV.org and provide the following creden=
+tials:
         Email:    %s
         Password: %s
 You may wish to change this password to something you can more easily remem=
@@ -151,9 +155,12 @@ Volunteers (SERV) programs, including:</div>
 <div>On this web site, you will find a calendar of SERV events, course mate=
 rials for SERV classes, and a wealth of other information.</div>
 <div><br></div>
-<div>To log in to this web site, visit <a href=3D"https://SunnyvaleSERV.org=
-">https://SunnyvaleSERV.org</a> and provide the following credentials:</div=
->
+<div>SunnyvaleSERV.org is our replacement for Samariteam, which is no longe=
+r serving our needs well.  We will be transitioning to it gradually over th=
+e next few months.</div>
+<div><br></div>
+<div>To log in, visit <a href=3D"https://SunnyvaleSERV.org">https://Sunnyva=
+leSERV.org</a> and provide the following credentials:</div>
 <blockquote style=3D"margin-top:0px; margin-bottom:0px">
 <div>Email:<span style=3D"font-family:monospace">  %[4]s</span></div>
 <div>Password:<span style=3D"font-family:monospace">  %[5]s</span></div>
