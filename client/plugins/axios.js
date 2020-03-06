@@ -9,6 +9,17 @@ const config = {
 
 const _axios = axios.create(config);
 
+_axios.interceptors.request.use(
+  config => {
+    if (config.method === 'get' || config.method === 'GET') {
+      if (!config.headers) config.headers = {}
+      config.headers['Cache-Control'] = 'no-cache'
+      config.headers['Pragma'] = 'no-cache'
+    }
+    return config
+  },
+  error => Promise.reject(error)
+)
 _axios.interceptors.response.use(
   response => response,
   error => {
