@@ -35,14 +35,15 @@ func PostPasswordReset(r *util.Request) error {
 	if !r.Auth.CanPA(person.ID, model.PrivMember) {
 		return nil // person belongs to no groups
 	}
+	if person.Email == "" && person.Email2 == "" {
+		return nil // person has no email address
+	}
+	r.Tx.WillUpdatePerson(person)
 	if person.Email != "" {
 		emails = append(emails, person.Email)
 	}
 	if person.Email2 != "" {
 		emails = append(emails, person.Email2)
-	}
-	if len(emails) == 0 {
-		return nil
 	}
 	r.Tx.DeleteSessionsForPerson(person, "")
 	person.PWResetToken = util.RandomToken()
