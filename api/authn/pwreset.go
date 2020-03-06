@@ -138,6 +138,7 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	if !StrongPassword(person, password) {
 		return errors.New("bad password")
 	}
+	r.Tx.WillUpdatePerson(person)
 	SetPassword(r, person, password)
 	person.PWResetToken = ""
 	r.Tx.UpdatePerson(person)
