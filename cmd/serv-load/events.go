@@ -157,8 +157,6 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
-			case "sccAresID":
-				e.SccAresID = in.String()
 			case "attendance":
 				in.Delim('[')
 				for !in.IsDelim(']') {

@@ -1,5 +1,4 @@
 Goodies:
-  Events tagged with which volunteer bucket their hours go in
   People editing their volunteer hours
   Volunteer hours report
   Search engine
@@ -9,7 +8,6 @@ Goodies:
     Send text messages to people who signed up for an event
   SARES import
   View mailing list archives (maybe leads only)
-  UI to configure scc-ares-races calendar synch
   Data export
   Change text report to show delivered time
   Shared Notes area (see Kent text 2/11)

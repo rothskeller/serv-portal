@@ -58,15 +58,3 @@ The system tracks attendance at each event.  Only people holding the roles
 invited to the event are listed on the attendance tracking page.  The attendance
 data model is binary, not trinary: attendance not recorded is the same as
 absent.
-
-== SCC ARES Import ==
-
-In order to show the county ARES events on our calendar, we import them from
-the scc-ares-races web site.  That site does not have any API, so we have to
-screen-scrape it, but that's not too awful.  Daily at 2am, a cron job scans the
-scc-ares-races site and synchronizes our database with it.  There are mapping
-tables that allow mapping their name to our name, their location to our venues,
-and their event type to ours.  The imported events are not locally editable
-(since those edits would be lost next time the import happens).  The sccAresID
-field of the event holds the ID of the event on their web site; it is not shown
-to end users.

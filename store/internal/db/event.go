@@ -23,22 +23,6 @@ func (tx *Tx) FetchEvent(id model.EventID) (e *model.Event) {
 	}
 }
 
-// FetchEventBySccAresID retrieves a single event from the database by its
-// scc-ares-races.org ID.  It returns nil if no such event exists.
-func (tx *Tx) FetchEventBySccAresID(id string) (e *model.Event) {
-	var data []byte
-	e = new(model.Event)
-	switch err := tx.tx.QueryRow(`SELECT data FROM event WHERE scc_ares_id=?`, id).Scan(&data); err {
-	case nil:
-		panicOnError(e.Unmarshal(data))
-		return e
-	case sql.ErrNoRows:
-		return nil
-	default:
-		panic(err)
-	}
-}
-
 // FetchEvents returns all of the events within the specified time range, in
 // chronological order.  The time range is inclusive; each time must be in
 // 2006-01-02 format.
@@ -72,7 +56,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	e.ID++
 	data, err = e.Marshal()
 	panicOnError(err)
-	panicOnExecError(tx.tx.Exec(`INSERT INTO event (id, date, scc_ares_id, data) VALUES (?,?,?,?)`, e.ID, e.Date, IDStr(e.SccAresID), data))
+	panicOnExecError(tx.tx.Exec(`INSERT INTO event (id, date, data) VALUES (?,?,?)`, e.ID, e.Date, data))
 }
 
 // UpdateEvent updates an existing event in the database.
@@ -83,7 +67,7 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 	)
 	data, err = e.Marshal()
 	panicOnError(err)
-	panicOnExecError(tx.tx.Exec(`UPDATE event SET (date, scc_ares_id, data) = (?,?,?) WHERE id=?`, e.Date, IDStr(e.SccAresID), data, e.ID))
+	panicOnExecError(tx.tx.Exec(`UPDATE event SET (date, data) = (?,?) WHERE id=?`, e.Date, data, e.ID))
 }
 
 // DeleteEvent deletes an event from the database.

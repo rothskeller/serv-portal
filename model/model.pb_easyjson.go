@@ -1557,8 +1557,6 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 				}
 				in.Delim(']')
 			}
-		case "sccAresID":
-			out.SccAresID = string(in.String())
 		case "organization":
 			out.Organization = Organization(in.Uint8())
 		case "private":
@@ -1671,16 +1669,6 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 			}
 			out.RawByte(']')
 		}
-	}
-	if in.SccAresID != "" {
-		const prefix string = ",\"sccAresID\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.SccAresID))
 	}
 	if in.Organization != 0 {
 		const prefix string = ",\"organization\":"

@@ -153,10 +153,6 @@ const (
 	// GroupDisabled identifies the group to which disabled users belong.
 	// Members of this group are blocked from logging into the web site.
 	GroupDisabled GroupTag = "disabled"
-
-	// GroupSccAres identifies the group that is invited to events imported
-	// from the scc-ares-races.org database.
-	GroupSccAres = "scc-ares"
 )
 
 // An Organization identifies one of the SERV volunteer organizations.

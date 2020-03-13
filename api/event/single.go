@@ -49,9 +49,6 @@ func GetEvent(r *util.Request, idstr string) error {
 		if !canView {
 			return util.Forbidden
 		}
-		if event.SccAresID != "" {
-			canEdit = false
-		}
 	}
 	out.RawString(`{"event":{"id":`)
 	out.Int(int(event.ID))

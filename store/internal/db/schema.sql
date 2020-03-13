@@ -81,10 +81,9 @@ CREATE TABLE venue (data BLOB);
 -- The event table tracks all SERV events at which volunteer attendance is
 -- tracked.
 CREATE TABLE event (
-    id          integer PRIMARY KEY,
-    date        text    NOT NULL,
-    scc_ares_id text    UNIQUE,
-    data        blob    NOT NULL
+    id   integer PRIMARY KEY,
+    date text    NOT NULL,
+    data blob    NOT NULL
 );
 CREATE INDEX event_date_index ON event (date);
 
@@ -97,34 +96,6 @@ CREATE TABLE attendance (
     PRIMARY KEY (event, person)
 ) WITHOUT ROWID;
 CREATE INDEX attendance_person_index ON attendance (person);
-
--- The scc_ares_event_name table allows renaming and deleting of events imported
--- from the scc-ares-races.org site.  The event name from that site is looked up
--- in the 'scc' column.  Those whose 'serv' column is empty are not imported.
--- Those whose 'serv' column is non-empty are renamed accordingly.  Those whose
--- name is not found in this table are imported unchanged.
-CREATE TABLE scc_ares_event_name (
-    scc  text PRIMARY KEY,
-    serv text NOT NULL
-);
-
--- The scc_ares_event_location table maps locations of events imported from the
--- scc-ares-races.org site into venues in our database.  Any location in their
--- database which doesn't have an entry here is mapped according to the entry
--- here for scc='' (which must exist).
-CREATE TABLE scc_ares_event_location (
-    scc  text    PRIMARY KEY,
-    serv integer NOT NULL
-);
-
--- The scc_ares_event_type table maps types of events imported from the
--- scc-ares-races.org site into our event types.  Any event type in their
--- database which doesn't have an entry here is mapped according to the entry
--- here for scc='' (which must exist).
-CREATE TABLE scc_ares_event_type (
-    scc  text PRIMARY KEY,
-    serv text NOT NULL
-);
 
 -- The text_message table tracks all outgoing text messages.
 CREATE TABLE text_message (

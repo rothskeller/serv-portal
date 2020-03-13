@@ -173,10 +173,6 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawByte('}')
 	}
 	out.RawByte(']')
-	if e.SccAresID != "" {
-		out.RawString(`,"sccAresID":`)
-		out.String(e.SccAresID)
-	}
 	out.RawString(`,"attendance":[`)
 	var eattend = tx.FetchAttendanceByEvent(e)
 	var pids = make([]model.PersonID, 0, len(eattend))

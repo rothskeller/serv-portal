@@ -47,9 +47,6 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 		}
 		tx.entry.Change("set event [%d] groups to %s", e.ID, strings.Join(gstr, ", "))
 	}
-	if e.SccAresID != "" {
-		tx.entry.Change("set event [%d] sccAresID to %q", e.ID, e.SccAresID)
-	}
 }
 
 // UpdateEvent updates an existing event in the database.
@@ -116,9 +113,6 @@ GROUPS2:
 			}
 		}
 		tx.entry.Change("add event %s %q [%d] group %q [%d]", e.Date, e.Name, e.ID, tx.Authorizer().FetchGroup(g).Name, g)
-	}
-	if e.SccAresID != oe.SccAresID {
-		tx.entry.Change("set event %s %q [%d] sccAresID to %q", e.Date, e.Name, e.ID, e.SccAresID)
 	}
 }
 
