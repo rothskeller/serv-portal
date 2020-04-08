@@ -131,7 +131,7 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 
 func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Writer, indent int, first bool) bool {
 	for _, f := range root.ChildNodes {
-		if f.Group != 0 && !r.Auth.MemberG(f.Group) {
+		if f.Group != 0 && !r.Auth.MemberG(f.Group) && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
 			continue
 		}
 		if first {
@@ -182,7 +182,12 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 		return util.Forbidden
 	}
 	if doc.NeedsApproval {
-		if !r.Auth.CanAG(model.PrivManageFolders, folder.Group) && doc.PostedBy != r.Person.ID {
+		switch {
+		case doc.PostedBy == r.Person.ID:
+		case folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group):
+		case r.Auth.IsWebmaster():
+			break
+		default:
 			return util.Forbidden
 		}
 	}
