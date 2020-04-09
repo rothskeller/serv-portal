@@ -76,6 +76,14 @@ func (tx *Tx) CreateTextMessage(message *model.TextMessage) {
 			panicOnExecError(tx.tx.Exec(`INSERT OR REPLACE INTO text_number (number, mid) VALUES (?,?)`, r.Number, message.ID))
 		}
 	}
+	tx.indexTextMessage(message)
+}
+
+// IndexTextMessage updates the search index with the body of the message.
+func (tx *Tx) indexTextMessage(message *model.TextMessage) {
+	// Most Index* functions do a DELETE prior to an INSERT, but since this
+	// one is only called on create and on rebuildIndex, there's no need.
+	panicOnExecError(tx.tx.Exec(`INSERT INTO search (type, id, textMessage) values (?,?,?)`, "textMessage", message.ID, message.Message))
 }
 
 // UpdateTextMessage updates an existing text message in the database.

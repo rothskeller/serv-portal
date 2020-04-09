@@ -87,7 +87,7 @@ func (tx *Tx) FetchDocument(folder *model.FolderNode, document model.DocumentID)
 
 // CreateDocument creates a new document in the specified folder, with the
 // specified ID and contents.
-func (tx *Tx) CreateDocument(folder *model.FolderNode, document model.DocumentID, contents io.Reader) {
+func (tx *Tx) CreateDocument(folder *model.FolderNode, document *model.Document, contents io.Reader) {
 	tx.Tx.CreateDocument(folder.Folder, document, contents)
 }
 

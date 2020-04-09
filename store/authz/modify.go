@@ -14,6 +14,10 @@ func (a *Authorizer) Save() {
 		panic(err)
 	}
 	a.tx.SaveAuthorizer(data)
+	if a.dirtyGroups {
+		a.tx.IndexGroups(a.FetchGroups(a.AllGroups()), true)
+		a.dirtyGroups = false
+	}
 }
 
 // SetPersonRoles sets the list of roles held by a person.
@@ -75,6 +79,7 @@ func (a *Authorizer) CreateGroup() *model.Group {
 	a.groups = append(a.groups, model.Group{ID: model.GroupID(id)})
 	a.rolePrivs = nrp
 	a.WillUpdateGroup(&a.groups[id])
+	a.dirtyGroups = true
 	return &a.groups[id]
 }
 
@@ -155,6 +160,7 @@ NOTEXT2:
 		a.entry.Change("add group %q [%d] noText person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(p).InformalName, p)
 	}
 	delete(a.originalGroups, group.ID)
+	a.dirtyGroups = true
 }
 
 // DeleteGroup deletes a group.
@@ -167,6 +173,7 @@ func (a *Authorizer) DeleteGroup(group model.GroupID) {
 	}
 	a.groups[group] = model.Group{}
 	a.entry.Change("delete group [%d]", group)
+	a.dirtyGroups = true
 }
 
 // CreateRole creates a new role.

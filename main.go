@@ -25,6 +25,7 @@ import (
 	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/api/report"
 	"sunnyvaleserv.org/portal/api/role"
+	"sunnyvaleserv.org/portal/api/search"
 	"sunnyvaleserv.org/portal/api/text"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
@@ -141,6 +142,8 @@ func router(r *util.Request) error {
 		return role.GetRole(r, c[2])
 	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
 		return role.PostRole(r, c[2])
+	case r.Method == "GET" && c[1] == "search" && c[2] == "":
+		return search.GetSearch(r)
 	case r.Method == "GET" && c[1] == "sms" && c[2] == "":
 		return text.GetSMS(r)
 	case r.Method == "POST" && c[1] == "sms" && c[2] == "":

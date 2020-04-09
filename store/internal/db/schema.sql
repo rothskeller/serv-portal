@@ -110,3 +110,30 @@ CREATE TABLE text_number (
     mid    integer NOT NULL REFERENCES text_message ON DELETE CASCADE
 );
 CREATE INDEX text_number_mid_index ON text_number (mid);
+
+-- The search table contains full-text search information for all objects.
+CREATE VIRTUAL TABLE search USING fts5 (
+    type UNINDEXED,
+    id   UNINDEXED,
+    id2  UNINDEXED,
+    documentName,
+    documentContents,
+    emailMessageFrom,
+    emailMessageSubject,
+    emailMessageBody,
+    eventName,
+    eventDetails,
+    eventDate,
+    folderName,
+    groupName,
+    personInformalName,
+    personFormalName,
+    personCallSign,
+    personEmail,
+    personEmail2,
+    personHomeAddress,
+    personWorkAddress,
+    personMailAddress,
+    textMessage,
+    tokenize = 'unicode61'
+);

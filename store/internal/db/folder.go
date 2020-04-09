@@ -70,20 +70,22 @@ func (tx *Tx) CreateFolder(f *model.Folder) {
 	panicOnError(err)
 	panicOnExecError(tx.tx.Exec(`INSERT INTO folder (id, data) VALUES (?,?)`, f.ID, data))
 	panicOnError(os.Mkdir(fmt.Sprintf("folders/%d", f.ID), 0777))
+	tx.indexFolder(f, false)
 }
 
 // CreateDocument creates a new document in the specified folder, with the
 // specified ID and contents.
-func (tx *Tx) CreateDocument(folder *model.Folder, document model.DocumentID, contents io.Reader) {
+func (tx *Tx) CreateDocument(folder *model.Folder, document *model.Document, contents io.Reader) {
 	var (
 		fh  *os.File
 		err error
 	)
-	fh, err = os.OpenFile(fmt.Sprintf("folders/%d/%d", folder.ID, document), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
+	fh, err = os.OpenFile(fmt.Sprintf("folders/%d/%d", folder.ID, document.ID), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
 	panicOnError(err)
 	_, err = io.Copy(fh, contents)
 	panicOnError(err)
 	panicOnError(fh.Close())
+	tx.indexDocument(folder, document, false)
 }
 
 // UpdateFolder updates an existing Folder in the database.
@@ -95,11 +97,13 @@ func (tx *Tx) UpdateFolder(f *model.Folder) {
 	data, err = f.Marshal()
 	panicOnError(err)
 	panicOnExecError(tx.tx.Exec(`UPDATE folder SET data=? WHERE id=?`, data, f.ID))
+	tx.indexFolder(f, true)
 }
 
 // DeleteDocument deletes a document from the specified folder.
 func (tx *Tx) DeleteDocument(folder *model.Folder, document model.DocumentID) {
 	panicOnError(os.Remove(fmt.Sprintf("folders/%d/%d", folder.ID, document)))
+	panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='document' AND id=? AND id2=?`, folder.ID, document))
 }
 
 // DeleteFolder deletes a folder from the database.  This includes deleting all
@@ -107,4 +111,20 @@ func (tx *Tx) DeleteDocument(folder *model.Folder, document model.DocumentID) {
 func (tx *Tx) DeleteFolder(f *model.Folder) {
 	panicOnError(os.RemoveAll(fmt.Sprintf("folders/%d", f.ID)))
 	panicOnNoRows(tx.tx.Exec(`DELETE FROM folder WHERE id=?`, f.ID))
+	panicOnNoRows(tx.tx.Exec(`DELETE FROM search WHERE type='folder' AND id=?`, f.ID))
+	panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='document' AND id=?`, f.ID))
+}
+
+func (tx *Tx) indexFolder(f *model.Folder, replace bool) {
+	if replace {
+		panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='folder' AND id=?`, f.ID))
+	}
+	panicOnExecError(tx.tx.Exec(`INSERT INTO search (type, id, folderName) VALUES ('folder',?,?)`, f.ID, f.Name))
+}
+
+func (tx *Tx) indexDocument(f *model.Folder, d *model.Document, replace bool) {
+	if replace {
+		panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='document' AND id=? and id2=?`, f.ID, d.ID))
+	}
+	panicOnExecError(tx.tx.Exec(`INSERT INTO search (type, id, id2, documentName) VALUES ('document',?,?,?)`, f.ID, d.ID, d.Name))
 }

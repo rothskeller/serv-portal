@@ -171,7 +171,7 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 		}
 		sort.Slice(newFolder.Documents, func(i, j int) bool { return newFolder.Documents[i].Name < newFolder.Documents[j].Name })
 		contents = r.Tx.FetchDocument(folder, doc.ID)
-		r.Tx.CreateDocument(newFolder, newDoc.ID, contents)
+		r.Tx.CreateDocument(newFolder, &newDoc, contents)
 		contents.Close()
 		r.Tx.UpdateFolder(newFolder)
 		propagateApprovalCounts(r, newFolder.ParentNode)
@@ -259,7 +259,7 @@ func PostNewDocuments(r *util.Request, idstr string) (err error) {
 		if fh, err = file.Open(); err != nil {
 			goto ERROR
 		}
-		r.Tx.CreateDocument(folder, doc.ID, fh)
+		r.Tx.CreateDocument(folder, &doc, fh)
 		docs = append(docs, &doc)
 	}
 	if !needsApproval {

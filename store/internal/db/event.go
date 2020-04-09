@@ -57,6 +57,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	data, err = e.Marshal()
 	panicOnError(err)
 	panicOnExecError(tx.tx.Exec(`INSERT INTO event (id, date, data) VALUES (?,?,?)`, e.ID, e.Date, data))
+	tx.indexEvent(e, false)
 }
 
 // UpdateEvent updates an existing event in the database.
@@ -68,6 +69,14 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 	data, err = e.Marshal()
 	panicOnError(err)
 	panicOnExecError(tx.tx.Exec(`UPDATE event SET (date, data) = (?,?) WHERE id=?`, e.Date, data, e.ID))
+	tx.indexEvent(e, true)
+}
+
+func (tx *Tx) indexEvent(e *model.Event, replace bool) {
+	if replace {
+		panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='event' and id=?`, e.ID))
+	}
+	panicOnExecError(tx.tx.Exec(`INSERT INTO search (type, id, eventName, eventDetails, eventDate) VALUES ('event',?,?,?,?)`, e.ID, e.Name, IDStr(e.Details), e.Date))
 }
 
 // DeleteEvent deletes an event from the database.

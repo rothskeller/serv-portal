@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/scholacantorum/go-sqlite3" // SQLite driver
+	_ "github.com/rothskeller/go-sqlite3" // SQLite driver
 )
 
 var dbh *sql.DB

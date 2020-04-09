@@ -151,6 +151,7 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	if p.Email2 != "" {
 		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email2))
 	}
+	tx.indexPerson(p, false)
 }
 
 // UpdatePerson updates a person in the database.
@@ -169,6 +170,15 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	if p.Email2 != "" {
 		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email2))
 	}
+	tx.indexPerson(p, true)
+}
+
+// indexPerson updates the search index with information about a person.
+func (tx *Tx) indexPerson(p *model.Person, replace bool) {
+	if replace {
+		panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='person' AND id=?`, p.ID))
+	}
+	panicOnExecError(tx.tx.Exec(`INSERT INTO search (type, id, personInformalName, personFormalName, personCallSign, personEmail, personEmail2, personHomeAddress, personWorkAddress,personMailAddress) VALUES ('person',?,?,?,?,?,?,?,?,?)`, p.ID, p.InformalName, p.FormalName, IDStr(p.CallSign), IDStr(p.Email), IDStr(p.Email2), IDStr(p.HomeAddress.Address), IDStr(p.WorkAddress.Address), IDStr(p.MailAddress.Address)))
 }
 
 // FetchSessions fetches all sessions in the database.
