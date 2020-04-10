@@ -43,7 +43,7 @@ import Cookies from 'js-cookie'
 export default {
   data: () => ({ group: 0, groups: null, people: null, canAdd: false, loading: false }),
   created() {
-    this.group = Cookies.get('serv-people-group') || 0
+    this.group = this.$route.query.group || Cookies.get('serv-people-group') || 0
     this.load()
   },
   watch: {

@@ -166,6 +166,10 @@ const router = new Router({
           meta: { menuItem: 'reports' },
         },
         {
+          path: '/search',
+          component: () => import(/* webpackChunkName: "Search" */ './pages/Search'),
+        },
+        {
           path: '/texts',
           component: Texts,
           meta: { menuItem: 'texts', tabbed: true },

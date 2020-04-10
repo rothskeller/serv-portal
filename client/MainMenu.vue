@@ -11,7 +11,10 @@ it.
         path(fill-rule="evenodd" d="M4.5 13.5A.5.5 0 015 13h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 9h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5zm0-4A.5.5 0 015 5h10a.5.5 0 010 1H5a.5.5 0 01-.5-.5z" clip-rule="evenodd")
     #page-titlebox
       #page-title(v-text="$store.state.page.title")
-    #page-menu-spacer
+    #page-search-box(@click="onSearch")
+      svg#page-search.bi.bi-search(viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg")
+        path(fill-rule="evenodd" d="M10.442 10.442a1 1 0 011.415 0l3.85 3.85a1 1 0 01-1.414 1.415l-3.85-3.85a1 1 0 010-1.415z" clip-rule="evenodd")
+        path(fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM13 6.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" clip-rule="evenodd")
   #page-menu
     #page-menu-welcome
       | Welcome
@@ -50,6 +53,7 @@ export default {
   methods: {
     onMenuClick() { this.menuOpen = false },
     onMenuTrigger() { this.menuOpen = !this.menuOpen },
+    onSearch() { this.$router.push('/search') },
   },
 }
 </script>
@@ -73,7 +77,7 @@ sidebarWidth = 7em
   grid-area header
   @media print
     display none
-#page-menu-trigger-box, #page-menu-spacer
+#page-menu-trigger-box, #page-search-box
   flex none
   margin 0 6px
   width 2rem
@@ -82,6 +86,8 @@ sidebarWidth = 7em
 #page-menu-trigger
   @media (min-width: 576px)
     display none
+#page-search
+  width 1.5rem
 #page-titlebox
   display flex
   flex auto
