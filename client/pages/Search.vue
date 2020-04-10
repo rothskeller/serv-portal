@@ -37,7 +37,7 @@ Search displays the search page.
       .search-result-type Text Messages
       .search-result(v-for="tm in textMessages")
         b-link(:to="`/texts/${tm.id}`") From {{tm.sender}} on {{tm.timestamp.substr(0, 10)}}
-    .search-result(v-if="!error && !groups.length && !people.length && !events.length && !folders.length && !documents.length && !textMessages.length") No results found.
+    .search-result(v-if="submitted && !error && !groups.length && !people.length && !events.length && !folders.length && !documents.length && !textMessages.length") No results found.
 </template>
 
 <script>
@@ -51,6 +51,7 @@ export default {
     groups: [],
     people: [],
     textMessages: [],
+    submitted: false,
   }),
   mounted() {
     this.$store.commit('setPage', { title: 'Search' })
@@ -75,6 +76,7 @@ export default {
       this.groups = resp.results.filter(r => r.type === 'group')
       this.people = resp.results.filter(r => r.type === 'person')
       this.textMessages = resp.results.filter(r => r.type === 'textMessage')
+      this.submitted = true
     },
     resultPath(result) {
       return 'in ' + result.path.join(' > ')
