@@ -9,18 +9,11 @@ import (
 	"mime/quotedprintable"
 	"os"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
-
-type sessionData struct {
-	person string
-	start  string
-	end    string
-}
 
 var sessionCreateRE = regexp.MustCompile(`^created? session \S+ for person "([^"]+)"`)
 
@@ -40,7 +33,7 @@ func main() {
 		out                 bytes.Buffer
 		qpw                 *quotedprintable.Writer
 		err                 error
-		sessions            = map[string]*sessionData{}
+		sessions            = map[string]string{}
 	)
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
@@ -73,6 +66,17 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: json: %s\n", err)
 			os.Exit(1)
 		}
+		if token, ok := entry["session"].(string); ok {
+			if sessions[token] == "" {
+				if changes, ok := entry["changes"].([]interface{}); ok && len(changes) != 0 {
+					if change, ok := changes[0].(string); ok {
+						if match := sessionCreateRE.FindStringSubmatch(change); match != nil {
+							sessions[token] = match[1]
+						}
+					}
+				}
+			}
+		}
 		if time, ok := entry["time"].(string); !ok || !strings.HasPrefix(time, date) {
 			continue
 		}
@@ -85,25 +89,8 @@ func main() {
 				requestElapsedMax = elapsed
 			}
 		}
-		if token, ok := entry["session"].(string); ok {
-			sd := sessions[token]
-			if sd == nil {
-				sd = new(sessionData)
-				sessions[token] = sd
-				sd.start = entry["time"].(string)
-				if changes, ok := entry["changes"].([]interface{}); ok && len(changes) != 0 {
-					if change, ok := changes[0].(string); ok {
-						if match := sessionCreateRE.FindStringSubmatch(change); match != nil {
-							sd.person = match[1]
-						}
-					}
-				}
-			}
-		}
-		if r := entry["request"].(string); r != "POST /api/login" && r != "POST /api/logout" {
-			if _, ok := entry["changes"].([]interface{}); ok {
-				changes = append(changes, entry)
-			}
+		if _, ok := entry["changes"].([]interface{}); ok {
+			changes = append(changes, entry)
 		}
 		if _, ok := entry["error"].(string); ok {
 			errors = append(errors, entry)
@@ -125,9 +112,7 @@ func main() {
 		for _, e := range errors {
 			var person string
 			if token, ok := e["session"].(string); ok {
-				if session := sessions[token]; session != nil {
-					person = html.EscapeString(session.person)
-				}
+				person = html.EscapeString(sessions[token])
 			}
 			fmt.Fprintf(qpw, `<div><span style="font-variant:tabular-nums">%s</span> %s %s:</div>`,
 				e["time"].(string)[11:], person, html.EscapeString(e["request"].(string)))
@@ -142,30 +127,13 @@ func main() {
 		for _, e := range changes {
 			var person string
 			if token, ok := e["session"].(string); ok {
-				if session := sessions[token]; session != nil {
-					person = html.EscapeString(session.person)
-				}
+				person = html.EscapeString(sessions[token])
 			}
 			fmt.Fprintf(qpw, `<div><span style="font-variant:tabular-nums">%s</span> %s %s:</div>`,
 				e["time"].(string)[11:], person, html.EscapeString(e["request"].(string)))
 			for _, c := range e["changes"].([]interface{}) {
 				fmt.Fprintf(qpw, `<div style="margin-left:2em;font-family:monospace">%s</div>`, html.EscapeString(c.(string)))
 			}
-		}
-	}
-	if len(sessions) != 0 {
-		var slist = make([]*sessionData, 0, len(sessions))
-		for _, s := range sessions {
-			slist = append(slist, s)
-		}
-		sort.Slice(slist, func(i, j int) bool { return slist[i].start < slist[j].start })
-		fmt.Fprintf(qpw, `<div style="margin-top:1em;font-weight:bold">Sessions</div>`)
-		for _, s := range slist {
-			var person = s.person
-			if person == "" {
-				person = "???"
-			}
-			fmt.Fprintf(qpw, `<div><span style="font-variant:tabular-nums">%s</span> %s</div>`, s.start[11:], person)
 		}
 	}
 	fmt.Fprintf(qpw, `</body></html>`)
