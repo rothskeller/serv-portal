@@ -15,15 +15,14 @@ func main() {
 
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
-		store.Open("/home/snyserv/sunnyvaleserv.org/data/serv.db")
+		os.Chdir("/home/snyserv/sunnyvaleserv.org/data")
 	case "/Users/stever":
-		store.Open("/Users/stever/src/serv-portal/data/serv.db")
-	default:
-		store.Open("./serv.db")
+		os.Chdir("/Users/stever/src/serv-portal/data")
 	}
+	store.Open("serv.db")
 	tx = store.Begin(nil)
 	for _, session := range tx.FetchSessions() {
-		var entry = log.New("", "remembered-session")
+		var entry = log.New("", "continued-session")
 		entry.Session = string(session.Token)
 		entry.Change("continued session %s for person %q", session.Token, session.Person.InformalName)
 		entry.Log()
