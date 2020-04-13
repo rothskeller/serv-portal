@@ -15,7 +15,7 @@ import (
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
-var sessionCreateRE = regexp.MustCompile(`^created? session \S+ for person "([^"]+)"`)
+var sessionCreateRE = regexp.MustCompile(`^(?:created?|continued) session \S+ for person "([^"]+)"`)
 
 func main() {
 	var (
