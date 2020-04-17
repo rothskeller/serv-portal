@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"strings"
 	"time"
 
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/util/config"
 )
 
 // Lifetime of a login session.
@@ -48,10 +50,13 @@ func ValidateSession(r *Request) {
 		r.Session.Expires = newexp
 		r.Tx.UpdateSession(r.Session)
 		http.SetCookie(r, &http.Cookie{
-			Name:    "auth",
-			Value:   string(r.Session.Token),
-			Path:    "/",
-			Expires: r.Session.Expires,
+			Name:     "auth",
+			Value:    string(r.Session.Token),
+			Path:     "/",
+			Expires:  r.Session.Expires,
+			HttpOnly: true,
+			Secure:   strings.HasPrefix(config.Get("siteURL"), "https://"),
+			SameSite: http.SameSiteLaxMode,
 		})
 	}
 }
@@ -83,9 +88,12 @@ func CreateSession(r *Request, remember bool) {
 	}
 	r.Tx.CreateSession(r.Session)
 	http.SetCookie(r, &http.Cookie{
-		Name:    "auth",
-		Value:   string(r.Session.Token),
-		Path:    "/",
-		Expires: r.Session.Expires,
+		Name:     "auth",
+		Value:    string(r.Session.Token),
+		Path:     "/",
+		Expires:  r.Session.Expires,
+		HttpOnly: true,
+		Secure:   strings.HasPrefix(config.Get("siteURL"), "https://"),
+		SameSite: http.SameSiteLaxMode,
 	})
 }
