@@ -31,7 +31,7 @@ func ValidateSession(r *Request) {
 	if r.Session = r.Tx.FetchSession(model.SessionToken(c.Value)); r.Session == nil {
 		return
 	}
-	if r.Method != "GET" && r.Session.Token != model.SessionToken(r.Request.Header.Get("X-XSRF-TOKEN")) {
+	if r.Method != "GET" && r.Session.CSRF != model.CSRFToken(r.Request.Header.Get("X-CSRF-Token")) {
 		r.Session = nil
 		return
 	}
@@ -66,6 +66,7 @@ func CreateSession(r *Request) {
 		Token:   model.SessionToken(RandomToken()),
 		Person:  r.Person,
 		Expires: time.Now().Add(sessionExpiration),
+		CSRF:    model.CSRFToken(RandomToken()),
 	}
 	r.Tx.CreateSession(r.Session)
 	http.SetCookie(r, &http.Cookie{

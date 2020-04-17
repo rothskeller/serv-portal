@@ -1,9 +1,7 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
-	"fmt"
 	"sort"
 	"time"
 
@@ -187,12 +185,12 @@ func (tx *Tx) FetchSessions() (sessions []*model.Session) {
 		rows *sql.Rows
 		err  error
 	)
-	rows, err = tx.tx.Query(`SELECT token, person, expires FROM session`)
+	rows, err = tx.tx.Query(`SELECT token, person, expires, csrf FROM session`)
 	panicOnError(err)
 	for rows.Next() {
 		var session model.Session
 		var pid model.PersonID
-		panicOnError(rows.Scan(&session.Token, &pid, (*Time)(&session.Expires)))
+		panicOnError(rows.Scan(&session.Token, &pid, (*Time)(&session.Expires), &session.CSRF))
 		session.Person = tx.FetchPerson(pid)
 		sessions = append(sessions, &session)
 	}
@@ -206,7 +204,7 @@ func (tx *Tx) FetchSession(token model.SessionToken) (s *model.Session) {
 	var pid model.PersonID
 
 	s = &model.Session{Token: token}
-	switch err := tx.tx.QueryRow(`SELECT person, expires FROM session WHERE token=?`, token).Scan(&pid, (*Time)(&s.Expires)); err {
+	switch err := tx.tx.QueryRow(`SELECT person, expires, csrf FROM session WHERE token=?`, token).Scan(&pid, (*Time)(&s.Expires), &s.CSRF); err {
 	case nil:
 		s.Person = tx.FetchPerson(pid)
 		return s
@@ -219,9 +217,7 @@ func (tx *Tx) FetchSession(token model.SessionToken) (s *model.Session) {
 
 // CreateSession creates a session in the database.
 func (tx *Tx) CreateSession(s *model.Session) {
-	var buf bytes.Buffer
-	panicOnExecError(tx.tx.Exec(`INSERT INTO session (token, person, expires) VALUES (?,?,?)`, s.Token, s.Person.ID, Time(s.Expires)))
-	fmt.Fprintf(&buf, "person:%s expires:%s", s.Person.Username, s.Expires.Format("2006-01-02 15:04:05"))
+	panicOnExecError(tx.tx.Exec(`INSERT INTO session (token, person, expires, csrf) VALUES (?,?,?,?)`, s.Token, s.Person.ID, Time(s.Expires), s.CSRF))
 }
 
 // UpdateSession updates a session in the database.

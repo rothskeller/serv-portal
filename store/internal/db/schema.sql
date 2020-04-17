@@ -69,7 +69,8 @@ CREATE INDEX person_email_person_index ON person_email (person);
 CREATE TABLE session (
     token   text    PRIMARY KEY,
     person  integer NOT NULL REFERENCES person ON DELETE CASCADE,
-    expires text    NOT NULL -- RFC3339
+    expires text    NOT NULL, -- RFC3339
+    csrf    text    NOT NULL
 );
 CREATE INDEX session_person_index ON session (person);
 

@@ -42,6 +42,10 @@ var AttendanceTypeNames = map[AttendanceType]string{
 	AttendAsAuditor:   "Audit",
 }
 
+// A CSRFToken is a random string used to verify that submitted forms came from
+// our own site and not from a forgery.
+type CSRFToken string
+
 // A DocumentID is a positive integer uniquely identifying a document within its
 // folder.  For cache-busting purposes, each new revision of a document gets a
 // new DocumentID.
@@ -301,6 +305,7 @@ type Session struct {
 	Token   SessionToken
 	Person  *Person
 	Expires time.Time
+	CSRF    CSRFToken
 }
 
 // A TextMessageID uniquely identifies an outgoing text message.

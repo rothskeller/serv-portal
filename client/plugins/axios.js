@@ -3,18 +3,16 @@ import axios from 'axios'
 import router from '../router'
 import store from '../store'
 
-const config = {
-  xsrfCookieName: 'auth',
-}
-
-const _axios = axios.create(config);
+const _axios = axios.create({})
 
 _axios.interceptors.request.use(
   config => {
+    if (!config.headers) config.headers = {}
     if (config.method === 'get' || config.method === 'GET') {
-      if (!config.headers) config.headers = {}
       config.headers['Cache-Control'] = 'no-cache'
       config.headers['Pragma'] = 'no-cache'
+    } else if (store.state.me) {
+      config.headers['X-CSRF-Token'] = store.state.me.csrf
     }
     return config
   },
