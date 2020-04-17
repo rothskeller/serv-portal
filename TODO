@@ -1,12 +1,13 @@
 Goodies:
+  Mark the leads on the CERT report
   People editing their volunteer hours
   Volunteer hours report
-  Search engine
   Credentials and clearances tracking
   Skills and other person data
   Event signups and RSVPs
     Send text messages to people who signed up for an event
   SARES import
+  Search engine covers document contents
   View mailing list archives (maybe leads only)
   Data export
   Change text report to show delivered time
@@ -20,26 +21,5 @@ Cosmetics:
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
   Start event list scrolled to "today".
-
-
-Search engine — indexed fields:
-folder.documents[].name - full text
-folder.documents[].contents - full text
-# emailMessage.from - full text
-# emailMessage.subject - full text
-# emailMessage.body - full text
-event.name - full text
-event.details - full text
-event.date - exact match but also full text
-folder.name - full text
-group.name - full text
-person.informalName - full text
-person.formalName - full text
-person.callSign - exact match
-person.email - partial exact match
-person.email2 - partial exact match
-person.homeAddress.address - full text
-person.workAddress.address - full text
-person.mailAddress.address - full text
-textMessage.message - full text
-20 fields, needing at least two and maybe three ID values.
+Internals:
+  Search engine efficiency — encode type and ids in rowid

@@ -18,11 +18,13 @@ PublicPage(title="Sunnyvale SERV")
         b-input#login-email(autocorrect="off" autocapitalize="none" autofocus required trim v-model="email")
       b-form-group(label="Password" label-for="login-password" label-cols-sm="4")
         b-input#login-password(ref="password" type="password" v-model="password")
+      b-form-group(label-cols-sm="4")
+        b-checkbox#login-remember(v-model="remember") Remember me
       #login-submit-row
         b-button(type="submit" variant="primary") Log in
       #login-failed(v-if="failed") Login incorrect. Please try again.
     #login-reset
-      b-btn(to="/password-reset") Reset my password
+      b-link(to="/password-reset") Reset my password
     b-link#login-policies(to="/policies") Site Policies / Legal Stuff
 </template>
 
@@ -31,13 +33,14 @@ import PublicPage from '@/base/PublicPage'
 
 export default {
   components: { PublicPage },
-  data: () => ({ email: '', password: '', failed: false }),
+  data: () => ({ email: '', password: '', remember: false, failed: false }),
   methods: {
     async onSubmit() {
       if (!this.email || !this.password) return
       const body = new (FormData)
       body.append('username', this.email)
       body.append('password', this.password)
+      if (this.remember) body.append('remember', 'true')
       try {
         const data = (await this.$axios.post('/api/login', body)).data
         this.$store.commit('login', data)
@@ -88,7 +91,7 @@ export default {
   color red
   text-align center
 #login-reset
-  margin-top 1rem
+  margin-top 0.75rem
   text-align center
 #login-policies
   display flex

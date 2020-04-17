@@ -16,9 +16,6 @@ const maxBadLogins = 3
 // Threshold time for bad login attempts
 const badLoginThreshold = 20 * time.Minute
 
-// Lifetime of a remember-me request.  (A year, more or less.)
-const rememberMeExpiration = 365 * 24 * time.Hour
-
 // GetLogin handles GET /api/login requests.
 func GetLogin(r *util.Request) error {
 	var out jwriter.Writer
@@ -52,6 +49,7 @@ func PostLogin(r *util.Request) error {
 		person   *model.Person
 		username = r.FormValue("username")
 		password = r.FormValue("password")
+		remember = r.FormValue("remember") != ""
 	)
 	// Check that the login is valid.
 	if person = r.Tx.FetchPersonByUsername(username); person == nil {
@@ -64,6 +62,8 @@ func PostLogin(r *util.Request) error {
 		if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
 			goto FAIL // locked out
 		}
+	} else { // admin can not be remembered
+		remember = false
 	}
 	if !CheckPassword(person, password) {
 		goto FAIL // password mismatch
@@ -76,7 +76,7 @@ func PostLogin(r *util.Request) error {
 		person.BadLoginCount = 0
 		r.Tx.UpdatePerson(person)
 	}
-	util.CreateSession(r)
+	util.CreateSession(r, remember)
 	r.Tx.Commit()
 	return GetLogin(r)
 

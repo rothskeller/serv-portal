@@ -12,6 +12,11 @@ import (
 // Lifetime of a login session.
 const sessionExpiration = time.Hour
 
+// Lifetime of a remember-me login session.  Note that some browsers won't allow
+// any cookie to last this long — Chrome appears to have a six month limit — so
+// the remember-me may not be forever.
+const rememberExpiration = 10 * 365 * 24 * time.Hour
+
 // Forbidden is the error returned when the calling session lacks the privileges
 // needed for the call it issued.
 var Forbidden = HTTPError(http.StatusForbidden, "403 Forbidden")
@@ -21,8 +26,9 @@ var Forbidden = HTTPError(http.StatusForbidden, "403 Forbidden")
 // authorization is not valid, the Person field is left unchanged (i.e., nil).
 func ValidateSession(r *Request) {
 	var (
-		c   *http.Cookie
-		err error
+		c      *http.Cookie
+		newexp time.Time
+		err    error
 	)
 	if c, err = r.Cookie("auth"); err != nil {
 		return
@@ -37,14 +43,17 @@ func ValidateSession(r *Request) {
 	}
 	r.Person = r.Session.Person
 	r.Auth.SetMe(r.Session.Person)
-	r.Session.Expires = time.Now().Add(sessionExpiration)
-	r.Tx.UpdateSession(r.Session)
-	http.SetCookie(r, &http.Cookie{
-		Name:    "auth",
-		Value:   string(r.Session.Token),
-		Path:    "/",
-		Expires: r.Session.Expires,
-	})
+	newexp = time.Now().Add(sessionExpiration)
+	if newexp.After(r.Session.Expires) {
+		r.Session.Expires = newexp
+		r.Tx.UpdateSession(r.Session)
+		http.SetCookie(r, &http.Cookie{
+			Name:    "auth",
+			Value:   string(r.Session.Token),
+			Path:    "/",
+			Expires: r.Session.Expires,
+		})
+	}
 }
 
 // RandomToken returns a random token string, used for various purposes.
@@ -61,12 +70,16 @@ func RandomToken() string {
 
 // CreateSession creates a session for the person in the request, and sets a
 // response cookie with the session token.
-func CreateSession(r *Request) {
+func CreateSession(r *Request, remember bool) {
 	r.Session = &model.Session{
-		Token:   model.SessionToken(RandomToken()),
-		Person:  r.Person,
-		Expires: time.Now().Add(sessionExpiration),
-		CSRF:    model.CSRFToken(RandomToken()),
+		Token:  model.SessionToken(RandomToken()),
+		Person: r.Person,
+		CSRF:   model.CSRFToken(RandomToken()),
+	}
+	if remember {
+		r.Session.Expires = time.Now().Add(rememberExpiration)
+	} else {
+		r.Session.Expires = time.Now().Add(sessionExpiration)
 	}
 	r.Tx.CreateSession(r.Session)
 	http.SetCookie(r, &http.Cookie{
