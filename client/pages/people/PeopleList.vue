@@ -96,6 +96,7 @@ export default {
   white-space nowrap
   @media (min-width: 576px)
     margin-top 0.75rem
+    text-overflow clip
     white-space normal
 .people-contact
   margin-left 6rem
