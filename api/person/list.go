@@ -66,11 +66,14 @@ func GetPeople(r *util.Request) error {
 			out.String(p.WorkPhone)
 		}
 		out.RawString(`,"roles":[`)
-		for i, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
+		first2 := true
+		for _, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
 			if role.Detail {
 				continue
 			}
-			if i != 0 {
+			if first2 {
+				first2 = false
+			} else {
 				out.RawByte(',')
 			}
 			out.String(role.Name)
