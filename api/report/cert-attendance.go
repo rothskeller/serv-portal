@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -29,6 +30,7 @@ func CERTAttendanceReport(r *util.Request) error {
 		etabbr   eventTypeAbbr
 		data     = map[model.PersonID]map[columnKey]map[eventTypeAbbr]int{}
 		pmap     = map[model.PersonID]*model.Person{}
+		leads    = map[model.PersonID]bool{}
 		teamStr  = r.FormValue("team")
 		dateFrom = r.FormValue("dateFrom")
 		dateTo   = r.FormValue("dateTo")
@@ -84,6 +86,11 @@ func CERTAttendanceReport(r *util.Request) error {
 	people = r.Auth.FetchPeople(r.Auth.PeopleG(team.ID))
 	for _, p := range people {
 		pmap[p.ID] = p
+		for _, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
+			if strings.HasPrefix(role.Name, "CERT Team Alpha ") || strings.HasPrefix(role.Name, "CERT Team Bravo ") {
+				leads[p.ID] = true
+			}
+		}
 	}
 	// Get the attendance data.
 	for _, e := range events {
@@ -101,7 +108,7 @@ func CERTAttendanceReport(r *util.Request) error {
 	}
 	r.Tx.Commit()
 	// Convert the report into output-format-independent rows and columns.
-	rendered = renderAttendance(data, people, stats, detail)
+	rendered = renderAttendance(data, people, stats, detail, leads)
 	if format == "CSV" {
 		attendanceCSV(r, rendered)
 	} else {
@@ -176,6 +183,7 @@ type attendanceReportHeadCell struct {
 
 func renderAttendance(
 	data map[model.PersonID]map[columnKey]map[eventTypeAbbr]int, people []*model.Person, stats, detail string,
+	leads map[model.PersonID]bool,
 ) (report attendanceReport) {
 	var (
 		etypes []eventTypeAbbr
@@ -214,7 +222,11 @@ func renderAttendance(
 	}
 	report.Body = make([][]string, len(people))
 	for i, p := range people {
-		report.Body[i] = []string{p.SortName}
+		var name = p.SortName
+		if leads[p.ID] {
+			name += " *"
+		}
+		report.Body[i] = []string{name}
 	}
 	report.Footer = [][]string{{"TOTALS"}}
 	// Create and fill the non-total columns.
