@@ -52,6 +52,7 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 					r.Name = ""
 					r.Tag = ""
 					r.Individual = false
+					r.Detail = false
 				}
 			case "tag":
 				r.Tag = model.RoleTag(in.String())
@@ -59,6 +60,8 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 				r.Name = in.String()
 			case "individual":
 				r.Individual = in.Bool()
+			case "detail":
+				r.Detail = in.Bool()
 			case "privileges":
 				in.Delim('[')
 				for !in.IsDelim(']') {

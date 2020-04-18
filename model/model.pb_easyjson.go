@@ -694,6 +694,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *R
 			out.Name = string(in.String())
 		case "individual":
 			out.Individual = bool(in.Bool())
+		case "detail":
+			out.Detail = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -743,6 +745,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		out.Bool(bool(in.Individual))
+	}
+	if in.Detail {
+		const prefix string = ",\"detail\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.Detail))
 	}
 	out.RawByte('}')
 }

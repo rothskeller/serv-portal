@@ -11,6 +11,7 @@ form#role-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Flags" label-cols-sm="auto" label-class="role-edit-label pt-0")
     #role-edit-flags
       b-checkbox(v-model="role.individual") Individual (one person only)
+      b-checkbox(v-model="role.detail") Hide in person list
   #role-edit-privs
     .role-edit-group.role-edit-heading Group
     .role-edit-privs.role-edit-heading
@@ -97,6 +98,7 @@ export default {
       const body = new FormData
       body.append('name', this.role.name)
       body.append('individual', this.role.individual)
+      body.append('detail', this.role.detail)
       this.privs.forEach(g => {
         if (g.member) body.append(`member:${g.id}`, true)
         if (g.roster) body.append(`roster:${g.id}`, true)

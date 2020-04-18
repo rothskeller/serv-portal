@@ -420,6 +420,10 @@ func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 		out.RawString(`,"individual":`)
 		out.Bool(r.Individual)
 	}
+	if r.Detail {
+		out.RawString(`,"detail":`)
+		out.Bool(r.Detail)
+	}
 	out.RawString(`,"privileges":[`)
 	first := true
 	for _, g := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {

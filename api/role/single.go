@@ -32,6 +32,8 @@ func GetRole(r *util.Request, idstr string) error {
 	out.String(role.Name)
 	out.RawString(`,"individual":`)
 	out.Bool(role.Individual)
+	out.RawString(`,"detail":`)
+	out.Bool(role.Detail)
 	out.RawString(`},"canDelete":`)
 	out.Bool(role.Tag == "")
 	out.RawString(`,"privs":[`)
@@ -76,6 +78,7 @@ func PostRole(r *util.Request, idstr string) error {
 	}
 	role.Name = r.FormValue("name")
 	role.Individual, _ = strconv.ParseBool(r.FormValue("individual"))
+	role.Detail, _ = strconv.ParseBool(r.FormValue("detail"))
 	if err := ValidateRole(r.Auth, role); err != nil {
 		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")

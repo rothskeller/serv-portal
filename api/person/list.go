@@ -67,6 +67,9 @@ func GetPeople(r *util.Request) error {
 		}
 		out.RawString(`,"roles":[`)
 		for i, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
+			if role.Detail {
+				continue
+			}
 			if i != 0 {
 				out.RawByte(',')
 			}

@@ -243,6 +243,13 @@ func (a *Authorizer) UpdateRole(role *model.Role) {
 			a.entry.Change("clear role %q [%d] individual flag", role.Name, role.ID)
 		}
 	}
+	if role.Detail != or.Detail {
+		if role.Detail {
+			a.entry.Change("set role %q [%d] detail flag", role.Name, role.ID)
+		} else {
+			a.entry.Change("clear role %q [%d] detail flag", role.Name, role.ID)
+		}
+	}
 	delete(a.originalRoles, role.ID)
 }
 
