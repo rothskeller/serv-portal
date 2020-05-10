@@ -146,8 +146,14 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte(']')
 		}
 		out.RawString(`,"notes":[`)
+		var notes []*model.PersonNote
+		if len(person.DSWForms) != 0 && r.Auth.CanA(model.PrivManageMembers) {
+			notes = mergeDSWIntoNotes(person.Notes, person.DSWForms)
+		} else {
+			notes = person.Notes
+		}
 		first := true
-		for _, n := range person.Notes {
+		for _, n := range notes {
 			if n.Privilege == 0 && !r.Auth.IsWebmaster() {
 				continue
 			}
@@ -199,6 +205,28 @@ func GetPerson(r *util.Request, idstr string) error {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
+}
+func mergeDSWIntoNotes(notes []*model.PersonNote, forms []*model.DSWForm) []*model.PersonNote {
+	if len(forms) == 0 {
+		return notes
+	}
+	nn := make([]*model.PersonNote, len(notes), len(notes)+len(forms))
+	copy(nn, notes)
+	for _, f := range forms {
+		var n model.PersonNote
+		n.Date = f.From.Format("2006-01-02")
+		if f.Invalid != "" {
+			n.Note = fmt.Sprintf("DSW for %s: INVALID: %s", f.For, f.Invalid)
+		} else {
+			n.Note = fmt.Sprintf("DSW for %s: expires %s if not active", f.For, f.To.Format("2006-01-02"))
+		}
+		n.Privilege = model.PrivManageMembers
+		nn = append(nn, &n)
+	}
+	sort.Slice(nn, func(i, j int) bool {
+		return nn[i].Date < nn[j].Date
+	})
+	return nn
 }
 
 // PostPerson handles POST /api/people/$id requests (where $id may be "NEW").
