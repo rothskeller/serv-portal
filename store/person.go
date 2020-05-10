@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"strconv"
 
 	"sunnyvaleserv.org/portal/model"
 )
@@ -75,6 +76,13 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		tx.entry.Change("add person [%d] note %q at %s with privilege %s", p.ID, n.Note, n.Date, model.PrivilegeNames[n.Privilege])
 	}
 	tx.entry.Change("set person [%d] unsubscribeToken to %s", p.ID, p.UnsubscribeToken)
+	for _, f := range p.DSWForms {
+		var invalid string
+		if f.Invalid != "" {
+			invalid = " INVALID " + strconv.Quote(f.Invalid)
+		}
+		tx.entry.Change("add person [%d] dsw from %s to %s for %q%s", f.From.Format("2006-01-02"), f.To.Format("2006-01-02"), f.For, invalid)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -89,6 +97,14 @@ func (tx *Tx) WillUpdatePerson(p *model.Person) {
 		for i := range p.Notes {
 			opn := *p.Notes[i]
 			op.Notes[i] = &opn
+		}
+	}
+	if p.DSWForms != nil {
+		forms := make([]model.DSWForm, len(p.DSWForms))
+		op.DSWForms = make([]*model.DSWForm, len(p.DSWForms))
+		for i := range p.DSWForms {
+			forms[i] = *p.DSWForms[i]
+			op.DSWForms[i] = &forms[i]
 		}
 	}
 	tx.originalPeople[p.ID] = &op
@@ -204,6 +220,40 @@ NOTES2:
 	}
 	if p.UnsubscribeToken != op.UnsubscribeToken {
 		tx.entry.Change("change person %q [%d] unsubscribeToken to %s", p.InformalName, p.ID, p.UnsubscribeToken)
+	}
+DSW1:
+	for _, of := range op.DSWForms {
+		for _, f := range p.DSWForms {
+			if of.From.Equal(f.From) {
+				continue DSW1
+			}
+		}
+		var invalid string
+		if of.Invalid != "" {
+			invalid = " INVALID " + strconv.Quote(of.Invalid)
+		}
+		tx.entry.Change("remove person [%d] dsw from %s to %s for %q%s", of.From.Format("2006-01-02"), of.To.Format("2006-01-02"), of.For, invalid)
+	}
+DSW2:
+	for _, f := range p.DSWForms {
+		for _, of := range op.DSWForms {
+			if of.From.Equal(f.From) {
+				if !of.To.Equal(f.To) || of.For != f.For || of.Invalid != f.Invalid {
+
+					var invalid string
+					if f.Invalid != "" {
+						invalid = " INVALID " + strconv.Quote(f.Invalid)
+					}
+					tx.entry.Change("change person [%d] dsw from %s to %s for %q%s", f.From.Format("2006-01-02"), f.To.Format("2006-01-02"), f.For, invalid)
+				}
+			}
+			continue DSW2
+		}
+		var invalid string
+		if f.Invalid != "" {
+			invalid = " INVALID " + strconv.Quote(f.Invalid)
+		}
+		tx.entry.Change("add person [%d] dsw from %s to %s for %q%s", f.From.Format("2006-01-02"), f.To.Format("2006-01-02"), f.For, invalid)
 	}
 	delete(tx.originalPeople, p.ID)
 }

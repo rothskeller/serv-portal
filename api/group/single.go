@@ -62,6 +62,9 @@ func GetGroup(r *util.Request, idstr string) error {
 		}
 		out.RawByte(']')
 	}
+	if group.DSWRequired {
+		out.RawString(`,"dswRequired":true`)
+	}
 	out.RawString(`},"canDelete":`)
 	out.Bool(group.Tag == "")
 	out.RawString(`,"privs":[`)
@@ -111,6 +114,7 @@ func PostGroup(r *util.Request, idstr string) error {
 	}
 	group.Name = r.FormValue("name")
 	group.Email = r.FormValue("email")
+	group.DSWRequired = r.FormValue("dswRequired") == "true"
 	if err := ValidateGroup(r.Auth, group); err != nil {
 		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")

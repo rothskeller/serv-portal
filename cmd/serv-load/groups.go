@@ -83,6 +83,8 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "dswRequired":
+				g.DSWRequired = in.Bool()
 			default:
 				in.SkipRecursive()
 			}

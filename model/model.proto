@@ -71,12 +71,13 @@ message Folder {
 }
 
 message Group {
-  int64          id       = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
-  string         tag      = 2 [(gogoproto.casttype) = "GroupTag"];
-  string         name     = 3;
-  string         email    = 5;
-  repeated int64 no_email = 6 [(gogoproto.casttype) = "PersonID"];
-  repeated int64 no_text  = 7 [(gogoproto.casttype) = "PersonID"];
+  int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
+  string         tag          = 2 [(gogoproto.casttype) = "GroupTag"];
+  string         name         = 3;
+  string         email        = 5;
+  repeated int64 no_email     = 6 [(gogoproto.casttype) = "PersonID"];
+  repeated int64 no_text      = 7 [(gogoproto.casttype) = "PersonID"];
+  bool           dsw_required = 8 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
 }
 
 message Person {

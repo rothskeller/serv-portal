@@ -11,6 +11,9 @@ form#group-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Group email" label-for="group-email" label-cols-sm="auto" label-class="group-edit-label" :state="emailError ? false : null" :invalid-feedback="emailError")
     b-input#group-edit-email(:state="emailError ? false : null" trim v-model="group.email")
     b-form-text @sunnyvaleserv.org
+  b-form-group(label="Flags" label-cols-sm="auto" label-class="group-edit-label pt-0")
+    #group-edit-flags
+      b-checkbox(v-model="group.dswRequired") DSW Required
   #group-edit-privs
     .group-edit-role.group-edit-heading Role
     .group-edit-privs.group-edit-heading
@@ -106,6 +109,7 @@ export default {
       const body = new FormData
       body.append('name', this.group.name)
       body.append('email', this.group.email)
+      body.append('dswRequired', this.group.dswRequired)
       this.privs.forEach(r => {
         if (r.member) body.append(`member:${r.id}`, true)
         if (r.roster) body.append(`roster:${r.id}`, true)

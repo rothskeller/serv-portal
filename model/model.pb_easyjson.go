@@ -1277,6 +1277,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 				}
 				in.Delim(']')
 			}
+		case "dswRequired":
+			out.DSWRequired = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1364,6 +1366,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.DSWRequired {
+		const prefix string = ",\"dswRequired\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.DSWRequired))
 	}
 	out.RawByte('}')
 }
