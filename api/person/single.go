@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mailru/easyjson/jwriter"
 
@@ -172,6 +173,10 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 		}
 		out.RawByte(']')
+		if badge := dswBadge(r, person, nil); badge != "" {
+			out.RawString(`,"dswBadge":`)
+			out.String(badge)
+		}
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
@@ -351,4 +356,48 @@ func PostPerson(r *util.Request, idstr string) error {
 	r.Auth.Save()
 	r.Tx.Commit()
 	return nil
+}
+
+// dswBadge returns whether a DSW badge should be shown for a person, in the
+// context of viewing a particular group (or in no context if ctx is nil).  It
+// returns "valid" to show a green DSW badge, "invalid" to show a red "No DSW"
+// badge, or "" to show nothing.
+func dswBadge(r *util.Request, p *model.Person, ctx *model.Group) string {
+	if !r.Auth.CanAP(model.PrivManageMembers, p.ID) {
+		return ""
+	}
+	var hasEverHad bool
+	var hasUnexpired bool
+	var isRequired bool
+	var now = time.Now()
+	for _, f := range p.DSWForms {
+		if f.Invalid != "" {
+			continue
+		}
+		hasEverHad = true
+		if f.To.After(now) {
+			hasUnexpired = true
+		}
+	}
+	var groups []*model.Group
+	if ctx == nil {
+		groups = []*model.Group{ctx}
+	} else {
+		groups = r.Auth.FetchGroups(r.Auth.GroupsP(p.ID))
+	}
+	for _, g := range groups {
+		if g.DSWType == model.DSWRequired {
+			isRequired = true
+		}
+		if g.DSWType != model.DSWNone && hasEverHad {
+			hasUnexpired = true
+		}
+	}
+	if isRequired && !hasUnexpired {
+		return "invalid"
+	}
+	if hasUnexpired && !isRequired {
+		return "valid"
+	}
+	return ""
 }

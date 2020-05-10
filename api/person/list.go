@@ -65,6 +65,10 @@ func GetPeople(r *util.Request) error {
 			out.RawString(`,"workPhone":`)
 			out.String(p.WorkPhone)
 		}
+		if badge := dswBadge(r, p, focus); badge != "" {
+			out.RawString(`,"dswBadge":`)
+			out.String(badge)
+		}
 		out.RawString(`,"roles":[`)
 		first2 := true
 		for _, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {

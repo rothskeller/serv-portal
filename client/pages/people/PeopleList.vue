@@ -15,6 +15,7 @@ PeopleList displays the list of people.
     template(v-for="p in people")
       .people-person
         router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
+        DSWBadge.people-dsw(:badge="p.dswBadge")
       .people-contact
         div(v-if="p.email")
           a(:href="`mailto:${p.email}`" v-text="p.email")
@@ -39,8 +40,10 @@ PeopleList displays the list of people.
 
 <script>
 import Cookies from 'js-cookie'
+import DSWBadge from '@/base/DSWBadge'
 
 export default {
+  components: { DSWBadge },
   data: () => ({ group: 0, groups: null, people: null, canAdd: false, loading: false }),
   created() {
     this.group = this.$route.query.group || Cookies.get('serv-people-group') || 0
@@ -98,6 +101,8 @@ export default {
     margin-top 0.75rem
     text-overflow clip
     white-space normal
+.people-dsw
+  margin-left 0.5rem
 .people-contact
   margin-left 6rem
   div
