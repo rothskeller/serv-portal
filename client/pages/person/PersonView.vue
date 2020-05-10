@@ -11,7 +11,7 @@ div.mt-3.ml-2(v-if="!person")
       span(v-text="person.informalName")
       span#person-view-callSign(v-if="person.callSign" v-text="person.callSign")
     #person-view-formalName(v-if="person.formalName !== person.informalName" v-text="`(formally ${person.formalName})`")
-    DSWBadge#person-view-dsw-badge(:badge="person.dswBadge")
+    DSWBadge(:badge="person.dswBadge")
   #person-view-roles
     div(v-for="role in person.roles" v-text="role.name")
   #person-view-emails(v-if="person.email")
@@ -99,8 +99,6 @@ export default {
   color #888
   @media (min-width: 576px)
     margin-left 1rem
-#person-view-dsw-badge
-  margin-left 0.5rem
 #person-view-roles
   line-height 1.2
 #person-view-emails

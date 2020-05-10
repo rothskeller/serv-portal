@@ -15,7 +15,7 @@ PeopleList displays the list of people.
     template(v-for="p in people")
       .people-person
         router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
-        DSWBadge.people-dsw(:badge="p.dswBadge")
+        DSWBadge(:badge="p.dswBadge")
       .people-contact
         div(v-if="p.email")
           a(:href="`mailto:${p.email}`" v-text="p.email")
@@ -101,8 +101,6 @@ export default {
     margin-top 0.75rem
     text-overflow clip
     white-space normal
-.people-dsw
-  margin-left 0.5rem
 .people-contact
   margin-left 6rem
   div
