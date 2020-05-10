@@ -159,12 +159,8 @@ NOTEXT2:
 		}
 		a.entry.Change("add group %q [%d] noText person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(p).InformalName, p)
 	}
-	if group.DSWRequired != og.DSWRequired {
-		if group.DSWRequired {
-			a.entry.Change("set group %q [%d] dswRequired", group.Name, group.ID)
-		} else {
-			a.entry.Change("clear group %q [%d] dswRequired", group.Name, group.ID)
-		}
+	if group.DSWType != og.DSWType {
+		a.entry.Change("set group %q [%d] dswType to %d", group.Name, group.ID, group.DSWType)
 	}
 	delete(a.originalGroups, group.ID)
 	a.dirtyGroups = true

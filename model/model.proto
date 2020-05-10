@@ -77,7 +77,7 @@ message Group {
   string         email        = 5;
   repeated int64 no_email     = 6 [(gogoproto.casttype) = "PersonID"];
   repeated int64 no_text      = 7 [(gogoproto.casttype) = "PersonID"];
-  bool           dsw_required = 8 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
+  int32          dsw_type     = 8 [(gogoproto.customname) = "DSWType", (gogoproto.casttype) = "DSWType", (gogoproto.jsontag) = "dswType,omitempty"];
 }
 
 message Person {

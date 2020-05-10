@@ -1,6 +1,7 @@
 package group
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
@@ -62,8 +63,13 @@ func GetGroup(r *util.Request, idstr string) error {
 		}
 		out.RawByte(']')
 	}
-	if group.DSWRequired {
-		out.RawString(`,"dswRequired":true`)
+	switch group.DSWType {
+	case model.DSWNone:
+		out.RawString(`,"dswType":""`)
+	case model.DSWExtended:
+		out.RawString(`,"dswType":"extended"`)
+	case model.DSWRequired:
+		out.RawString(`,"dswType":"required"`)
 	}
 	out.RawString(`},"canDelete":`)
 	out.Bool(group.Tag == "")
@@ -114,7 +120,16 @@ func PostGroup(r *util.Request, idstr string) error {
 	}
 	group.Name = r.FormValue("name")
 	group.Email = r.FormValue("email")
-	group.DSWRequired = r.FormValue("dswRequired") == "true"
+	switch r.FormValue("dswType") {
+	case "":
+		group.DSWType = model.DSWNone
+	case "extended":
+		group.DSWType = model.DSWExtended
+	case "required":
+		group.DSWType = model.DSWRequired
+	default:
+		return errors.New("invalid dswType")
+	}
 	if err := ValidateGroup(r.Auth, group); err != nil {
 		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")

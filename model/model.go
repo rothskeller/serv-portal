@@ -51,6 +51,25 @@ type CSRFToken string
 // new DocumentID.
 type DocumentID int
 
+// A DSWType describes how DSW swearing is affected by group membership.
+type DSWType int
+
+const (
+	// DSWNone means that membership in the group is unrelated to DSW.
+	DSWNone DSWType = iota
+	// DSWExtended means that, if a member of the group has ever had a
+	// valid DSW, it is considered to remain valid past its expiration while
+	// they remain a member of the group.  Ideally we would check that the
+	// DSW didn't expire before they joined the group, but we don't have
+	// group join dates, so we just assume that it was valid when they
+	// joined.
+	DSWExtended
+	// DSWRequired means the same as DSWExtended, plus it also indicates
+	// that no one should be a member of the group who does not have a valid
+	// DSW.
+	DSWRequired
+)
+
 // An EmailMessageID is a positive integer uniquely identifying an email message
 // handled by the portal.
 type EmailMessageID int
