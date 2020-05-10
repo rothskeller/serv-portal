@@ -28,6 +28,13 @@ message Document {
   bool                      needs_approval = 5;
 }
 
+message DSWForm {
+  google.protobuf.Timestamp from    = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  google.protobuf.Timestamp to      = 2 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  string                    for     = 3;
+  string                    invalid = 4;
+}
+
 message EmailMessage {
   int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
   string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
@@ -96,6 +103,7 @@ message Person {
   bool                      no_email          = 28;
   bool                      no_text           = 29;
   string                    unsubscribe_token = 30;
+  repeated DSWForm          dsw_forms         = 31 [(gogoproto.customname) = "DSWForms"];
 }
 
 message PersonNote {

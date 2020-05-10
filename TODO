@@ -21,3 +21,35 @@ Cosmetics:
   Start event list scrolled to "today".
 Internals:
   Search engine efficiency — encode type and ids in rowid
+
+[] Sworn as SNY DSW until ____
+[] Has DPS volunteer ID card
+[] Has DPS access card key
+[] Graduated SNY CERT
+[] SNY CERT Graduate
+[] SNY CERT Near-Graduate
+
+Credentials and clearances:
+  Temporary City DSW
+    Swearing date
+    Event
+    Expiration date
+    Unconfirmed flag
+  City Volunteer ID card
+    Swearing date
+  DPS Access Card
+
+  In Volgistics
+  Fingerprinted
+  Background check
+  Volunteer application
+  ID card
+  Access card
+  CERT CC
+  CERT CA
+  Citizens Academy
+  SCCo MAC
+  SCCo DSW
+
+Am I tracking who has current credentials, or the history of who has had them
+and when they expired?
