@@ -380,7 +380,7 @@ func dswBadge(r *util.Request, p *model.Person, ctx *model.Group) string {
 		}
 	}
 	var groups []*model.Group
-	if ctx == nil {
+	if ctx != nil {
 		groups = []*model.Group{ctx}
 	} else {
 		groups = r.Auth.FetchGroups(r.Auth.GroupsP(p.ID))
