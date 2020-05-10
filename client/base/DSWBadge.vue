@@ -3,10 +3,10 @@ DSWBadge displays a DSW badge.
 -->
 
 <template lang="pug">
-span(v-if="badge == 'valid'") DSW
+span(v-if="badge == 'valid'")
   |
   span.dsw-valid DSW
-span(v-else-if="badge == 'invalid'") No DSW
+span(v-else-if="badge == 'invalid'")
   |
   span.dsw-invalid No DSW
 </template>
