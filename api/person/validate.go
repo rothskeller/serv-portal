@@ -201,6 +201,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	sort.Slice(person.DSWForms, func(i, j int) bool {
 		return person.DSWForms[i].From.Before(person.DSWForms[j].From)
 	})
+	if person.VolgisticsID < 0 {
+		return errors.New("invalid volgisticsID")
+	}
 	return nil
 }
 

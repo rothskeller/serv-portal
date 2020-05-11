@@ -417,6 +417,10 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
+	if p.VolgisticsID != 0 {
+		out.RawString(`,"volgisticsID":`)
+		out.Int(p.VolgisticsID)
+	}
 	out.RawByte('}')
 }
 

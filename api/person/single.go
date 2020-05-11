@@ -76,6 +76,10 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
+	if person.VolgisticsID != 0 && r.Auth.IsWebmaster() {
+		out.RawString(`,"volgisticsID":`)
+		out.Int(person.VolgisticsID)
+	}
 	for _, r := range r.Auth.RolesP(person.ID) {
 		roles[r] = true
 	}
@@ -319,6 +323,9 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 		}
 		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
+	}
+	if r.Auth.IsWebmaster() {
+		person.VolgisticsID, _ = strconv.Atoi(r.FormValue("volgisticsID"))
 	}
 	if err = ValidatePerson(r.Tx, person, roles); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {

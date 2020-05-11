@@ -105,6 +105,7 @@ message Person {
   bool                      no_text           = 29;
   string                    unsubscribe_token = 30;
   repeated DSWForm          dsw_forms         = 31 [(gogoproto.customname) = "DSWForms"];
+  int64                     volgistics_id     = 32 [(gogoproto.customname) = "VolgisticsID", (gogoproto.casttype) = "int"];
 }
 
 message PersonNote {

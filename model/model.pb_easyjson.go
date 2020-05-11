@@ -1007,6 +1007,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 				}
 				in.Delim(']')
 			}
+		case "volgistics_id":
+			out.VolgisticsID = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -1177,6 +1179,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.VolgisticsID != 0 {
+		const prefix string = ",\"volgistics_id\":"
+		out.RawString(prefix)
+		out.Int(int(in.VolgisticsID))
 	}
 	out.RawByte('}')
 }

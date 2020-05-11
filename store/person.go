@@ -83,6 +83,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		}
 		tx.entry.Change("add person [%d] dsw from %s to %s for %q%s", f.From.Format("2006-01-02"), f.To.Format("2006-01-02"), f.For, invalid)
 	}
+	if p.VolgisticsID != 0 {
+		tx.entry.Change("set person [%d] volgisticsID to %d", p.ID, p.VolgisticsID)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -254,6 +257,9 @@ DSW2:
 			invalid = " INVALID " + strconv.Quote(f.Invalid)
 		}
 		tx.entry.Change("add person [%d] dsw from %s to %s for %q%s", f.From.Format("2006-01-02"), f.To.Format("2006-01-02"), f.For, invalid)
+	}
+	if p.VolgisticsID != op.VolgisticsID {
+		tx.entry.Change("set person %q [%d] volgisticsID to %d", p.InformalName, p.ID, p.VolgisticsID)
 	}
 	delete(tx.originalPeople, p.ID)
 }

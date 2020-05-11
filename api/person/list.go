@@ -69,6 +69,10 @@ func GetPeople(r *util.Request) error {
 			out.RawString(`,"dswBadge":`)
 			out.String(badge)
 		}
+		if p.VolgisticsID != 0 && r.Auth.IsWebmaster() {
+			out.RawString(`,"volgisticsID":`)
+			out.Int(p.VolgisticsID)
+		}
 		out.RawString(`,"roles":[`)
 		first2 := true
 		for _, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {

@@ -16,6 +16,7 @@ PeopleList displays the list of people.
       .people-person
         router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
         DSWBadge(:badge="p.dswBadge")
+        span(v-if="p.volgisticsID" v-text="' (V)'")
       .people-contact
         div(v-if="p.email")
           a(:href="`mailto:${p.email}`" v-text="p.email")

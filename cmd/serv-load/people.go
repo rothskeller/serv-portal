@@ -220,6 +220,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "volgisticsID":
+				p.VolgisticsID = in.Int()
 			default:
 				in.SkipRecursive()
 			}
