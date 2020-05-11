@@ -222,6 +222,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				in.Delim(']')
 			case "volgisticsID":
 				p.VolgisticsID = in.Int()
+			case "backgroundCheck":
+				p.BackgroundCheck = in.String()
 			default:
 				in.SkipRecursive()
 			}

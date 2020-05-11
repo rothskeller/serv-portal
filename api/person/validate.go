@@ -204,6 +204,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}
+	if person.BackgroundCheck != "" && person.BackgroundCheck != "true" && !dateRE.MatchString(person.BackgroundCheck) {
+		return errors.New("invalid backgroundCheck")
+	}
 	return nil
 }
 

@@ -76,9 +76,15 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
-	if person.VolgisticsID != 0 && r.Auth.IsWebmaster() {
-		out.RawString(`,"volgisticsID":`)
-		out.Int(person.VolgisticsID)
+	if r.Auth.IsWebmaster() {
+		if person.VolgisticsID != 0 {
+			out.RawString(`,"volgisticsID":`)
+			out.Int(person.VolgisticsID)
+		}
+		if person.BackgroundCheck != "" {
+			out.RawString(`,"backgroundCheck":`)
+			out.String(person.BackgroundCheck)
+		}
 	}
 	for _, r := range r.Auth.RolesP(person.ID) {
 		roles[r] = true
@@ -326,6 +332,7 @@ func PostPerson(r *util.Request, idstr string) error {
 	}
 	if r.Auth.IsWebmaster() {
 		person.VolgisticsID, _ = strconv.Atoi(r.FormValue("volgisticsID"))
+		person.BackgroundCheck = r.FormValue("backgroundCheck")
 	}
 	if err = ValidatePerson(r.Tx, person, roles); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {

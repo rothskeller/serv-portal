@@ -86,6 +86,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	if p.VolgisticsID != 0 {
 		tx.entry.Change("set person [%d] volgisticsID to %d", p.ID, p.VolgisticsID)
 	}
+	if p.BackgroundCheck != "" {
+		tx.entry.Change("set person [%d] backgroundCheck to %s", p.ID, p.BackgroundCheck)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -260,6 +263,13 @@ DSW2:
 	}
 	if p.VolgisticsID != op.VolgisticsID {
 		tx.entry.Change("set person %q [%d] volgisticsID to %d", p.InformalName, p.ID, p.VolgisticsID)
+	}
+	if p.BackgroundCheck != op.BackgroundCheck {
+		if p.BackgroundCheck == "" {
+			tx.entry.Change("clear person %q [%d] backgroundCheck", p.InformalName, p.ID)
+		} else {
+			tx.entry.Change("set person %q [%d] backgroundCheck to %s", p.InformalName, p.ID, p.BackgroundCheck)
+		}
 	}
 	delete(tx.originalPeople, p.ID)
 }

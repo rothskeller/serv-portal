@@ -23,6 +23,8 @@ form#person-edit(v-else @submit.prevent="onSubmit")
       b-input#person-callSign.person-edit-input(:state="callSignError ? false : null" v-model="person.callSign")
     b-form-group(v-if="allowBadPassword" label="Volgistics" label-for="person-volgistics" label-cols-sm="auto" label-class="person-edit-label" :state="volgisticsError ? false : null" :invalid-feedback="volgisticsError")
       b-input#person-volgistics.person-edit-input(type="number" min="0" :state="volgisticsError ? false : null" v-model="person.volgisticsID")
+    b-form-group(v-if="allowBadPassword" label="background" label-for="person-background" label-cols-sm="auto" label-class="person-edit-label" :state="backgroundError ? false : null" :invalid-feedback="backgroundError")
+      b-input#person-background.person-edit-input(:state="backgroundError ? false : null" v-model="person.backgroundCheck")
     .person-edit-block-head Change Password
     b-form-group(v-if="!allowBadPassword" label="Old Password" label-for="person-oldPassword" label-cols-sm="auto" label-class="person-edit-label" :state="oldPasswordError ? false : null" :invalid-feedback="oldPasswordError")
       b-input#person-oldPassword.person-edit-input(type="password" :state="oldPasswordError ? false : null" v-model="oldPassword")
@@ -75,6 +77,7 @@ export default {
     duplicateUsername: null,
     callSignError: null,
     volgisticsError: null,
+    backgroundError: null,
     duplicateCallSign: null,
     emailError: null,
     email2Error: null,
@@ -122,7 +125,7 @@ export default {
       if (this.canEditDetails) {
         if (this.informalNameError || this.formalNameError || this.sortNameError || this.callSignError || this.emailError ||
           this.email2Error || this.cellPhoneError || this.homePhoneError || this.workPhoneError || !this.person.homeAddress ||
-          !this.person.mailAddress || !this.person.workAddress || this.password === null || this.volgisticsError)
+          !this.person.mailAddress || !this.person.workAddress || this.password === null || this.volgisticsError || this.backgroundError)
           return false
         if (!this.allowBadPassword && this.oldPasswordError) return false
       }
@@ -139,6 +142,7 @@ export default {
     this.canEditUsername = data.canEditUsername
     this.passwordHints = data.passwordHints
     if (!data.person.volgisticsID) data.person.volgisticsID = 0
+    if (!data.person.backgroundCheck) data.person.backgroundCheck = ''
     this.person = data.person
     this.onLoadPerson(this.person)
     if (this.canEditRoles && this.newp)
@@ -157,6 +161,7 @@ export default {
     'person.username': 'validate',
     'person.callSign': 'validate',
     'person.volgisticsID': 'validate',
+    'person.backgroundCheck': 'validate',
     oldPassword: 'validate',
     'person.email': 'validate',
     'person.email2': 'validate',
@@ -187,6 +192,7 @@ export default {
         body.append('username', this.person.username)
         body.append('callSign', this.person.callSign)
         body.append('volgisticsID', this.person.volgisticsID)
+        body.append('backgroundCheck', this.person.backgroundCheck)
         body.append('email', this.person.email || this.person.email2)
         body.append('email2', this.person.email ? this.person.email2 : '')
         body.append('cellPhone', this.person.cellPhone)
@@ -259,6 +265,12 @@ export default {
           this.volgisticsError = 'This is not a valid Volgistics ID number.'
         else
           this.volgisticsError = null
+        if (this.person.backgroundCheck === '' || this.person.backgroundCheck === 'true')
+          this.backgroundError = null
+        else if (!this.person.backgroundCheck.match(/^20\d\d-\d\d-\d\d$/))
+          this.backgroundError = 'This is not a valid YYYY-MM-DD date or the word "true".'
+        else
+          this.backgroundError = null
         if (this.password && !this.oldPassword && !this.allowBadPassword)
           this.oldPasswordError = 'You must supply your old password in order to change your password.'
         else if (this.oldPassword && this.oldPassword === this.wrongOldPassword)

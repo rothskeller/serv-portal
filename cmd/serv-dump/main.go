@@ -421,6 +421,10 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"volgisticsID":`)
 		out.Int(p.VolgisticsID)
 	}
+	if p.BackgroundCheck != "" {
+		out.RawString(`,"backgroundCheck":`)
+		out.String(p.BackgroundCheck)
+	}
 	out.RawByte('}')
 }
 
