@@ -8,34 +8,37 @@ PeopleList displays the list of people.
     option(v-for="t in groups" :key="t.id" :value="t.id" v-text="t.name")
   div.mt-3(v-if="loading")
     b-spinner(small)
-  #people-table(v-else)
-    .people-person.people-heading Person
-    .people-contact.people-heading Contact Info
-    .people-roles.people-heading Roles
-    template(v-for="p in people")
-      .people-person
-        router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
-        ClearanceBadge(:req="p.clearanceRequired" :v="p.inVolgistics" :d="p.dswValid" :b="p.backgroundCheck")
-      .people-contact
-        div(v-if="p.email")
-          a(:href="`mailto:${p.email}`" v-text="p.email")
-        div(v-if="p.email2")
-          a(:href="`mailto:${p.email2}`" v-text="p.email2")
-        .people-phone(v-if="p.cellPhone")
-          a(:href="`tel:${p.cellPhone}`" v-text="p.cellPhone")
-          |
-          | (Cell)
-        .people-phone(v-if="p.homePhone")
-          a(:href="`tel:${p.homePhone}`" v-text="p.homePhone")
-          |
-          | (Home)
-        .people-phone(v-if="p.workPhone")
-          a(:href="`tel:${p.workPhone}`" v-text="p.workPhone")
-          |
-          | (Work)
-      .people-roles
-        div(v-for="(r, i) in p.roles" :key="i" v-text="r")
-        div(v-if="!p.roles.length") &mdash;
+  template(v-else)
+    #people-table
+      .people-person.people-heading Person
+      .people-contact.people-heading Contact Info
+      .people-roles.people-heading Roles
+      template(v-for="p in people")
+        .people-person
+          router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
+          ClearanceBadge(:req="p.clearanceRequired" :v="p.inVolgistics" :d="p.dswValid" :b="p.backgroundCheck")
+        .people-contact
+          div(v-if="p.email")
+            a(:href="`mailto:${p.email}`" v-text="p.email")
+          div(v-if="p.email2")
+            a(:href="`mailto:${p.email2}`" v-text="p.email2")
+          .people-phone(v-if="p.cellPhone")
+            a(:href="`tel:${p.cellPhone}`" v-text="p.cellPhone")
+            |
+            | (Cell)
+          .people-phone(v-if="p.homePhone")
+            a(:href="`tel:${p.homePhone}`" v-text="p.homePhone")
+            |
+            | (Home)
+          .people-phone(v-if="p.workPhone")
+            a(:href="`tel:${p.workPhone}`" v-text="p.workPhone")
+            |
+            | (Work)
+        .people-roles
+          div(v-for="(r, i) in p.roles" :key="i" v-text="r")
+          div(v-if="!p.roles.length") &mdash;
+    div(v-if="people.length === 1") 1 person listed.
+    div(v-else v-text="`${people.length} people listed.`")
 </template>
 
 <script>
