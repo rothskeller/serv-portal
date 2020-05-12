@@ -15,7 +15,6 @@ div.mt-3.ml-2(v-if="!person")
   #person-view-roles
     div(v-for="role in person.roles" v-text="role.name")
     div(v-if="person.volgisticsID" v-text="`Sunnyvale volunteer #${person.volgisticsID}`")
-    div(v-if="person.backgroundCheck" v-text="`Background check cleared ${person.backgroundCheck}`")
   #person-view-emails(v-if="person.email")
     div: a(:href="`mailto:${person.email}`" v-text="person.email")
     div(v-if="person.email2")
