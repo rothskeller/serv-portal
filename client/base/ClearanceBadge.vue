@@ -4,10 +4,12 @@ ClearanceBadge displays a clearance badge.
 
 <template lang="pug">
 span.clearance(v-if="req === true && (!v || !d || !b)")
+  | {{ ' ' }}
   span.clear-v(:class="v ? 'clear-g' : 'clear-r'") V
   span.clear-d(:class="d ? 'clear-g' : 'clear-r'") D
   span.clear-b(:class="b ? 'clear-g' : 'clear-r'") B
 span.clearance(v-else-if="req === false && (v || d || b)")
+  | {{ ' ' }}
   span.clear-v(:class="v ? 'clear-g' : 'clear-x'") V
   span.clear-d(:class="d ? 'clear-g' : 'clear-x'") D
   span.clear-b(:class="b ? 'clear-g' : 'clear-x'") B
@@ -27,7 +29,6 @@ export default {
 <style lang="stylus">
 .clearance
   align-self center
-  white-space nowrap
   font-size 0.75rem
 .clear-v, .clear-d, .clear-b
   padding 0 0.25rem

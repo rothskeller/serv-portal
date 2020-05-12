@@ -66,7 +66,7 @@ func GetPeople(r *util.Request) error {
 			out.String(p.WorkPhone)
 		}
 		if r.Auth.May(model.PermViewClearances) {
-			out.RawString(`,"inVvolgistics":`)
+			out.RawString(`,"inVolgistics":`)
 			out.Bool(p.VolgisticsID != 0)
 			out.RawString(`,"backgroundCheck":`)
 			out.Bool(p.BackgroundCheck != "")
