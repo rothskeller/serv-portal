@@ -15,9 +15,7 @@ PeopleList displays the list of people.
     template(v-for="p in people")
       .people-person
         router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
-        DSWBadge(:badge="p.dswBadge")
-        span(v-if="p.volgisticsID" v-text="' (V)'")
-        span(v-if="p.backgroundCheck" v-text="' (BC)'")
+        ClearanceBadge(:req="p.clearanceRequired" :v="p.inVolgistics" :d="p.dswValid" :b="p.backgroundCheck")
       .people-contact
         div(v-if="p.email")
           a(:href="`mailto:${p.email}`" v-text="p.email")
@@ -42,10 +40,10 @@ PeopleList displays the list of people.
 
 <script>
 import Cookies from 'js-cookie'
-import DSWBadge from '@/base/DSWBadge'
+import ClearanceBadge from '@/base/ClearanceBadge'
 
 export default {
-  components: { DSWBadge },
+  components: { ClearanceBadge },
   data: () => ({ group: 0, groups: null, people: null, canAdd: false, loading: false }),
   created() {
     this.group = this.$route.query.group || Cookies.get('serv-people-group') || 0

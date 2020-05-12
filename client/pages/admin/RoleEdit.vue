@@ -12,6 +12,8 @@ form#role-edit(v-else @submit.prevent="onSubmit")
     #role-edit-flags
       b-checkbox(v-model="role.individual") Individual (one person only)
       b-checkbox(v-model="role.detail") Hide in person list
+      b-checkbox(v-model="role.permViewClearances") Can view clearances
+      b-checkbox(v-model="role.permEditClearances") Can edit clearances
   #role-edit-privs
     .role-edit-group.role-edit-heading Group
     .role-edit-privs.role-edit-heading
@@ -99,6 +101,8 @@ export default {
       body.append('name', this.role.name)
       body.append('individual', this.role.individual)
       body.append('detail', this.role.detail)
+      body.append('permViewClearances', this.role.permViewClearances)
+      body.append('permEditClearances', this.role.permEditClearances)
       this.privs.forEach(g => {
         if (g.member) body.append(`member:${g.id}`, true)
         if (g.roster) body.append(`roster:${g.id}`, true)

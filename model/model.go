@@ -208,6 +208,54 @@ var OrganizationNames = map[Organization]string{
 	OrgSNAP:     "SNAP",
 }
 
+// A Permission is something holders of a role get to do.  Unlike a Privilege,
+// it is not specific to a target group.  The type can be used as a single
+// permission or a bitmask of multiple permissions.
+type Permission uint16
+
+// Known permission values.
+const (
+	// PermViewClearances allows its holders to view clearances (i.e.,
+	// DSW registrations, background checks, etc.) for people whom they can
+	// otherwise see.
+	PermViewClearances Permission = 1 << iota
+
+	// PermEditClearances allows its holders to edit clearances.
+	PermEditClearances
+)
+
+// AllPermissions lists all possible permissions.
+var AllPermissions = []Permission{
+	PermViewClearances, PermEditClearances,
+}
+
+// PermissionNames gives the names of all of the permissions.
+var PermissionNames = map[Permission]string{
+	PermViewClearances: "permViewClearances",
+	PermEditClearances: "permEditClearances",
+}
+
+// MarshalEasyJSON encodes the permission into JSON.
+func (p Permission) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(PermissionNames[p])
+}
+
+// UnmarshalEasyJSON decodes the permission from JSON.
+func (p *Permission) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	s := l.UnsafeString()
+	if s == "" {
+		*p = 0
+		return
+	}
+	for perm, name := range PermissionNames {
+		if s == name {
+			*p = perm
+			return
+		}
+	}
+	l.AddError(errors.New("unrecognized value for Permission"))
+}
+
 // A PersonID is a positive integer uniquely identifying a Person.
 type PersonID int
 

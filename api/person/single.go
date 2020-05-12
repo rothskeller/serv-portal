@@ -76,16 +76,6 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
-	if r.Auth.IsWebmaster() {
-		if person.VolgisticsID != 0 {
-			out.RawString(`,"volgisticsID":`)
-			out.Int(person.VolgisticsID)
-		}
-		if person.BackgroundCheck != "" {
-			out.RawString(`,"backgroundCheck":`)
-			out.String(person.BackgroundCheck)
-		}
-	}
 	for _, r := range r.Auth.RolesP(person.ID) {
 		roles[r] = true
 	}
@@ -119,7 +109,32 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawByte('}')
 	}
 	out.RawByte(']')
-	if !wantEdit {
+	if wantEdit {
+		if r.Auth.May(model.PermEditClearances) {
+			if person.VolgisticsID != 0 {
+				out.RawString(`,"volgisticsID":`)
+				out.Int(person.VolgisticsID)
+			}
+			if person.BackgroundCheck != "" {
+				out.RawString(`,"backgroundCheck":`)
+				out.String(person.BackgroundCheck)
+			}
+		}
+	} else {
+		if r.Auth.May(model.PermViewClearances) {
+			if person.VolgisticsID != 0 {
+				out.RawString(`,"volgisticsID":`)
+				out.Int(person.VolgisticsID)
+			}
+			if person.BackgroundCheck != "" {
+				out.RawString(`,"backgroundCheck":`)
+				out.String(person.BackgroundCheck)
+			}
+			out.RawString(`,"dswValid":`)
+			out.Bool(dswValid(r, person))
+			out.RawString(`,"clearanceRequired":`)
+			out.Bool(clearanceRequired(r, person))
+		}
 		attendmap = r.Tx.FetchAttendanceByPerson(person)
 		for eid := range attendmap {
 			event := r.Tx.FetchEvent(eid)
@@ -158,18 +173,25 @@ func GetPerson(r *util.Request, idstr string) error {
 		}
 		out.RawString(`,"notes":[`)
 		var notes []*model.PersonNote
-		if len(person.DSWForms) != 0 && r.Auth.CanA(model.PrivManageMembers) {
-			notes = mergeDSWIntoNotes(person.Notes, person.DSWForms)
+		if r.Auth.May(model.PermViewClearances) {
+			notes = mergeDSWIntoNotes(person.Notes, person.DSWForms, person.BackgroundCheck)
 		} else {
 			notes = person.Notes
 		}
 		first := true
+	NOTES:
 		for _, n := range notes {
-			if n.Privilege == 0 && !r.Auth.IsWebmaster() {
-				continue
-			}
-			if n.Privilege != 0 && !r.Auth.CanAP(n.Privilege, person.ID) {
-				continue
+			switch n.Privilege {
+			case 0:
+				if !r.Auth.IsWebmaster() {
+					continue NOTES
+				}
+			case 0xFFFF:
+				break
+			default:
+				if !r.Auth.CanAP(n.Privilege, person.ID) {
+					continue NOTES
+				}
 			}
 			if first {
 				first = false
@@ -183,10 +205,6 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 		}
 		out.RawByte(']')
-		if badge := dswBadge(r, person, nil); badge != "" {
-			out.RawString(`,"dswBadge":`)
-			out.String(badge)
-		}
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
@@ -221,11 +239,11 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.DumpTo(r)
 	return nil
 }
-func mergeDSWIntoNotes(notes []*model.PersonNote, forms []*model.DSWForm) []*model.PersonNote {
-	if len(forms) == 0 {
+func mergeDSWIntoNotes(notes []*model.PersonNote, forms []*model.DSWForm, bc string) []*model.PersonNote {
+	if len(forms) == 0 && bc == "" {
 		return notes
 	}
-	nn := make([]*model.PersonNote, len(notes), len(notes)+len(forms))
+	nn := make([]*model.PersonNote, len(notes), len(notes)+len(forms)+1)
 	copy(nn, notes)
 	for _, f := range forms {
 		var n model.PersonNote
@@ -235,12 +253,24 @@ func mergeDSWIntoNotes(notes []*model.PersonNote, forms []*model.DSWForm) []*mod
 		} else {
 			n.Note = fmt.Sprintf("DSW for %s: expires %s if not active", f.For, f.To.Format("2006-01-02"))
 		}
-		n.Privilege = model.PrivManageMembers
+		n.Privilege = 0xFFFF // sentinel to disable privilege check
+		nn = append(nn, &n)
+	}
+	if bc != "" {
+		var n model.PersonNote
+		if bc != "true" {
+			n.Date = bc
+		}
+		n.Note = "Background check cleared."
+		n.Privilege = 0xFFFF // sentinel to disable privilege check
 		nn = append(nn, &n)
 	}
 	sort.Slice(nn, func(i, j int) bool {
 		return nn[i].Date < nn[j].Date
 	})
+	if nn[0].Date == "" {
+		nn[0].Date = "????-??-??"
+	}
 	return nn
 }
 
@@ -372,17 +402,20 @@ func PostPerson(r *util.Request, idstr string) error {
 	return nil
 }
 
-// dswBadge returns whether a DSW badge should be shown for a person, in the
-// context of viewing a particular group (or in no context if ctx is nil).  It
-// returns "valid" to show a green DSW badge, "invalid" to show a red "No DSW"
-// badge, or "" to show nothing.
-func dswBadge(r *util.Request, p *model.Person, ctx *model.Group) string {
-	if !r.Auth.CanAP(model.PrivManageMembers, p.ID) {
-		return ""
+// clearanceRequired returns whether the person is in a group that requires
+// clearance.
+func clearanceRequired(r *util.Request, p *model.Person) bool {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
+		if g.DSWType == model.DSWRequired {
+			return true
+		}
 	}
+	return false
+}
+
+// dswValid returns whether the person has a valid DSW registration.
+func dswValid(r *util.Request, p *model.Person) bool {
 	var hasEverHad bool
-	var hasUnexpired bool
-	var isRequired bool
 	var now = time.Now()
 	for _, f := range p.DSWForms {
 		if f.Invalid != "" {
@@ -390,28 +423,16 @@ func dswBadge(r *util.Request, p *model.Person, ctx *model.Group) string {
 		}
 		hasEverHad = true
 		if f.To.After(now) {
-			hasUnexpired = true
+			return true
 		}
 	}
-	var groups []*model.Group
-	if ctx != nil {
-		groups = []*model.Group{ctx}
-	} else {
-		groups = r.Auth.FetchGroups(r.Auth.GroupsP(p.ID))
+	if !hasEverHad {
+		return false
 	}
-	for _, g := range groups {
-		if g.DSWType == model.DSWRequired {
-			isRequired = true
-		}
-		if g.DSWType != model.DSWNone && hasEverHad {
-			hasUnexpired = true
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
+		if g.DSWType != model.DSWNone {
+			return true
 		}
 	}
-	if isRequired && !hasUnexpired {
-		return "invalid"
-	}
-	if hasUnexpired && !isRequired {
-		return "valid"
-	}
-	return ""
+	return false
 }

@@ -34,6 +34,12 @@ func GetRole(r *util.Request, idstr string) error {
 	out.Bool(role.Individual)
 	out.RawString(`,"detail":`)
 	out.Bool(role.Detail)
+	for _, p := range model.AllPermissions {
+		out.RawString(`,"`)
+		out.RawString(model.PermissionNames[p])
+		out.RawString(`":`)
+		out.Bool(role.Permissions&p != 0)
+	}
 	out.RawString(`},"canDelete":`)
 	out.Bool(role.Tag == "")
 	out.RawString(`,"privs":[`)
@@ -79,6 +85,12 @@ func PostRole(r *util.Request, idstr string) error {
 	role.Name = r.FormValue("name")
 	role.Individual, _ = strconv.ParseBool(r.FormValue("individual"))
 	role.Detail, _ = strconv.ParseBool(r.FormValue("detail"))
+	role.Permissions = 0
+	for _, p := range model.AllPermissions {
+		if r.FormValue(model.PermissionNames[p]) == "true" {
+			role.Permissions |= p
+		}
+	}
 	if err := ValidateRole(r.Auth, role); err != nil {
 		if err.Error() == "duplicate name" {
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")

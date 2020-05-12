@@ -253,6 +253,15 @@ func (a *Authorizer) UpdateRole(role *model.Role) {
 			a.entry.Change("clear role %q [%d] detail flag", role.Name, role.ID)
 		}
 	}
+	for _, p := range model.AllPermissions {
+		if role.Permissions&p != or.Permissions&p {
+			if role.Permissions&p != 0 {
+				a.entry.Change("set role %q [%d] permission %s [%d]", role.Name, role.ID, model.PermissionNames[p], p)
+			} else {
+				a.entry.Change("clear role %q [%d] permission %s [%d]", role.Name, role.ID, model.PermissionNames[p], p)
+			}
+		}
+	}
 	delete(a.originalRoles, role.ID)
 }
 

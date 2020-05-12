@@ -13,6 +13,13 @@ func ValidateRole(auth *authz.Authorizer, role *model.Role) error {
 	if role.Name = strings.TrimSpace(role.Name); role.Name == "" {
 		return errors.New("missing name")
 	}
+	var perms = role.Permissions
+	for _, p := range model.AllPermissions {
+		perms &^= p
+	}
+	if perms != 0 {
+		return errors.New("invalid permissions")
+	}
 	for _, r := range auth.FetchRoles(auth.AllRoles()) {
 		if r.ID != role.ID && r.Name == role.Name {
 			return errors.New("duplicate name")

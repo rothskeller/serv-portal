@@ -116,11 +116,12 @@ message PersonNote {
 }
 
 message Role {
-  int64  id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
-  string tag        = 2 [(gogoproto.casttype) = "RoleTag"];
-  string name       = 3;
-  bool   individual = 4;
-  bool   detail     = 5;
+  int64  id          = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
+  string tag         = 2 [(gogoproto.casttype) = "RoleTag"];
+  string name        = 3;
+  bool   individual  = 4;
+  bool   detail      = 5;
+  uint32 permissions = 6 [(gogoproto.casttype) = "Permission"];
 }
 
 message TextMessage {

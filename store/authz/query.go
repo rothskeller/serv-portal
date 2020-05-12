@@ -265,6 +265,18 @@ func (a *Authorizer) IsWebmaster() bool {
 	return false
 }
 
+// May returns whether the API caller has the specified permission.
+func (a *Authorizer) May(perm model.Permission) (hasPerm bool) {
+	a.forPersonRoles(a.me, func(rid model.RoleID) bool {
+		if a.FetchRole(rid).Permissions&perm != 0 {
+			hasPerm = true
+			return false
+		}
+		return true
+	})
+	return hasPerm
+}
+
 // MemberG returns whether the API caller is a member of the specified group.
 func (a *Authorizer) MemberG(group model.GroupID) bool {
 	return a.MemberPG(a.me, group)

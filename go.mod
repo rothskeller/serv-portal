@@ -14,6 +14,7 @@ require (
 	github.com/paulmach/orb v0.1.6
 	github.com/rothskeller/go-sqlite3 v2.0.4-0.20200409173927-878c20cd1dfd+incompatible
 	github.com/stretchr/testify v1.4.0 // indirect
+	github.com/tealeg/xlsx v1.0.5
 	github.com/test-go/testify v1.1.4 // indirect
 	github.com/toorop/go-dkim v0.0.0-20191019073156-897ad64a2eeb
 	github.com/trustelem/zxcvbn v1.0.1

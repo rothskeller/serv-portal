@@ -11,7 +11,7 @@ div.mt-3.ml-2(v-if="!person")
       span(v-text="person.informalName")
       span#person-view-callSign(v-if="person.callSign" v-text="person.callSign")
     #person-view-formalName(v-if="person.formalName !== person.informalName" v-text="`(formally ${person.formalName})`")
-    DSWBadge#person-view-dsw(:badge="person.dswBadge")
+    ClearanceBadge#person-view-cbadge(:req="person.clearanceRequired" :v="!!person.volgisticsID" :d="person.dswValid" :b="!!person.backgroundCheck")
   #person-view-roles
     div(v-for="role in person.roles" v-text="role.name")
     div(v-if="person.volgisticsID" v-text="`Sunnyvale volunteer #${person.volgisticsID}`")
@@ -66,10 +66,10 @@ div.mt-3.ml-2(v-if="!person")
 </template>
 
 <script>
-import DSWBadge from '@/base/DSWBadge'
+import ClearanceBadge from '@/base/ClearanceBadge'
 
 export default {
-  components: { DSWBadge },
+  components: { ClearanceBadge },
   props: {
     onLoadPerson: Function,
   },
@@ -101,7 +101,7 @@ export default {
   color #888
   @media (min-width: 576px)
     margin-left 1rem
-#person-view-dsw
+#person-view-cbadge
   margin-left 0.5rem
 #person-view-roles
   line-height 1.2

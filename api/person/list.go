@@ -65,18 +65,18 @@ func GetPeople(r *util.Request) error {
 			out.RawString(`,"workPhone":`)
 			out.String(p.WorkPhone)
 		}
-		if badge := dswBadge(r, p, focus); badge != "" {
-			out.RawString(`,"dswBadge":`)
-			out.String(badge)
-		}
-		if r.Auth.IsWebmaster() {
-			if p.VolgisticsID != 0 {
-				out.RawString(`,"volgisticsID":`)
-				out.Int(p.VolgisticsID)
-			}
-			if p.BackgroundCheck != "" {
-				out.RawString(`,"backgroundCheck":`)
-				out.String(p.BackgroundCheck)
+		if r.Auth.May(model.PermViewClearances) {
+			out.RawString(`,"inVvolgistics":`)
+			out.Bool(p.VolgisticsID != 0)
+			out.RawString(`,"backgroundCheck":`)
+			out.Bool(p.BackgroundCheck != "")
+			out.RawString(`,"dswValid":`)
+			out.Bool(dswValid(r, p))
+			out.RawString(`,"clearanceRequired":`)
+			if focus == nil {
+				out.Bool(clearanceRequired(r, p))
+			} else {
+				out.Bool(focus.DSWType == model.DSWRequired)
 			}
 		}
 		out.RawString(`,"roles":[`)
