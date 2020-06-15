@@ -8,7 +8,7 @@ div.mt-3.ml-2(v-if="!groups")
 b-form#texts-send(v-else @submit.prevent="onSubmit")
   b-form-group(label="Message" label-for="texts-send-message" label-cols-sm="auto" label-class="texts-send-label" :state="messageError ? false: null" :invalidFeedback="messageError")
     b-textarea#texts-send-message(v-model="message" rows="5" autofocus)
-    b-form-text(v-if="countMessage") {{countMessage}}
+    b-form-text(v-if="countMessage" :class="countClass") {{countMessage}}
   b-form-group(label="Recipients" label-for="texts-send-groups" label-cols-sm="auto" label-class="texts-send-label pt-0" :state="groupsError ? false : null" :invalidFeedback="groupsError")
     b-form-checkbox-group#texts-send-groups(v-model="recipients" :options="groups" stacked text-field="name" value-field="id")
   div.mt-3
@@ -23,6 +23,7 @@ export default {
     groups: null,
     message: '',
     recipients: [],
+    countClass: '',
     countMessage: '0/160',
     messageError: null,
     groupsError: null,
@@ -66,21 +67,18 @@ export default {
         else
           unicode = true
       }
-      if (unicode && runes > 70) {
-        this.messageError = `This message is too long.  It has ${runes} characters.  The limit is 70 when unusual characters are used.`
-        this.countMessage = ''
-      } else if (!unicode && chars > 160) {
-        this.messageError = `This message is too long.  It has ${chars} characters.  The limit is 160.`
-        this.countMessage = ''
-      } else if (this.submitted && !runes) {
+      if (this.submitted && !runes) {
         this.messageError = 'Please enter the text of your message.'
         this.countMessage = ''
+        this.countClass = ''
       } else if (unicode) {
         this.messageError = ''
         this.countMessage = `${runes}/70`
+        this.countClass = runes > 70 ? 'texts-send-long' : ''
       } else {
         this.messageError = ''
         this.countMessage = `${chars}/160`
+        this.countClass = chars > 160 ? 'texts-send-long' : ''
       }
       if (this.submitted && !this.recipients.length)
         this.groupsError = 'Please select the recipients of your message.'
@@ -99,4 +97,6 @@ export default {
 #texts-send-message
   min-width 12rem
   max-width 20rem
+.texts-send-long
+  color red
 </style>
