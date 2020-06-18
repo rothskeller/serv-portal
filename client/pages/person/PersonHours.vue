@@ -45,7 +45,7 @@ export default {
   async created() {
     const data = (await this.$axios.get(`/api/people/${this.$route.params.id}/hours`)).data
     if (data)
-      this.months = data
+      this.months = data.months
     else
       this.unregistered = true
   },

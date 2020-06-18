@@ -1023,6 +1023,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 			out.VolgisticsID = int(in.Int())
 		case "background_check":
 			out.BackgroundCheck = string(in.String())
+		case "hours_token":
+			out.HoursToken = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1203,6 +1205,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 		const prefix string = ",\"background_check\":"
 		out.RawString(prefix)
 		out.String(string(in.BackgroundCheck))
+	}
+	if in.HoursToken != "" {
+		const prefix string = ",\"hours_token\":"
+		out.RawString(prefix)
+		out.String(string(in.HoursToken))
 	}
 	out.RawByte('}')
 }

@@ -224,6 +224,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.VolgisticsID = in.Int()
 			case "backgroundCheck":
 				p.BackgroundCheck = in.String()
+			case "hoursToken":
+				p.HoursToken = in.String()
 			default:
 				in.SkipRecursive()
 			}

@@ -271,5 +271,12 @@ DSW2:
 			tx.entry.Change("set person %q [%d] backgroundCheck to %s", p.InformalName, p.ID, p.BackgroundCheck)
 		}
 	}
+	if p.HoursToken != op.HoursToken {
+		if p.HoursToken == "" {
+			tx.entry.Change("clear person %q [%d] hoursToken", p.InformalName, p.ID)
+		} else {
+			tx.entry.Change("set person %q [%d] hoursToken to %s", p.InformalName, p.ID, p.HoursToken)
+		}
+	}
 	delete(tx.originalPeople, p.ID)
 }

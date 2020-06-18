@@ -19,8 +19,20 @@ func GetPersonHours(r *util.Request, idstr string) error {
 		out    jwriter.Writer
 		now    = time.Now()
 	)
-	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-		return util.NotFound
+	// idstr could be the ID of a person, when used in a regular session, or
+	// it could be the HoursToken of a person, when used outside a session.
+	// We assume that anything longer than 5 characters must be an
+	// HoursToken and anything less must be an ID.
+	if len(idstr) <= 5 {
+		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+			return util.NotFound
+		}
+	} else {
+		if person = r.Tx.FetchPersonByHoursToken(idstr); person == nil {
+			return util.NotFound
+		}
+		r.Person = person
+		r.Auth.SetMe(person)
 	}
 	if person != r.Person && !r.Auth.IsWebmaster() {
 		return util.Forbidden
@@ -30,13 +42,15 @@ func GetPersonHours(r *util.Request, idstr string) error {
 		r.Write([]byte(`false`))
 		return nil
 	}
-	out.RawByte('[')
+	out.RawString(`{"name":`)
+	out.String(person.InformalName)
+	out.RawString(`,"months":[`)
 	if now.Day() <= 10 {
 		getPersonHours(r, &out, person, time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local))
 		out.RawByte(',')
 	}
 	getPersonHours(r, &out, person, now)
-	out.RawByte(']')
+	out.RawString(`]}`)
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
@@ -98,8 +112,16 @@ func PostPersonHours(r *util.Request, idstr string) (err error) {
 		person *model.Person
 		now    = time.Now()
 	)
-	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-		return util.NotFound
+	if len(idstr) <= 5 {
+		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+			return util.NotFound
+		}
+	} else {
+		if person = r.Tx.FetchPersonByHoursToken(idstr); person == nil {
+			return util.NotFound
+		}
+		r.Person = person
+		r.Auth.SetMe(person)
 	}
 	if person != r.Person && !r.Auth.IsWebmaster() {
 		return util.Forbidden

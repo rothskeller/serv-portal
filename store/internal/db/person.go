@@ -88,6 +88,22 @@ func (tx *Tx) FetchPersonByUnsubscribe(token string) (p *model.Person) {
 	}
 }
 
+// FetchPersonByHoursToken retrieves a single person from the database, given an
+// hours token.  It returns nil if no such person exists.
+func (tx *Tx) FetchPersonByHoursToken(token string) (p *model.Person) {
+	var data []byte
+	p = new(model.Person)
+	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE hours_token=?`, token).Scan(&data); err {
+	case nil:
+		panicOnError(p.Unmarshal(data))
+		return p
+	case sql.ErrNoRows:
+		return nil
+	default:
+		panic(err)
+	}
+}
+
 // FetchPersonByEmail retrieves a single person from the database, given an
 // email address.  It returns nil if no such person exists or if more than one
 // person has that email address.
@@ -142,7 +158,7 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	p.ID++
 	data, err = p.Marshal()
 	panicOnError(err)
-	panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, unsubscribe, data) VALUES (?,?,?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, data))
+	panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, unsubscribe, hours_token, data) VALUES (?,?,?,?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data))
 	if p.Email != "" {
 		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email))
 	}
@@ -160,7 +176,7 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	)
 	data, err = p.Marshal()
 	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, unsubscribe, data) = (?,?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, data, p.ID))
+	panicOnNoRows(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, unsubscribe, hours_token, data) = (?,?,?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data, p.ID))
 	panicOnExecError(tx.tx.Exec(`DELETE FROM person_email WHERE person=?`, p.ID))
 	if p.Email != "" {
 		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email))

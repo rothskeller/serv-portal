@@ -27,6 +27,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "PWResetToken" */ './pages/PWResetToken'),
     },
     {
+      path: '/volunteer-hours/:id',
+      component: () => import(/* webpackChunkName: "PersonHours" */ './pages/VolunteerHours'),
+    },
+    {
       path: '/policies',
       component: () => import(/* webpackChunkName: "Policies" */ './pages/Policies'),
     },

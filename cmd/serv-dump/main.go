@@ -425,6 +425,10 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"backgroundCheck":`)
 		out.String(p.BackgroundCheck)
 	}
+	if p.HoursToken != "" {
+		out.RawString(`,"hoursToken":`)
+		out.String(p.HoursToken)
+	}
 	out.RawByte('}')
 }
 

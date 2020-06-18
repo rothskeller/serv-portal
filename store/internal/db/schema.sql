@@ -51,6 +51,7 @@ CREATE TABLE person (
     pwreset_token text    UNIQUE,
     cell_phone    text    UNIQUE,
     unsubscribe   text    NOT NULL UNIQUE,
+    hours_token   text    UNIQUE,
     data          blob    NOT NULL
 );
 

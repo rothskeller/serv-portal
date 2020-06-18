@@ -80,6 +80,10 @@ func router(r *util.Request) error {
 		return authn.GetPasswordResetToken(r, c[2])
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
 		return authn.PostPasswordResetToken(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
+		return person.GetPersonHours(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
+		return person.PostPersonHours(r, c[2])
 	case r.Method == "GET" && c[1] == "unsubscribe" && c[2] != "":
 		return email.GetUnsubscribe(r, c[2])
 	case r.Method == "POST" && c[1] == "unsubscribe" && c[2] != "" && c[3] == "":
@@ -132,10 +136,6 @@ func router(r *util.Request) error {
 		return person.GetPerson(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
 		return person.PostPerson(r, c[2])
-	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
-		return person.GetPersonHours(r, c[2])
-	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
-		return person.PostPersonHours(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "":
 		return report.GetIndex(r)
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "cert-attendance" && c[3] == "":
