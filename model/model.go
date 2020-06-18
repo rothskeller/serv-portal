@@ -17,7 +17,7 @@ import (
 type ApprovalID int
 
 // An AttendanceInfo structure gives information about a person's attendance at
-// an event.
+// an event, and volunteer hours for the event.
 type AttendanceInfo struct {
 	Type    AttendanceType
 	Minutes uint16
@@ -33,6 +33,10 @@ const (
 	AttendAsVolunteer AttendanceType = iota
 	AttendAsStudent
 	AttendAsAuditor
+	// AttendAsAbsent the attendance type used in an AttendanceInfo record
+	// when a person has reported hours for the event, but wasn't actually
+	// recorded as being in attendance.
+	AttendAsAbsent
 )
 
 // AttendanceTypeNames gives the names for the attendance types.
@@ -40,6 +44,7 @@ var AttendanceTypeNames = map[AttendanceType]string{
 	AttendAsVolunteer: "Volunteer",
 	AttendAsStudent:   "Student",
 	AttendAsAuditor:   "Audit",
+	AttendAsAbsent:    "Absent",
 }
 
 // A CSRFToken is a random string used to verify that submitted forms came from
@@ -117,6 +122,10 @@ const (
 	EventParty
 	EventTraining
 	EventWork
+	// EventHours is a placeholder event to record "other" volunteer hours
+	// not associated with a true event.  Events of this type are never
+	// visible.
+	EventHours
 )
 
 // AllEventTypes is the list of all known event types.
@@ -130,6 +139,7 @@ var AllEventTypes = []EventType{
 	EventParty,
 	EventTraining,
 	EventWork,
+	EventHours,
 }
 
 // EventTypeNames maps event types to their names.
@@ -143,6 +153,7 @@ var EventTypeNames = map[EventType]string{
 	EventParty:    "Party",
 	EventTraining: "Training",
 	EventWork:     "Work Event",
+	EventHours:    "Non-Event Hours",
 }
 
 // Hours returns the number of hours the event lasted.
@@ -196,6 +207,10 @@ const (
 // AllOrganizations gives the list of all Organizations.
 var AllOrganizations = []Organization{OrgAdmin, OrgCERT, OrgLISTOS, OrgOutreach, OrgPEP, OrgSARES, OrgSNAP}
 
+// CurrentOrganizations gives the list of Organizations that are currently in
+// use (as opposed to historical).
+var CurrentOrganizations = []Organization{OrgAdmin, OrgCERT, OrgLISTOS, OrgSARES, OrgSNAP}
+
 // OrganizationNames gives the names of the various Organizations.
 var OrganizationNames = map[Organization]string{
 	OrgNone:     "",
@@ -206,6 +221,23 @@ var OrganizationNames = map[Organization]string{
 	OrgPEP:      "PEP",
 	OrgSARES:    "SARES",
 	OrgSNAP:     "SNAP",
+}
+
+// MarshalEasyJSON encodes the organization into JSON.
+func (o Organization) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(OrganizationNames[o])
+}
+
+// UnmarshalEasyJSON decodes the organization from JSON.
+func (o *Organization) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	s := l.UnsafeString()
+	for org, name := range OrganizationNames {
+		if s == name {
+			*o = org
+			return
+		}
+	}
+	l.AddError(errors.New("unrecognized value for Organization"))
 }
 
 // A Permission is something holders of a role get to do.  Unlike a Privilege,

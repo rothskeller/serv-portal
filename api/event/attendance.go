@@ -54,6 +54,8 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 			ai.Type = model.AttendAsStudent
 		case model.AttendanceTypeNames[model.AttendAsAuditor]:
 			ai.Type = model.AttendAsAuditor
+		case model.AttendanceTypeNames[model.AttendAsAbsent]:
+			ai.Type = model.AttendAsAbsent
 		default:
 			return errors.New("invalid type")
 		}

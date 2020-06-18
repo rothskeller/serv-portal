@@ -109,8 +109,14 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.RawByte('}')
 	if canEdit && wantEdit {
 		out.RawString(`,"types":[`)
-		for i, et := range model.AllEventTypes {
-			if i != 0 {
+		var first = true
+		for _, et := range model.AllEventTypes {
+			if et == model.EventHours {
+				continue
+			}
+			if first {
+				first = false
+			} else {
 				out.RawByte(',')
 			}
 			out.String(model.EventTypeNames[et])
@@ -262,6 +268,9 @@ func PostEvent(r *util.Request, idstr string) error {
 	for _, v := range r.Form["type"] {
 		var matched bool
 		for _, et := range model.AllEventTypes {
+			if et == model.EventHours {
+				continue
+			}
 			if model.EventTypeNames[et] == v {
 				event.Type |= et
 				matched = true

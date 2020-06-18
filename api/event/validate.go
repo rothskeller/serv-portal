@@ -71,7 +71,7 @@ func ValidateEvent(tx *store.Tx, event *model.Event) error {
 	if etype != 0 {
 		return errors.New("invalid types")
 	}
-	if len(event.Groups) == 0 {
+	if len(event.Groups) == 0 && event.Type != model.EventHours {
 		return errors.New("missing group")
 	}
 	for _, g := range event.Groups {

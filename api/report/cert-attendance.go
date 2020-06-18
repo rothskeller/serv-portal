@@ -97,8 +97,8 @@ func CERTAttendanceReport(r *util.Request) error {
 		if etabbr = getEventTypeAbbr(e.Type); etabbr == "" {
 			continue
 		}
-		for pid := range r.Tx.FetchAttendanceByEvent(e) {
-			if pmap[pid] == nil {
+		for pid, pa := range r.Tx.FetchAttendanceByEvent(e) {
+			if pmap[pid] == nil || pa.Type == model.AttendAsAbsent {
 				continue
 			}
 			addAttendance(data, e, pid, etabbr, stats, detail)

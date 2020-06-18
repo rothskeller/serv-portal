@@ -27,6 +27,9 @@ func GetEvents(r *util.Request) error {
 	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"events":[`)
 	for _, e := range events {
+		if e.Type == model.EventHours {
+			continue
+		}
 		var canView = !e.Private
 		if !canView {
 			for _, group := range e.Groups {

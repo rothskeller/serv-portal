@@ -697,7 +697,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *R
 		case "detail":
 			out.Detail = bool(in.Bool())
 		case "permissions":
-			out.Permissions = Permission(in.Uint16())
+			(out.Permissions).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -766,7 +766,7 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in 
 		} else {
 			out.RawString(prefix)
 		}
-		out.Uint16(uint16(in.Permissions))
+		(in.Permissions).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -1305,6 +1305,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 			}
 		case "dswType":
 			out.DSWType = DSWType(in.Int())
+		case "organization":
+			(out.Organization).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -1402,6 +1404,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		out.Int(int(in.DSWType))
+	}
+	if in.Organization != 0 {
+		const prefix string = ",\"organization\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Organization).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -1657,7 +1669,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 				in.Delim(']')
 			}
 		case "organization":
-			out.Organization = Organization(in.Uint8())
+			(out.Organization).UnmarshalEasyJSON(in)
 		case "private":
 			out.Private = bool(in.Bool())
 		default:
@@ -1777,7 +1789,7 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 		} else {
 			out.RawString(prefix)
 		}
-		out.Uint8(uint8(in.Organization))
+		(in.Organization).MarshalEasyJSON(out)
 	}
 	if in.Private {
 		const prefix string = ",\"private\":"

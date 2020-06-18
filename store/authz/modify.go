@@ -162,6 +162,9 @@ NOTEXT2:
 	if group.DSWType != og.DSWType {
 		a.entry.Change("set group %q [%d] dswType to %d", group.Name, group.ID, group.DSWType)
 	}
+	if group.Organization != og.Organization {
+		a.entry.Change("set group %q [%d] organization to %s [%d]", group.Name, group.ID, model.OrganizationNames[group.Organization], group.Organization)
+	}
 	delete(a.originalGroups, group.ID)
 	a.dirtyGroups = true
 }

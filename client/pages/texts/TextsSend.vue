@@ -98,5 +98,5 @@ export default {
   min-width 12rem
   max-width 20rem
 .texts-send-long
-  color red
+  color red !important
 </style>

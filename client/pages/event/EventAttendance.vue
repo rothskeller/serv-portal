@@ -12,6 +12,7 @@ form#event-attendance(v-else @submit.prevent="onSave")
       option(value="Volunteer") Volunteer
       option(value="Student") Student
       option(value="Audit") Auditor
+      option(value="Absent") Absentee
     label.mr-2(for="event-attend-hours") Hours:
     b-form-input#event-attend-hours(v-model="setHours" type="number" min="0" max="24" step="0.5")
   #event-attend-group

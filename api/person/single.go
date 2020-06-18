@@ -137,6 +137,9 @@ func GetPerson(r *util.Request, idstr string) error {
 		}
 		attendmap = r.Tx.FetchAttendanceByPerson(person)
 		for eid := range attendmap {
+			if attendmap[eid].Type == model.AttendAsAbsent {
+				continue
+			}
 			event := r.Tx.FetchEvent(eid)
 			if r.Person == person {
 				attended = append(attended, event)
@@ -208,6 +211,8 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
+	out.RawString(`,"canHours":`)
+	out.Bool(person.ID == r.Person.ID || r.Auth.IsWebmaster())
 	out.RawString(`,"noEmail":`)
 	out.Bool(person.NoEmail)
 	out.RawString(`,"noText":`)

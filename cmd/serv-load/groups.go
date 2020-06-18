@@ -85,6 +85,8 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 				in.Delim(']')
 			case "dswType":
 				g.DSWType = model.DSWType(in.Int())
+			case "organization":
+				g.Organization.UnmarshalEasyJSON(in)
 			default:
 				in.SkipRecursive()
 			}

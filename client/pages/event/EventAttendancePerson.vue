@@ -16,7 +16,7 @@ export default {
   },
   computed: {
     classes() {
-      if (!this.person.attended) return 'event-attend-person-absent'
+      if (!this.person.attended) return 'event-attend-person-none'
       else return 'event-attend-person-' + this.person.attended.type.toLowerCase()
     },
     label() {
@@ -35,7 +35,7 @@ export default {
 <style lang="stylus">
 .event-attend-person
   margin-right 0.75rem
-.event-attend-person-absent
+.event-attend-person-none
   display inline-block
   margin-right 0.25rem
   width 3rem
@@ -44,12 +44,15 @@ export default {
   text-align center
   line-height 1.2
 .event-attend-person-volunteer
-  @extend .event-attend-person-absent
+  @extend .event-attend-person-none
   background-color #4363d8
 .event-attend-person-student
-  @extend .event-attend-person-absent
+  @extend .event-attend-person-none
   background-color #3cb44b
 .event-attend-person-audit
-  @extend .event-attend-person-absent
+  @extend .event-attend-person-none
   background-color #a9a9a9
+.event-attend-person-absent
+  @extend .event-attend-person-none
+  background-color #800000
 </style>

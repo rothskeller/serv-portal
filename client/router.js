@@ -152,6 +152,10 @@ const router = new Router({
               path: ':id/edit',
               component: () => import(/* webpackChunkName: "PersonEdit" */ './pages/person/PersonEdit'),
             },
+            {
+              path: ':id/hours',
+              component: () => import(/* webpackChunkName: "PersonHours" */ './pages/person/PersonHours'),
+            },
           ]
         },
         {

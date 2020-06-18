@@ -78,6 +78,7 @@ message Group {
   repeated int64 no_email     = 6 [(gogoproto.casttype) = "PersonID"];
   repeated int64 no_text      = 7 [(gogoproto.casttype) = "PersonID"];
   int32          dsw_type     = 8 [(gogoproto.customname) = "DSWType", (gogoproto.casttype) = "DSWType", (gogoproto.jsontag) = "dswType,omitempty"];
+  int32          organization = 9 [(gogoproto.casttype) = "Organization"];
 }
 
 message Person {
@@ -116,12 +117,12 @@ message PersonNote {
 }
 
 message Role {
-  int64  id          = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
-  string tag         = 2 [(gogoproto.casttype) = "RoleTag"];
-  string name        = 3;
-  bool   individual  = 4;
-  bool   detail      = 5;
-  uint32 permissions = 6 [(gogoproto.casttype) = "Permission"];
+  int64  id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
+  string tag          = 2 [(gogoproto.casttype) = "RoleTag"];
+  string name         = 3;
+  bool   individual   = 4;
+  bool   detail       = 5;
+  uint32 permissions  = 6 [(gogoproto.casttype) = "Permission"];
 }
 
 message TextMessage {
