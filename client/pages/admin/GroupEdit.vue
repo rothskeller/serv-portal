@@ -11,9 +11,16 @@ form#group-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Group email" label-for="group-email" label-cols-sm="auto" label-class="group-edit-label" :state="emailError ? false : null" :invalid-feedback="emailError")
     b-input#group-edit-email(:state="emailError ? false : null" trim v-model="group.email")
     b-form-text @sunnyvaleserv.org
+  b-form-group(label="Flags" label-cols-sm="auto" label-class="group-edit-label pt-0")
+    #group-edit-flags
+      b-checkbox(v-model="group.getHours") Request volunteer hours from this group
   b-form-group(label="DSW" label-cols-sm="auto" label-class="group-edit-label pt-0")
     #group-edit-dsw
       b-form-radio-group(v-model="group.dswType" :options="dswOptions")
+  b-form-group(label="Organization for volunteer hours tracking:")
+    b-form-radio-group(stacked :options="organizations" v-model="group.organization")
+      template(v-slot:first)
+        b-form-radio(value="") (none)
   #group-edit-privs
     .group-edit-role.group-edit-heading Role
     .group-edit-privs.group-edit-heading
@@ -71,6 +78,7 @@ export default {
     emailError: null,
     duplicateEmail: null,
     dswOptions,
+    organizations: null,
   }),
   computed: {
     newg() { return this.$route.params.gid === 'NEW' },
@@ -92,6 +100,7 @@ export default {
       this.group = data.group
       this.privs = data.privs
       this.canDelete = data.canDelete && this.$route.params.gid !== 'NEW'
+      this.organizations = data.organizations
       this.onLoadGroup(this.group)
     },
     onClone() {
@@ -117,6 +126,8 @@ export default {
       body.append('name', this.group.name)
       body.append('email', this.group.email)
       body.append('dswType', this.group.dswType)
+      body.append('getHours', this.group.getHours)
+      body.append('organization', this.group.organization)
       this.privs.forEach(r => {
         if (r.member) body.append(`member:${r.id}`, true)
         if (r.roster) body.append(`roster:${r.id}`, true)
@@ -162,7 +173,7 @@ export default {
   padding 1.5rem 0.75rem
 .group-edit-label
   width 7rem
-#group-edit-name, #group-edit-email, #group-edit-dsw
+#group-edit-name, #group-edit-email, #group-edit-flags, #group-edit-dsw
   min-width 14rem
   max-width 20rem
 #group-edit-privs

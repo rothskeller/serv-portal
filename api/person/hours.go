@@ -61,6 +61,7 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 		mstr    = month.Format("2006-01")
 		first   = true
 		pgroups = r.Auth.FetchGroups(r.Auth.GroupsP(person.ID))
+		today   = time.Now().Format("2006-01-02")
 	)
 	out.RawString(`{"month":`)
 	out.String(month.Format("January 2006"))
@@ -74,6 +75,9 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 			amap = r.Tx.FetchAttendanceByEvent(e)
 			show = amap[person.ID].Minutes != 0
 		)
+		if !show && e.Type != model.EventHours && e.Date > today {
+			continue
+		}
 		if !show && e.Organization != model.OrgNone {
 			for _, g := range pgroups {
 				if g.Organization == e.Organization {
@@ -82,7 +86,9 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 				}
 			}
 		}
-		if !show {
+		// Disabling SARES hours collection since they still do that
+		// through their own site.
+		if !show || e.Organization == model.OrgSARES {
 			continue
 		}
 		if first {

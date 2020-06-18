@@ -1314,6 +1314,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 			out.DSWType = DSWType(in.Int())
 		case "organization":
 			(out.Organization).UnmarshalEasyJSON(in)
+		case "get_hours":
+			out.GetHours = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1421,6 +1423,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		(in.Organization).MarshalEasyJSON(out)
+	}
+	if in.GetHours {
+		const prefix string = ",\"get_hours\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.GetHours))
 	}
 	out.RawByte('}')
 }

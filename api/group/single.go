@@ -33,6 +33,10 @@ func GetGroup(r *util.Request, idstr string) error {
 	out.String(group.Name)
 	out.RawString(`,"email":`)
 	out.String(group.Email)
+	out.RawString(`,"getHours":`)
+	out.Bool(group.GetHours)
+	out.RawString(`,"organization":`)
+	out.String(model.OrganizationNames[group.Organization])
 	if len(group.NoEmail) != 0 {
 		people := make([]*model.Person, len(group.NoEmail))
 		for i := range group.NoEmail {
@@ -92,6 +96,21 @@ func GetGroup(r *util.Request, idstr string) error {
 		}
 		out.RawByte('}')
 	}
+	out.RawString(`],"organizations":[`)
+	found := false
+	for i, o := range model.CurrentOrganizations {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.String(model.OrganizationNames[o])
+		if group.Organization == o {
+			found = true
+		}
+	}
+	if group.Organization != model.OrgNone && !found {
+		out.RawByte(',')
+		out.String(model.OrganizationNames[group.Organization])
+	}
 	out.RawString(`]}`)
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json")
@@ -120,6 +139,14 @@ func PostGroup(r *util.Request, idstr string) error {
 	}
 	group.Name = r.FormValue("name")
 	group.Email = r.FormValue("email")
+	group.GetHours = r.FormValue("getHours") == "true"
+	group.Organization = model.OrgNone
+	for o, n := range model.OrganizationNames {
+		if r.FormValue("organization") == n {
+			group.Organization = o
+			break
+		}
+	}
 	switch r.FormValue("dswType") {
 	case "":
 		group.DSWType = model.DSWNone

@@ -165,6 +165,13 @@ NOTEXT2:
 	if group.Organization != og.Organization {
 		a.entry.Change("set group %q [%d] organization to %s [%d]", group.Name, group.ID, model.OrganizationNames[group.Organization], group.Organization)
 	}
+	if group.GetHours != og.GetHours {
+		if group.GetHours {
+			a.entry.Change("set group %q [%d] getHours", group.Name, group.ID)
+		} else {
+			a.entry.Change("clear group %q [%d] getHours", group.Name, group.ID)
+		}
+	}
 	delete(a.originalGroups, group.ID)
 	a.dirtyGroups = true
 }
