@@ -42,6 +42,11 @@ func GetPersonHours(r *util.Request, idstr string) error {
 		r.Write([]byte(`false`))
 		return nil
 	}
+	if person == r.Person && person.HoursReminder {
+		r.Tx.WillUpdatePerson(person)
+		person.HoursReminder = false
+		r.Tx.UpdatePerson(person)
+	}
 	out.RawString(`{"name":`)
 	out.String(person.InformalName)
 	out.RawString(`,"months":[`)

@@ -429,6 +429,9 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"hoursToken":`)
 		out.String(p.HoursToken)
 	}
+	if p.HoursReminder {
+		out.RawString(`,"hoursReminder":true`)
+	}
 	out.RawByte('}')
 }
 

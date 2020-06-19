@@ -226,6 +226,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.BackgroundCheck = in.String()
 			case "hoursToken":
 				p.HoursToken = in.String()
+			case "hoursReminder":
+				p.HoursReminder = in.Bool()
 			default:
 				in.SkipRecursive()
 			}

@@ -278,5 +278,12 @@ DSW2:
 			tx.entry.Change("set person %q [%d] hoursToken to %s", p.InformalName, p.ID, p.HoursToken)
 		}
 	}
+	if p.HoursReminder != op.HoursReminder {
+		if p.HoursReminder {
+			tx.entry.Change("set person %q [%d] hoursReminder", p.InformalName, p.ID)
+		} else {
+			tx.entry.Change("clear person %q [%d] hoursReminder", p.InformalName, p.ID)
+		}
+	}
 	delete(tx.originalPeople, p.ID)
 }
