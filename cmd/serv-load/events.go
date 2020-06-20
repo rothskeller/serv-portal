@@ -157,6 +157,10 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "renewsDSW":
+				e.RenewsDSW = in.Bool()
+			case "coveredByDSW":
+				e.CoveredByDSW = in.Bool()
 			case "attendance":
 				in.Delim('[')
 				for !in.IsDelim(']') {

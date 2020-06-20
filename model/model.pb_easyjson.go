@@ -1789,6 +1789,10 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 			(out.Organization).UnmarshalEasyJSON(in)
 		case "private":
 			out.Private = bool(in.Bool())
+		case "renewsDSW":
+			out.RenewsDSW = bool(in.Bool())
+		case "coveredByDSW":
+			out.CoveredByDSW = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1917,6 +1921,26 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 			out.RawString(prefix)
 		}
 		out.Bool(bool(in.Private))
+	}
+	if in.RenewsDSW {
+		const prefix string = ",\"renewsDSW\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.RenewsDSW))
+	}
+	if in.CoveredByDSW {
+		const prefix string = ",\"coveredByDSW\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.CoveredByDSW))
 	}
 	out.RawByte('}')
 }

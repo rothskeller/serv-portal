@@ -173,6 +173,12 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawByte('}')
 	}
 	out.RawByte(']')
+	if e.RenewsDSW {
+		out.RawString(`,"renewsDSW":true`)
+	}
+	if e.CoveredByDSW {
+		out.RawString(`,"coveredByDSW":true`)
+	}
 	out.RawString(`,"attendance":[`)
 	var eattend = tx.FetchAttendanceByEvent(e)
 	var pids = make([]model.PersonID, 0, len(eattend))

@@ -262,6 +262,17 @@ var OrganizationNames = map[Organization]string{
 	OrgSNAP:     "SNAP",
 }
 
+// OrganizationToDSWClass gives the DSW classes associated with each
+// organization.
+var OrganizationToDSWClass = map[Organization]DSWClass{
+	OrgCERT:     DSWCERT,
+	OrgLISTOS:   DSWCERT,
+	OrgOutreach: DSWCERT,
+	OrgPEP:      DSWCERT,
+	OrgSARES:    DSWComm,
+	OrgSNAP:     DSWCERT,
+}
+
 // MarshalEasyJSON encodes the organization into JSON.
 func (o Organization) MarshalEasyJSON(w *jwriter.Writer) {
 	w.String(OrganizationNames[o])
