@@ -172,6 +172,13 @@ NOTEXT2:
 			a.entry.Change("clear group %q [%d] getHours", group.Name, group.ID)
 		}
 	}
+	if group.DSWClass != og.DSWClass {
+		if group.DSWClass != 0 {
+			a.entry.Change("set group %q [%d] dswClass to %s [%d]", group.Name, group.ID, model.DSWClassNames[group.DSWClass], group.DSWClass)
+		} else {
+			a.entry.Change("clear group %q [%d] dswClass", group.Name, group.ID)
+		}
+	}
 	delete(a.originalGroups, group.ID)
 	a.dirtyGroups = true
 }

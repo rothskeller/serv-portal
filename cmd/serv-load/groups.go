@@ -89,6 +89,8 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 				g.Organization.UnmarshalEasyJSON(in)
 			case "getHours":
 				g.GetHours = in.Bool()
+			case "dswClass":
+				g.DSWClass.UnmarshalEasyJSON(in)
 			default:
 				in.SkipRecursive()
 			}

@@ -228,6 +228,48 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.HoursToken = in.String()
 			case "hoursReminder":
 				p.HoursReminder = in.Bool()
+			case "dswRegistrations":
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					p.DSWRegistrations = make(map[model.DSWClass]time.Time)
+					in.Delim('{')
+					for !in.IsDelim('}') {
+						var key model.DSWClass
+						key.UnmarshalEasyJSON(in)
+						in.WantColon()
+						if in.IsNull() {
+							in.Skip()
+							in.WantComma()
+							continue
+						}
+						p.DSWRegistrations[key], err = time.ParseInLocation("2006-01-02", in.String(), time.Local)
+						in.AddError(err)
+						in.WantComma()
+					}
+					in.Delim('}')
+				}
+			case "dswUntil":
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					p.DSWUntil = make(map[model.DSWClass]time.Time)
+					in.Delim('{')
+					for !in.IsDelim('}') {
+						var key model.DSWClass
+						key.UnmarshalEasyJSON(in)
+						in.WantColon()
+						if in.IsNull() {
+							in.Skip()
+							in.WantComma()
+							continue
+						}
+						p.DSWUntil[key], err = time.ParseInLocation("2006-01-02", in.String(), time.Local)
+						in.AddError(err)
+						in.WantComma()
+					}
+					in.Delim('}')
+				}
 			default:
 				in.SkipRecursive()
 			}

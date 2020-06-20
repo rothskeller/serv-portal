@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"strconv"
+	"time"
 
 	"sunnyvaleserv.org/portal/model"
 )
@@ -89,6 +90,16 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	if p.BackgroundCheck != "" {
 		tx.entry.Change("set person [%d] backgroundCheck to %s", p.ID, p.BackgroundCheck)
 	}
+	if p.DSWRegistrations != nil {
+		for c, r := range p.DSWRegistrations {
+			tx.entry.Change("set person [%d] dswRegistration[%s] to %s", p.ID, model.DSWClassNames[c], r.Format("2006-01-02"))
+		}
+	}
+	if p.DSWUntil != nil {
+		for c, r := range p.DSWUntil {
+			tx.entry.Change("set person [%d] dswUntil[%s] to %s", p.ID, model.DSWClassNames[c], r.Format("2006-01-02"))
+		}
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -111,6 +122,18 @@ func (tx *Tx) WillUpdatePerson(p *model.Person) {
 		for i := range p.DSWForms {
 			forms[i] = *p.DSWForms[i]
 			op.DSWForms[i] = &forms[i]
+		}
+	}
+	if p.DSWRegistrations != nil {
+		op.DSWRegistrations = make(map[model.DSWClass]time.Time, len(p.DSWRegistrations))
+		for c, r := range p.DSWRegistrations {
+			op.DSWRegistrations[c] = r
+		}
+	}
+	if p.DSWUntil != nil {
+		op.DSWUntil = make(map[model.DSWClass]time.Time, len(p.DSWUntil))
+		for c, r := range p.DSWUntil {
+			op.DSWUntil[c] = r
 		}
 	}
 	tx.originalPeople[p.ID] = &op
@@ -283,6 +306,52 @@ DSW2:
 			tx.entry.Change("set person %q [%d] hoursReminder", p.InformalName, p.ID)
 		} else {
 			tx.entry.Change("clear person %q [%d] hoursReminder", p.InformalName, p.ID)
+		}
+	}
+	{
+		var nm, om = p.DSWRegistrations, op.DSWRegistrations
+		if nm == nil {
+			nm = make(map[model.DSWClass]time.Time)
+		}
+		if om == nil {
+			om = make(map[model.DSWClass]time.Time)
+		}
+		for c, nr := range nm {
+			if or := om[c]; or != nr {
+				if nr.IsZero() {
+					tx.entry.Change("clear person %q [%d] dswRegistrations[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
+				} else {
+					tx.entry.Change("set person %q [%d] dswRegistrations[%s] to %s", p.InformalName, p.ID, model.DSWClassNames[c], nr.Format("2006-01-02"))
+				}
+			}
+		}
+		for c := range om {
+			if _, ok := nm[c]; !ok {
+				tx.entry.Change("clear person %q [%d] dswRegistrations[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
+			}
+		}
+	}
+	{
+		var nm, om = p.DSWUntil, op.DSWUntil
+		if nm == nil {
+			nm = make(map[model.DSWClass]time.Time)
+		}
+		if om == nil {
+			om = make(map[model.DSWClass]time.Time)
+		}
+		for c, nr := range nm {
+			if or := om[c]; or != nr {
+				if nr.IsZero() {
+					tx.entry.Change("clear person %q [%d] dswUntil[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
+				} else {
+					tx.entry.Change("set person %q [%d] dswUntil[%s] to %s", p.InformalName, p.ID, model.DSWClassNames[c], nr.Format("2006-01-02"))
+				}
+			}
+		}
+		for c := range om {
+			if _, ok := nm[c]; !ok {
+				tx.entry.Change("clear person %q [%d] dswUntil[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
+			}
 		}
 	}
 	delete(tx.originalPeople, p.ID)

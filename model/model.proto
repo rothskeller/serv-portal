@@ -71,15 +71,23 @@ message Folder {
 }
 
 message Group {
-  int64          id           =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
-  string         tag          =  2 [(gogoproto.casttype) = "GroupTag"];
-  string         name         =  3;
-  string         email        =  5;
-  repeated int64 no_email     =  6 [(gogoproto.casttype) = "PersonID"];
-  repeated int64 no_text      =  7 [(gogoproto.casttype) = "PersonID"];
-  int32          dsw_type     =  8 [(gogoproto.customname) = "DSWType", (gogoproto.casttype) = "DSWType", (gogoproto.jsontag) = "dswType,omitempty"];
-  int32          organization =  9 [(gogoproto.casttype) = "Organization"];
-  bool           get_hours    = 10;
+  int64          id       =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
+  string         tag      =  2 [(gogoproto.casttype) = "GroupTag"];
+  string         name     =  3;
+  string         email    =  5;
+  repeated int64 no_email =  6 [(gogoproto.casttype) = "PersonID"];
+  repeated int64 no_text  =  7 [(gogoproto.casttype) = "PersonID"];
+  int32          dsw_type =  8 [(gogoproto.customname) = "DSWType", (gogoproto.casttype) = "DSWType", (gogoproto.jsontag) = "dswType,omitempty"];
+  // Organization is the organization with which this group is affiliated.
+  // Members of this group will be asked for any additional hours they may have
+  // for this organization.
+  int32 organization = 9 [(gogoproto.casttype) = "Organization"];
+  // GetHours, when true, indicates that members of this group should receive
+  // monthly email reminders to record their volunteer hours.
+  bool get_hours = 10;
+  // DSWClass indicates which classification of DSW registration is required for
+  // members of this group.
+  int32 dsw_class = 11 [(gogoproto.customname) = "DSWClass", (gogoproto.casttype) = "DSWClass", (gogoproto.jsontag) = "dswClass,omitempty"];
 }
 
 message Person {
@@ -111,6 +119,15 @@ message Person {
   string                    background_check  = 33;
   string                    hours_token       = 34;
   bool                      hours_reminder    = 35;
+  // DSWRegistrations is a map from a DSWClass to the date on the person's most
+  // recent valid DSW registration with that classification.  The registration
+  // may or may not still be current.
+  map<int32,google.protobuf.Timestamp> dsw_registrations = 36 [(gogoproto.customname) = "DSWRegistrations", (gogoproto.castkey) = "DSWClass", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // DSWUntil is a map from a DSWClass to the date on which the person's DSW
+  // registration in that classification expired or will expire.  This is cached
+  // derivable data, recalculated whenever attendance is recorded for this
+  // person.
+  map<int32,google.protobuf.Timestamp> dsw_until = 37 [(gogoproto.customname) = "DSWUntil", (gogoproto.castkey) = "DSWClass", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }
 
 message PersonNote {

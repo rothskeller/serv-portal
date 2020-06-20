@@ -432,6 +432,42 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	if p.HoursReminder {
 		out.RawString(`,"hoursReminder":true`)
 	}
+	if p.DSWRegistrations != nil {
+		out.RawString(`,"dswRegistrations":{`)
+		var first = true
+		for c, r := range p.DSWRegistrations {
+			if r.IsZero() {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(model.DSWClassNames[c])
+			out.RawByte(':')
+			out.String(r.Format("2006-01-02"))
+		}
+		out.RawByte('}')
+	}
+	if p.DSWUntil != nil {
+		out.RawString(`,"dswUntil":{`)
+		var first = true
+		for c, r := range p.DSWUntil {
+			if r.IsZero() {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(model.DSWClassNames[c])
+			out.RawByte(':')
+			out.String(r.Format("2006-01-02"))
+		}
+		out.RawByte('}')
+	}
 	out.RawByte('}')
 }
 

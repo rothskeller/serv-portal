@@ -56,6 +56,45 @@ type CSRFToken string
 // new DocumentID.
 type DocumentID int
 
+// A DSWClass identifies a DSW classification as defined in state regulations
+// (19 CCR § 2572.1).
+type DSWClass int
+
+const (
+	// DSWComm is the "Communications" classification.
+	DSWComm DSWClass = 2
+	// DSWCERT is the "Community Emergency Response Team Member"
+	// classification.
+	DSWCERT = 3
+	// Other state-defined classifications are not used by SERV.
+)
+
+// AllDSWClasses gives the list of all DSW classes.
+var AllDSWClasses = []DSWClass{DSWComm, DSWCERT}
+
+// DSWClassNames gives the names of the various DSW classes.
+var DSWClassNames = map[DSWClass]string{
+	DSWComm: "Communications",
+	DSWCERT: "CERT",
+}
+
+// MarshalEasyJSON encodes the DSWClass into JSON.
+func (c DSWClass) MarshalEasyJSON(w *jwriter.Writer) {
+	w.String(DSWClassNames[c])
+}
+
+// UnmarshalEasyJSON decodes the DSWClass from JSON.
+func (c *DSWClass) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	s := l.UnsafeString()
+	for org, name := range DSWClassNames {
+		if s == name {
+			*c = org
+			return
+		}
+	}
+	l.AddError(errors.New("unrecognized value for DSWClass"))
+}
+
 // A DSWType describes how DSW swearing is affected by group membership.
 type DSWType int
 
