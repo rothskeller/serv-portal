@@ -86,8 +86,8 @@ func main() {
 	// 	dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
 		loadTextMessages(tx, in)
-	// case strings.HasPrefix("venues", os.Args[1]):
-	// 	dumpVenues(tx)
+	case strings.HasPrefix("venues", os.Args[1]):
+		loadVenues(tx, in)
 	default:
 		usage()
 	}

@@ -1,7 +1,6 @@
 Goodies:
   Revise DSW handling: show to authorized people whether in manageable group or not
   DSW editing
-  People editing their volunteer hours
   Volunteer hours report
   Credentials and clearances tracking
   Skills and other person data
@@ -18,6 +17,7 @@ Goodies:
   Place to request print runs for documents e.g. brochures
   Contacts download to phone etc.
 Cosmetics:
+  Complete the implementation of serv-load venues.  Better validation, allow updates.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
   Start event list scrolled to "today".
