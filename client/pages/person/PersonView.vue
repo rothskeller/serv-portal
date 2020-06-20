@@ -11,10 +11,8 @@ div.mt-3.ml-2(v-if="!person")
       span(v-text="person.informalName")
       span#person-view-callSign(v-if="person.callSign" v-text="person.callSign")
     #person-view-formalName(v-if="person.formalName !== person.informalName" v-text="`(formally ${person.formalName})`")
-    ClearanceBadge#person-view-cbadge(:req="person.clearanceRequired" :v="!!person.volgisticsID" :d="person.dswValid" :b="!!person.backgroundCheck")
   #person-view-roles
     div(v-for="role in person.roles" v-text="role.name")
-    div(v-if="person.volgisticsID" v-text="`Sunnyvale volunteer #${person.volgisticsID}`")
   #person-view-emails(v-if="person.email")
     div: a(:href="`mailto:${person.email}`" v-text="person.email")
     div(v-if="person.email2")
@@ -47,6 +45,25 @@ div.mt-3.ml-2(v-if="!person")
     div Mailing Address:
     div(v-text="person.mailAddress.address.split(',')[0]")
     div(v-text="person.mailAddress.address.replace(/^[^,]*, */, '')")
+  .person-view-clearances(v-if="person.dsw || person.volgisticsID || person.backgroundCheck")
+    div Volunteer status:
+    div(v-if="person.volgisticsID === false") Sunnyvale volunteer: <span style="color:red">not registered.</span>
+    div(v-else-if="person.volgisticsID && person.volgisticsID !== true" v-text="`Sunnyvale volunteer #${person.volgisticsID}`")
+    template(v-if="person.dsw")
+      div(v-for="dsw, cls in person.dsw")
+        | DSW for {{cls}}:
+        |
+        span(v-if="dsw.needed && !dsw.registered" style="color:red") not registered.
+        template(v-else)
+          | registered {{dsw.registered}},
+          |
+          span(v-if="dsw.expired" style="color:red") expired
+          span(v-else) expires
+          |
+          | {{dsw.expires}}.
+    div(v-if="person.backgroundCheck === true") Background check cleared.
+    div(v-else-if="person.backgroundCheck === false") Background check: <span style="color:red">not completed.</span>
+    div(v-else-if="person.backgroundCheck") Background check cleared on {{person.backgroundCheck}}.
   #person-view-attended(v-if="person.attended")
     div Events attended:
     .person-view-attended(v-for="e in person.attended")
@@ -65,10 +82,7 @@ div.mt-3.ml-2(v-if="!person")
 </template>
 
 <script>
-import ClearanceBadge from '@/base/ClearanceBadge'
-
 export default {
-  components: { ClearanceBadge },
   props: {
     onLoadPerson: Function,
   },
@@ -113,7 +127,7 @@ export default {
 .person-view-phone-label
   margin-left 0.25rem
   color #888
-.person-view-address
+.person-view-address, .person-view-clearances
   margin-top 0.75rem
   line-height 1.2
 .person-view-map

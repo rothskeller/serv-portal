@@ -125,6 +125,8 @@ func GetPerson(r *util.Request, idstr string) error {
 			if person.VolgisticsID != 0 {
 				out.RawString(`,"volgisticsID":`)
 				out.Int(person.VolgisticsID)
+			} else if needVolgisticsID(r, person) {
+				out.RawString(`,"volgisticsID":false`)
 			}
 			if person.BackgroundCheck != "" {
 				out.RawString(`,"backgroundCheck":`)
@@ -134,6 +136,53 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.Bool(dswValid(r, person))
 			out.RawString(`,"clearanceRequired":`)
 			out.Bool(clearanceRequired(r, person))
+		} else if r.Person == person {
+			if person.VolgisticsID != 0 {
+				out.RawString(`,"volgisticsID":true`)
+			} else if needVolgisticsID(r, person) {
+				out.RawString(`,"volgisticsID":false`)
+			}
+		}
+		if r.Person == person || r.Auth.May(model.PermViewClearances) {
+			out.RawString(`,"dsw":{`)
+			var first = true
+			for _, c := range model.AllDSWClasses {
+				needed := needDSW(r, person, c)
+				if (person.DSWRegistrations == nil || person.DSWRegistrations[c].IsZero()) && !needed {
+					continue
+				}
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(model.DSWClassNames[c])
+				out.RawString(`:{`)
+				if person.DSWRegistrations == nil || person.DSWRegistrations[c].IsZero() {
+					out.RawString(`"needed":true`)
+				} else {
+					out.RawString(`"registered":`)
+					out.String(person.DSWRegistrations[c].Format("2006-01-02"))
+					out.RawString(`,"expires":`)
+					out.String(person.DSWUntil[c].Format("2006-01-02"))
+					if person.DSWUntil[c].Before(time.Now()) {
+						out.RawString(`,"expired":true`)
+					}
+				}
+				out.RawByte('}')
+			}
+			out.RawByte('}')
+			switch person.BackgroundCheck {
+			case "":
+				if needBackgroundCheck(r, person) {
+					out.RawString(`,"backgroundCheck":false`)
+				}
+			case "true":
+				out.RawString(`,"backgroundCheck":true`)
+			default:
+				out.RawString(`,"backgroundCheck":`)
+				out.String(person.BackgroundCheck)
+			}
 		}
 		attendmap = r.Tx.FetchAttendanceByPerson(person)
 		for eid := range attendmap {
@@ -405,6 +454,39 @@ func PostPerson(r *util.Request, idstr string) error {
 	r.Auth.Save()
 	r.Tx.Commit()
 	return nil
+}
+
+// needVolgisticsID returns whether the person is in a group from which
+// volunteer hours are requested.
+func needVolgisticsID(r *util.Request, p *model.Person) bool {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
+		if g.GetHours {
+			return true
+		}
+	}
+	return false
+}
+
+// needDSW returns whether the person is in a group that requires DSW clearance
+// for the specified class.
+func needDSW(r *util.Request, p *model.Person, c model.DSWClass) bool {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
+		if g.DSWClass == c {
+			return true
+		}
+	}
+	return false
+}
+
+// needBackgroundCheck returns whether the person is in a group that requires a
+// background check.
+func needBackgroundCheck(r *util.Request, p *model.Person) bool {
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
+		if g.BackgroundCheckRequired {
+			return true
+		}
+	}
+	return false
 }
 
 // clearanceRequired returns whether the person is in a group that requires
