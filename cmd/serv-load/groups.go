@@ -91,6 +91,10 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 				g.GetHours = in.Bool()
 			case "dswClass":
 				g.DSWClass.UnmarshalEasyJSON(in)
+			case "dswRequired":
+				g.DSWRequired = in.Bool()
+			case "backgroundCheckRequired":
+				g.BackgroundCheckRequired = in.Bool()
 			default:
 				in.SkipRecursive()
 			}

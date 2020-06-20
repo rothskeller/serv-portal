@@ -1404,6 +1404,10 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 			out.GetHours = bool(in.Bool())
 		case "dswClass":
 			(out.DSWClass).UnmarshalEasyJSON(in)
+		case "dswRequired":
+			out.DSWRequired = bool(in.Bool())
+		case "background_check_required":
+			out.BackgroundCheckRequired = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1531,6 +1535,26 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		(in.DSWClass).MarshalEasyJSON(out)
+	}
+	if in.DSWRequired {
+		const prefix string = ",\"dswRequired\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.DSWRequired))
+	}
+	if in.BackgroundCheckRequired {
+		const prefix string = ",\"background_check_required\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.BackgroundCheckRequired))
 	}
 	out.RawByte('}')
 }

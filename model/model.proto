@@ -96,6 +96,13 @@ message Group {
   // DSWClass indicates which classification of DSW registration is required for
   // members of this group.
   int32 dsw_class = 11 [(gogoproto.customname) = "DSWClass", (gogoproto.casttype) = "DSWClass", (gogoproto.jsontag) = "dswClass,omitempty"];
+  // DSWRequired indicates whether DSW registration is required for membership
+  // in the group.  The relevant DSW classification is derived from the
+  // Organization field.
+  bool dsw_required = 12 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
+  // BackgroundCheckRequired indicates whether a background check is required
+  // for membership in the group.
+  bool background_check_required = 13;
 }
 
 message Person {

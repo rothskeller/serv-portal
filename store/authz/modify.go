@@ -179,6 +179,20 @@ NOTEXT2:
 			a.entry.Change("clear group %q [%d] dswClass", group.Name, group.ID)
 		}
 	}
+	if group.DSWRequired != og.DSWRequired {
+		if group.DSWRequired {
+			a.entry.Change("set group %q [%d] dswRequired", group.Name, group.ID)
+		} else {
+			a.entry.Change("clear group %q [%d] dswRequired", group.Name, group.ID)
+		}
+	}
+	if group.BackgroundCheckRequired != og.BackgroundCheckRequired {
+		if group.BackgroundCheckRequired {
+			a.entry.Change("set group %q [%d] backgroundCheckRequired", group.Name, group.ID)
+		} else {
+			a.entry.Change("clear group %q [%d] backgroundCheckRequired", group.Name, group.ID)
+		}
+	}
 	delete(a.originalGroups, group.ID)
 	a.dirtyGroups = true
 }
