@@ -111,43 +111,48 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawByte(']')
 	if wantEdit {
 		if r.Auth.May(model.PermEditClearances) {
-			if person.VolgisticsID != 0 {
-				out.RawString(`,"volgisticsID":`)
-				out.Int(person.VolgisticsID)
+			out.RawString(`,"volgistics":`)
+			out.Int(person.VolgisticsID)
+			out.RawString(`,"dsw":{`)
+			for i, c := range model.AllDSWClasses {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				out.String(model.DSWClassNames[c])
+				out.RawByte(':')
+				if person.DSWRegistrations == nil || person.DSWRegistrations[c].IsZero() {
+					out.RawString(`""`)
+				} else {
+					out.String(person.DSWRegistrations[c].Format("2006-01-02"))
+				}
 			}
-			if person.BackgroundCheck != "" {
-				out.RawString(`,"backgroundCheck":`)
-				out.String(person.BackgroundCheck)
-			}
+			out.RawString(`},"backgroundCheck":`)
+			out.String(person.BackgroundCheck)
 		}
 	} else {
 		if r.Auth.May(model.PermViewClearances) {
 			if person.VolgisticsID != 0 {
-				out.RawString(`,"volgisticsID":`)
+				out.RawString(`,"volgistics":`)
 				out.Int(person.VolgisticsID)
-			} else if needVolgisticsID(r, person) {
-				out.RawString(`,"volgisticsID":false`)
+			} else if needVolgisticsID(r, person, nil) {
+				out.RawString(`,"volgistics":false`)
 			}
 			if person.BackgroundCheck != "" {
 				out.RawString(`,"backgroundCheck":`)
 				out.String(person.BackgroundCheck)
 			}
-			out.RawString(`,"dswValid":`)
-			out.Bool(dswValid(r, person))
-			out.RawString(`,"clearanceRequired":`)
-			out.Bool(clearanceRequired(r, person))
 		} else if r.Person == person {
 			if person.VolgisticsID != 0 {
-				out.RawString(`,"volgisticsID":true`)
-			} else if needVolgisticsID(r, person) {
-				out.RawString(`,"volgisticsID":false`)
+				out.RawString(`,"volgistics":true`)
+			} else if needVolgisticsID(r, person, nil) {
+				out.RawString(`,"volgistics":false`)
 			}
 		}
 		if r.Person == person || r.Auth.May(model.PermViewClearances) {
 			out.RawString(`,"dsw":{`)
 			var first = true
 			for _, c := range model.AllDSWClasses {
-				needed := needDSW(r, person, c)
+				needed := needDSW(r, person, c, nil)
 				if (person.DSWRegistrations == nil || person.DSWRegistrations[c].IsZero()) && !needed {
 					continue
 				}
@@ -174,7 +179,8 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 			switch person.BackgroundCheck {
 			case "":
-				if needBackgroundCheck(r, person) {
+				if needBackgroundCheck(r, person, nil) && r.Auth.IsWebmaster() {
+					// Setting this to webmaster only until we have accurate BG check data.
 					out.RawString(`,"backgroundCheck":false`)
 				}
 			case "true":
@@ -224,26 +230,13 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte(']')
 		}
 		out.RawString(`,"notes":[`)
-		var notes []*model.PersonNote
-		if r.Auth.May(model.PermViewClearances) {
-			notes = mergeDSWIntoNotes(person.Notes, person.DSWForms, person.BackgroundCheck)
-		} else {
-			notes = person.Notes
-		}
 		first := true
-	NOTES:
-		for _, n := range notes {
-			switch n.Privilege {
-			case 0:
-				if !r.Auth.IsWebmaster() {
-					continue NOTES
-				}
-			case 0xFFFF:
-				break
-			default:
-				if !r.Auth.CanAP(n.Privilege, person.ID) {
-					continue NOTES
-				}
+		for _, n := range person.Notes {
+			if n.Privilege == 0 && !r.Auth.IsWebmaster() {
+				continue
+			}
+			if n.Privilege != 0 && !r.Auth.CanAP(n.Privilege, person.ID) {
+				continue
 			}
 			if first {
 				first = false
@@ -272,6 +265,8 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.Bool(canEditRoles)
 		out.RawString(`,"canEditDetails":`)
 		out.Bool(canEditDetails)
+		out.RawString(`,"canEditClearances":`)
+		out.Bool(r.Auth.May(model.PermEditClearances))
 		out.RawString(`,"allowBadPassword":`)
 		out.Bool(r.Auth.IsWebmaster())
 		out.RawString(`,"canEditUsername":`)
@@ -292,40 +287,6 @@ func GetPerson(r *util.Request, idstr string) error {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
-}
-func mergeDSWIntoNotes(notes []*model.PersonNote, forms []*model.DSWForm, bc string) []*model.PersonNote {
-	if len(forms) == 0 && bc == "" {
-		return notes
-	}
-	nn := make([]*model.PersonNote, len(notes), len(notes)+len(forms)+1)
-	copy(nn, notes)
-	for _, f := range forms {
-		var n model.PersonNote
-		n.Date = f.From.Format("2006-01-02")
-		if f.Invalid != "" {
-			n.Note = fmt.Sprintf("DSW for %s: INVALID: %s", f.For, f.Invalid)
-		} else {
-			n.Note = fmt.Sprintf("DSW for %s: expires %s if not active", f.For, f.To.Format("2006-01-02"))
-		}
-		n.Privilege = 0xFFFF // sentinel to disable privilege check
-		nn = append(nn, &n)
-	}
-	if bc != "" {
-		var n model.PersonNote
-		if bc != "true" {
-			n.Date = bc
-		}
-		n.Note = "Background check cleared."
-		n.Privilege = 0xFFFF // sentinel to disable privilege check
-		nn = append(nn, &n)
-	}
-	sort.Slice(nn, func(i, j int) bool {
-		return nn[i].Date < nn[j].Date
-	})
-	if nn[0].Date == "" {
-		nn[0].Date = "????-??-??"
-	}
-	return nn
 }
 
 // PostPerson handles POST /api/people/$id requests (where $id may be "NEW").
@@ -414,8 +375,19 @@ func PostPerson(r *util.Request, idstr string) error {
 		}
 		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
 	}
-	if r.Auth.IsWebmaster() {
-		person.VolgisticsID, _ = strconv.Atoi(r.FormValue("volgisticsID"))
+	if r.Auth.May(model.PermEditClearances) {
+		person.VolgisticsID, _ = strconv.Atoi(r.FormValue("volgistics"))
+		if person.DSWRegistrations == nil {
+			person.DSWRegistrations = make(map[model.DSWClass]time.Time)
+		}
+		for _, c := range model.AllDSWClasses {
+			date := r.FormValue("dsw-" + model.DSWClassNames[c])
+			if date == "" {
+				delete(person.DSWRegistrations, c)
+			} else if person.DSWRegistrations[c], err = time.ParseInLocation("2006-01-02", date, time.Local); err != nil {
+				return errors.New("invalid DSW date")
+			}
+		}
 		person.BackgroundCheck = r.FormValue("backgroundCheck")
 	}
 	if err = ValidatePerson(r.Tx, person, roles); err != nil {
@@ -458,7 +430,10 @@ func PostPerson(r *util.Request, idstr string) error {
 
 // needVolgisticsID returns whether the person is in a group from which
 // volunteer hours are requested.
-func needVolgisticsID(r *util.Request, p *model.Person) bool {
+func needVolgisticsID(r *util.Request, p *model.Person, g *model.Group) bool {
+	if g != nil {
+		return g.GetHours
+	}
 	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
 		if g.GetHours {
 			return true
@@ -469,9 +444,12 @@ func needVolgisticsID(r *util.Request, p *model.Person) bool {
 
 // needDSW returns whether the person is in a group that requires DSW clearance
 // for the specified class.
-func needDSW(r *util.Request, p *model.Person, c model.DSWClass) bool {
+func needDSW(r *util.Request, p *model.Person, c model.DSWClass, g *model.Group) bool {
+	if g != nil {
+		return model.OrganizationToDSWClass[g.Organization] == c
+	}
 	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if g.DSWClass == c {
+		if model.OrganizationToDSWClass[g.Organization] == c {
 			return true
 		}
 	}
@@ -480,44 +458,12 @@ func needDSW(r *util.Request, p *model.Person, c model.DSWClass) bool {
 
 // needBackgroundCheck returns whether the person is in a group that requires a
 // background check.
-func needBackgroundCheck(r *util.Request, p *model.Person) bool {
+func needBackgroundCheck(r *util.Request, p *model.Person, g *model.Group) bool {
+	if g != nil {
+		return g.BackgroundCheckRequired
+	}
 	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
 		if g.BackgroundCheckRequired {
-			return true
-		}
-	}
-	return false
-}
-
-// clearanceRequired returns whether the person is in a group that requires
-// clearance.
-func clearanceRequired(r *util.Request, p *model.Person) bool {
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if g.DSWType == model.DSWRequired {
-			return true
-		}
-	}
-	return false
-}
-
-// dswValid returns whether the person has a valid DSW registration.
-func dswValid(r *util.Request, p *model.Person) bool {
-	var hasEverHad bool
-	var now = time.Now()
-	for _, f := range p.DSWForms {
-		if f.Invalid != "" {
-			continue
-		}
-		hasEverHad = true
-		if f.To.After(now) {
-			return true
-		}
-	}
-	if !hasEverHad {
-		return false
-	}
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if g.DSWType != model.DSWNone {
 			return true
 		}
 	}

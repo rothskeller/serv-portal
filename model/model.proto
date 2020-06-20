@@ -28,13 +28,6 @@ message Document {
   bool                      needs_approval = 5;
 }
 
-message DSWForm {
-  google.protobuf.Timestamp from    = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  google.protobuf.Timestamp to      = 2 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  string                    for     = 3;
-  string                    invalid = 4;
-}
-
 message EmailMessage {
   int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
   string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
@@ -85,7 +78,6 @@ message Group {
   string         email    =  5;
   repeated int64 no_email =  6 [(gogoproto.casttype) = "PersonID"];
   repeated int64 no_text  =  7 [(gogoproto.casttype) = "PersonID"];
-  int32          dsw_type =  8 [(gogoproto.customname) = "DSWType", (gogoproto.casttype) = "DSWType", (gogoproto.jsontag) = "dswType,omitempty"];
   // Organization is the organization with which this group is affiliated.
   // Members of this group will be asked for any additional hours they may have
   // for this organization.
@@ -95,10 +87,6 @@ message Group {
   bool get_hours = 10;
   // DSWClass indicates which classification of DSW registration is required for
   // members of this group.
-  int32 dsw_class = 11 [(gogoproto.customname) = "DSWClass", (gogoproto.casttype) = "DSWClass", (gogoproto.jsontag) = "dswClass,omitempty"];
-  // DSWRequired indicates whether DSW registration is required for membership
-  // in the group.  The relevant DSW classification is derived from the
-  // Organization field.
   bool dsw_required = 12 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
   // BackgroundCheckRequired indicates whether a background check is required
   // for membership in the group.
@@ -129,7 +117,6 @@ message Person {
   bool                      no_email          = 28;
   bool                      no_text           = 29;
   string                    unsubscribe_token = 30;
-  repeated DSWForm          dsw_forms         = 31 [(gogoproto.customname) = "DSWForms"];
   int64                     volgistics_id     = 32 [(gogoproto.customname) = "VolgisticsID", (gogoproto.casttype) = "int"];
   string                    background_check  = 33;
   string                    hours_token       = 34;

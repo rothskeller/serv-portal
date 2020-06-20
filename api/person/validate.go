@@ -3,9 +3,7 @@ package person
 import (
 	"errors"
 	"regexp"
-	"sort"
 	"strings"
-	"time"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
@@ -173,34 +171,6 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 			}
 		}
 	}
-	for _, f := range person.DSWForms {
-		if f.From.IsZero() {
-			return errors.New("missing DSW form from date")
-		}
-		for _, f2 := range person.DSWForms {
-			if f != f2 && f.From.Equal(f2.From) {
-				return errors.New("duplicate DSW form from date")
-			}
-		}
-		f.Invalid = strings.TrimSpace(f.Invalid)
-		if f.To.IsZero() && f.Invalid == "" {
-			return errors.New("missing DSW form to date")
-		}
-		if !f.To.IsZero() && f.To.Before(f.From) {
-			return errors.New("invalid DSW form to date: before from")
-		}
-		maxexp := time.Date(f.From.Year()+1, f.From.Month(), f.From.Day(), 0, 0, 0, 0, time.Local)
-		if !f.To.IsZero() && f.To.After(maxexp) {
-			return errors.New("invalid DSW form to date: more than a year after from")
-		}
-		f.For = strings.TrimSpace(f.For)
-		if f.For == "" {
-			return errors.New("missing DSW form for reason")
-		}
-	}
-	sort.Slice(person.DSWForms, func(i, j int) bool {
-		return person.DSWForms[i].From.Before(person.DSWForms[j].From)
-	})
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}

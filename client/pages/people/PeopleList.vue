@@ -16,7 +16,7 @@ PeopleList displays the list of people.
       template(v-for="p in people")
         .people-person
           router-link(:to="`/people/${p.id}`" v-text="p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName")
-          ClearanceBadge(:req="p.clearanceRequired" :v="p.inVolgistics" :d="p.dswValid" :b="p.backgroundCheck")
+          div.people-badge(v-for="b in p.badges" :class="b.startsWith('No') ? 'people-badge-no' : 'people-badge-yes'" v-text="b")
         .people-contact
           div(v-if="p.email")
             a(:href="`mailto:${p.email}`" v-text="p.email")
@@ -43,10 +43,8 @@ PeopleList displays the list of people.
 
 <script>
 import Cookies from 'js-cookie'
-import ClearanceBadge from '@/base/ClearanceBadge'
 
 export default {
-  components: { ClearanceBadge },
   data: () => ({ group: 0, groups: null, people: null, canAdd: false, loading: false }),
   created() {
     this.group = this.$route.query.group || Cookies.get('serv-people-group') || 0
@@ -100,10 +98,23 @@ export default {
   text-indent -1.5rem
   text-overflow ellipsis
   white-space nowrap
+  line-height 1.2
   @media (min-width: 576px)
     margin-top 0.75rem
     text-overflow clip
     white-space normal
+.people-badge
+  display inline-block
+  margin-left 1.5rem
+  padding 0 0.25rem
+  border-radius 4px
+  color white
+  text-indent 0
+  font-size 0.75rem
+.people-badge-no
+  background-color red
+.people-badge-yes
+  background-color green
 .people-contact
   margin-left 6rem
   div

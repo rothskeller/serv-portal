@@ -401,28 +401,6 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawByte('}')
 	}
 	out.RawByte(']')
-	if len(p.DSWForms) != 0 {
-		out.RawString(`,"dswForms":[`)
-		for i, f := range p.DSWForms {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.RawString(`{"from":`)
-			out.String(f.From.Format("2006-01-02"))
-			if !f.To.IsZero() {
-				out.RawString(`,"to":`)
-				out.String(f.To.Format("2006-01-02"))
-			}
-			out.RawString(`,"for":`)
-			out.String(f.For)
-			if f.Invalid != "" {
-				out.RawString(`,"invalid":`)
-				out.String(f.Invalid)
-			}
-			out.RawByte('}')
-		}
-		out.RawByte(']')
-	}
 	if p.VolgisticsID != 0 {
 		out.RawString(`,"volgisticsID":`)
 		out.Int(p.VolgisticsID)

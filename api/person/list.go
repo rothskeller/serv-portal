@@ -2,6 +2,7 @@ package person
 
 import (
 	"strings"
+	"time"
 
 	"github.com/mailru/easyjson/jwriter"
 
@@ -15,6 +16,7 @@ func GetPeople(r *util.Request) error {
 		focus  *model.Group
 		people []*model.Person
 		out    jwriter.Writer
+		now    = time.Now()
 	)
 	focus = r.Auth.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
 	if _, ok := r.Form["search"]; ok {
@@ -66,17 +68,46 @@ func GetPeople(r *util.Request) error {
 			out.String(p.WorkPhone)
 		}
 		if r.Auth.May(model.PermViewClearances) {
-			out.RawString(`,"inVolgistics":`)
-			out.Bool(p.VolgisticsID != 0)
-			out.RawString(`,"backgroundCheck":`)
-			out.Bool(p.BackgroundCheck != "")
-			out.RawString(`,"dswValid":`)
-			out.Bool(dswValid(r, p))
-			out.RawString(`,"clearanceRequired":`)
-			if focus == nil {
-				out.Bool(clearanceRequired(r, p))
+			var badges []string
+			if needVolgisticsID(r, p, focus) {
+				if p.VolgisticsID == 0 {
+					badges = append(badges, "Not Volunteer")
+				}
 			} else {
-				out.Bool(focus.DSWType == model.DSWRequired)
+				if p.VolgisticsID != 0 {
+					badges = append(badges, "Volunteer")
+				}
+			}
+			for _, c := range model.AllDSWClasses {
+				if needDSW(r, p, c, focus) {
+					if p.DSWUntil == nil || p.DSWUntil[c].Before(now) {
+						badges = append(badges, "No DSW "+model.DSWClassNames[c][:4])
+					}
+				} else {
+					if p.DSWUntil != nil && !p.DSWUntil[c].Before(now) {
+						badges = append(badges, "DSW "+model.DSWClassNames[c][:4])
+					}
+				}
+			}
+			if needBackgroundCheck(r, p, focus) {
+				if p.BackgroundCheck == "" && r.Auth.IsWebmaster() {
+					// Setting this to webmaster only until we have accurate BG check data.
+					badges = append(badges, "No BG Check")
+				}
+			} else {
+				if p.BackgroundCheck != "" {
+					badges = append(badges, "BG Check")
+				}
+			}
+			if len(badges) != 0 {
+				out.RawString(`,"badges":[`)
+				for i, b := range badges {
+					if i != 0 {
+						out.RawByte(',')
+					}
+					out.String(b)
+				}
+				out.RawByte(']')
 			}
 		}
 		out.RawString(`,"roles":[`)

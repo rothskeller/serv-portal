@@ -159,9 +159,6 @@ NOTEXT2:
 		}
 		a.entry.Change("add group %q [%d] noText person %q [%d]", group.Name, group.ID, a.tx.FetchPerson(p).InformalName, p)
 	}
-	if group.DSWType != og.DSWType {
-		a.entry.Change("set group %q [%d] dswType to %d", group.Name, group.ID, group.DSWType)
-	}
 	if group.Organization != og.Organization {
 		a.entry.Change("set group %q [%d] organization to %s [%d]", group.Name, group.ID, model.OrganizationNames[group.Organization], group.Organization)
 	}
@@ -170,13 +167,6 @@ NOTEXT2:
 			a.entry.Change("set group %q [%d] getHours", group.Name, group.ID)
 		} else {
 			a.entry.Change("clear group %q [%d] getHours", group.Name, group.ID)
-		}
-	}
-	if group.DSWClass != og.DSWClass {
-		if group.DSWClass != 0 {
-			a.entry.Change("set group %q [%d] dswClass to %s [%d]", group.Name, group.ID, model.DSWClassNames[group.DSWClass], group.DSWClass)
-		} else {
-			a.entry.Change("clear group %q [%d] dswClass", group.Name, group.ID)
 		}
 	}
 	if group.DSWRequired != og.DSWRequired {

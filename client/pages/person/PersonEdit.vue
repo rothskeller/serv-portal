@@ -21,10 +21,16 @@ form#person-edit(v-else @submit.prevent="onSubmit")
       b-input#person-username.person-edit-input(:state="usernameError ? false : null" v-model="person.username")
     b-form-group(label="Call sign" label-for="person-callSign" label-cols-sm="auto" label-class="person-edit-label" :state="callSignError ? false : null" :invalid-feedback="callSignError")
       b-input#person-callSign.person-edit-input(:state="callSignError ? false : null" v-model="person.callSign")
-    b-form-group(v-if="allowBadPassword" label="Volgistics" label-for="person-volgistics" label-cols-sm="auto" label-class="person-edit-label" :state="volgisticsError ? false : null" :invalid-feedback="volgisticsError")
-      b-input#person-volgistics.person-edit-input(type="number" min="0" :state="volgisticsError ? false : null" v-model="person.volgisticsID")
-    b-form-group(v-if="allowBadPassword" label="background" label-for="person-background" label-cols-sm="auto" label-class="person-edit-label" :state="backgroundError ? false : null" :invalid-feedback="backgroundError")
+  template(v-if="canEditClearances")
+    .person-edit-block-head Volunteer Status
+    b-form-group(label="Volgistics ID" label-for="person-volgistics" label-cols-sm="auto" label-class="person-edit-label" :state="volgisticsError ? false : null" :invalid-feedback="volgisticsError")
+      b-input#person-volgistics.person-edit-input(type="number" min="0" :state="volgisticsError ? false : null" v-model="person.volgistics")
+    b-form-group(v-for="date, cls in person.dsw" :label="`DSW ${cls.substr(0, 4)}`" :label-for="`person-dsw-${cls}`" label-cols-sm="auto" label-class="person-edit-label" :state="dswError[cls] ? false : null" :invalid-feedback="dswError[cls]")
+      b-input.person-edit-input(:id="`person-dsw-${cls}`" type="date" :state="dswError[cls] ? false : null" v-model="person.dsw[cls]")
+      b-form-text Date when the DSW registration form was signed.
+    b-form-group(label="BG Check" label-for="person-background" label-cols-sm="auto" label-class="person-edit-label" :state="backgroundError ? false : null" :invalid-feedback="backgroundError")
       b-input#person-background.person-edit-input(:state="backgroundError ? false : null" v-model="person.backgroundCheck")
+  template(v-if="canEditDetails")
     .person-edit-block-head Change Password
     b-form-group(v-if="!allowBadPassword" label="Old Password" label-for="person-oldPassword" label-cols-sm="auto" label-class="person-edit-label" :state="oldPasswordError ? false : null" :invalid-feedback="oldPasswordError")
       b-input#person-oldPassword.person-edit-input(type="password" :state="oldPasswordError ? false : null" v-model="oldPassword")
@@ -65,6 +71,7 @@ export default {
   data: () => ({
     person: null,
     allowBadPassword: false,
+    canEditClearances: false,
     canEditDetails: false,
     canEditRoles: false,
     canEditUsername: false,
@@ -77,6 +84,7 @@ export default {
     duplicateUsername: null,
     callSignError: null,
     volgisticsError: null,
+    dswError: {},
     backgroundError: null,
     duplicateCallSign: null,
     emailError: null,
@@ -125,9 +133,12 @@ export default {
       if (this.canEditDetails) {
         if (this.informalNameError || this.formalNameError || this.sortNameError || this.callSignError || this.emailError ||
           this.email2Error || this.cellPhoneError || this.homePhoneError || this.workPhoneError || !this.person.homeAddress ||
-          !this.person.mailAddress || !this.person.workAddress || this.password === null || this.volgisticsError || this.backgroundError)
+          !this.person.mailAddress || !this.person.workAddress || this.password === null)
           return false
         if (!this.allowBadPassword && this.oldPasswordError) return false
+      }
+      if (this.canEditClearances) {
+        if (this.volgisticsError || this.backgroundError || Object.keys(this.dswError).some(k => this.dswError[k])) return false
       }
       if (this.canEditUsername && this.usernameError) return false
       if (this.canEditRoles && this.rolesError) return false
@@ -137,17 +148,21 @@ export default {
   async created() {
     const data = (await this.$axios.get(`/api/people/${this.$route.params.id}?edit=1`)).data
     this.allowBadPassword = data.allowBadPassword
+    this.canEditClearances = data.canEditClearances
     this.canEditDetails = data.canEditDetails
     this.canEditRoles = data.canEditRoles
     this.canEditUsername = data.canEditUsername
     this.passwordHints = data.passwordHints
-    if (!data.person.volgisticsID) data.person.volgisticsID = 0
-    if (!data.person.backgroundCheck) data.person.backgroundCheck = ''
     this.person = data.person
     this.onLoadPerson(this.person)
     if (this.canEditRoles && this.newp)
       this.person.roles.forEach(r => {
         if (r.canAssign) this.$watch((() => r.held), this.validate)
+      })
+    if (this.person.dsw)
+      Object.keys(this.person.dsw).forEach(k => {
+        this.$set(this.dswError, k, null)
+        this.$watch(`person.dsw.${k}`, this.validate)
       })
   },
   watch: {
@@ -160,7 +175,7 @@ export default {
     'person.sortName': 'validate',
     'person.username': 'validate',
     'person.callSign': 'validate',
-    'person.volgisticsID': 'validate',
+    'person.volgistics': 'validate',
     'person.backgroundCheck': 'validate',
     oldPassword: 'validate',
     'person.email': 'validate',
@@ -191,8 +206,6 @@ export default {
         body.append('sortName', this.person.sortName)
         body.append('username', this.person.username)
         body.append('callSign', this.person.callSign)
-        body.append('volgisticsID', this.person.volgisticsID)
-        body.append('backgroundCheck', this.person.backgroundCheck)
         body.append('email', this.person.email || this.person.email2)
         body.append('email2', this.person.email ? this.person.email2 : '')
         body.append('cellPhone', this.person.cellPhone)
@@ -217,6 +230,11 @@ export default {
         } else {
           body.append('mailAddressSameAsHome', this.person.mailAddress.sameAsHome)
         }
+      }
+      if (this.canEditClearances) {
+        body.append('volgistics', this.person.volgistics)
+        body.append('backgroundCheck', this.person.backgroundCheck)
+        Object.keys(this.person.dsw).forEach(k => { body.append(`dsw-${k}`, this.person.dsw[k]) })
       }
       if (this.canEditRoles) {
         this.person.roles.filter(role => role.held && role.canAssign).forEach(role => { body.append('role', role.id) })
@@ -261,16 +279,6 @@ export default {
           this.callSignError = 'A different person has this call sign.'
         else
           this.callSignError = null
-        if (this.person.volgisticsID < 0)
-          this.volgisticsError = 'This is not a valid Volgistics ID number.'
-        else
-          this.volgisticsError = null
-        if (this.person.backgroundCheck === '' || this.person.backgroundCheck === 'true')
-          this.backgroundError = null
-        else if (!this.person.backgroundCheck.match(/^20\d\d-\d\d-\d\d$/))
-          this.backgroundError = 'This is not a valid YYYY-MM-DD date or the word "true".'
-        else
-          this.backgroundError = null
         if (this.password && !this.oldPassword && !this.allowBadPassword)
           this.oldPasswordError = 'You must supply your old password in order to change your password.'
         else if (this.oldPassword && this.oldPassword === this.wrongOldPassword)
@@ -305,6 +313,26 @@ export default {
           this.workPhoneError = 'A valid phone number must have 10 digits.'
         else
           this.workPhoneError = null
+      }
+      if (this.canEditClearances) {
+        if (this.person.volgistics < 0)
+          this.volgisticsError = 'This is not a valid Volgistics ID number.'
+        else
+          this.volgisticsError = null
+        Object.keys(this.person.dsw).forEach(k => {
+          if (this.person.dsw[k] === '')
+            this.dswError[k] = null
+          else if (!this.person.dsw[k].match(/^20\d\d-\d\d-\d\d$/))
+            this.dswError[k] = 'This is not a valid YYYY-MM-DD date.'
+          else
+            this.dswError[k] = null
+        })
+        if (this.person.backgroundCheck === '' || this.person.backgroundCheck === 'true')
+          this.backgroundError = null
+        else if (!this.person.backgroundCheck.match(/^20\d\d-\d\d-\d\d$/))
+          this.backgroundError = 'This is not a valid YYYY-MM-DD date or the word "true".'
+        else
+          this.backgroundError = null
       }
       if (this.canEditRoles) {
         if (this.newp && !this.person.roles.some(role => role.held))

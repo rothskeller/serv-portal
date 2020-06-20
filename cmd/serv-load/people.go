@@ -182,44 +182,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
-			case "dswForms":
-				in.Delim('[')
-				for !in.IsDelim(']') {
-					if in.IsNull() {
-						in.Skip()
-					} else {
-						var form model.DSWForm
-						in.Delim('{')
-						for !in.IsDelim('}') {
-							key := in.UnsafeString()
-							in.WantColon()
-							if in.IsNull() {
-								in.Skip()
-								in.WantComma()
-								continue
-							}
-							switch key {
-							case "from":
-								form.From, err = time.ParseInLocation("2006-01-02", in.String(), time.Local)
-								in.AddError(err)
-							case "to":
-								form.To, err = time.ParseInLocation("2006-01-02", in.String(), time.Local)
-								in.AddError(err)
-							case "for":
-								form.For = in.String()
-							case "invalid":
-								form.Invalid = in.String()
-							default:
-								in.SkipRecursive()
-							}
-							in.WantComma()
-						}
-						in.Delim('}')
-						p.DSWForms = append(p.DSWForms, &form)
-					}
-					in.WantComma()
-				}
-				in.Delim(']')
 			case "volgisticsID":
 				p.VolgisticsID = in.Int()
 			case "backgroundCheck":

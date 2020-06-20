@@ -127,7 +127,7 @@ GROUPS2:
 		} else {
 			tx.entry.Change("clear event %s %q [%d] renewsDSW", e.Date, e.Name, e.ID)
 		}
-		tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], tx.Tx.FetchAttendanceByEvent(e), nil)
+		tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], tx.Tx.FetchAttendanceByEvent(e), nil, nil)
 	}
 	if e.CoveredByDSW != oe.CoveredByDSW {
 		if e.CoveredByDSW {
@@ -159,12 +159,13 @@ func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]mode
 			tx.entry.Change("remove event %s %q [%d] person %q [%d] attendance", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid)
 		}
 	}
-	tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], attend, oattend)
+	tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], attend, oattend, nil)
 }
 
 // recalculateDSWUntil recalculates the DSWUntil values, for the specified DSW
-// classification, for all people listed in either of the two provided maps.
-func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonID]model.AttendanceInfo) {
+// classification, for all people listed in either of the two provided maps or
+// the single provided pointer.
+func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonID]model.AttendanceInfo, one *model.Person) {
 	var (
 		oldest time.Time
 		people = make(map[model.PersonID]*model.Person)
@@ -179,9 +180,14 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 			people[p] = nil
 		}
 	}
+	if one != nil {
+		people[one.ID] = one
+	}
 	for pid := range people {
-		people[pid] = tx.FetchPerson(pid)
-		tx.WillUpdatePerson(people[pid])
+		if people[pid] == nil {
+			people[pid] = tx.FetchPerson(pid)
+			tx.WillUpdatePerson(people[pid])
+		}
 		if people[pid].DSWRegistrations == nil || people[pid].DSWRegistrations[class].IsZero() {
 			delete(people, pid)
 			continue
@@ -217,6 +223,8 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 		}
 	}
 	for _, p := range people {
-		tx.UpdatePerson(p)
+		if p != one {
+			tx.UpdatePerson(p)
+		}
 	}
 }

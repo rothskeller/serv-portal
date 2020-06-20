@@ -45,10 +45,10 @@ div.mt-3.ml-2(v-if="!person")
     div Mailing Address:
     div(v-text="person.mailAddress.address.split(',')[0]")
     div(v-text="person.mailAddress.address.replace(/^[^,]*, */, '')")
-  .person-view-clearances(v-if="person.dsw || person.volgisticsID || person.backgroundCheck")
+  .person-view-clearances(v-if="person.dsw || person.volgistics !== undefined || person.backgroundCheck !== undefined")
     div Volunteer status:
-    div(v-if="person.volgisticsID === false") Sunnyvale volunteer: <span style="color:red">not registered.</span>
-    div(v-else-if="person.volgisticsID && person.volgisticsID !== true" v-text="`Sunnyvale volunteer #${person.volgisticsID}`")
+    div(v-if="person.volgistics === false") Sunnyvale volunteer: <span style="color:red">not registered.</span>
+    div(v-else-if="person.volgistics && person.volgistics !== true" v-text="`Sunnyvale volunteer #${person.volgistics}`")
     template(v-if="person.dsw")
       div(v-for="dsw, cls in person.dsw")
         | DSW for {{cls}}:

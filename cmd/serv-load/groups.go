@@ -83,14 +83,10 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
-			case "dswType":
-				g.DSWType = model.DSWType(in.Int())
 			case "organization":
 				g.Organization.UnmarshalEasyJSON(in)
 			case "getHours":
 				g.GetHours = in.Bool()
-			case "dswClass":
-				g.DSWClass.UnmarshalEasyJSON(in)
 			case "dswRequired":
 				g.DSWRequired = in.Bool()
 			case "backgroundCheckRequired":
