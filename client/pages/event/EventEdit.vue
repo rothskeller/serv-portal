@@ -50,7 +50,7 @@ form#event-edit(v-else @submit.prevent="onSubmit")
       b-checkbox(v-model="event.renewsDSW") Attendance renews DSW registration
       b-checkbox(v-model="event.coveredByDSW") Event is covered by DSW insurance
   b-form-group(label="Event is for these groups:" :state="groupsError ? false : null" :invalid-feedback="groupsError")
-    b-form-checkbox-group(stacked :options="groups" text-field="name" value-field="id" v-model="event.groups")
+    b-form-checkbox-group(stacked :options="filteredGroups" text-field="name" value-field="id" v-model="event.groups")
   b-form-group(label="Visibility" label-for="event-private" label-cols-sm="auto" label-class="event-edit-label pt-0")
     b-form-radio-group(stacked v-model="event.private")
       b-form-radio(:value="false") Visible to everyone
@@ -86,6 +86,9 @@ export default {
     groupsError: null,
     valid: true,
   }),
+  computed: {
+    filteredGroups() { return this.groups.filter(f => f.organization === this.event.organization || !f.organization) }
+  },
   watch: {
     'event.name': 'validate',
     'event.date': 'validate',

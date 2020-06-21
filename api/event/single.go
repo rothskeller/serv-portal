@@ -104,6 +104,7 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.Bool(r.Auth.May(model.PermEditClearances))
 	out.RawByte('}')
 	if canEdit && wantEdit {
+		var orgs = make(map[model.Organization]bool)
 		out.RawString(`,"types":[`)
 		var first = true
 		for _, et := range model.AllEventTypes {
@@ -126,7 +127,10 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.Int(int(g.ID))
 			out.RawString(`,"name":`)
 			out.String(g.Name)
+			out.RawString(`,"organization":`)
+			out.String(model.OrganizationNames[g.Organization])
 			out.RawByte('}')
+			orgs[g.Organization] = true
 		}
 		out.RawString(`],"venues":[`)
 		for i, v := range r.Tx.FetchVenues() {
@@ -141,8 +145,14 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawString(`],"organizations":[`)
 		var found = false
-		for i, o := range model.CurrentOrganizations {
-			if i != 0 {
+		first = true
+		for _, o := range model.CurrentOrganizations {
+			if !orgs[o] {
+				continue
+			}
+			if first {
+				first = false
+			} else {
 				out.RawByte(',')
 			}
 			out.String(model.OrganizationNames[o])
