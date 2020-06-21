@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie'
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from './store'
@@ -82,7 +83,10 @@ const router = new Router({
           children: [
             {
               path: '',
-              redirect: '/events/calendar'
+              redirect: () => {
+                const page = Cookies.get('serv-events-page')
+                return page ? `/events/${page}` : '/events/calendar'
+              },
             },
             {
               path: 'calendar',

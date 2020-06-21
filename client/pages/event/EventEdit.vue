@@ -62,6 +62,8 @@ form#event-edit(v-else @submit.prevent="onSubmit")
 </template>
 
 <script>
+import Cookies from 'js-cookie'
+
 export default {
   props: {
     onLoadEvent: Function,
@@ -160,8 +162,10 @@ export default {
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
         this.duplicateName = { date: this.event.date, name: this.event.name }
-      else if (resp)
+      else if (resp) {
+        Cookies.set('serv-events-month', this.event.date.substr(0, 7))
         this.$router.push(`/events/${resp.id}`)
+      }
     },
     validate() {
       if (!this.submitted) return

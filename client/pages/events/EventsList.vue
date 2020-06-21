@@ -30,7 +30,9 @@ EventsList displays the list of events.
 </template>
 
 <script>
+import Cookies from 'js-cookie'
 import range from 'lodash/range'
+import moment from 'moment-mini'
 import EventOrgDot from '@/base/EventOrgDot'
 
 export default {
@@ -42,13 +44,16 @@ export default {
     loading: true,
   }),
   created() {
-    this.year = this.$route.params.year || this.$store.state.eventsYear || (new Date().getFullYear())
+    let month = Cookies.get('serv-events-month')
+    if (!month) {
+      month = moment().format('YYYY-MM')
+      Cookies.set('serv-events-month', month)
+    }
+    this.year = month.substr(0, 4)
+    Cookies.set('serv-events-page', 'list', { expires: 3650 })
   },
   watch: {
-    year() {
-      this.$store.commit('eventsYear', this.year)
-      this.load()
-    },
+    'year': 'load',
   },
   methods: {
     async load() {
@@ -57,6 +62,12 @@ export default {
       if (data.canAdd) this.$emit('canAdd')
       this.events = data.events
       this.loading = false
+      if (this.year == moment().year)
+        Cookies.set('serv-events-month', moment().format('YYYY-MM'))
+      else if (this.year < moment().year)
+        Cookies.set('serv-events-month', `${this.year}-12`)
+      else
+        Cookies.set('serv-events-month', `${this.year}-01`)
     },
   },
 }

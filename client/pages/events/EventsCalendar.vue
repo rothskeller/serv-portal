@@ -37,6 +37,7 @@ EventsCalendar displays the events in a calendar form.
 </template>
 
 <script>
+import Cookies from 'js-cookie'
 import moment from 'moment-mini'
 import EventOrgDot from '@/base/EventOrgDot'
 
@@ -51,13 +52,19 @@ export default {
     clicked: false,
   }),
   mounted() {
+    const month = Cookies.get('serv-events-month')
+    if (month) {
+      this.month = moment(month, 'YYYY-MM')
+    }
     this.newMonth()
+    Cookies.set('serv-events-page', 'calendar', { expires: 3650 })
   },
   methods: {
     eventsOn(date) {
       return date ? this.events[date.format('YYYY-MM-DD')] || [] : []
     },
     async newMonth() {
+      Cookies.set('serv-events-month', this.month.format('YYYY-MM'))
       if (!this.year || this.year != this.month.year()) {
         const data = (await this.$axios.get(`/api/events?year=${this.month.year()}`)).data
         if (data.canAdd) this.$emit('canAdd')
