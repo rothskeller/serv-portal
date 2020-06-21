@@ -14,9 +14,8 @@ form#group-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Flags" label-cols-sm="auto" label-class="group-edit-label pt-0")
     #group-edit-flags
       b-checkbox(v-model="group.getHours") Request volunteer hours from this group
-  b-form-group(label="DSW" label-cols-sm="auto" label-class="group-edit-label pt-0")
-    #group-edit-dsw
-      b-form-radio-group(v-model="group.dswType" :options="dswOptions")
+      b-checkbox(v-model="group.dswRequired") DSW registration required for this group
+      b-checkbox(v-model="group.backgroundCheckRequired") Background check required for this group
   b-form-group(label="Organization for volunteer hours tracking:")
     b-form-radio-group(stacked :options="organizations" v-model="group.organization")
       template(v-slot:first)
@@ -57,12 +56,6 @@ form#group-edit(v-else @submit.prevent="onSubmit")
 <script>
 import Privileges from '@/base/Privileges'
 
-const dswOptions = [
-  { text: 'Not relevant', value: '' },
-  { text: 'Extended while a member of this group', value: 'extended' },
-  { text: 'Required for members of this group', value: 'required' },
-]
-
 export default {
   components: { Privileges },
   props: {
@@ -77,7 +70,6 @@ export default {
     duplicateName: null,
     emailError: null,
     duplicateEmail: null,
-    dswOptions,
     organizations: null,
   }),
   computed: {
@@ -125,8 +117,9 @@ export default {
       const body = new FormData
       body.append('name', this.group.name)
       body.append('email', this.group.email)
-      body.append('dswType', this.group.dswType)
       body.append('getHours', this.group.getHours)
+      body.append('dswRequired', this.group.dswRequired)
+      body.append('backgroundCheckRequired', this.group.backgroundCheckRequired)
       body.append('organization', this.group.organization)
       this.privs.forEach(r => {
         if (r.member) body.append(`member:${r.id}`, true)
@@ -173,7 +166,7 @@ export default {
   padding 1.5rem 0.75rem
 .group-edit-label
   width 7rem
-#group-edit-name, #group-edit-email, #group-edit-flags, #group-edit-dsw
+#group-edit-name, #group-edit-email, #group-edit-flags
   min-width 14rem
   max-width 20rem
 #group-edit-privs

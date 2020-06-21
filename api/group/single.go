@@ -34,6 +34,10 @@ func GetGroup(r *util.Request, idstr string) error {
 	out.String(group.Email)
 	out.RawString(`,"getHours":`)
 	out.Bool(group.GetHours)
+	out.RawString(`,"dswRequired":`)
+	out.Bool(group.DSWRequired)
+	out.RawString(`,"backgroundCheckRequired":`)
+	out.Bool(group.BackgroundCheckRequired)
 	out.RawString(`,"organization":`)
 	out.String(model.OrganizationNames[group.Organization])
 	if len(group.NoEmail) != 0 {
@@ -131,6 +135,8 @@ func PostGroup(r *util.Request, idstr string) error {
 	group.Name = r.FormValue("name")
 	group.Email = r.FormValue("email")
 	group.GetHours = r.FormValue("getHours") == "true"
+	group.DSWRequired = r.FormValue("dswRequired") == "true"
+	group.BackgroundCheckRequired = r.FormValue("backgroundCheckRequired") == "true"
 	group.Organization = model.OrgNone
 	for o, n := range model.OrganizationNames {
 		if r.FormValue("organization") == n {

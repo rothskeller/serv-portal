@@ -79,6 +79,10 @@ func GetEvent(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"details":`)
 	out.String(event.Details)
+	out.RawString(`,"renewsDSW":`)
+	out.Bool(event.RenewsDSW)
+	out.RawString(`,"coveredByDSW":`)
+	out.Bool(event.CoveredByDSW)
 	out.RawString(`,"organization":`)
 	out.String(model.OrganizationNames[event.Organization])
 	out.RawString(`,"private":`)
@@ -106,6 +110,8 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.Bool(canEdit)
 	out.RawString(`,"canAttendance":`)
 	out.Bool(canAttendance)
+	out.RawString(`,"canEditDSWFlags":`)
+	out.Bool(r.Auth.May(model.PermEditClearances))
 	out.RawByte('}')
 	if canEdit && wantEdit {
 		out.RawString(`,"types":[`)
@@ -144,11 +150,19 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.RawByte('}')
 		}
 		out.RawString(`],"organizations":[`)
-		for i, o := range model.AllOrganizations {
+		var found = false
+		for i, o := range model.CurrentOrganizations {
 			if i != 0 {
 				out.RawByte(',')
 			}
 			out.String(model.OrganizationNames[o])
+			if event.Organization == o {
+				found = true
+			}
+		}
+		if !found && event.Organization != model.OrgNone {
+			out.RawByte(',')
+			out.String(model.OrganizationNames[event.Organization])
 		}
 		out.RawByte(']')
 	}
@@ -251,6 +265,10 @@ func PostEvent(r *util.Request, idstr string) error {
 		return errors.New("invalid venue")
 	}
 	event.Details = r.FormValue("details")
+	if r.Auth.May(model.PermEditClearances) {
+		event.RenewsDSW = r.FormValue("renewsDSW") == "true"
+		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
+	}
 	org = r.FormValue("organization")
 	event.Organization = model.OrgNone
 	if org != "" {

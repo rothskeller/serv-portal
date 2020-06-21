@@ -41,6 +41,10 @@ form#event-edit(v-else @submit.prevent="onSubmit")
     b-textarea#event-details(v-model="event.details" rows="3")
     b-form-text
       | This may contain HTML &lt;a&gt; tags for links, but no other tags.
+  b-form-group(v-if="event.canEditDSWFlags" label="Flags" label-cols-sm="auto" label-class="event-edit-label pt-0")
+    #event-edit-flags
+      b-checkbox(v-model="event.renewsDSW") Attendance renews DSW registration
+      b-checkbox(v-model="event.coveredByDSW") Event is covered by DSW insurance
   b-form-group(label="Event has these types:" :state="typeError ? false : null" :invalid-feedback="typeError")
     b-form-checkbox-group(stacked :options="types" v-model="event.types")
   b-form-group(label="Event is for this organization:")
@@ -144,6 +148,10 @@ export default {
         body.append('venueURL', this.event.venue.url)
       }
       body.append('details', this.event.details)
+      if (this.event.canEditDSWFlags) {
+        body.append('renewsDSW', this.event.renewsDSW)
+        body.append('coveredByDSW', this.event.coveredByDSW)
+      }
       this.event.types.forEach(t => { body.append('type', t) })
       this.event.groups.forEach(r => { body.append('group', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
@@ -215,7 +223,7 @@ export default {
   padding 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details
+#event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details, #event-edit-flags
   min-width 14rem
   max-width 20rem
 #event-venue
