@@ -10,10 +10,8 @@ import (
 
 // CreateEvent creates a new event in the database.
 func (tx *Tx) CreateEvent(e *model.Event) {
-	var (
-		etstr []string
-		gstr  []string
-	)
+	var gstr []string
+
 	tx.Tx.CreateEvent(e)
 	tx.entry.Change("create event [%d]", e.ID)
 	tx.entry.Change("set event [%d] name to %q", e.ID, e.Name)
@@ -30,7 +28,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	if e.Private {
 		tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
 	}
-	tx.entry.Change("set event [%d] type to %s", e.ID, etstr[0])
+	tx.entry.Change("set event [%d] type to %s", e.ID, model.EventTypeNames[e.Type])
 	if len(e.Groups) != 0 {
 		for _, g := range e.Groups {
 			gstr = append(gstr, fmt.Sprintf("%q [%d]", tx.Authorizer().FetchGroup(g).Name, g))
