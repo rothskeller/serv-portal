@@ -84,13 +84,13 @@ message Group {
   int32 organization = 9 [(gogoproto.casttype) = "Organization"];
   // GetHours, when true, indicates that members of this group should receive
   // monthly email reminders to record their volunteer hours.
-  bool get_hours = 10;
+  bool get_hours = 10 [(gogoproto.jsontag) = "getHours"];
   // DSWClass indicates which classification of DSW registration is required for
   // members of this group.
   bool dsw_required = 12 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
   // BackgroundCheckRequired indicates whether a background check is required
   // for membership in the group.
-  bool background_check_required = 13;
+  bool background_check_required = 13 [(gogoproto.jsontag) = "backgroundCheckRequired"];
 }
 
 message Person {

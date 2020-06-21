@@ -1349,11 +1349,11 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 			}
 		case "organization":
 			(out.Organization).UnmarshalEasyJSON(in)
-		case "get_hours":
+		case "getHours":
 			out.GetHours = bool(in.Bool())
 		case "dswRequired":
 			out.DSWRequired = bool(in.Bool())
-		case "background_check_required":
+		case "backgroundCheckRequired":
 			out.BackgroundCheckRequired = bool(in.Bool())
 		default:
 			in.SkipRecursive()
@@ -1453,8 +1453,8 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 		}
 		(in.Organization).MarshalEasyJSON(out)
 	}
-	if in.GetHours {
-		const prefix string = ",\"get_hours\":"
+	{
+		const prefix string = ",\"getHours\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -1465,22 +1465,12 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 	}
 	if in.DSWRequired {
 		const prefix string = ",\"dswRequired\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Bool(bool(in.DSWRequired))
 	}
-	if in.BackgroundCheckRequired {
-		const prefix string = ",\"background_check_required\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+	{
+		const prefix string = ",\"backgroundCheckRequired\":"
+		out.RawString(prefix)
 		out.Bool(bool(in.BackgroundCheckRequired))
 	}
 	out.RawByte('}')

@@ -48,10 +48,7 @@ func loadGroups(tx *store.Tx, in *jlexer.Lexer) {
 						os.Exit(1)
 					}
 					auth.WillUpdateGroup(g)
-					g.Name = ""
-					g.Tag = ""
-					g.NoEmail = nil
-					g.NoText = nil
+					*g = model.Group{ID: g.ID}
 				}
 			case "tag":
 				g.Tag = model.GroupTag(in.String())

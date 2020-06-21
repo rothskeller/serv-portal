@@ -25,7 +25,7 @@ form#person-edit(v-else @submit.prevent="onSubmit")
     .person-edit-block-head Volunteer Status
     b-form-group(label="Volgistics ID" label-for="person-volgistics" label-cols-sm="auto" label-class="person-edit-label" :state="volgisticsError ? false : null" :invalid-feedback="volgisticsError")
       b-input#person-volgistics.person-edit-input(type="number" min="0" :state="volgisticsError ? false : null" v-model="person.volgistics")
-    b-form-group(v-for="date, cls in person.dsw" :label="`DSW ${cls.substr(0, 4)}`" :label-for="`person-dsw-${cls}`" label-cols-sm="auto" label-class="person-edit-label" :state="dswError[cls] ? false : null" :invalid-feedback="dswError[cls]")
+    b-form-group(v-for="date, cls in person.dsw" :key="cls" :label="`DSW ${cls.substr(0, 4)}`" :label-for="`person-dsw-${cls}`" label-cols-sm="auto" label-class="person-edit-label" :state="dswError[cls] ? false : null" :invalid-feedback="dswError[cls]")
       b-input.person-edit-input(:id="`person-dsw-${cls}`" type="date" :state="dswError[cls] ? false : null" v-model="person.dsw[cls]")
       b-form-text Date when the DSW registration form was signed.
     b-form-group(label="BG Check" label-for="person-background" label-cols-sm="auto" label-class="person-edit-label" :state="backgroundError ? false : null" :invalid-feedback="backgroundError")
