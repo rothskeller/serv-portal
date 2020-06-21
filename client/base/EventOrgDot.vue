@@ -3,7 +3,7 @@ EventOrgDot displays an appropriately colored dot for an event organization.
 -->
 
 <template lang="pug">
-span.dot(:class="`dot-${organization}`" :title="organization")
+span.dot(:class="`dot-${organization.replace(' ', '')}`" :title="organization")
 </template>
 
 <script>
@@ -25,8 +25,11 @@ export default {
     margin 0
 .dot-Admin, .dot-
   background-color #a9a9a9 // gray
-.dot-CERT
+.dot-CERTTraining
   background-color #3cb44b // green
+.dot-CERTDeployment
+  border 2px solid #3cb44b // green
+  background-color white
 .dot-LISTOS
   background-color #f58231 // orange
 .dot-Outreach

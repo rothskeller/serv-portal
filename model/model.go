@@ -217,26 +217,28 @@ type Organization uint8
 const (
 	OrgNone Organization = iota
 	OrgAdmin
-	OrgCERT
+	OrgCERTT
 	OrgLISTOS
 	OrgOutreach
 	OrgPEP
 	OrgSARES
 	OrgSNAP
+	OrgCERTD
 )
 
 // AllOrganizations gives the list of all Organizations.
-var AllOrganizations = []Organization{OrgAdmin, OrgCERT, OrgLISTOS, OrgOutreach, OrgPEP, OrgSARES, OrgSNAP}
+var AllOrganizations = []Organization{OrgAdmin, OrgCERTD, OrgCERTT, OrgLISTOS, OrgOutreach, OrgPEP, OrgSARES, OrgSNAP}
 
 // CurrentOrganizations gives the list of Organizations that are currently in
 // use (as opposed to historical).
-var CurrentOrganizations = []Organization{OrgAdmin, OrgCERT, OrgLISTOS, OrgSARES, OrgSNAP}
+var CurrentOrganizations = []Organization{OrgAdmin, OrgCERTD, OrgCERTT, OrgLISTOS, OrgSARES, OrgSNAP}
 
 // OrganizationNames gives the names of the various Organizations.
 var OrganizationNames = map[Organization]string{
 	OrgNone:     "",
 	OrgAdmin:    "Admin",
-	OrgCERT:     "CERT",
+	OrgCERTD:    "CERT Deployment",
+	OrgCERTT:    "CERT Training",
 	OrgLISTOS:   "LISTOS",
 	OrgOutreach: "Outreach",
 	OrgPEP:      "PEP",
@@ -247,7 +249,8 @@ var OrganizationNames = map[Organization]string{
 // OrganizationToDSWClass gives the DSW classes associated with each
 // organization.
 var OrganizationToDSWClass = map[Organization]DSWClass{
-	OrgCERT:     DSWCERT,
+	OrgCERTD:    DSWCERT,
+	OrgCERTT:    DSWCERT,
 	OrgLISTOS:   DSWCERT,
 	OrgOutreach: DSWCERT,
 	OrgPEP:      DSWCERT,
