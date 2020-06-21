@@ -127,8 +127,9 @@ var EmailMessageTypeNames = map[EmailMessageType]string{
 // An EventID is a positive integer uniquely identifying an Event.
 type EventID int
 
-// An EventType is a bitmask identifying the type(s) of an Event (usually only
-// one, but sometimes more).
+// An EventType identifies the type of an Event.  (This used to be a bitmask of
+// multiple types, but now each event is restricted to a single type.  I kept
+// the values unchanged for convenience.)
 type EventType uint32
 
 // The known event types.

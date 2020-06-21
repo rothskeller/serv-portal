@@ -70,19 +70,9 @@ func GetEvents(r *util.Request) error {
 		}
 		out.RawString(`,"organization":`)
 		out.String(model.OrganizationNames[e.Organization])
-		out.RawString(`,"types":[`)
-		innerFirst := true
-		for _, t := range model.AllEventTypes {
-			if e.Type&t != 0 {
-				if innerFirst {
-					innerFirst = false
-				} else {
-					out.RawByte(',')
-				}
-				out.String(model.EventTypeNames[t])
-			}
-		}
-		out.RawString(`],"groups":[`)
+		out.RawString(`,"type":`)
+		out.String(model.EventTypeNames[e.Type])
+		out.RawString(`,"groups":[`)
 		for i, g := range e.Groups {
 			if i != 0 {
 				out.RawByte(',')

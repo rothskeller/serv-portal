@@ -118,22 +118,22 @@ func CERTAttendanceReport(r *util.Request) error {
 }
 
 func getEventTypeAbbr(et model.EventType) eventTypeAbbr {
-	switch {
-	case et&model.EventIncident != 0:
+	switch et {
+	case model.EventIncident:
 		return "Inc"
-	case et&model.EventCivic != 0:
+	case model.EventCivic:
 		return "Civ"
-	case et&model.EventDrill != 0:
+	case model.EventDrill:
 		return "Drl"
-	case et&model.EventTraining != 0:
+	case model.EventTraining:
 		return "Trn"
-	case et&model.EventContEd != 0:
+	case model.EventContEd:
 		return "CE"
-	case et&model.EventClass != 0:
+	case model.EventClass:
 		return "Cls"
-	case et&model.EventWork != 0:
+	case model.EventWork:
 		return "Wrk"
-	case et&model.EventMeeting != 0:
+	case model.EventMeeting:
 		return "Mtg"
 	}
 	return ""

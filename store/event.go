@@ -26,22 +26,11 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	if e.Details != "" {
 		tx.entry.Change("set event [%d] details to %q", e.ID, e.Details)
 	}
-	if e.Organization != model.OrgNone {
-		tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
-	}
+	tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
 	if e.Private {
 		tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
 	}
-	for _, et := range model.AllEventTypes {
-		if e.Type&et != 0 {
-			etstr = append(etstr, model.EventTypeNames[et])
-		}
-	}
-	if len(etstr) == 1 {
-		tx.entry.Change("set event [%d] type to %s", e.ID, etstr[0])
-	} else if len(etstr) > 1 {
-		tx.entry.Change("set event [%d] types to %s", e.ID, strings.Join(etstr, ", "))
-	}
+	tx.entry.Change("set event [%d] type to %s", e.ID, etstr[0])
 	if len(e.Groups) != 0 {
 		for _, g := range e.Groups {
 			gstr = append(gstr, fmt.Sprintf("%q [%d]", tx.Authorizer().FetchGroup(g).Name, g))
@@ -94,14 +83,8 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 			tx.entry.Change("clear event %s %q [%d] private flag", e.Date, e.Name, e.ID)
 		}
 	}
-	for _, et := range model.AllEventTypes {
-		if e.Type&et != oe.Type&et {
-			if e.Type&et != 0 {
-				tx.entry.Change("add event %s %q [%d] type %s", e.Date, e.Name, e.ID, model.EventTypeNames[et])
-			} else {
-				tx.entry.Change("remove event %s %q [%d] type %s", e.Date, e.Name, e.ID, model.EventTypeNames[et])
-			}
-		}
+	if e.Type != oe.Type {
+		tx.entry.Change("set event %s %q [%d] type to %s", e.Date, e.Name, e.ID, model.EventTypeNames[e.Type])
 	}
 GROUPS1:
 	for _, og := range oe.Groups {

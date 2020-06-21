@@ -87,19 +87,9 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.String(model.OrganizationNames[event.Organization])
 	out.RawString(`,"private":`)
 	out.Bool(event.Private)
-	out.RawString(`,"types":[`)
-	first := true
-	for _, et := range model.AllEventTypes {
-		if event.Type&et != 0 {
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.String(model.EventTypeNames[et])
-		}
-	}
-	out.RawString(`],"groups":[`)
+	out.RawString(`,"type":`)
+	out.String(model.EventTypeNames[event.Type])
+	out.RawString(`,"groups":[`)
 	for i, g := range event.Groups {
 		if i != 0 {
 			out.RawByte(',')
@@ -270,34 +260,25 @@ func PostEvent(r *util.Request, idstr string) error {
 		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
 	}
 	org = r.FormValue("organization")
-	event.Organization = model.OrgNone
-	if org != "" {
-		for _, o := range model.AllOrganizations {
-			if org == model.OrganizationNames[o] {
-				event.Organization = o
-			}
+	event.Organization = 0
+	for _, o := range model.AllOrganizations {
+		if org == model.OrganizationNames[o] {
+			event.Organization = o
 		}
-		if event.Organization == 0 {
-			return errors.New("invalid organization")
-		}
+	}
+	if event.Organization == 0 {
+		return errors.New("invalid organization")
 	}
 	event.Private, _ = strconv.ParseBool(r.FormValue("private"))
 	event.Type = 0
-	for _, v := range r.Form["type"] {
-		var matched bool
-		for _, et := range model.AllEventTypes {
-			if et == model.EventHours {
-				continue
-			}
-			if model.EventTypeNames[et] == v {
-				event.Type |= et
-				matched = true
-				break
-			}
+	for _, et := range model.AllEventTypes {
+		if model.EventTypeNames[et] == r.FormValue("type") {
+			event.Type = et
+			break
 		}
-		if !matched {
-			return errors.New("invalid type")
-		}
+	}
+	if event.Type == 0 {
+		return errors.New("invalid type")
 	}
 	event.Groups = event.Groups[:0]
 	for _, idstr := range r.Form["group"] {

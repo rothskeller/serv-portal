@@ -24,10 +24,8 @@ var yearRE = regexp.MustCompile(`^20\d\d$`)
 
 // ValidateEvent validates the details of an event.
 func ValidateEvent(tx *store.Tx, event *model.Event) error {
-	var (
-		etype      model.EventType
-		seenGroups = map[model.GroupID]bool{}
-	)
+	var seenGroups = map[model.GroupID]bool{}
+
 	if event.Name = strings.TrimSpace(event.Name); event.Name == "" {
 		return errors.New("missing name")
 	}
@@ -53,23 +51,25 @@ func ValidateEvent(tx *store.Tx, event *model.Event) error {
 		return errors.New("nonexistent venue")
 	}
 	event.Details = htmlSanitizer.Sanitize(strings.TrimSpace(event.Details))
-	if event.Organization != model.OrgNone {
-		var matched bool
-		for _, o := range model.AllOrganizations {
-			if o == event.Organization {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return errors.New("invalid organization")
+	var matched bool
+	for _, o := range model.AllOrganizations {
+		if o == event.Organization {
+			matched = true
+			break
 		}
 	}
+	if !matched {
+		return errors.New("invalid organization")
+	}
+	matched = false
 	for _, et := range model.AllEventTypes {
-		etype &^= et
+		if et == event.Type {
+			matched = true
+			break
+		}
 	}
-	if etype != 0 {
-		return errors.New("invalid types")
+	if !matched {
+		return errors.New("invalid type")
 	}
 	if len(event.Groups) == 0 && event.Type != model.EventHours {
 		return errors.New("missing group")

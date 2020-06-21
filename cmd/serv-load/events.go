@@ -92,32 +92,21 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 						e.Organization = o
 					}
 				}
-				if org != "" && e.Organization == 0 {
+				if e.Organization == 0 {
 					in.AddError(errors.New("invalid organization"))
 				}
 			case "private":
 				e.Private = in.Bool()
-			case "types":
-				in.Delim('[')
-				for !in.IsDelim(']') {
-					if in.IsNull() {
-						in.Skip()
-					} else {
-						tname := in.String()
-						var matched bool
-						for _, t := range model.AllEventTypes {
-							if tname == model.EventTypeNames[t] {
-								e.Type |= t
-								matched = true
-							}
-						}
-						if !matched {
-							in.AddError(errors.New("invalid type"))
-						}
+			case "type":
+				etype := in.String()
+				for _, et := range model.AllEventTypes {
+					if etype == model.EventTypeNames[et] {
+						e.Type = et
 					}
-					in.WantComma()
 				}
-				in.Delim(']')
+				if e.Type == 0 {
+					in.AddError(errors.New("invalid type"))
+				}
 			case "groups":
 				in.Delim('[')
 				for !in.IsDelim(']') {

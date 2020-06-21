@@ -7,7 +7,7 @@ div.mt-3.ml-2(v-if="!event")
   b-spinner(small)
 #event-view(v-else)
   #event-view-name(v-text="event.name")
-  #event-view-types(v-if="types" v-text="types")
+  #event-view-orgtype(v-text="`${event.organization} ${event.type}`")
   #event-view-date-time(v-text="dateTimeFmt")
   #event-view-venue
     #event-view-venue-name(v-text="event.venue ? event.venue.name : 'Location TBD'")
@@ -39,14 +39,6 @@ export default {
       else
         return `${date.format('dddd, MMMM D, YYYY')}\n${start.format('h:mm')} to ${end.format('h:mma')}`
     },
-    types() {
-      if (this.event.organization && this.event.types.length)
-        return `${this.event.organization} ${this.event.types.join(', ')}`
-      else if (this.event.types.length)
-        return this.event.types.join(', ')
-      else
-        return this.event.organization
-    }
   },
   async created() {
     const data = (await this.$axios.get(`/api/events/${this.$route.params.id}`)).data
@@ -63,7 +55,7 @@ export default {
   font-weight bold
   font-size 1.25rem
   line-height 1.2
-#event-view-types
+#event-view-orgtype
   color #888
 #event-view-date-time
   margin-top 0.75rem

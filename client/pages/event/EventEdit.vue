@@ -8,6 +8,10 @@ div.mt-3.ml-2(v-if="!event")
 form#event-edit(v-else @submit.prevent="onSubmit")
   b-form-group(label="Event name" label-for="event-name" label-cols-sm="auto" label-class="event-edit-label" :state="nameError ? false : null" :invalid-feedback="nameError")
     b-input#event-name(autofocus :state="nameError ? false : null" trim v-model="event.name")
+  b-form-group(label="Event type" label-for="event-type" label-cols-sm="auto" label-class="event-edit-label" :state="typeError ? false : null" :invalid-feedback="typeError")
+    b-form-select#event-type(:options="types" v-model="event.type" :state="typeError ? false : null")
+  b-form-group(label="Organization" label-for="event-organization" label-cols-sm="auto" label-class="event-edit-label" :state="organizationError ? false : null" :invalid-feedback="organizationError")
+    b-form-select#event-organization(:options="organizations" v-model="event.organization" :state="organizationError ? false : null")
   b-form-group(label="Event date" label-for="event-date" label-cols-sm="auto" label-class="event-edit-label" :state="dateError ? false : null" :invalid-feedback="dateError")
     b-input#event-date(type="date" :state="dateError ? false : null" v-model="event.date")
   b-form-group(label="Event time" label-cols-sm="auto" label-class="event-edit-label" :state="timeError ? false : null" :invalid-feedback="timeError")
@@ -45,12 +49,6 @@ form#event-edit(v-else @submit.prevent="onSubmit")
     #event-edit-flags
       b-checkbox(v-model="event.renewsDSW") Attendance renews DSW registration
       b-checkbox(v-model="event.coveredByDSW") Event is covered by DSW insurance
-  b-form-group(label="Event has these types:" :state="typeError ? false : null" :invalid-feedback="typeError")
-    b-form-checkbox-group(stacked :options="types" v-model="event.types")
-  b-form-group(label="Event is for this organization:")
-    b-form-radio-group(stacked :options="organizations" v-model="event.organization")
-      template(v-slot:first)
-        b-form-radio(value="") (none)
   b-form-group(label="Event is for these groups:" :state="groupsError ? false : null" :invalid-feedback="groupsError")
     b-form-checkbox-group(stacked :options="groups" text-field="name" value-field="id" v-model="event.groups")
   b-form-group(label="Visibility" label-for="event-private" label-cols-sm="auto" label-class="event-edit-label pt-0")
@@ -83,6 +81,7 @@ export default {
     venueAddressError: null,
     venueCityError: null,
     venueURLError: null,
+    organizationError: null,
     typeError: null,
     groupsError: null,
     valid: true,
@@ -96,7 +95,8 @@ export default {
     'event.venue.address': 'validate',
     'event.venue.city': 'validate',
     'event.venue.url': 'validate',
-    'event.types': 'validate',
+    'event.organization': 'validate',
+    'event.type': 'validate',
     'event.groups': 'validate',
     'event.venue.id'() {
       if (this.event.venue.id === 'NEW') {
@@ -135,10 +135,11 @@ export default {
       if (!this.valid) return
       const body = new FormData
       body.append('name', this.event.name)
+      body.append('type', this.event.type)
+      body.append('organization', this.event.organization)
       body.append('date', this.event.date)
       body.append('start', this.event.start)
       body.append('end', this.event.end)
-      body.append('organization', this.event.organization)
       body.append('private', this.event.private)
       body.append('venue', this.event.venue.id)
       if (this.event.venue.id === 'NEW') {
@@ -152,7 +153,6 @@ export default {
         body.append('renewsDSW', this.event.renewsDSW)
         body.append('coveredByDSW', this.event.coveredByDSW)
       }
-      this.event.types.forEach(t => { body.append('type', t) })
       this.event.groups.forEach(r => { body.append('group', r) })
       const resp = (await this.$axios.post(`/api/events/${this.$route.params.id}`, body)).data
       if (resp && resp.nameError)
@@ -168,6 +168,14 @@ export default {
         this.nameError = 'Another event on this date has this name.'
       else
         this.nameError = this.duplicateName = null
+      if (!this.event.type)
+        this.typeError = 'The event type is required.'
+      else
+        this.typeError = null
+      if (!this.event.organization)
+        this.organizationError = 'The organization is required.'
+      else
+        this.organizationError = null
       if (!this.event.date)
         this.dateError = 'The event date is required.'
       else if (!this.event.date.match(/^20\d\d-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/))
@@ -203,16 +211,12 @@ export default {
           this.venueURLError = null
       } else
         this.venueNameError = this.venueAddressError = this.venueCityError = this.venueURLError = null
-      if (!this.event.types.length)
-        this.typeError = 'At least one event type is required.'
-      else
-        this.typeError = null
       if (!this.event.groups.length)
         this.groupsError = 'At least one group must be selected.'
       else
         this.groupsError = null
       this.valid = !this.nameError && !this.dateError && !this.timeError && !this.venueNameError && !this.venueAddressError &&
-        !this.venueCityError && !this.venueURLError && !this.typeError && !this.groupsError
+        !this.venueCityError && !this.venueURLError && !this.organizationError && !this.typeError && !this.groupsError
     },
   },
 }
@@ -223,7 +227,7 @@ export default {
   padding 1.5rem 0.75rem
 .event-edit-label
   width 7rem
-#event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details, #event-edit-flags
+#event-date, #event-name, #event-type, #event-groups, #venue-name, #venue-address, #venue-city, #venue-url, #event-details, #event-organization, #event-edit-flags
   min-width 14rem
   max-width 20rem
 #event-venue

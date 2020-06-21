@@ -149,19 +149,9 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 	if e.Private {
 		out.RawString(`,"private":true`)
 	}
-	out.RawString(`,"types":[`)
-	first := true
-	for _, t := range model.AllEventTypes {
-		if e.Type&t != 0 {
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.String(model.EventTypeNames[t])
-		}
-	}
-	out.RawString(`],"groups":[`)
+	out.RawString(`,"type":`)
+	out.String(model.EventTypeNames[e.Type])
+	out.RawString(`,"groups":[`)
 	for i, g := range e.Groups {
 		if i != 0 {
 			out.RawByte(',')
