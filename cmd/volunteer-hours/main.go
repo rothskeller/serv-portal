@@ -58,7 +58,10 @@ func main() {
 		sendReminders(tx, time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local))
 	case 11:
 		// Send the accumulated hours to Volgistics.
-		// submitHours(tx, time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local))
+		submitHours(tx, time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local))
+	case 100:
+		// Send the accumulated hours to Volgistics (current month for debugging).
+		submitHours(tx, now)
 	default:
 		fmt.Fprintf(os.Stderr, "ERROR: nothing to do on the %dth", dayOfMonth)
 		os.Exit(1)

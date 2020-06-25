@@ -208,6 +208,11 @@ const (
 	// GroupDisabled identifies the group to which disabled users belong.
 	// Members of this group are blocked from logging into the web site.
 	GroupDisabled GroupTag = "disabled"
+	// GroupStudents identifies the group to which all class students
+	// belong.  Volunteer hours are not recorded for students (or, more
+	// precisely, for people whose only organization-carrying role also puts
+	// them in the students group).
+	GroupStudents = "students"
 )
 
 // An Organization identifies one of the SERV volunteer organizations.
