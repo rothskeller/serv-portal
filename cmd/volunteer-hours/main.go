@@ -189,13 +189,13 @@ func notifyNotInVolgistics(person *model.Person, mailer *sendmail.Mailer, month 
 	crlf = email.NewCRLFWriter(&buf)
 	if person.Email != "" && person.Email2 != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
-		toaddrs = []string{person.Email, person.Email2}
+		toaddrs = []string{person.Email, person.Email2, "admin@sunnyvaleserv.org"}
 	} else if person.Email != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email)
-		toaddrs = []string{person.Email}
+		toaddrs = []string{person.Email, "admin@sunnyvaleserv.org"}
 	} else {
 		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
-		toaddrs = []string{person.Email2}
+		toaddrs = []string{person.Email2, "admin@sunnyvaleserv.org"}
 	}
 	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
 Subject: SERV Volunteer Hours for %s
@@ -288,13 +288,13 @@ func sendRequest(
 	crlf = email.NewCRLFWriter(&buf)
 	if person.Email != "" && person.Email2 != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
-		toaddrs = []string{person.Email, person.Email2}
+		toaddrs = []string{person.Email, person.Email2, "admin@sunnyvaleserv.org"}
 	} else if person.Email != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email)
-		toaddrs = []string{person.Email}
+		toaddrs = []string{person.Email, "admin@sunnyvaleserv.org"}
 	} else {
 		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
-		toaddrs = []string{person.Email2}
+		toaddrs = []string{person.Email2, "admin@sunnyvaleserv.org"}
 	}
 	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
 Subject: %sSERV Volunteer Hours for %s
