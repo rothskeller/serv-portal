@@ -24,7 +24,9 @@ form#person-hours(v-else @submit.prevent="onSubmit")
     .person-hours-heading(v-text="`Volunteer Hours for ${month.month}`")
     table.person-hours-table
       tr(v-for="event in month.events")
-        td.person-hours-event(v-text="eventText(event)")
+        td.person-hours-event
+          | {{ eventText(event) }}
+          div.person-hours-event-includes(v-if="eventIncludes(event)" v-text="eventIncludes(event)")
         td
           input.person-hours-time(type="number" min="0" step="0.5" :value="eventTime(event)" @change="setEventTime(event, $event)")
       tr
@@ -34,6 +36,31 @@ form#person-hours(v-else @submit.prevent="onSubmit")
   div.mt-3
     b-btn(type="submit" variant="primary") Save Hours
     b-btn.ml-2(@click="onCancel") Cancel
+  table.person-hours-guide
+    tr
+      td Volunteer Hours
+      td Not Volunteer Hours
+    tr
+      td In general, time you spend helping or preparing to help the community as part of SERV.  For example:
+      td In general, time you spend preparing yourself or your household; or time you spend becoming a SERV volunteer.  For example:
+    tr
+      td Organizing or teaching CERT Basic, LISTOS, PEP, or SNAP events
+      td Attending CERT Basic, LISTOS, PEP, or ham cram classes
+    tr
+      td Preparing and maintaining a CERT or SARES “go kit” for deployment
+      td Preparing and maintaining a personal or household evacuation kit
+    tr
+      td SERV team meetings, radio nets, and drills; CERT continuing education seminars; SARES or county ARES training classes
+      td SERV team social gatherings
+    tr
+      td Responding in an emergency when activated by the city
+      td Responding in an emergency when not activated by the city
+    tr
+      td Travel to and from the above
+      td
+    tr
+      td SERV administration activities
+      td
 </template>
 
 <script>
@@ -50,6 +77,14 @@ export default {
       this.unregistered = true
   },
   methods: {
+    eventIncludes(e) {
+      if (!e.placeholder) return null
+      switch (e.name) {
+        case 'Other CERT Hours': return 'Includes contact tracing'
+        case 'Other LISTOS Hours': return 'Includes PEP and Outreach'
+        default: return null
+      }
+    },
     eventText(e) {
       if (e.placeholder) return e.name
       return `${e.date} ${e.name}`
@@ -90,6 +125,10 @@ export default {
   padding-right 1rem
   padding-left 0.5rem
   text-indent -0.5rem
+  line-height 1.2
+.person-hours-event-includes
+  font-style italic
+  font-size 0.75rem
 .person-hours-time
   width 4rem
   text-align right
@@ -101,4 +140,23 @@ export default {
   width 3rem
   text-align right
   font-weight bold
+.person-hours-guide
+  margin-top 1.5rem
+  max-width 800px
+  tr:nth-child(1)
+    background-color #5b9bd5
+    td
+      color white
+      text-align center
+      font-weight bold
+  tr:nth-child(2)
+    font-weight bold
+  tr:nth-child(even)
+    background-color #deeaf6
+  td
+    padding 0.25rem
+    width 50%
+    border 1px solid #eee
+    vertical-align top
+    line-height 1.2
 </style>
