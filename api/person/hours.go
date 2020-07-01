@@ -175,6 +175,9 @@ func PostPersonHours(r *util.Request, idstr string) (err error) {
 		} else {
 			emap[person.ID] = model.AttendanceInfo{Type: model.AttendAsAbsent, Minutes: uint16(minutes)}
 		}
+		if minutes == 0 {
+			delete(emap, person.ID)
+		}
 		r.Tx.SaveEventAttendance(event, emap)
 	}
 	r.Tx.Commit()
