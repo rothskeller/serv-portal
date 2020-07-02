@@ -28,6 +28,7 @@ import (
 var tx *store.Tx
 var mflag monthArg
 var dflag = flag.Bool("d", false, "debug (emails to admin only)")
+var kflag = flag.Bool("k", false, "keep existing HoursTokens")
 var pflags = peopleList{}
 
 func main() {
@@ -52,10 +53,11 @@ func main() {
 	flag.Var(&mflag, "m", "target month (YYYY-MM, default last month)")
 	flag.Var(pflags, "p", "target person (ID or username)")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `usage: volunteer-hours [-m YYYY-MM] [-p people] [-d] request|remind|submit|report...
+		fmt.Fprintf(os.Stderr, `usage: volunteer-hours [-m YYYY-MM] [-p people] [-dk] request|remind|submit|report...
      -m YYYY-MM specifies the target month (default "last month")
      -p person specifies a target person (ID or username)
      -d specifies debug mode; emails to go admin only
+     -k keeps existing HoursTokens and HoursReminders
      "request" means to send an email requesting hours
      "remind" means to send an email reminder for submitting hours
      "submit" means to submit hours to Volgistics

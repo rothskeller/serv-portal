@@ -80,18 +80,15 @@ func sendRequests(tx *store.Tx) {
 				}
 			}
 		}
-		if people[p.ID] == nil && p.HoursReminder {
-			tx.WillUpdatePerson(p)
-			p.HoursReminder = false
-			tx.UpdatePerson(p)
-		}
 	}
 	// Send an email to each of those people.
 	for _, p := range people {
-		tx.WillUpdatePerson(p)
-		p.HoursToken = util.RandomToken()
-		p.HoursReminder = true
-		tx.UpdatePerson(p)
+		if !*kflag {
+			tx.WillUpdatePerson(p)
+			p.HoursToken = util.RandomToken()
+			p.HoursReminder = true
+			tx.UpdatePerson(p)
+		}
 		sendRequest(p, mailer, events, eatt, false)
 	}
 }
