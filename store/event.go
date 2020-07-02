@@ -189,7 +189,7 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 			continue
 		}
 		edate, _ := time.ParseInLocation("2006-01-02", e.Date, time.Local)
-		extendTo := edate.AddDate(1, 0, 0)
+		extendTo := time.Date(edate.Year()+1, edate.Month(), edate.Day(), 0, 0, 0, 0, time.Local)
 		eatt := tx.FetchAttendanceByEvent(e)
 		for pid, ai := range eatt {
 			if ai.Minutes == 0 {
