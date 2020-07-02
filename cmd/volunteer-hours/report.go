@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
+	"mime/quotedprintable"
 	"sort"
 	"time"
 
+	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util/sendmail"
@@ -132,8 +135,22 @@ func sendReport(report *rdata) {
 	} else {
 		toaddr = "volunteer-hours@sunnyvaleserv.org"
 	}
-	reportTemplate.Execute(&buf, report)
-	sendmail.SendMessage("admin@sunnyvaleserv.org", []string{toaddr}, buf.Bytes())
+	crlf := email.NewCRLFWriter(&buf)
+	fmt.Fprintf(crlf, `From: Sunnyvale SERV <admin@sunnyvaleserv.org>
+To: volunteer-hours@sunnyvaleserv.org
+Subject: Sunnyvale SERV Volunteer Hours for %s
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+
+`, report.Month)
+	qpw := quotedprintable.NewWriter(&buf)
+	if err := reportTemplate.Execute(qpw, report); err != nil {
+		panic(err)
+	}
+	qpw.Close()
+	if err := sendmail.SendMessage("admin@sunnyvaleserv.org", []string{toaddr}, buf.Bytes()); err != nil {
+		panic(err)
+	}
 }
 
 var reportTemplate = template.Must(template.New("").Parse(`
