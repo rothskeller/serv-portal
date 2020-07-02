@@ -37,13 +37,6 @@ var assnToLabel = map[int]string{ // as shown in Volgistics
 	1052: "SERV Admin [EMERGENCY PREPAREDNESS]",
 }
 
-type pinfo struct {
-	Name         string
-	VolgisticsID int
-	Minutes      map[int]uint16
-	Total        uint16
-}
-
 type einfo struct {
 	Date       string
 	Name       string
@@ -60,15 +53,15 @@ type rdata struct {
 	Unregistered []*pinfo
 }
 
-func submitHours(tx *store.Tx, month time.Time) {
+func reportHours(tx *store.Tx) {
 	var (
 		mstr   string
 		eatt   = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
 		people = make(map[model.PersonID]*pinfo)
 		report rdata
 	)
-	mstr = month.Format("2006-01")
-	report.Month = month.Format("January 2006")
+	mstr = time.Time(mflag).Format("2006-01")
+	report.Month = time.Time(mflag).Format("January 2006")
 	report.ByGroup = make(map[int]uint16)
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
 		assn := orgToAssignment[e.Organization]
@@ -78,6 +71,9 @@ func submitHours(tx *store.Tx, month time.Time) {
 		eatt[e.ID] = tx.FetchAttendanceByEvent(e)
 		ei := &einfo{Date: e.Date, Name: e.Name, Assignment: assnToName[assn]}
 		for pid, ai := range eatt[e.ID] {
+			if len(pflags) != 0 && !pflags[pid] {
+				continue
+			}
 			if ai.Minutes == 0 || ai.Type == model.AttendAsAuditor || ai.Type == model.AttendAsStudent {
 				continue
 			}
@@ -86,11 +82,9 @@ func submitHours(tx *store.Tx, month time.Time) {
 				people[pid] = &pinfo{
 					Name:         p.InformalName,
 					VolgisticsID: p.VolgisticsID,
-					Minutes:      make(map[int]uint16),
 				}
 				report.Leaders = append(report.Leaders, people[pid])
 			}
-			people[pid].Minutes[assn] += ai.Minutes
 			people[pid].Total += ai.Minutes
 			report.ByGroup[assn] += ai.Minutes
 			report.ByGroup[0] += ai.Minutes
@@ -125,14 +119,21 @@ func submitHours(tx *store.Tx, month time.Time) {
 	sort.Slice(report.Unregistered, func(i, j int) bool {
 		return report.Unregistered[i].Name < report.Unregistered[j].Name
 	})
-	submitToVolgistics(people, time.Date(month.Year(), month.Month()+1, 1, 0, 0, 0, 0, time.Local).Add(-time.Second))
 	sendReport(&report)
 }
 
 func sendReport(report *rdata) {
-	var buf bytes.Buffer
+	var (
+		buf    bytes.Buffer
+		toaddr string
+	)
+	if *dflag {
+		toaddr = "admin@sunnyvaleserv.org"
+	} else {
+		toaddr = "volunteer-hours@sunnyvaleserv.org"
+	}
 	reportTemplate.Execute(&buf, report)
-	sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"volunteer-hours@sunnyvaleserv.org"}, buf.Bytes())
+	sendmail.SendMessage("admin@sunnyvaleserv.org", []string{toaddr}, buf.Bytes())
 }
 
 var reportTemplate = template.Must(template.New("").Parse(`

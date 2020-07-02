@@ -12,10 +12,57 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"sunnyvaleserv.org/portal/model"
+	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util/config"
 )
 
+type pinfo struct {
+	Name         string
+	VolgisticsID int
+	Minutes      map[int]uint16
+	Total        uint16
+}
+
 var client http.Client
+
+func submitHours(tx *store.Tx) {
+	var (
+		mstr   string
+		eatt   = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
+		people = make(map[model.PersonID]*pinfo)
+	)
+	mstr = time.Time(mflag).Format("2006-01")
+	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
+		assn := orgToAssignment[e.Organization]
+		if assn == 0 {
+			continue
+		}
+		eatt[e.ID] = tx.FetchAttendanceByEvent(e)
+		for pid, ai := range eatt[e.ID] {
+			if len(pflags) != 0 && !pflags[pid] {
+				continue
+			}
+			if ai.Minutes == 0 || ai.Type == model.AttendAsAuditor || ai.Type == model.AttendAsStudent {
+				continue
+			}
+			if people[pid] == nil {
+				p := tx.FetchPerson(pid)
+				people[pid] = &pinfo{
+					Name:         p.InformalName,
+					VolgisticsID: p.VolgisticsID,
+					Minutes:      make(map[int]uint16),
+				}
+			}
+			people[pid].Minutes[assn] += ai.Minutes
+		}
+	}
+	for pid, pi := range people {
+		if pi.VolgisticsID == 0 {
+			delete(people, pid)
+		}
+	}
+	submitToVolgistics(people, time.Date(time.Time(mflag).Year(), time.Time(mflag).Month()+1, 1, 0, 0, 0, 0, time.Local).Add(-time.Second))
+}
 
 func submitToVolgistics(people map[model.PersonID]*pinfo, date time.Time) {
 	var (
