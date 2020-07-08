@@ -57,6 +57,9 @@ func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) 
 		return err
 	}
 	for _, t := range to {
+		if t != "admin@sunnyvaleserv.org" {
+			continue
+		}
 		if err = m.client.Rcpt(t); err != nil {
 			m.client.Close()
 			return err
