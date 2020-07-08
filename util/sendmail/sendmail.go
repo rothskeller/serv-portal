@@ -47,6 +47,11 @@ func OpenMailer() (m *Mailer, err error) {
 func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) {
 	var wr io.WriteCloser
 
+	fmt.Fprintf(os.Stderr, "From %s\n", from)
+	for _, t := range to {
+		fmt.Fprintf(os.Stderr, "To %s\n", t)
+	}
+	fmt.Fprintf(os.Stderr, "%s\n", string(body))
 	if err = m.client.Mail(from); err != nil {
 		m.client.Close()
 		return err
@@ -89,11 +94,6 @@ func SendMessage(from string, to []string, body []byte) (err error) {
 	if err = m.SendMessage(from, to, body); err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "From %s\n", from)
-	for _, t := range to {
-		fmt.Fprintf(os.Stderr, "To %s\n", t)
-	}
-	fmt.Fprintf(os.Stderr, "%s\n", string(body))
 	m.Close()
 	return nil
 }
