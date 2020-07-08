@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"net/smtp"
-	"os"
 
 	"sunnyvaleserv.org/portal/util/config"
 )
@@ -47,19 +46,11 @@ func OpenMailer() (m *Mailer, err error) {
 func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) {
 	var wr io.WriteCloser
 
-	fmt.Fprintf(os.Stderr, "From %s\n", from)
-	for _, t := range to {
-		fmt.Fprintf(os.Stderr, "To %s\n", t)
-	}
-	fmt.Fprintf(os.Stderr, "%s\n", string(body))
 	if err = m.client.Mail(from); err != nil {
 		m.client.Close()
 		return err
 	}
 	for _, t := range to {
-		if t != "admin@sunnyvaleserv.org" {
-			continue
-		}
 		if err = m.client.Rcpt(t); err != nil {
 			m.client.Close()
 			return err
@@ -69,12 +60,6 @@ func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) 
 		m.client.Close()
 		return err
 	}
-	body = []byte(`To: admin@sunnyvaleserv.org
-From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
-Subject: Reminder: SERV Volunteer Hours for June 2020
-
-Test
-`)
 	if _, err = wr.Write(body); err != nil {
 		m.client.Close()
 		return err

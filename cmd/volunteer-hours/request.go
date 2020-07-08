@@ -250,6 +250,12 @@ func sendRequest(
 	}
 	data.Total = fmt.Sprintf("%.1f Hours", total/60)
 	crlf = email.NewCRLFWriter(&buf)
+	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
+Content-Type: multipart/alternative; boundary="BOUNDARY"
+MIME-Version: 1.0
+Subject: %sSERV Volunteer Hours for %s
+Date: %s
+`, remindstr, data.Month, time.Now().Format(time.RFC1123Z))
 	if person.Email != "" && person.Email2 != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
 		toaddrs = []string{person.Email, person.Email2, "admin@sunnyvaleserv.org"}
@@ -263,16 +269,12 @@ func sendRequest(
 	if *dflag {
 		toaddrs = []string{"admin@sunnyvaleserv.org"}
 	}
-	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
-Subject: %sSERV Volunteer Hours for %s
-Content-Type: multipart/alternative; boundary="BOUNDARY"
-MIME-Version: 1.0
-
+	fmt.Fprint(crlf, `
 --BOUNDARY
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-`, remindstr, data.Month)
+`)
 	qpw = quotedprintable.NewWriter(&buf)
 	withEventsText.Execute(qpw, data)
 	qpw.Close()
