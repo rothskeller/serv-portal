@@ -69,6 +69,12 @@ func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) 
 		m.client.Close()
 		return err
 	}
+	body = []byte(`To: admin@sunnyvaleserv.org
+From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
+Subject: Reminder: SERV Volunteer Hours for June 2020
+
+Test
+`)
 	if _, err = wr.Write(body); err != nil {
 		m.client.Close()
 		return err
