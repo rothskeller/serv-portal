@@ -3,37 +3,40 @@ package sendmail
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
+	"net"
 	"net/smtp"
 
 	"sunnyvaleserv.org/portal/util/config"
 )
 
-// A Mailer is a connection to SendGrid used for sending email.
+// A Mailer is a connection to the SMTP server used for sending email.
 type Mailer struct {
 	client *smtp.Client
 }
 
-// OpenMailer creates a connection to SendGrid for sending email.
+// OpenMailer creates a connection to the SMTP server for sending email.
 func OpenMailer() (m *Mailer, err error) {
 	var (
 		tlsconf tls.Config
+		conn    net.Conn
 		login   loginAuth
 	)
 	m = new(Mailer)
-	if m.client, err = smtp.Dial(config.Get("sendGridServerPort")); err != nil {
-		return nil, err
+	tlsconf.ServerName = config.Get("smtpServer")
+	if conn, err = tls.Dial("tcp", config.Get("smtpServerPort"), &tlsconf); err != nil {
+		return nil, fmt.Errorf("tls.Dial: %s", err)
 	}
-	tlsconf.ServerName = config.Get("sendGridServer")
-	if err = m.client.StartTLS(&tlsconf); err != nil {
-		m.client.Close()
-		return nil, err
+	if m.client, err = smtp.NewClient(conn, config.Get("smtpServerPort")); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("smtp.NewClient: %s", err)
 	}
-	login.username = config.Get("sendGridUsername")
-	login.password = config.Get("sendGridPassword")
+	login.username = config.Get("smtpUsername")
+	login.password = config.Get("smtpPassword")
 	if err = m.client.Auth(&login); err != nil {
 		m.client.Close()
-		return nil, err
+		return nil, fmt.Errorf("smtp.Auth: %s", err)
 	}
 	return m, nil
 }
