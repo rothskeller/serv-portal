@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/smtp"
+	"os"
 
 	"sunnyvaleserv.org/portal/util/config"
 )
@@ -88,6 +89,11 @@ func SendMessage(from string, to []string, body []byte) (err error) {
 	if err = m.SendMessage(from, to, body); err != nil {
 		return err
 	}
+	fmt.Fprintf(os.Stderr, "From %s\n", from)
+	for _, t := range to {
+		fmt.Fprintf(os.Stderr, "To %s\n", t)
+	}
+	fmt.Fprintf(os.Stderr, "%s\n", string(body))
 	m.Close()
 	return nil
 }
