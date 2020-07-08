@@ -11,6 +11,7 @@ import (
 	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
@@ -138,17 +139,18 @@ func sendReport(report *rdata) {
 	crlf := email.NewCRLFWriter(&buf)
 	fmt.Fprintf(crlf, `From: Sunnyvale SERV <admin@sunnyvaleserv.org>
 To: volunteer-hours@sunnyvaleserv.org
+Date: %s
 Subject: Sunnyvale SERV Volunteer Hours for %s
 Content-Type: text/html
 Content-Transfer-Encoding: quoted-printable
 
-`, report.Month)
+`, time.Now().Format(time.RFC1123Z), report.Month)
 	qpw := quotedprintable.NewWriter(&buf)
 	if err := reportTemplate.Execute(qpw, report); err != nil {
 		panic(err)
 	}
 	qpw.Close()
-	if err := sendmail.SendMessage("admin@sunnyvaleserv.org", []string{toaddr}, buf.Bytes()); err != nil {
+	if err := sendmail.SendMessage(config.Get("fromAddr"), []string{toaddr}, buf.Bytes()); err != nil {
 		panic(err)
 	}
 }

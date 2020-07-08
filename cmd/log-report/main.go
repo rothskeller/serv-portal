@@ -138,7 +138,7 @@ func main() {
 	}
 	fmt.Fprintf(qpw, `</body></html>`)
 	qpw.Close()
-	if err = sendmail.SendMessage("admin@sunnyvaleserv.org", []string{"admin@sunnyvaleserv.org"}, out.Bytes()); err != nil {
+	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{config.Get("adminEmail"}, out.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sendmail: %s\n", err)
 		os.Exit(1)
 	}

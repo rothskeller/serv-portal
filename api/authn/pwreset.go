@@ -51,7 +51,7 @@ func PostPasswordReset(r *util.Request) error {
 	person.PWResetTime = time.Now()
 	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
-	fmt.Fprintf(&body, "From: %s\r\nTo: ", config.Get("fromEmail"))
+	fmt.Fprintf(&body, "From: %s\r\nDate: %s\r\nTo: ", config.Get("fromEmail"), time.Now().Format(time.RFC1123Z))
 	for i, e := range emails {
 		if i != 0 {
 			body.WriteString(", ")

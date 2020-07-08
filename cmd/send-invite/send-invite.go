@@ -9,12 +9,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"sunnyvaleserv.org/portal/api/authn"
 	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/log"
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
@@ -87,6 +89,7 @@ func main() {
 	body = email.NewCRLFWriter(&buf)
 	fmt.Fprintf(body, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
 To: %s <%s>
+Date: %s
 Subject: Welcome to SunnyvaleSERV.org!
 Content-Type: multipart/alternative; boundary="BOUNDARY"
 MIME-Version: 1.0
@@ -183,8 +186,9 @@ interest in emergency response.</div>
 </html>
 
 --BOUNDARY--
-`, email.QuoteIfNeeded(person.InformalName), person.Email, person.InformalName, person.Username, password)
-	if err = sendmail.SendMessage("admin@sunnyvaleserv.org", []string{person.Email}, buf.Bytes()); err != nil {
+`, email.QuoteIfNeeded(person.InformalName), person.Email, person.InformalName,
+		time.Now().Format(time.RFC1123Z), person.Username, password)
+	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{person.Email}, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sending email: %s\n", err)
 		os.Exit(1)
 	}
