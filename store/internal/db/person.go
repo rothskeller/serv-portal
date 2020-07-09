@@ -72,22 +72,6 @@ func (tx *Tx) FetchPersonByCellPhone(token string) (p *model.Person) {
 	}
 }
 
-// FetchPersonByUnsubscribe retrieves a single person from the database, given
-// an unsubscribe token.  It returns nil if no such person exists.
-func (tx *Tx) FetchPersonByUnsubscribe(token string) (p *model.Person) {
-	var data []byte
-	p = new(model.Person)
-	switch err := tx.tx.QueryRow(`SELECT data FROM person WHERE unsubscribe=?`, token).Scan(&data); err {
-	case nil:
-		panicOnError(p.Unmarshal(data))
-		return p
-	case sql.ErrNoRows:
-		return nil
-	default:
-		panic(err)
-	}
-}
-
 // FetchPersonByHoursToken retrieves a single person from the database, given an
 // hours token.  It returns nil if no such person exists.
 func (tx *Tx) FetchPersonByHoursToken(token string) (p *model.Person) {
