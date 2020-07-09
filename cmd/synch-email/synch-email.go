@@ -100,7 +100,7 @@ func updateMailingList(tx *store.Tx, mail *bytes.Buffer, group *model.Group) (ch
 	}
 	client.Jar, _ = cookiejar.New(nil)
 	listaddr = fmt.Sprintf("http://lists.sunnyvaleserv.org/admin.cgi/%s-sunnyvaleserv.org", group.Email)
-	resp, err = client.PostForm(listaddr, url.Values{"adminpw": {config.Get("mailmainAdminPassword")}, "admlogin": {"Let me in..."}})
+	resp, err = client.PostForm(listaddr, url.Values{"adminpw": {config.Get("mailmanAdminPassword")}, "admlogin": {"Let me in..."}})
 	if err != nil {
 		fmt.Fprintf(mail, "ERROR: can't log in to %s admin console: %s\n\n", group.Email, err)
 		return true
