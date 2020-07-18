@@ -54,6 +54,18 @@ func (tx *Tx) FetchPersonByCellPhone(number string) (p *model.Person) {
 	return p
 }
 
+// FetchPersonByUnsubscribe retrieves a single person from the database, given
+// an unsubscribe token.  It returns nil if no such person exists.
+func (tx *Tx) FetchPersonByUnsubscribe(token string) (p *model.Person) {
+	if p = tx.Tx.FetchPersonByUnsubscribe(token); p != nil {
+		if p2 := tx.people[p.ID]; p2 != nil {
+			return p2
+		}
+		tx.people[p.ID] = p
+	}
+	return p
+}
+
 // FetchPersonByHoursToken retrieves a single person from the database, given an
 // hours token.  It returns nil if no such person exists.
 func (tx *Tx) FetchPersonByHoursToken(token string) (p *model.Person) {

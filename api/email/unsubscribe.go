@@ -9,15 +9,14 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetUnsubscribe handles GET /unsubscribe/$email requests.  Note that these
-// requests are unauthenticated.  Anyone could unsubscribe anyone else, given
-// their email address.  Hopefully we'd notice any abuse in the daily logs.
-func GetUnsubscribe(r *util.Request, email string) error {
+// GetUnsubscribe handles GET /unsubscribe/$token requests.  Note that these
+// requests are unauthenticated; the token is the authentication.
+func GetUnsubscribe(r *util.Request, token string) error {
 	var (
 		person *model.Person
 		out    jwriter.Writer
 	)
-	if person = r.Tx.FetchPersonByEmail(email); person == nil {
+	if person = r.Tx.FetchPersonByUnsubscribe(token); person == nil {
 		return util.NotFound
 	}
 	r.Auth.SetMe(person)
@@ -56,14 +55,14 @@ func GetUnsubscribe(r *util.Request, email string) error {
 	return nil
 }
 
-// PostUnsubscribe handles POST /unsubscribe/$email requests.
-func PostUnsubscribe(r *util.Request, email string) error {
+// PostUnsubscribe handles POST /unsubscribe/$token requests.
+func PostUnsubscribe(r *util.Request, token string) error {
 	var (
 		person   *model.Person
 		noEmail  bool
 		needSave bool
 	)
-	if person = r.Tx.FetchPersonByEmail(email); person == nil {
+	if person = r.Tx.FetchPersonByUnsubscribe(token); person == nil {
 		return util.NotFound
 	}
 	r.Auth.SetMe(person)
@@ -107,4 +106,33 @@ func PostUnsubscribe(r *util.Request, email string) error {
 	}
 	r.Tx.Commit()
 	return nil
+}
+
+// PostUnsubscribeList handles POST /unsubscribe/$token/$email requests.
+func PostUnsubscribeList(r *util.Request, token, email string) error {
+	var person *model.Person
+
+	if r.FormValue("List-Unsubscribe") != "One-Click" {
+		return PostUnsubscribe(r, token)
+	}
+	if person = r.Tx.FetchPersonByUnsubscribe(token); person == nil {
+		return util.NotFound
+	}
+	r.Auth.SetMe(person)
+	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivMember)) {
+		if g.Email != email {
+			continue
+		}
+		for _, p := range g.NoEmail {
+			if p == person.ID {
+				return nil
+			}
+		}
+		r.Auth.WillUpdateGroup(g)
+		g.NoEmail = append(g.NoEmail, person.ID)
+		r.Auth.UpdateGroup(g)
+		r.Auth.Save()
+		return nil
+	}
+	return util.NotFound
 }
