@@ -106,9 +106,6 @@ func submitToVolgistics(people map[model.PersonID]*pinfo, date time.Time) {
 		if pi.VolgisticsID == 0 {
 			continue
 		}
-		if pi.VolgisticsID != 296405 {
-			continue
-		}
 		submitPersonToVolgistics(id, date, pi)
 	}
 }
@@ -176,6 +173,7 @@ func submitPersonToVolgistics(id string, date time.Time, pi *pinfo) {
 	volPage.Add("H1FD", "")
 	volPage.Add("MM0", "0.00")
 	volPage.Add("scrollTo", "#C5_26")
+	delay()
 	doc = checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Hours", volPage))
 
 	// Handle each assignment type.
@@ -233,7 +231,7 @@ ASSN:
 			found = true
 			break
 		}
-		if found || pi.Minutes[a] == 0 {
+		if !found && pi.Minutes[a] == 0 {
 			continue
 		}
 		if !found {
@@ -243,6 +241,7 @@ ASSN:
 			updateForm.Add("Save", "Save")
 			disposition = "added"
 		}
+		delay()
 		checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Hours", updateForm))
 		fmt.Printf("%s - %s - %s\n", name, assnToName[a], disposition)
 	}
