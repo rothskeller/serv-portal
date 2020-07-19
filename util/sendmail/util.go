@@ -1,8 +1,10 @@
-package email
+package sendmail
 
 import (
 	"bytes"
 	"io"
+	"regexp"
+	"strings"
 )
 
 // A CRLFWriter is a writer that converts \n to \r\n.
@@ -36,4 +38,15 @@ func (w CRLFWriter) Write(b []byte) (n int, err error) {
 		n += wn
 	}
 	return
+}
+
+var unquotedRE = regexp.MustCompile("^[-a-zA-Z0-9!#$%&'*+/=?^_`{}|~.]+$")
+
+// QuoteIfNeeded returns the string passed to it, quoted appropriately for
+// inclusion in an email header if quoting is needed.
+func QuoteIfNeeded(s string) string {
+	if unquotedRE.MatchString(s) {
+		return s
+	}
+	return `"` + strings.Replace(s, `"`, `\"`, -1) + `"`
 }

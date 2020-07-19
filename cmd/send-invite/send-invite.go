@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"sunnyvaleserv.org/portal/api/authn"
-	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
@@ -86,7 +85,7 @@ func main() {
 	authn.SetPassword(&util.Request{Tx: tx}, person, password)
 	tx.UpdatePerson(person)
 	tx.Commit()
-	body = email.NewCRLFWriter(&buf)
+	body = sendmail.NewCRLFWriter(&buf)
 	fmt.Fprintf(body, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
 To: %s <%s>
 Date: %s
@@ -186,7 +185,7 @@ interest in emergency response.</div>
 </html>
 
 --BOUNDARY--
-`, email.QuoteIfNeeded(person.InformalName), person.Email, person.InformalName,
+`, sendmail.QuoteIfNeeded(person.InformalName), person.Email, person.InformalName,
 		time.Now().Format(time.RFC1123Z), person.Username, password)
 	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{person.Email}, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sending email: %s\n", err)

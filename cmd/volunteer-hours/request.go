@@ -9,7 +9,6 @@ import (
 	ttemplate "text/template"
 	"time"
 
-	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
@@ -101,12 +100,12 @@ func notifyNotInVolgistics(person *model.Person, mailer *sendmail.Mailer) {
 	var (
 		buf     bytes.Buffer
 		qpw     *quotedprintable.Writer
-		crlf    email.CRLFWriter
+		crlf    sendmail.CRLFWriter
 		toaddrs []string
 	)
 	data.Name = person.InformalName
 	data.Month = time.Time(mflag).Format("January 2006")
-	crlf = email.NewCRLFWriter(&buf)
+	crlf = sendmail.NewCRLFWriter(&buf)
 	if person.Email != "" && person.Email2 != "" {
 		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
 		toaddrs = []string{person.Email, person.Email2, "admin@sunnyvaleserv.org"}
@@ -226,7 +225,7 @@ func sendRequest(
 		total     float64
 		buf       bytes.Buffer
 		qpw       *quotedprintable.Writer
-		crlf      email.CRLFWriter
+		crlf      sendmail.CRLFWriter
 		toaddrs   []string
 		pevents   []*model.Event
 	)
@@ -249,7 +248,7 @@ func sendRequest(
 		total += float64(eatt[e.ID][person.ID].Minutes)
 	}
 	data.Total = fmt.Sprintf("%.1f Hours", total/60)
-	crlf = email.NewCRLFWriter(&buf)
+	crlf = sendmail.NewCRLFWriter(&buf)
 	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>
 Content-Type: multipart/alternative; boundary="BOUNDARY"
 MIME-Version: 1.0

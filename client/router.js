@@ -53,10 +53,6 @@ const router = new Router({
               redirect: '/admin/groups'
             },
             {
-              path: 'emails',
-              component: () => import(/* webpackChunkName: "EmailsList" */ './pages/admin/EmailsList'),
-            },
-            {
               path: 'groups',
               component: () => import(/* webpackChunkName: "GroupsList" */ './pages/admin/GroupsList'),
             },

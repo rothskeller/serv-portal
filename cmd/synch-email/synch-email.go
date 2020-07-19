@@ -1,33 +1,29 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/cookiejar"
-	"net/url"
 	"os"
-	"regexp"
-	"strings"
+	"path/filepath"
+
+	"github.com/mailru/easyjson/jwriter"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
-	"sunnyvaleserv.org/portal/util/config"
-	"sunnyvaleserv.org/portal/util/sendmail"
+	"sunnyvaleserv.org/portal/store/authz"
 )
-
-var addrRE = regexp.MustCompile(`([^"]+)_unsub`)
-var letterRE = regexp.MustCompile(`(?s)\?letter=."><.*?\?letter=(.)`)
-var csrfRE = regexp.MustCompile(`name="csrf_token" value="([^"]*)"`)
 
 func main() {
 	var (
-		tx      *store.Tx
-		err     error
-		mail    bytes.Buffer
-		changes bool
+		tx       *store.Tx
+		auth     *authz.Authorizer
+		groups   []*model.Group
+		out      jwriter.Writer
+		disabled model.GroupID
+		tempfn   string
+		permfn   string
+		tempfh   *os.File
+		err      error
+		first    = true
 	)
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
@@ -43,204 +39,98 @@ func main() {
 	}
 	store.Open("serv.db")
 	tx = store.Begin(nil)
-	fmt.Fprintf(&mail, "From: %s\r\nTo: <%s>\r\nSubject: SERV Mailing List Updates\r\n\r\n", config.Get("fromEmail"), config.Get("adminEmail"))
-	for _, group := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {
-		if group.Email == "" {
-			continue
+	auth = tx.Authorizer()
+	for _, g := range auth.FetchGroups(auth.AllGroups()) {
+		if g.Email != "" {
+			g.Email += "@sunnyvaleserv.org"
+			groups = append(groups, g)
 		}
-		if updateMailingList(tx, &mail, group) {
-			changes = true
+		if g.Tag == model.GroupDisabled {
+			disabled = g.ID
 		}
 	}
-	if !changes {
-		return
-	}
-	err = sendmail.SendMessage(config.Get("fromAddr"), []string{config.Get("adminEmail")}, mail.Bytes())
-	if err != nil {
-		log.Fatalf("send mail: %s", err)
-	}
-}
+	out.RawByte('[')
+	for _, p := range tx.FetchPeople() {
+		var sender, receiver []string
 
-func updateMailingList(tx *store.Tx, mail *bytes.Buffer, group *model.Group) (changed bool) {
-	var auth = tx.Authorizer()
-	var (
-		disabled    model.GroupID
-		listaddr    string
-		client      http.Client
-		resp        *http.Response
-		body        []byte
-		letter      string
-		elist       strings.Builder
-		csrf        string
-		err         error
-		desired     = map[string]bool{}
-		actual      = map[string]bool{}
-		noEmailPIDs = map[model.PersonID]bool{}
-	)
-	disabled = auth.FetchGroupByTag(model.GroupDisabled).ID
-	for _, pid := range group.NoEmail {
-		noEmailPIDs[pid] = true
-	}
-	for _, person := range tx.FetchPeople() {
-		if auth.MemberPG(person.ID, disabled) || noEmailPIDs[person.ID] || person.NoEmail {
+		if auth.MemberPG(p.ID, disabled) || p.NoEmail || (p.Email == "" && p.Email2 == "") {
 			continue
 		}
-		if auth.MemberPG(person.ID, group.ID) || auth.CanPAG(person.ID, model.PrivBCC, group.ID) {
-			if person.Email != "" {
-				desired[person.Email] = true
+	GROUPS:
+		for _, g := range groups {
+			if auth.CanPAG(p.ID, model.PrivSendEmailMessages, g.ID) {
+				sender = append(sender, g.Email)
 			}
-			if person.Email2 != "" {
-				desired[person.Email2] = true
+			if !auth.MemberPG(p.ID, g.ID) && !auth.CanPAG(p.ID, model.PrivBCC, g.ID) {
+				continue
 			}
+			for _, pid := range g.NoEmail {
+				if pid == p.ID {
+					continue GROUPS
+				}
+			}
+			receiver = append(receiver, g.Email)
+		}
+		if len(sender) == 0 && len(receiver) == 0 {
+			continue
+		}
+		for _, email := range []string{p.Email, p.Email2} {
+			if email == "" {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.IntStr(int(p.ID))
+			out.RawString(`,"name":`)
+			out.String(p.InformalName)
+			out.RawString(`,"email":`)
+			out.String(email)
+			out.RawString(`,"token":`)
+			out.String(p.UnsubscribeToken)
+			if len(sender) != 0 {
+				out.RawString(`,"sender":[`)
+				for i, s := range sender {
+					if i != 0 {
+						out.RawByte(',')
+					}
+					out.String(s)
+				}
+				out.RawByte(']')
+			}
+			if len(receiver) != 0 {
+				out.RawString(`,"receiver":[`)
+				for i, r := range receiver {
+					if i != 0 {
+						out.RawByte(',')
+					}
+					out.String(r)
+				}
+				out.RawByte(']')
+			}
+			out.RawByte('}')
 		}
 	}
-	if len(desired) == 0 {
-		fmt.Fprintf(mail, "WARNING: no addresses found for list %s; skipping\n\n", group.Email)
-		return true
+	out.RawByte(']')
+	permfn = filepath.Join(os.Getenv("HOME"), "maillist", "lists")
+	tempfn = permfn + ".temp"
+	if tempfh, err = os.Create(tempfn); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
 	}
-	client.Jar, _ = cookiejar.New(nil)
-	listaddr = fmt.Sprintf("http://lists.sunnyvaleserv.org/admin.cgi/%s-sunnyvaleserv.org", group.Email)
-	resp, err = client.PostForm(listaddr, url.Values{"adminpw": {config.Get("mailmanAdminPassword")}, "admlogin": {"Let me in..."}})
-	if err != nil {
-		fmt.Fprintf(mail, "ERROR: can't log in to %s admin console: %s\n\n", group.Email, err)
-		return true
+	if _, err = out.DumpTo(tempfh); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: write %s: %s\n", tempfn, err)
+		os.Exit(1)
 	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		fmt.Fprintf(mail, "ERROR: can't log in to %s admin console: %s\n\n", group.Email, resp.Status)
-		return true
+	if err = tempfh.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: close %s: %s\n", tempfn, err)
+		os.Exit(1)
 	}
-	for {
-		resp, err = client.Get(listaddr + "/members" + letter)
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't get members of %s: %s\n\n", group.Email, err)
-			return true
-		}
-		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			fmt.Fprintf(mail, "ERROR: can't get members of %s: %s\n\n", group.Email, resp.Status)
-			return true
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't read members of %s: %s\n\n", group.Email, err)
-			return true
-		}
-		for _, m := range addrRE.FindAllSubmatch(body, -1) {
-			actual[strings.ToLower(strings.Replace(string(m[1]), "%40", "@", -1))] = true
-		}
-		if l := letterRE.FindSubmatch(body); l != nil {
-			letter = "?letter=" + string(l[1])
-		} else {
-			break
-		}
+	if err = os.Rename(tempfn, permfn); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: move %s to %s: %s\n", tempfn, permfn, err)
+		os.Exit(1)
 	}
-	if len(actual) == 0 && len(os.Args) == 1 {
-		fmt.Fprintf(mail, "WARNING: no addresses found on list %s; probable web scraping failure; skipping; override with any argument on synch-email command line\n\n",
-			group.Email)
-		return true
-	}
-	for a := range actual {
-		if !desired[a] {
-			elist.WriteString(a)
-			elist.WriteByte('\n')
-			fmt.Fprintf(mail, "%s: remove %s\n", group.Email, a)
-		}
-	}
-	if elist.Len() != 0 {
-		resp, err = client.Get(listaddr + "/members/remove")
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't get member remove page for %s: %s\n\n", group.Email, err)
-			return true
-		}
-		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			fmt.Fprintf(mail, "ERROR: can't get member remove page for %s: %s\n\n", group.Email, resp.Status)
-			return true
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't read member remove page for %s: %s\n\n", group.Email, err)
-			return true
-		}
-		if c := csrfRE.FindSubmatch(body); c != nil {
-			csrf = string(c[1])
-		} else {
-			fmt.Fprintf(mail, "ERROR: no CSRF token on member remove page for %s\n\n", group.Email)
-			return true
-		}
-		resp, err = client.PostForm(listaddr+"/member/remove", url.Values{
-			"setmemberopts_btn":                      {"Submit Your Changes"},
-			"send_unsub_ack_to_this_batch":           {"0"},
-			"send_unsub_notifications_to_list_owner": {"0"},
-			"unsubscribees":                          {elist.String()},
-			"csrf_token":                             {csrf},
-		})
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't remove members from %s: %s\n\n", group.Email, err)
-			return true
-		}
-		resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			fmt.Fprintf(mail, "ERROR: can't remove members from %s: %s\n\n", group.Email, resp.Status)
-			return true
-		}
-		changed = true
-		elist.Reset()
-	}
-	for d := range desired {
-		if !actual[d] {
-			elist.WriteString(d)
-			elist.WriteByte('\n')
-			fmt.Fprintf(mail, "%s: add %s\n", group.Email, d)
-		}
-	}
-	if elist.Len() != 0 {
-		resp, err = client.Get(listaddr + "/members/add")
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't get member add page for %s: %s\n\n", group.Email, err)
-			return true
-		}
-		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			fmt.Fprintf(mail, "ERROR: can't get member add page for %s: %s\n\n", group.Email, resp.Status)
-			return true
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't read member add page for %s: %s\n\n", group.Email, err)
-			return true
-		}
-		if c := csrfRE.FindSubmatch(body); c != nil {
-			csrf = string(c[1])
-		} else {
-			fmt.Fprintf(mail, "ERROR: no CSRF token on member add page for %s\n\n", group.Email)
-			return true
-		}
-		resp, err = client.PostForm(listaddr+"/member/add", url.Values{
-			"setmemberopts_btn":                {"Submit Your Changes"},
-			"subscribe_or_invite":              {"0"},
-			"send_welcome_msg_to_this_batch":   {"0"},
-			"send_notifications_to_list_owner": {"0"},
-			"subscribees":                      {elist.String()},
-			"csrf_token":                       {csrf},
-		})
-		if err != nil {
-			fmt.Fprintf(mail, "ERROR: can't add members from %s: %s\n\n", group.Email, err)
-			return true
-		}
-		resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			fmt.Fprintf(mail, "ERROR: can't add members from %s: %s\n\n", group.Email, resp.Status)
-			return true
-		}
-		changed = true
-	}
-	if changed {
-		mail.WriteByte('\n')
-	}
-	return changed
 }

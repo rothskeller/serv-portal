@@ -8,7 +8,6 @@ import (
 	"sort"
 	"time"
 
-	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util/config"
@@ -136,7 +135,7 @@ func sendReport(report *rdata) {
 	} else {
 		toaddr = "volunteer-hours@sunnyvaleserv.org"
 	}
-	crlf := email.NewCRLFWriter(&buf)
+	crlf := sendmail.NewCRLFWriter(&buf)
 	fmt.Fprintf(crlf, `From: Sunnyvale SERV <admin@sunnyvaleserv.org>
 To: volunteer-hours@sunnyvaleserv.org
 Date: %s

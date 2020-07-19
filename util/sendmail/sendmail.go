@@ -1,113 +1,47 @@
 package sendmail
 
 import (
-	"crypto/tls"
-	"errors"
 	"fmt"
-	"io"
-	"net"
-	"net/smtp"
-
-	"sunnyvaleserv.org/portal/util/config"
+	"os/exec"
 )
 
-// A Mailer is a connection to the SMTP server used for sending email.
-type Mailer struct {
-	client *smtp.Client
-}
+// A Mailer is a handler for sending email.  While the current email sending
+// method is stateless, other possible methods aren't (e.g. directly connecting
+// to an SMTP server), so this API allows for state to be preserved across
+// multiple messages.
+type Mailer struct{}
 
-// OpenMailer creates a connection to the SMTP server for sending email.
+// OpenMailer creates a handler for sending email.
 func OpenMailer() (m *Mailer, err error) {
-	var (
-		tlsconf tls.Config
-		conn    net.Conn
-		login   loginAuth
-	)
-	m = new(Mailer)
-	tlsconf.ServerName = config.Get("smtpServer")
-	if conn, err = tls.Dial("tcp", config.Get("smtpServerPort"), &tlsconf); err != nil {
-		return nil, fmt.Errorf("tls.Dial: %s", err)
+	if _, err = exec.LookPath("mail-sender"); err != nil {
+		return nil, fmt.Errorf("mail-sender not found: %s", err)
 	}
-	if m.client, err = smtp.NewClient(conn, config.Get("smtpServerPort")); err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("smtp.NewClient: %s", err)
-	}
-	login.username = config.Get("smtpUsername")
-	login.password = config.Get("smtpPassword")
-	if err = m.client.Auth(&login); err != nil {
-		m.client.Close()
-		return nil, fmt.Errorf("smtp.Auth: %s", err)
-	}
-	return m, nil
+	return new(Mailer), nil
 }
 
 // SendMessage sends a single message through the Mailer.  If it returns an
 // error, the Mailer is no longer usable.
 func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) {
-	var wr io.WriteCloser
-
-	if err = m.client.Mail(from); err != nil {
-		m.client.Close()
-		return err
-	}
-	for _, t := range to {
-		if err = m.client.Rcpt(t); err != nil {
-			m.client.Close()
-			return err
-		}
-	}
-	if wr, err = m.client.Data(); err != nil {
-		m.client.Close()
-		return err
-	}
-	if _, err = wr.Write(body); err != nil {
-		m.client.Close()
-		return err
-	}
-	if err = wr.Close(); err != nil {
-		m.client.Close()
-		return err
-	}
-	return nil
+	return SendMessage(from, to, body)
 }
 
-// Close closes the connection to SendGrid.  The Mailer may not be used after
-// this is called.
-func (m *Mailer) Close() {
-	m.client.Close()
-}
+// Close closes the Mailer.  The Mailer may not be used after this is called.
+func (m *Mailer) Close() {}
 
-// SendMessage sends a single message through SendGrid.  It is a shortcut for
-// creating a Mailer, calling SendMessage on it, and then closing it.
+// SendMessage sends a single email message.
 func SendMessage(from string, to []string, body []byte) (err error) {
-	var m *Mailer
-
-	if m, err = OpenMailer(); err != nil {
-		return err
+	var (
+		args []string
+		cmd  *exec.Cmd
+		out  []byte
+	)
+	args = make([]string, 0, len(to)+1)
+	args = append(args, from)
+	args = append(args, to...)
+	cmd = exec.Command("mail-sender", args...)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s: %s", err, string(out))
 	}
-	if err = m.SendMessage(from, to, body); err != nil {
-		return err
-	}
-	m.Close()
 	return nil
-}
-
-type loginAuth struct{ username, password string }
-
-func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
-	return "LOGIN", []byte(a.username), nil
-}
-
-func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
-	if more {
-		switch string(fromServer) {
-		case "Username:":
-			return []byte(a.username), nil
-		case "Password:":
-			return []byte(a.password), nil
-		default:
-			return nil, errors.New("Unknown fromServer")
-		}
-	}
-	return nil, nil
 }

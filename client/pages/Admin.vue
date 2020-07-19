@@ -10,7 +10,6 @@ b-card#admin-card(no-body)
       b-nav-item(v-if="canEditGroup" :to="`/admin/groups/${$route.params.gid}`" exact exact-active-class="active") {{editGroupLabel}}
       b-nav-item(to="/admin/roles" exact exact-active-class="active") Roles
       b-nav-item(v-if="canEditRole" :to="`/admin/roles/${$route.params.rid}`" exact exact-active-class="active") {{editRoleLabel}}
-      b-nav-item(to="/admin/emails" exact exact-active-class="active") Emails
   #admin-scroll
     router-view(:onLoadGroup="onLoadGroup" :onLoadRole="onLoadRole")
 </template>
