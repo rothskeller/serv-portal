@@ -1,6 +1,7 @@
 package sendmail
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 )
@@ -39,6 +40,7 @@ func SendMessage(from string, to []string, body []byte) (err error) {
 	args = append(args, from)
 	args = append(args, to...)
 	cmd = exec.Command("mail-sender", args...)
+	cmd.Stdin = bytes.NewReader(body)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s: %s", err, string(out))
