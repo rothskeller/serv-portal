@@ -161,10 +161,13 @@ var reportTemplate = template.Must(template.New("").Parse(`
   </head>
   <body style="font-family:Arial,Helvetica,sans-serif">
     <h1>SunnyvaleSERV.org Volunteer Hours for {{ .Month }}</h1>
+    <p>
+      Volunteer hours for {{ .Month }} that were reported on SunnyvaleSERV.org have been automatically recorded in Volgistics.
+    </p>
     <table>
       <tr>
         <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Group</td>
-	<td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
+        <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
       </tr>
       {{ $even := true }}
       <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">
@@ -196,15 +199,15 @@ var reportTemplate = template.Must(template.New("").Parse(`
     <table>
       <tr>
         <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Volunteer</td>
-	<td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
+        <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
       </tr>
       {{ $even := true }}
       {{ range .Leaders }}
         <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">
-	  <td style="padding:0.2em">{{ .Name }}</td>
-	  <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Total }}</td>
-	</tr>
-	{{ $even = not $even }}
+          <td style="padding:0.2em">{{ .Name }}</td>
+          <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Total }}</td>
+        </tr>
+        {{ $even = not $even }}
       {{ end }}
     </table>
     <h2>Events</h2>
@@ -214,18 +217,18 @@ var reportTemplate = template.Must(template.New("").Parse(`
         <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Event</td>
         <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Group</td>
         <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Volunteers</td>
-	<td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
+        <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
       </tr>
       {{ $even := true }}
       {{ range .Events }}
         <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">
-	  <td style="padding:0.2em">{{ .Date }}</td>
-	  <td style="padding:0.2em">{{ .Name }}</td>
-	  <td style="padding:0.2em">{{ .Assignment }}</td>
-	  <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Volunteers }}</td>
-	  <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Hours }}</td>
-	</tr>
-	{{ $even = not $even }}
+          <td style="padding:0.2em">{{ .Date }}</td>
+          <td style="padding:0.2em">{{ .Name }}</td>
+          <td style="padding:0.2em">{{ .Assignment }}</td>
+          <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Volunteers }}</td>
+          <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Hours }}</td>
+        </tr>
+        {{ $even = not $even }}
       {{ end }}
     </table>
     {{ if .Unregistered }}
@@ -233,14 +236,14 @@ var reportTemplate = template.Must(template.New("").Parse(`
       <table>
         <tr>
           <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Volunteer</td>
-	  <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
+          <td style="background-color:#538135;color:#FFFFFF;font-weight:bold;padding:0.2em">Hours</td>
         </tr>
         {{ $even := true }}
         {{ range .Unregistered }}
           <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">
-	    <td style="padding:0.2em">{{ .Name }}</td>
-	    <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Total }}</td>
-	  </tr>
+            <td style="padding:0.2em">{{ .Name }}</td>
+            <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ .Total }}</td>
+          </tr>
         {{ end }}
       </table>
     {{ end }}
