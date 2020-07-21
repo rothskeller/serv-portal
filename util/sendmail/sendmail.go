@@ -3,8 +3,20 @@ package sendmail
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 )
+
+var mailSenderPath string
+
+func init() {
+	var err error
+
+	if mailSenderPath, err = exec.LookPath("mail-sender"); err != nil {
+		mailSenderPath = filepath.Join(os.Getenv("HOME"), "go", "bin", "mail-sender")
+	}
+}
 
 // A Mailer is a handler for sending email.  While the current email sending
 // method is stateless, other possible methods aren't (e.g. directly connecting
@@ -14,9 +26,6 @@ type Mailer struct{}
 
 // OpenMailer creates a handler for sending email.
 func OpenMailer() (m *Mailer, err error) {
-	if _, err = exec.LookPath("mail-sender"); err != nil {
-		return nil, fmt.Errorf("mail-sender not found: %s", err)
-	}
 	return new(Mailer), nil
 }
 
@@ -39,7 +48,7 @@ func SendMessage(from string, to []string, body []byte) (err error) {
 	args = make([]string, 0, len(to)+1)
 	args = append(args, from)
 	args = append(args, to...)
-	cmd = exec.Command("mail-sender", args...)
+	cmd = exec.Command(mailSenderPath, args...)
 	cmd.Stdin = bytes.NewReader(body)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
