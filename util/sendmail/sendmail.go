@@ -14,7 +14,11 @@ func init() {
 	var err error
 
 	if mailSenderPath, err = exec.LookPath("mail-sender"); err != nil {
-		mailSenderPath = filepath.Join(os.Getenv("HOME"), "go", "bin", "mail-sender")
+		home := os.Getenv("HOME")
+		if home == "" {
+			home = "/home/snyserv"
+		}
+		mailSenderPath = filepath.Join(home, "go", "bin", "mail-sender")
 	}
 }
 
