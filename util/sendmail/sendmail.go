@@ -17,6 +17,7 @@ func init() {
 		home := os.Getenv("HOME")
 		if home == "" {
 			home = "/home/snyserv"
+			os.Setenv("HOME", home)
 		}
 		mailSenderPath = filepath.Join(home, "go", "bin", "mail-sender")
 	}
