@@ -136,7 +136,7 @@ func sendReport(report *rdata) {
 		toaddr = "volunteer-hours@sunnyvaleserv.org"
 	}
 	crlf := sendmail.NewCRLFWriter(&buf)
-	fmt.Fprintf(crlf, `From: Sunnyvale SERV <admin@sunnyvaleserv.org>
+	fmt.Fprintf(crlf, `From: Sunnyvale SERV <serv@sunnyvale.ca.gov>
 To: volunteer-hours@sunnyvaleserv.org
 Date: %s
 Subject: Sunnyvale SERV Volunteer Hours for %s

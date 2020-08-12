@@ -101,7 +101,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "ERROR: %s: %s\n", filename, err)
 		os.Exit(1)
 	}
-	fmt.Fprintf(&out, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: SunnyvaleSERV.org Usage Report for %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n", date)
+	fmt.Fprintf(&out, "From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: SunnyvaleSERV.org Usage Report for %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n", date)
 	qpw = quotedprintable.NewWriter(&out)
 	if requestElapsedCount != 0 {
 		requestElapsedAvg = requestElapsedSum / time.Duration(requestElapsedCount)
