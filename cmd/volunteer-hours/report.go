@@ -21,8 +21,8 @@ var orgToAssignment = map[model.Organization]int{
 	model.OrgLISTOS:   1048,
 	model.OrgOutreach: 1048,
 	model.OrgPEP:      1048,
-	// model.OrgSARES:    399, comment out until we start handling SARES
-	model.OrgSNAP: 373,
+	model.OrgSARES:    399,
+	model.OrgSNAP:     373,
 }
 var assnToName = map[int]string{
 	0:    "TOTAL", // as used in this program
@@ -33,8 +33,8 @@ var assnToName = map[int]string{
 	1052: "Admin",
 }
 var assnToLabel = map[int]string{ // as shown in Volgistics
-	373: "SNAP Volunteer [EMERGENCY PREPAREDNESS]",
-	// 399:  "SARES Volunteer [EMERGENCY PREPAREDNESS]", comment out until we start handling SARES
+	373:  "SNAP Volunteer [EMERGENCY PREPAREDNESS]",
+	399:  "SARES Volunteer [EMERGENCY PREPAREDNESS]",
 	1047: "CERT [EMERGENCY PREPAREDNESS]",
 	1048: "LISTOS [EMERGENCY PREPAREDNESS]",
 	1052: "SERV Admin [EMERGENCY PREPAREDNESS]",

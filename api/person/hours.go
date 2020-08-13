@@ -91,9 +91,7 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 				}
 			}
 		}
-		// Disabling SARES hours collection since they still do that
-		// through their own site.
-		if !show || e.Organization == model.OrgSARES {
+		if !show {
 			continue
 		}
 		if first {
