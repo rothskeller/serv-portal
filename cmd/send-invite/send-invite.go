@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/mail"
 	"os"
 	"time"
 
@@ -87,7 +88,7 @@ func main() {
 	tx.Commit()
 	body = sendmail.NewCRLFWriter(&buf)
 	fmt.Fprintf(body, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
-To: %s <%s>
+To: %s
 Date: %s
 Subject: Welcome to SunnyvaleSERV.org!
 Content-Type: multipart/alternative; boundary="BOUNDARY"
@@ -185,7 +186,7 @@ interest in emergency response.</div>
 </html>
 
 --BOUNDARY--
-`, sendmail.QuoteIfNeeded(person.InformalName), person.Email, person.InformalName,
+`, &mail.Address{Name: person.InformalName, Address: person.Email}, person.InformalName,
 		time.Now().Format(time.RFC1123Z), person.Username, password)
 	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{person.Email}, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sending email: %s\n", err)

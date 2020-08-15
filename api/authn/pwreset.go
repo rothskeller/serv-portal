@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -56,7 +57,7 @@ func PostPasswordReset(r *util.Request) error {
 		if i != 0 {
 			body.WriteString(", ")
 		}
-		fmt.Fprintf(&body, "%s <%s>", person.FormalName, e)
+		fmt.Fprint(&body, &mail.Address{Name: person.InformalName, Address: e})
 	}
 	fmt.Fprintf(&body, "\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
 		person.InformalName, config.Get("siteURL"), person.PWResetToken)

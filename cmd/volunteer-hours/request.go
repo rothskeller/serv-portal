@@ -5,6 +5,7 @@ import (
 	"fmt"
 	htemplate "html/template"
 	"mime/quotedprintable"
+	"net/mail"
 	"os"
 	ttemplate "text/template"
 	"time"
@@ -107,13 +108,17 @@ func notifyNotInVolgistics(person *model.Person, mailer *sendmail.Mailer) {
 	data.Month = time.Time(mflag).Format("January 2006")
 	crlf = sendmail.NewCRLFWriter(&buf)
 	if person.Email != "" && person.Email2 != "" {
-		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
+		var ma1 = mail.Address{Name: person.InformalName, Address: person.Email}
+		var ma2 = mail.Address{Name: person.InformalName, Address: person.Email2}
+		fmt.Fprintf(crlf, "To: %s, %s\n", &ma1, &ma2)
 		toaddrs = []string{person.Email, person.Email2}
 	} else if person.Email != "" {
-		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email)
+		var ma = mail.Address{Name: person.InformalName, Address: person.Email}
+		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{person.Email}
 	} else {
-		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
+		var ma = mail.Address{Name: person.InformalName, Address: person.Email2}
+		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{person.Email2}
 	}
 	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
@@ -256,13 +261,17 @@ Subject: %sSERV Volunteer Hours for %s
 Date: %s
 `, remindstr, data.Month, time.Now().Format(time.RFC1123Z))
 	if person.Email != "" && person.Email2 != "" {
-		fmt.Fprintf(crlf, "To: %s <%s>, %s <%s>\n", person.InformalName, person.Email, person.InformalName, person.Email2)
+		var ma1 = mail.Address{Name: person.InformalName, Address: person.Email}
+		var ma2 = mail.Address{Name: person.InformalName, Address: person.Email2}
+		fmt.Fprintf(crlf, "To: %s, %s\n", &ma1, &ma2)
 		toaddrs = []string{person.Email, person.Email2}
 	} else if person.Email != "" {
-		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email)
+		var ma = mail.Address{Name: person.InformalName, Address: person.Email}
+		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{person.Email}
 	} else {
-		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
+		var ma = mail.Address{Name: person.InformalName, Address: person.Email2}
+		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{person.Email2}
 	}
 	if *dflag {
