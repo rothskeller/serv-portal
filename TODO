@@ -14,6 +14,7 @@ Goodies:
   Place to request print runs for documents e.g. brochures
   Contacts download to phone etc.
 Cosmetics:
+  Change username when changing email.
   Complete the implementation of serv-load venues.  Better validation, allow updates.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
