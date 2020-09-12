@@ -1559,6 +1559,10 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *F
 			}
 		case "approvals":
 			out.Approvals = int(in.Int())
+		case "description":
+			out.Description = string(in.String())
+		case "order":
+			out.Order = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -1641,6 +1645,26 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 			out.RawString(prefix)
 		}
 		out.Int(int(in.Approvals))
+	}
+	if in.Description != "" {
+		const prefix string = ",\"description\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Description))
+	}
+	if in.Order != 0 {
+		const prefix string = ",\"order\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.Order))
 	}
 	out.RawByte('}')
 }

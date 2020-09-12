@@ -26,7 +26,8 @@ func (tx *Tx) FetchFolder(id model.FolderID) (f *model.Folder) {
 	}
 }
 
-// FetchFolders returns all of the folders in the database, sorted by name.
+// FetchFolders returns all of the folders in the database, sorted by order and
+// name.
 func (tx *Tx) FetchFolders() (folders []*model.Folder) {
 	var (
 		rows *sql.Rows

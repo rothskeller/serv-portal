@@ -63,12 +63,14 @@ message Event {
 }
 
 message Folder {
-  int64             id        = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "FolderID"];
-  int64             parent    = 2 [(gogoproto.casttype) = "FolderID"];
-  string            name      = 3;
-  int64             group     = 4 [(gogoproto.casttype) = "GroupID"];
-  repeated Document documents = 5;
-  int64             approvals = 6 [(gogoproto.casttype) = "int"];
+  int64             id          = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "FolderID"];
+  int64             parent      = 2 [(gogoproto.casttype) = "FolderID"];
+  string            name        = 3;
+  int64             group       = 4 [(gogoproto.casttype) = "GroupID"];
+  repeated Document documents   = 5;
+  int64             approvals   = 6 [(gogoproto.casttype) = "int"];
+  string            description = 7;
+  int64             order       = 8 [(gogoproto.casttype) = "int"];
 }
 
 message Group {

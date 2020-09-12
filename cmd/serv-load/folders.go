@@ -168,6 +168,10 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 				in.Delim(']')
 			case "approvals":
 				f.Approvals = in.Int()
+			case "description":
+				f.Description = in.String()
+			case "order":
+				f.Order = in.Int()
 			default:
 				in.SkipRecursive()
 			}

@@ -44,6 +44,10 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	out.Int(int(folder.Group))
 	out.RawString(`,"name":`)
 	out.String(folder.Name)
+	if folder.Description != "" {
+		out.RawString(`,"description":`)
+		out.String(folder.Description)
+	}
 	out.RawString(`,"documents":[`)
 	first := true
 	for _, d := range folder.Documents {
