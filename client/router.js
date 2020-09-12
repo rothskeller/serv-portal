@@ -15,6 +15,16 @@ const router = new Router({
   base: process.env.BASE_URL,
   routes: [
     {
+      path: '',
+      component: () => import(/* webpackChunkName: "Public" */ './pages/Public'),
+      beforeEnter: (to, from, next) => {
+        if (store.state.me)
+          next({ path: '/home' })
+        else
+          next()
+      }
+    },
+    {
       path: '/login',
       component: () => import(/* webpackChunkName: "Login" */ './pages/Login'),
       meta: { allow401: true },
@@ -26,6 +36,10 @@ const router = new Router({
     {
       path: '/password-reset/:token',
       component: () => import(/* webpackChunkName: "PWResetToken" */ './pages/PWResetToken'),
+    },
+    {
+      path: '/public/:id',
+      component: () => import(/* webpackChunkName: "PublicSubFolder" */ './pages/public/PublicSubFolder'),
     },
     {
       path: '/volunteer-hours/:id',
@@ -124,6 +138,11 @@ const router = new Router({
           component: () => import(/* webpackChunkName: "Help" */ './pages/help/SubscribeCalendar'),
         },
         {
+          path: '/home',
+          component: () => import(/* webpackChunkName: "Home" */ './pages/Home'),
+          meta: { tabbed: true }, // OK not really but this inhibits padding
+        },
+        {
           path: '/logout',
           component: () => import(/* webpackChunkName: "Logout" */ './pages/Logout'),
         },
@@ -195,11 +214,6 @@ const router = new Router({
               component: () => import(/* webpackChunkName: "TextsView" */ './pages/texts/TextsView'),
             }
           ]
-        },
-        {
-          path: '',
-          component: () => import(/* webpackChunkName: "Home" */ './pages/Home'),
-          meta: { tabbed: true }, // OK not really but this inhibits padding
         },
       ],
       beforeEnter: (to, from, next) => {

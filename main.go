@@ -72,6 +72,10 @@ func router(r *util.Request) error {
 		c = append(c, "")
 	}
 	switch {
+	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
+		return folder.GetFolder(r, c[2])
+	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
+		return folder.GetDocument(r, c[2], c[3])
 	case r.Method == "POST" && c[1] == "login" && c[2] == "":
 		return authn.PostLogin(r)
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] == "":
@@ -104,16 +108,12 @@ func router(r *util.Request) error {
 		return event.PostEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
 		return event.PostEventAttendance(r, c[2])
-	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
-		return folder.GetFolder(r, c[2])
 	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "":
 		return folder.PostFolder(r, c[2])
 	case r.Method == "PUT" && c[1] == "folders" && c[2] != "" && c[3] == "":
 		return folder.PutFolder(r, c[2])
 	case r.Method == "DELETE" && c[1] == "folders" && c[2] != "" && c[3] == "":
 		return folder.DeleteFolder(r, c[2])
-	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
-		return folder.GetDocument(r, c[2], c[3])
 	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "NEW" && c[4] == "":
 		return folder.PostNewDocuments(r, c[2])
 	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":

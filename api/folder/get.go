@@ -26,6 +26,9 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	if folder = r.Tx.FetchFolder(folderID); folder == nil {
 		return util.NotFound
 	}
+	if folder.Group != 0 && r.Person == nil {
+		return util.Forbidden
+	}
 	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
@@ -181,6 +184,9 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	}
 	if doc == nil {
 		return util.NotFound
+	}
+	if folder.Group != 0 && r.Person == nil {
+		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden

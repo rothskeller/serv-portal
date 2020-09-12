@@ -3,7 +3,7 @@ Login displays the login page.
 -->
 
 <template lang="pug">
-PublicPage(title="Sunnyvale SERV")
+PublicPage(title='Sunnyvale SERV')
   #login-top
     #login-banner Please log in.
     #login-forserv
@@ -13,19 +13,26 @@ PublicPage(title="Sunnyvale SERV")
     #login-browserwarn
       | Your browser is out of date and lacks features needed by this web site.
       | The site may not look or behave correctly.
-    form#login-form(@submit.prevent="onSubmit")
-      b-form-group(label="Email address" label-for="login-email" label-cols-sm="4")
-        b-input#login-email(autocorrect="off" autocapitalize="none" autofocus required trim v-model="email")
-      b-form-group(label="Password" label-for="login-password" label-cols-sm="4")
-        b-input#login-password(ref="password" type="password" v-model="password")
-      b-form-group(label-cols-sm="4")
-        b-checkbox#login-remember(v-model="remember") Remember me
+    form#login-form(@submit.prevent='onSubmit')
+      b-form-group(label='Email address', label-for='login-email', label-cols-sm='4')
+        b-input#login-email(
+          autocorrect='off',
+          autocapitalize='none',
+          autofocus,
+          required,
+          trim,
+          v-model='email'
+        )
+      b-form-group(label='Password', label-for='login-password', label-cols-sm='4')
+        b-input#login-password(ref='password', type='password', v-model='password')
+      b-form-group(label-cols-sm='4')
+        b-checkbox#login-remember(v-model='remember') Remember me
       #login-submit-row
-        b-button(type="submit" variant="primary") Log in
-      #login-failed(v-if="failed") Login incorrect. Please try again.
+        b-button(type='submit', variant='primary') Log in
+      #login-failed(v-if='failed') Login incorrect. Please try again.
     #login-reset
-      b-link(to="/password-reset") Reset my password
-    b-link#login-policies(to="/policies") Site Policies / Legal Stuff
+      b-link(to='/password-reset') Reset my password
+    b-link#login-policies(to='/policies') Site Policies / Legal Stuff
 </template>
 
 <script>
@@ -44,7 +51,7 @@ export default {
       try {
         const data = (await this.$axios.post('/api/login', body)).data
         this.$store.commit('login', data)
-        this.$router.replace(this.$route.query.redirect || '/')
+        this.$router.replace(this.$route.query.redirect || '/home')
       } catch (err) {
         console.error(err)
         this.failed = true
@@ -80,7 +87,7 @@ export default {
   background-color red
   color white
   line-height 1.2
-  @supports (display: grid)
+  @supports (display grid)
     display none
 #login-form
   margin-top 1.5rem
