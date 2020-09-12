@@ -16,7 +16,7 @@ import (
 func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	for {
-		var f = new(model.FolderNode)
+		var f = &model.FolderNode{Folder: &model.Folder{}}
 		var first = true
 
 		in.Delim('{')
