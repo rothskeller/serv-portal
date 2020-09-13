@@ -69,8 +69,6 @@ message Folder {
   int64             group       = 4 [(gogoproto.casttype) = "GroupID"];
   repeated Document documents   = 5;
   int64             approvals   = 6 [(gogoproto.casttype) = "int"];
-  string            description = 7;
-  int64             order       = 8 [(gogoproto.casttype) = "int"];
 }
 
 message Group {

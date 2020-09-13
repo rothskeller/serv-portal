@@ -25,7 +25,7 @@ PublicPage(title='Sunnyvale SERV')
           )
       .public-sf-name
         b-link(:to='`/public/${child.id}`') {{ child.name }}
-    .public-sf-line(v-for='doc in filteredDocuments', :key='`d${doc.id}`')
+    .public-sf-line(v-for='doc in folder.documents', :key='`d${doc.id}`')
       .public-sf-icon
         svg(
           v-if='doc.name.endsWith(".docx") || doc.name.endsWith(".doc")',
@@ -95,10 +95,6 @@ export default {
     folder: null,
   }),
   computed: {
-    filteredDocuments() {
-      if (!this.folder) return []
-      return this.folder.documents.filter(d => d.name !== 'folder.png')
-    },
     parentName() {
       if (!this.folder || !this.folder.parent || !this.folder.parent.id) return 'Home Page'
       return this.folder.parent.name

@@ -210,10 +210,6 @@ func dumpFolder(tx *store.Tx, f *model.FolderNode) {
 		out.String(tx.FetchFolder(f.Parent).Name)
 		out.RawByte('}')
 	}
-	if f.Order != 0 {
-		out.RawString(`,"order":`)
-		out.Int(f.Order)
-	}
 	out.RawString(`,"name":`)
 	out.String(f.Name)
 	if f.Group != 0 {
@@ -252,12 +248,7 @@ func dumpFolder(tx *store.Tx, f *model.FolderNode) {
 		}
 		out.RawByte('}')
 	}
-	out.RawByte(']')
-	if f.Description != "" {
-		out.RawString(`,"description":`)
-		out.String(f.Description)
-	}
-	out.RawString("}\n")
+	out.RawString("]}\n")
 	out.DumpTo(os.Stdout)
 	for _, cf := range f.ChildNodes {
 		dumpFolder(tx, cf)

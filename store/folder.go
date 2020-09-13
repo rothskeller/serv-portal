@@ -18,12 +18,6 @@ func (tx *Tx) CreateFolder(f *model.FolderNode) {
 	if f.Group != 0 {
 		tx.entry.Change("set folder [%d] group to %q [%d]", f.ID, tx.auth.FetchGroup(f.Group).Name, f.Group)
 	}
-	if f.Description != "" {
-		tx.entry.Change("set folder [%d] description to %q", f.ID, f.Descriptor)
-	}
-	if f.Order != 0 {
-		tx.entry.Change("set folder [%d] order to %d", f.ID, f.Order)
-	}
 }
 
 // WillUpdateFolder saves a copy of a folder's data prior to updating it, so
@@ -106,12 +100,6 @@ DOCS2:
 	}
 	if f.Approvals != of.Approvals {
 		tx.entry.Change("set folder %q [%d] approvals to %d", f.Name, f.ID, f.Approvals)
-	}
-	if f.Description != of.Description {
-		tx.entry.Change("set folder %q [%d] description %q", f.Name, f.ID, f.Description)
-	}
-	if f.Order != of.Order {
-		tx.entry.Change("set folder %q [%d] order to %d", f.Name, f.ID, f.Order)
 	}
 }
 

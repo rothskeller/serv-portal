@@ -21,25 +21,15 @@ func (es EventSort) Swap(i, j int) { es[i], es[j] = es[j], es[i] }
 
 type FolderSort []*Folder
 
-func (fs FolderSort) Len() int { return len(fs) }
-func (fs FolderSort) Less(i, j int) bool {
-	if fs[i].Order != fs[j].Order {
-		return fs[i].Order < fs[j].Order
-	}
-	return fs[i].Name < fs[j].Name
-}
-func (fs FolderSort) Swap(i, j int) { fs[i], fs[j] = fs[j], fs[i] }
+func (fs FolderSort) Len() int           { return len(fs) }
+func (fs FolderSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
+func (fs FolderSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
 
 type FolderNodeSort []*FolderNode
 
-func (fs FolderNodeSort) Len() int { return len(fs) }
-func (fs FolderNodeSort) Less(i, j int) bool {
-	if fs[i].Order != fs[j].Order {
-		return fs[i].Order < fs[j].Order
-	}
-	return fs[i].Name < fs[j].Name
-}
-func (fs FolderNodeSort) Swap(i, j int) { fs[i], fs[j] = fs[j], fs[i] }
+func (fs FolderNodeSort) Len() int           { return len(fs) }
+func (fs FolderNodeSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
+func (fs FolderNodeSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
 
 type GroupSort []*Group
 
