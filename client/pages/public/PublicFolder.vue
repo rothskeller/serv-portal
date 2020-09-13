@@ -104,7 +104,7 @@ export default {
       return this.folder.parent.name
     },
     parentURL() {
-      if (!this.folder || !this.folder.parent || this.folder.parent.id) return '/'
+      if (!this.folder || !this.folder.parent || !this.folder.parent.id) return '/'
       return `/public/${this.folder.parent.id}`
     },
   },

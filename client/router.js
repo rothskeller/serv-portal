@@ -39,7 +39,7 @@ const router = new Router({
     },
     {
       path: '/public/:id',
-      component: () => import(/* webpackChunkName: "PublicSubFolder" */ './pages/public/PublicSubFolder'),
+      component: () => import(/* webpackChunkName: "PublicFolder" */ './pages/public/PublicFolder'),
     },
     {
       path: '/volunteer-hours/:id',
