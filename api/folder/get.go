@@ -51,13 +51,7 @@ PATH:
 		}
 		return util.NotFound
 	}
-	if doc == nil {
-		return getFolder(r, folder)
-	}
-	r.Tx.Commit()
-	r.Header().Set("Content-Type", "application/json; charset=utf-8")
-	fmt.Fprintf(r, `"/api/folders/%d/%d"`, folder.ID, doc.ID)
-	return nil
+	return getFolder(r, folder, doc)
 }
 
 // GetFolder handles GET /api/folders/$id requests, where $id may be 0 to get
@@ -77,10 +71,10 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
-	return getFolder(r, folder)
+	return getFolder(r, folder, nil)
 }
 
-func getFolder(r *util.Request, folder *model.FolderNode) (err error) {
+func getFolder(r *util.Request, folder *model.FolderNode, doc *model.Document) (err error) {
 	var (
 		canEdit    bool
 		canApprove bool
@@ -184,6 +178,10 @@ func getFolder(r *util.Request, folder *model.FolderNode) (err error) {
 	}
 	if r.Auth.CanA(model.PrivManageFolders) {
 		out.RawString(`,"canAdd":true`)
+	}
+	if doc != nil {
+		out.RawString(`,"docDownload":`)
+		out.String(fmt.Sprintf("/api/folders/%d/%d", folder.ID, doc.ID))
 	}
 	out.RawByte('}')
 	r.Tx.Commit()

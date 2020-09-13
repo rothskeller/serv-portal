@@ -78,7 +78,7 @@ PublicPage(title='Sunnyvale SERV')
             d='M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48z'
           )
       span.public-sf-name
-        b-link(:href='`/api/folders/${folder.id}/${doc.id}`', :download='doc.name') {{ doc.name }}
+        router-link(:to='docPath(doc)') {{ doc.name }}
 </template>
 
 <script>
@@ -106,13 +106,13 @@ export default {
     $route: 'loadFolder',
   },
   methods: {
+    docPath(doc) {
+      return `${this.folder.url}/${encodeURIComponent(doc.name)}`
+    },
     async loadFolder() {
       const path = this.$route.params.rest ? `${this.$route.params.path}/${this.$route.params.rest}` : this.$route.params.path
       this.folder = (await this.$axios.get("/api/folders/", { params: { path } })).data
-      if (typeof this.folder === 'string') {
-        location.href = this.folder
-        return
-      }
+      if (this.folder.docDownload) location.href = this.folder.docDownload
       if (!this.folder.children) this.folder.children = []
       if (!this.folder.documents) this.folder.documents = []
     },
