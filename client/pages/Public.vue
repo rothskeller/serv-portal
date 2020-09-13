@@ -149,10 +149,13 @@ export default {
   grid-area login
 #public-folders
   display grid
+  margin 0 auto
   margin-top 1.5rem
+  max-width 536px
   grid-template 'listos' 'spanish' 'cert' 'sares' 'snap' / auto
   grid-gap 1rem
   @media (min-width 632px)
+    max-width 1088px
     grid-template unquote("'listos cert' 'spanish sares' 'snap none' / calc(50% - 8px) calc(50% - 8px)")
 #public-folder-listos
   grid-area listos
@@ -170,8 +173,6 @@ export default {
   grid-area snap
 .public-folder
   display grid
-  margin 0 auto
-  max-width 536px
   grid-template 'name name' 'logo body' 'links links' / 25% auto
   grid-column-gap 1rem
   @media (min-width 450px)
@@ -179,7 +180,6 @@ export default {
   @media (min-width 504px)
     grid-template 'logo name' 'logo body' 'logo links' / 120px auto
   @media (min-width 632px)
-    max-width 1088px
     grid-template 'name name' 'logo body' 'links links' / 25% auto
   @media (min-width 892px)
     grid-template 'logo name' 'logo body' 'logo links' / 25% auto
