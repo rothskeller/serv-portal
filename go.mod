@@ -20,4 +20,5 @@ require (
 	github.com/trustelem/zxcvbn v1.0.1
 	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/text v0.3.0
 )

@@ -72,6 +72,8 @@ func router(r *util.Request) error {
 		c = append(c, "")
 	}
 	switch {
+	case r.Method == "GET" && c[1] == "folders" && c[2] == "":
+		return folder.GetPath(r)
 	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
 		return folder.GetFolder(r, c[2])
 	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":

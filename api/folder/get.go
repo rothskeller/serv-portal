@@ -7,20 +7,65 @@ import (
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
 
+// GetPath handles GET /api/folders?path= requests.  The supplied path may
+// address either a folder or a document within a folder.  If it addresses a
+// folder, this API returns the folder details.  If it addresses a document,
+// this API returns the URL for retrieval of the document.
+func GetPath(r *util.Request) (err error) {
+	var (
+		folder *model.FolderNode
+		doc    *model.Document
+		path   = strings.Split(r.FormValue("path"), "/")
+	)
+	folder = r.Tx.FetchRootFolder()
+PATH:
+	for len(path) > 0 {
+		for _, c := range folder.ChildNodes {
+			if nameToURL(c.Name) == path[0] {
+				if c.Group != 0 && r.Person == nil {
+					return util.Forbidden
+				}
+				if c.Group != 0 && !r.Auth.MemberG(c.Group) && !r.Auth.CanAG(model.PrivManageFolders, c.Group) {
+					return util.Forbidden
+				}
+				folder = c
+				path = path[1:]
+				continue PATH
+			}
+		}
+		if len(path) == 1 {
+			for _, d := range folder.Documents {
+				if d.Name == path[0] {
+					doc = d
+					path = path[1:]
+					continue PATH
+				}
+			}
+		}
+		return util.NotFound
+	}
+	if doc == nil {
+		return getFolder(r, folder)
+	}
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	fmt.Fprintf(r, `"/api/folders/%d/%d"`, folder.ID, doc.ID)
+	return nil
+}
+
 // GetFolder handles GET /api/folders/$id requests, where $id may be 0 to get
 // the virtual parent of the top-level folders.
 func GetFolder(r *util.Request, idstr string) (err error) {
 	var (
-		folderID   model.FolderID
-		folder     *model.FolderNode
-		canEdit    bool
-		canApprove bool
-		out        jwriter.Writer
+		folderID model.FolderID
+		folder   *model.FolderNode
 	)
 	folderID = model.FolderID(util.ParseID(idstr))
 	if folder = r.Tx.FetchFolder(folderID); folder == nil {
@@ -32,6 +77,15 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 	if folder.Group != 0 && !r.Auth.MemberG(folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
+	return getFolder(r, folder)
+}
+
+func getFolder(r *util.Request, folder *model.FolderNode) (err error) {
+	var (
+		canEdit    bool
+		canApprove bool
+		out        jwriter.Writer
+	)
 	out.RawByte('{')
 	canApprove = r.Auth.CanA(model.PrivManageFolders)
 	out.RawString(`"id":`)
@@ -41,12 +95,16 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 		out.Int(int(folder.Parent))
 		out.RawString(`,"name":`)
 		out.String(folder.ParentNode.Name)
+		out.RawString(`,"url":`)
+		out.String(folderURL(folder.ParentNode))
 		out.RawByte('}')
 	}
 	out.RawString(`,"group":`)
 	out.Int(int(folder.Group))
 	out.RawString(`,"name":`)
 	out.String(folder.Name)
+	out.RawString(`,"url":`)
+	out.String(folderURL(folder))
 	out.RawString(`,"documents":[`)
 	first := true
 	for _, d := range folder.Documents {
@@ -83,6 +141,8 @@ func GetFolder(r *util.Request, idstr string) (err error) {
 		out.Int(int(cf.ID))
 		out.RawString(`,"name":`)
 		out.String(cf.Name)
+		out.RawString(`,"url":`)
+		out.String(folderURL(cf))
 		out.RawString(`,"group":`)
 		out.Int(int(cf.Group))
 		if cf.Approvals > 0 && canApprove {
@@ -202,11 +262,28 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if stat, err = fh.Stat(); err != nil {
 		return err
 	}
-	if strings.HasSuffix(doc.Name, ".pdf") {
-		r.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", doc.Name))
-	} else {
-		r.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", doc.Name))
-	}
+	r.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", doc.Name))
+	r.Header().Set("Cache-Control", "no-cache")
 	http.ServeContent(r, r.Request, doc.Name, stat.ModTime(), fh)
 	return nil
+}
+
+func folderURL(folder *model.FolderNode) string {
+	if folder.ParentNode == nil {
+		return ""
+	}
+	return folderURL(folder.ParentNode) + "/" + nameToURL(folder.Name)
+}
+
+func nameToURL(name string) string {
+	result, _, _ := transform.String(norm.NFD, name)
+	return strings.Map(func(r rune) rune {
+		if r == ' ' {
+			return '-'
+		}
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' && r != '_' {
+			return -1
+		}
+		return r
+	}, strings.ToLower(result))
 }

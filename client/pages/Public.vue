@@ -31,7 +31,7 @@ PublicPage(title='Sunnyvale SERV')
               target='_blank'
             ) Class schedules and registration
           .public-folder-link
-            router-link(to='/public/31') Disaster preparedness materials
+            router-link(to='/disaster-preparedness') Disaster preparedness materials
           .public-folder-link
             | Email <a href="mailto:listos@sunnyvaleserv.org">listos@SunnyvaleSERV.org</a>
       #public-folder-spanish.public-folder
@@ -49,7 +49,7 @@ PublicPage(title='Sunnyvale SERV')
               target='_blank'
             ) Horarios de clases y registro
           .public-folder-link
-            router-link(to='/public/40') Materiales de preparación para desastres
+            router-link(to='/preparacion-para-desastres') Materiales de preparación para desastres
           .public-folder-link
             | Email <a href="mailto:listos@sunnyvaleserv.org">listos@SunnyvaleSERV.org</a>
       #public-folder-snap.public-folder
@@ -61,7 +61,7 @@ PublicPage(title='Sunnyvale SERV')
           response&nbsp;volunteers.
         .public-folder-links
           .public-folder-link
-            router-link(to='/public/42') Neighborhood organization materials
+            router-link(to='/neighborhood-organization') Neighborhood organization materials
           .public-folder-link
             | Email <a href="mailto:snap@sunnyvaleserv.org">snap@SunnyvaleSERV.org</a>
       #public-folder-cert.public-folder
@@ -78,7 +78,7 @@ PublicPage(title='Sunnyvale SERV')
               target='_blank'
             ) Class schedules and registration
           .public-folder-link
-            router-link(to='/public/27') Disaster response and CERT materials
+            router-link(to='/disaster-response') Disaster response and CERT materials
           .public-folder-link
             | Email <a href="mailto:cert@sunnyvaleserv.org">cert@SunnyvaleSERV.org</a>
       #public-folder-sares.public-folder

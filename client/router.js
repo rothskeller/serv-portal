@@ -38,7 +38,11 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "PWResetToken" */ './pages/PWResetToken'),
     },
     {
-      path: '/public/:id',
+      path: '/:path(disaster-preparedness|preparacion-para-desastres|neighborhood-organization|disaster-response|emergency-communications)',
+      component: () => import(/* webpackChunkName: "PublicFolder" */ './pages/public/PublicFolder'),
+    },
+    {
+      path: '/:path(disaster-preparedness|preparacion-para-desastres|neighborhood-organization|disaster-response|emergency-communications)/:rest(.*)',
       component: () => import(/* webpackChunkName: "PublicFolder" */ './pages/public/PublicFolder'),
     },
     {
