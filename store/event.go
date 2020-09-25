@@ -170,6 +170,10 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 			tx.WillUpdatePerson(people[pid])
 		}
 		if people[pid].DSWRegistrations == nil || people[pid].DSWRegistrations[class].IsZero() {
+			if people[pid].DSWUntil != nil && !people[pid].DSWUntil[class].IsZero() {
+				delete(people[pid].DSWUntil, class)
+				tx.UpdatePerson(people[pid])
+			}
 			delete(people, pid)
 			continue
 		}
