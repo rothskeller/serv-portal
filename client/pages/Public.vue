@@ -33,7 +33,7 @@ PublicPage(title='Sunnyvale SERV')
           .public-folder-link
             router-link(to='/disaster-preparedness') Disaster preparedness materials
           .public-folder-link
-            | Email <a href="mailto:listos@sunnyvaleserv.org">listos@SunnyvaleSERV.org</a>
+            | Email <a href="mailto:listos@sunnyvaleserv.org">Listos@SunnyvaleSERV.org</a>
       #public-folder-spanish.public-folder
         .public-folder-name Preparación para desastres
         img.public-folder-logo(:src='spanishLogo')
@@ -51,7 +51,7 @@ PublicPage(title='Sunnyvale SERV')
           .public-folder-link
             router-link(to='/preparacion-para-desastres') Materiales de preparación para desastres
           .public-folder-link
-            | Email <a href="mailto:listos@sunnyvaleserv.org">listos@SunnyvaleSERV.org</a>
+            | Email <a href="mailto:listos@sunnyvaleserv.org">Listos@SunnyvaleSERV.org</a>
       #public-folder-snap.public-folder
         .public-folder-name Neighborhood Organization
         img.public-folder-logo(:src='snapLogo')
@@ -63,7 +63,7 @@ PublicPage(title='Sunnyvale SERV')
           .public-folder-link
             router-link(to='/neighborhood-organization') Neighborhood organization materials
           .public-folder-link
-            | Email <a href="mailto:snap@sunnyvaleserv.org">snap@SunnyvaleSERV.org</a>
+            | Email <a href="mailto:snap@sunnyvaleserv.org">SNAP@SunnyvaleSERV.org</a>
       #public-folder-cert.public-folder
         .public-folder-name Disaster Response
         img.public-folder-logo(:src='certLogo')
@@ -80,7 +80,7 @@ PublicPage(title='Sunnyvale SERV')
           .public-folder-link
             router-link(to='/disaster-response') Disaster response and CERT materials
           .public-folder-link
-            | Email <a href="mailto:cert@sunnyvaleserv.org">cert@SunnyvaleSERV.org</a>
+            | Email <a href="mailto:cert@sunnyvaleserv.org">CERT@SunnyvaleSERV.org</a>
       #public-folder-sares.public-folder
         .public-folder-name Emergency Communications
         img.public-folder-logo(:src='saresLogo')
@@ -95,7 +95,7 @@ PublicPage(title='Sunnyvale SERV')
           .public-folder-link
             a(href='https://www.scc-ares-races.org/activities/events.php', target='_blank') Class schedules and registration
           .public-folder-link
-            | Email <a href="mailto:sares@sunnyvaleserv.org">sares@SunnyvaleSERV.org</a>
+            | Email <a href="mailto:sares@sunnyvaleserv.org">SARES@SunnyvaleSERV.org</a>
 </template>
 
 <script>
