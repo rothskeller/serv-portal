@@ -7,45 +7,77 @@ saved path differently.
 -->
 
 <template lang="pug">
-PublicPage(:title="title")
-  div.mt-3.ml-2(v-if="saved")
-    div Your volunteer hours have been saved.  Thank you for volunteering!
-    div.mt-3
-      b-btn(to="/" variant="primary") Go to Login Page
-  div.mt-3.ml-2(v-else-if="notFound")
+PublicPage(:title='title')
+  .mt-3.ml-2(v-if='saved')
+    div Your volunteer hours have been saved. Thank you for volunteering!
+    .mt-3
+      b-btn(to='/', variant='primary') Go to Login Page
+  .mt-3.ml-2(v-else-if='notFound')
     div The link you used is not valid or has expired.
-    div.mt-3
-      b-btn(to="/" variant="primary") Go to Login Page
-  div.mt-3.ml-2(v-else-if="unregistered" style="max-width:600px")
-    | You are not currently registered as a City of Sunnyvale volunteer.  We
+    .mt-3
+      b-btn(to='/', variant='primary') Go to Login Page
+  .mt-3.ml-2(v-else-if='unregistered', style='max-width:600px')
+    | You are not currently registered as a City of Sunnyvale volunteer. We
     | appreciate your volunteer efforts, but we cannot record your hours until you
-    | are registered.  To do so, please fill out
+    | are registered. To do so, please fill out
     |
-    a(href="https://www.volgistics.com/ex/portal.dll/ap?AP=929478828" target="_blank") this form
-    | .  In the “City employee status or referral” box, please enter
+    a(href='https://www.volgistics.com/ex/portal.dll/ap?AP=929478828', target='_blank') this form
+    | . In the “City employee status or referral” box, please enter
     pre.ml-4.mt-3
       | Rebecca Elizondo
       | Department of Public Safety
-    | and the names of the organizations you're volunteering for (CERT, LISTOS,
-    | SNAP, and/or SARES).  Come back a week or so later and we should have your
-    | registration on file.  If you have any difficulties with this, please
-    | contact Rebecca at RElizondo@sunnyvale.ca.gov.
-  div.mt-3.ml-2(v-else-if="!months")
+    div
+      | and the names of the organizations you're volunteering for (CERT, LISTOS,
+      | SNAP, and/or SARES). Come back a week or so later and we should have your
+      | registration on file. If you have any difficulties with this, please
+      | contact Rebecca at RElizondo@sunnyvale.ca.gov.
+  .mt-3.ml-2(v-else-if='!months')
     b-spinner(small)
-  form#person-hours(v-else @submit.prevent="onSubmit")
-    .person-hours(v-for="month in months")
-      .person-hours-heading(v-text="`Volunteer Hours for ${month.month}`")
+  form#person-hours(v-else, @submit.prevent='onSubmit')
+    .person-hours(v-for='month in months')
+      .person-hours-heading(v-text='`Volunteer Hours for ${month.month}`')
       table.person-hours-table
-        tr(v-for="event in month.events")
-          td.person-hours-event(v-text="eventText(event)")
+        tr(v-for='event in month.events')
+          td.person-hours-event(v-text='eventText(event)')
           td
-            input.person-hours-time(type="number" min="0" step="0.5" :value="eventTime(event)" @change="setEventTime(event, $event)")
+            input.person-hours-time(
+              type='number',
+              min='0',
+              step='0.5',
+              :value='eventTime(event)',
+              @change='setEventTime(event, $event)'
+            )
         tr
           td.person-hours-total-label TOTAL
           td
-            div.person-hours-total-time(v-text="totalHours(month)")
-    div.mt-3
-      b-btn(type="submit" variant="primary") Save Hours
+            .person-hours-total-time(v-text='totalHours(month)')
+    .mt-3
+      b-btn(type='submit', variant='primary') Save Hours
+    table.person-hours-guide
+      tr
+        td Volunteer Hours
+        td Not Volunteer Hours
+      tr
+        td In general, time you spend helping or preparing to help the community as part of SERV. For example:
+        td In general, time you spend preparing yourself or your household; or time you spend becoming a SERV volunteer. For example:
+      tr
+        td Organizing or teaching CERT Basic, LISTOS, PEP, or SNAP events
+        td Attending CERT Basic, LISTOS, PEP, or ham cram classes
+      tr
+        td Preparing and maintaining a CERT or SARES “go kit” for deployment
+        td Preparing and maintaining a personal or household evacuation kit
+      tr
+        td SERV team meetings, radio nets, and drills; CERT continuing education seminars; SARES or county ARES training classes
+        td SERV team social gatherings
+      tr
+        td Responding in an emergency when activated by the city
+        td Responding in an emergency when not activated by the city
+      tr
+        td Travel to and from the above
+        td
+      tr
+        td SERV administration activities
+        td
 </template>
 
 <script>
@@ -121,4 +153,23 @@ export default {
   width 3rem
   text-align right
   font-weight bold
+.person-hours-guide
+  margin-top 1.5rem
+  max-width 800px
+  tr:nth-child(1)
+    background-color #5b9bd5
+    td
+      color white
+      text-align center
+      font-weight bold
+  tr:nth-child(2)
+    font-weight bold
+  tr:nth-child(even)
+    background-color #deeaf6
+  td
+    padding 0.25rem
+    width 50%
+    border 1px solid #eee
+    vertical-align top
+    line-height 1.2
 </style>
