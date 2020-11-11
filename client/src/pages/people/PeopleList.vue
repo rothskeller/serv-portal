@@ -53,6 +53,7 @@ import { defineComponent, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Cookies from 'js-cookie'
 import axios from '../../plugins/axios'
+import setPage from '../../plugins/page'
 import { SSpinner } from '../../base'
 
 export type GetPeopleAddress = {
@@ -95,6 +96,7 @@ export default defineComponent({
   components: { SSpinner },
   setup() {
     const route = useRoute()
+    setPage({ title: 'People' })
 
     // The group being viewed.
     const group = ref(

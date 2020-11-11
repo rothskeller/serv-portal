@@ -6,7 +6,7 @@ Search displays the search page.
 #search
   form#search-form(@submit.prevent='onSubmit')
     #search-query-row
-      SInput#search-query(autofocus, v-model='query')
+      SInput#search-query(ref='queryRef', v-model='query')
       SButton(type='submit', variant='primary') Search
   #search-error(v-if='error', v-text='error')
   #search-results
@@ -42,7 +42,7 @@ Search displays the search page.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../plugins/axios'
 import setPage from '../plugins/page'
@@ -107,6 +107,11 @@ export default defineComponent({
       onSubmit()
     }
 
+    const queryRef = ref(null as any)
+    onMounted(() => {
+      queryRef.value.focus()
+    })
+
     const documents = ref([] as Array<GetSearchResultDoc>)
     const events = ref([] as Array<GetSearchResultEvent>)
     const folders = ref([] as Array<GetSearchResultFolder>)
@@ -154,6 +159,7 @@ export default defineComponent({
       onSubmit,
       people,
       query,
+      queryRef,
       resultPath,
       submitted,
       textMessages,
