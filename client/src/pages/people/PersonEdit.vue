@@ -70,6 +70,11 @@ SForm(v-else, :submitLabel='submitLabel', @submit='onSubmit')
       help='Date when background check cleared, or “TRUE” if clearance confirmed but date unknown',
       style='text-transform:uppercase'
     )
+    SFCheckGroup#person-identification(
+      label='IDs Issued',
+      v-model='identification',
+      :options='identTypes'
+    )
   template(v-if='canEditDetails')
     .form-item.person-edit-block-head Change Password
     SFInput#person-oldPassword(
@@ -166,6 +171,7 @@ interface GetPersonEditPerson extends GetPersonPersonBase {
   volgistics?: number
   dsw?: Record<string, string>
   backgroundCheck?: string
+  identification?: Array<string>
 }
 interface GetPersonEditBase {
   person: GetPersonEditPerson
@@ -174,6 +180,7 @@ interface GetPersonEditBase {
   canEditClearances: boolean
   allowBadPassword: boolean
   canEditUsername: boolean
+  identTypes: Array<string>
 }
 interface GetPersonEditNED extends GetPersonEditBase {
   canEditDetails: false
@@ -219,6 +226,8 @@ export default defineComponent({
     const person = ref(null as null | GetPersonEditPerson)
     const volgistics = ref('')
     const roles = ref(new Set() as Set<number>)
+    const identification = ref(new Set() as Set<string>)
+    const identTypes = ref([] as any)
     axios.get<GetPersonEdit>(`/api/people/${route.params.id}?edit=1`).then((resp) => {
       allowBadPassword.value = resp.data.allowBadPassword
       canEditClearances.value = resp.data.canEditClearances
@@ -230,6 +239,10 @@ export default defineComponent({
       person.value = resp.data.person
       volgistics.value = resp.data.person.volgistics ? resp.data.person.volgistics.toString() : ''
       roles.value = new Set(resp.data.person.roles.filter((r) => r.held).map((r) => r.id))
+      identification.value = new Set(resp.data.person.identification || [])
+      if (resp.data.identTypes) {
+        identTypes.value = resp.data.identTypes.map((t) => ({ label: t, value: t }))
+      }
       props.onLoadPerson(person.value)
     })
 
@@ -452,6 +465,9 @@ export default defineComponent({
         Object.keys(person.value.dsw!).forEach((k) => {
           body.append(`dsw-${k}`, person.value!.dsw![k])
         })
+        identification.value.forEach((t) => {
+          body.append('identification', t)
+        })
       }
       if (canEditRoles.value) {
         person.value.roles
@@ -486,6 +502,8 @@ export default defineComponent({
       email2Error,
       formalNameError,
       homePhoneError,
+      identification,
+      identTypes,
       informalNameError,
       myPasswordHints,
       oldPassword,

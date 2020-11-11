@@ -215,6 +215,35 @@ const (
 	GroupStudents = "students"
 )
 
+// An IdentType is a type of identification (or a bitmask of multiple types)
+// that has been issued to a volunteer (and should be retrieved if they leave).
+type IdentType uint8
+
+// Values for IdentType.
+const (
+	// IDPhoto is a regular DPS Volunteer photo ID badge.
+	IDPhoto IdentType = 1 << iota
+	// IDCardKey is a photo badge with card key access to DPS buildings.
+	IDCardKey
+	// IDSERVShirt is a tan long-sleeved button-down shirt identifying the
+	// person as a SERV leader and/or class instructor.
+	IDSERVShirt
+	// IDCERTShirt is a green long-sleeved tee shirt identifying the person
+	// as a member of a CERT deployment team.
+	IDCERTShirt
+)
+
+// AllIdentTypes is the list of all identification types.
+var AllIdentTypes = []IdentType{IDPhoto, IDCardKey, IDSERVShirt, IDCERTShirt}
+
+// IdentTypeNames gives the names for each identification type.
+var IdentTypeNames = map[IdentType]string{
+	IDPhoto:     "photo ID",
+	IDCardKey:   "access card",
+	IDSERVShirt: "tan SERV shirt",
+	IDCERTShirt: "green CERT shirt",
+}
+
 // An Organization identifies one of the SERV volunteer organizations.
 type Organization uint8
 

@@ -97,6 +97,13 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 			tx.entry.Change("set person [%d] dswUntil[%s] to %s", p.ID, model.DSWClassNames[c], r.Format("2006-01-02"))
 		}
 	}
+	if p.Identification != 0 {
+		for _, t := range model.AllIdentTypes {
+			if p.Identification&t != 0 {
+				tx.entry.Change("add person [%d] identification %s", p.ID, model.IdentTypeNames[t])
+			}
+		}
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -308,6 +315,13 @@ NOTES2:
 			if _, ok := nm[c]; !ok {
 				tx.entry.Change("clear person %q [%d] dswUntil[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
 			}
+		}
+	}
+	for _, t := range model.AllIdentTypes {
+		if op.Identification&t != 0 && p.Identification&t == 0 {
+			tx.entry.Change("remove person %q [%d] identification %s", p.InformalName, p.ID, model.IdentTypeNames[t])
+		} else if op.Identification&t == 0 && p.Identification&t != 0 {
+			tx.entry.Change("add person %q [%d] identification %s", p.InformalName, p.ID, model.IdentTypeNames[t])
 		}
 	}
 	tx.Tx.UpdatePerson(p)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -232,6 +233,24 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					}
 					in.Delim('}')
 				}
+			case "identification":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					var idt = in.String()
+					var found = false
+					for t, n := range model.IdentTypeNames {
+						if n == idt {
+							p.Identification |= t
+							found = true
+							break
+						}
+					}
+					if !found {
+						in.AddError(errors.New("invalid identification"))
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
 			default:
 				in.SkipRecursive()
 			}

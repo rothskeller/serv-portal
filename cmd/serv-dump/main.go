@@ -442,6 +442,22 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte('}')
 	}
+	if p.Identification != 0 {
+		out.RawString(`,"identification":[`)
+		var first = true
+		for _, t := range model.AllIdentTypes {
+			if p.Identification&t == 0 {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(model.IdentTypeNames[t])
+		}
+		out.RawByte(']')
+	}
 	out.RawByte('}')
 }
 

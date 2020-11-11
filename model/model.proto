@@ -130,6 +130,9 @@ message Person {
   // derivable data, recalculated whenever attendance is recorded for this
   // person.
   map<int32,google.protobuf.Timestamp> dsw_until = 37 [(gogoproto.customname) = "DSWUntil", (gogoproto.castkey) = "DSWClass", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // Identification is a bitmask of the types of identification that have been
+  // issued to this person (and should be retrieved if they leave).
+  int64 identification = 38 [(gogoproto.casttype) = "IdentType"];
 }
 
 message PersonNote {

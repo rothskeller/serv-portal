@@ -61,7 +61,7 @@ PersonView displays the information about a person, in non-editable form.
     div(v-text='person.mailAddress.address.split(",")[0]')
     div(v-text='person.mailAddress.address.replace(/^[^,]*, */, "")')
   .person-view-clearances(
-    v-if='person.dsw || person.volgistics !== undefined || person.backgroundCheck !== undefined'
+    v-if='person.dsw || person.volgistics !== undefined || person.backgroundCheck !== undefined' || person.identification.length
   )
     div Volunteer status:
     div(v-if='person.volgistics === false') Sunnyvale volunteer: <span style="color:red">not registered.</span>
@@ -84,6 +84,7 @@ PersonView displays the information about a person, in non-editable form.
     div(v-if='person.backgroundCheck === true') Background check cleared.
     div(v-else-if='person.backgroundCheck === false') Background check: <span style="color:red">not completed.</span>
     div(v-else-if='person.backgroundCheck') Background check cleared on {{ person.backgroundCheck }}.
+    div(v-if='person.identification.length') IDs issued: {{ person.identification.join(', ') }}
   #person-view-attended(v-if='person.attended')
     div Events attended:
     .person-view-attended(v-for='e in person.attended')

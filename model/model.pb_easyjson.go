@@ -1033,6 +1033,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 				}
 				in.Delim('}')
 			}
+		case "identification":
+			out.Identification = IdentType(in.Uint8())
 		default:
 			in.SkipRecursive()
 		}
@@ -1247,6 +1249,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 			}
 			out.RawByte('}')
 		}
+	}
+	if in.Identification != 0 {
+		const prefix string = ",\"identification\":"
+		out.RawString(prefix)
+		out.Uint8(uint8(in.Identification))
 	}
 	out.RawByte('}')
 }

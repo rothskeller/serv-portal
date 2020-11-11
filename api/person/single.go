@@ -109,6 +109,22 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawByte('}')
 	}
 	out.RawByte(']')
+	if r.Auth.May(model.PermViewClearances) {
+		out.RawString(`,"identification":[`)
+		first = true
+		for _, t := range model.AllIdentTypes {
+			if person.Identification&t == 0 {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(model.IdentTypeNames[t])
+		}
+		out.RawByte(']')
+	}
 	if wantEdit {
 		if r.Auth.May(model.PermEditClearances) {
 			out.RawString(`,"volgistics":`)
@@ -271,6 +287,14 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.Bool(r.Auth.IsWebmaster())
 		out.RawString(`,"canEditUsername":`)
 		out.Bool(r.Auth.IsWebmaster())
+		out.RawString(`,"identTypes":[`)
+		for i, t := range model.AllIdentTypes {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(model.IdentTypeNames[t])
+		}
+		out.RawByte(']')
 		if canEditDetails {
 			out.RawString(`,"passwordHints":[`)
 			for i, h := range authn.SERVPasswordHints {
@@ -389,6 +413,17 @@ func PostPerson(r *util.Request, idstr string) error {
 			}
 		}
 		person.BackgroundCheck = r.FormValue("backgroundCheck")
+		person.Identification = 0
+	IDENTS:
+		for _, n := range r.Form["identification"] {
+			for t, tn := range model.IdentTypeNames {
+				if n == tn {
+					person.Identification |= t
+					continue IDENTS
+				}
+			}
+			return errors.New("invalid identification type")
+		}
 	}
 	if err = ValidatePerson(r.Tx, person, roles); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {
