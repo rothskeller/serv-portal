@@ -21,9 +21,9 @@ Home page, shown when no other page is selected.
     .home-helper
       SIcon.home-helper-arrow(icon='left')
       div Click here for class materials and other documents.
-    .home-helper(v-if='me.canViewReports')
-      SIcon.home-helper-arrow(icon='left')
-      div Click here to generate reports.
+    //- .home-helper(v-if='me.canViewReports')
+    //-   SIcon.home-helper-arrow(icon='left')
+    //-   div Click here to generate reports.
     .home-helper(v-if='me.canSendTextMessages')
       SIcon.home-helper-arrow(icon='left')
       div Click here to send group text messages.

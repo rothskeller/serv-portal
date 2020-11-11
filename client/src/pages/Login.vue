@@ -8,8 +8,9 @@ Login displays the login page.
     #login-banner.form-item Please log in.
     #login-forserv.form-item
       | This web site is for SERV volunteers only.
-      | If you are interested in joining one of the SERV volunteer organizations,
-      | please visit Sunnyvale’s <a href="https://sunnyvale.ca.gov/government/safety/emergency.htm">emergency response&nbsp;page</a>.
+      | If you are interested in joining one of the SERV volunteer
+      | organizations, send us email
+      | at <a href="mailto:serv@sunnyvaleserv.org">SERV@SunnyvaleSERV.org</a>.
     #login-browserwarn.form-item
       | Your browser is out of date and lacks features needed by this web site.
       | The site may not look or behave correctly.
