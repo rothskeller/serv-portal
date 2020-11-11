@@ -145,6 +145,7 @@ const router = createRouter({
     {
       path: '/policies',
       component: () => import('./pages/static/Policies.vue'),
+      meta: { public: true },
     },
     {
       path: '/search',

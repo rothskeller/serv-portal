@@ -96,7 +96,7 @@ import setPage from '../plugins/page'
 export default defineComponent({
   components: { SButton },
   setup() {
-    setPage({ title: 'Sunnyvale SERV' })
+    setPage({ title: '' })
     return {}
   },
 })
@@ -127,6 +127,7 @@ export default defineComponent({
   font-size: 1.25rem;
   line-height: 1.2;
   grid-area: name;
+  color: #006600;
 }
 #public-head-logo {
   max-width: 120px;
@@ -197,7 +198,7 @@ export default defineComponent({
   }
 }
 .public-folder-name {
-  color: #888;
+  color: #006600;
   font-weight: bold;
   font-size: 1.25rem;
   grid-area: name;

@@ -119,7 +119,7 @@ export default defineComponent({
   components: { SSpinner },
   setup() {
     const route = useRoute()
-    setPage({ title: 'Sunnyvale SERV' })
+    setPage({ title: '' })
 
     // Load the requested folder.
     const folder = ref(null as null | GetFolder)
