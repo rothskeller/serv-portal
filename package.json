@@ -1,70 +1,28 @@
 {
-  "name": "serv-portal",
-  "version": "0.1.0",
-  "private": true,
+  "name": "serv-portal2",
+  "version": "0.0.0",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vite build"
   },
   "dependencies": {
-    "axios": "^0.19.0",
-    "bootstrap-vue": "^2.1.0",
-    "core-js": "^2.6.5",
+    "axios": "^0.19.2",
     "js-cookie": "^2.2.1",
-    "moment-mini": "^2.22.1",
-    "smartystreets-javascript-sdk": "^1.4.2",
-    "vue": "^2.6.10",
-    "vue-router": "^3.0.3",
-    "vue-select": "^3.4.0",
-    "vue2-google-maps": "^0.10.7",
-    "vuex": "^3.0.1",
+    "moment-mini": "^2.24.0",
+    "smartystreets-javascript-sdk": "^1.5.0",
+    "vue": "^3.0.0-rc.1",
+    "vue-router": "^4.0.0-beta.6",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@babel/polyfill": "^7.7.0",
-    "@vue/cli-plugin-babel": "^3.12.0",
-    "@vue/cli-plugin-eslint": "^3.12.0",
-    "@vue/cli-service": "^3.12.0",
-    "@vue/eslint-config-standard": "^4.0.0",
-    "babel-eslint": "^10.0.1",
-    "bootstrap": "^4.3.1",
-    "eslint": "^5.16.0",
-    "eslint-plugin-vue": "^5.0.0",
-    "mutationobserver-shim": "^0.3.3",
-    "popper.js": "^1.16.0",
-    "portal-vue": "^2.1.6",
-    "pug": "^2.0.4",
+    "@types/googlemaps": "^3.39.13",
+    "@types/js-cookie": "^2.2.6",
+    "@types/zxcvbn": "^4.4.0",
+    "@vue/compiler-sfc": "^3.0.0-rc.1",
+    "autoprefixer": "^9.8.6",
+    "postcss-nested": "^4.2.3",
+    "pug": "^3.0.0",
     "pug-plain-loader": "^1.0.0",
-    "sass": "^1.19.0",
-    "sass-loader": "^8.0.0",
-    "stylus": "^0.54.5",
-    "stylus-loader": "^3.0.2",
-    "vue-cli-plugin-axios": "^0.0.4",
-    "vue-cli-plugin-bootstrap-vue": "^0.6.0",
-    "vue-cli-plugin-webpack-bundle-analyzer": "^2.0.0",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential"
-    ],
-    "rules": {},
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions"
-  ]
+    "vite": "^1.0.0-rc.1"
+  }
 }

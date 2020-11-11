@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "moduleResolution": "node",
+        "isolatedModules": true,
+        "allowSyntheticDefaultImports": true,
+        "types": [
+            "googlemaps"
+        ]
+    },
+    "include": [
+        "client/src/**/*.ts",
+        "client/src/**/*.vue"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+}

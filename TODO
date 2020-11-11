@@ -21,3 +21,5 @@ Cosmetics:
   Start event list scrolled to "today".
 Internals:
   Search engine efficiency — encode type and ids in rowid
+  Reuse google map instance on return to people map page.
+  Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
