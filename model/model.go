@@ -134,15 +134,19 @@ type EventType uint32
 
 // The known event types.
 const (
+	// EventPublicService represents a public service event, such as the
+	// State of the City, Pancake Breakfast, etc.
 	EventPublicService EventType = 1 << iota
+	// EventClass represents a class that is taught by SERV or DPS
+	// instructors.
 	EventClass
-	EventContEd
-	EventDrill
+	eventUnused1 // no longer used
+	eventUnused2 // no longer used
 	EventEmergency
 	EventMeeting
 	EventSocial
 	EventTraining
-	EventWork
+	eventUnused3 // no longer used
 	// EventHours is a placeholder event to record "other" volunteer hours
 	// not associated with a true event.  Events of this type are never
 	// visible.
@@ -151,29 +155,23 @@ const (
 
 // AllEventTypes is the list of all known event types.
 var AllEventTypes = []EventType{
-	EventPublicService,
 	EventClass,
-	EventContEd,
-	EventDrill,
 	EventEmergency,
 	EventMeeting,
+	EventPublicService,
 	EventSocial,
 	EventTraining,
-	EventWork,
 	EventHours,
 }
 
 // EventTypeNames maps event types to their names.
 var EventTypeNames = map[EventType]string{
-	EventPublicService: "Public Service",
 	EventClass:         "Class",
-	EventContEd:        "Continuing Education",
-	EventDrill:         "Drill",
 	EventEmergency:     "Emergency",
 	EventMeeting:       "Meeting",
+	EventPublicService: "Public Service",
 	EventSocial:        "Social",
 	EventTraining:      "Training",
-	EventWork:          "Work Event",
 	EventHours:         "Other Hours",
 }
 

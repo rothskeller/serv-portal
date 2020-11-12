@@ -123,16 +123,10 @@ func getEventTypeAbbr(et model.EventType) eventTypeAbbr {
 		return "Inc"
 	case model.EventPublicService:
 		return "Civ"
-	case model.EventDrill:
-		return "Drl"
 	case model.EventTraining:
 		return "Trn"
-	case model.EventContEd:
-		return "CE"
 	case model.EventClass:
 		return "Cls"
-	case model.EventWork:
-		return "Wrk"
 	case model.EventMeeting:
 		return "Mtg"
 	}
