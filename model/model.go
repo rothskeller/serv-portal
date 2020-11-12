@@ -134,13 +134,13 @@ type EventType uint32
 
 // The known event types.
 const (
-	EventCivic EventType = 1 << iota
+	EventPublicService EventType = 1 << iota
 	EventClass
 	EventContEd
 	EventDrill
-	EventIncident
+	EventEmergency
 	EventMeeting
-	EventParty
+	EventSocial
 	EventTraining
 	EventWork
 	// EventHours is a placeholder event to record "other" volunteer hours
@@ -151,13 +151,13 @@ const (
 
 // AllEventTypes is the list of all known event types.
 var AllEventTypes = []EventType{
-	EventCivic,
+	EventPublicService,
 	EventClass,
 	EventContEd,
 	EventDrill,
-	EventIncident,
+	EventEmergency,
 	EventMeeting,
-	EventParty,
+	EventSocial,
 	EventTraining,
 	EventWork,
 	EventHours,
@@ -165,16 +165,16 @@ var AllEventTypes = []EventType{
 
 // EventTypeNames maps event types to their names.
 var EventTypeNames = map[EventType]string{
-	EventCivic:    "Civic Event",
-	EventClass:    "Class",
-	EventContEd:   "Continuing Education",
-	EventDrill:    "Drill",
-	EventIncident: "Incident",
-	EventMeeting:  "Meeting",
-	EventParty:    "Party",
-	EventTraining: "Training",
-	EventWork:     "Work Event",
-	EventHours:    "Non-Event Hours",
+	EventPublicService: "Public Service",
+	EventClass:         "Class",
+	EventContEd:        "Continuing Education",
+	EventDrill:         "Drill",
+	EventEmergency:     "Emergency",
+	EventMeeting:       "Meeting",
+	EventSocial:        "Social",
+	EventTraining:      "Training",
+	EventWork:          "Work Event",
+	EventHours:         "Other Hours",
 }
 
 // Hours returns the number of hours the event lasted.

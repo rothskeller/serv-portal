@@ -119,9 +119,9 @@ func CERTAttendanceReport(r *util.Request) error {
 
 func getEventTypeAbbr(et model.EventType) eventTypeAbbr {
 	switch et {
-	case model.EventIncident:
+	case model.EventEmergency:
 		return "Inc"
-	case model.EventCivic:
+	case model.EventPublicService:
 		return "Civ"
 	case model.EventDrill:
 		return "Drl"
