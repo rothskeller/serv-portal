@@ -39,7 +39,7 @@ export default defineComponent({
     // Use the incoming modelValue as the initial value for checked, and update
     // checked whenever the parent changes the modelValue prop.
     const { modelValue } = toRefs(props)
-    const checked = ref(!!modelValue)
+    const checked = ref(!!modelValue.value)
     watch(modelValue, () => {
       checked.value = !!modelValue.value
     })
