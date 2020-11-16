@@ -32,7 +32,7 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"canSendTextMessages":`)
 	out.Bool(r.Auth.CanA(model.PrivSendTextMessages))
 	out.RawString(`,"canViewReports":`)
-	out.Bool(r.Auth.CanAG(model.PrivManageEvents, r.Auth.FetchGroupByTag("cert-teams").ID))
+	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"canViewRosters":`)
 	out.Bool(r.Auth.CanA(model.PrivViewMembers))
 	out.RawString(`,"csrf":`)

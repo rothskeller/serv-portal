@@ -115,12 +115,12 @@ export default defineComponent({
         active: page.menuItem === 'files',
         show: true,
       },
-      // {
-      //   label: 'Reports',
-      //   to: '/reports',
-      //   active: page.menuItem === 'reports',
-      //   show: me.value?.canViewReports,
-      // },
+      {
+        label: 'Reports',
+        to: '/reports',
+        active: page.menuItem === 'reports',
+        show: me.value?.canViewReports,
+      },
       {
         label: 'Texts',
         to: '/texts',

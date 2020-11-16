@@ -4,6 +4,7 @@ import { me } from './plugins/login'
 import Admin from './pages/Admin.vue'
 import Events from './pages/Events.vue'
 import People from './pages/People.vue'
+import Reports from './pages/Reports.vue'
 import Texts from './pages/Texts.vue'
 
 const router = createRouter({
@@ -146,6 +147,20 @@ const router = createRouter({
       path: '/policies',
       component: () => import('./pages/static/Policies.vue'),
       meta: { public: true },
+    },
+    {
+      path: '/reports',
+      component: Reports,
+      children: [
+        {
+          path: '',
+          redirect: '/reports/attendance'
+        },
+        {
+          path: 'attendance',
+          component: () => import('./pages/reports/Attendance.vue'),
+        },
+      ],
     },
     {
       path: '/search',

@@ -6,7 +6,7 @@ v-model value is set to Boolean false.
 -->
 
 <template lang="pug">
-.scheck
+div(:class='classes')
   input.scheck-input(
     :id='id',
     type='checkbox',
@@ -18,7 +18,7 @@ v-model value is set to Boolean false.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs } from 'vue'
+import { defineComponent, ref, watch, toRefs, computed } from 'vue'
 
 export default defineComponent({
   props: {
@@ -26,6 +26,7 @@ export default defineComponent({
     label: String,
     value: { type: [String, Number, Boolean, Object], default: true },
     modelValue: { type: [String, Number, Boolean, Object], default: null },
+    inline: { type: Boolean, default: false },
   },
   setup(props, { emit }) {
     // Use the incoming modelValue as the initial value for checked, and update
@@ -42,7 +43,9 @@ export default defineComponent({
       emit('update:modelValue', checked.value)
     }
 
-    return { checked, onChange }
+    const classes = computed(() => (props.inline ? 'schecki' : 'scheck'))
+
+    return { checked, classes, onChange }
   },
 })
 </script>
@@ -53,6 +56,13 @@ export default defineComponent({
   display: block;
   min-height: 1.5rem;
   padding-left: 1.5rem;
+}
+.schecki {
+  position: relative;
+  display: inline-block;
+  min-height: 1.5rem;
+  padding-left: 1.5rem;
+  margin-right: 1rem;
 }
 .scheck-input {
   position: absolute;

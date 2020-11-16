@@ -39,6 +39,9 @@ const (
 	AttendAsAbsent
 )
 
+// AllAttendanceTypes lists all defined attendance types.
+var AllAttendanceTypes = []AttendanceType{AttendAsVolunteer, AttendAsStudent, AttendAsAuditor, AttendAsAbsent}
+
 // AttendanceTypeNames gives the names for the attendance types.
 var AttendanceTypeNames = map[AttendanceType]string{
 	AttendAsVolunteer: "Volunteer",
