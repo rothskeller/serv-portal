@@ -3,7 +3,7 @@ SSelect is a select control, not in an SForm.
 -->
 
 <template lang="pug">
-select.form-control(v-bind='$attrs', v-model='input')
+select.sselect.form-control(v-bind='$attrs', v-model='input')
   option(
     v-for='o in options',
     :value='optionValue(o)',

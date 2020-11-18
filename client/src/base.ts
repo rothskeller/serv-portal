@@ -1,6 +1,7 @@
 import EventOrgDot from './base/EventOrgDot.vue'
 import MessageBox from './base/MessageBox.vue'
 import Modal from './base/Modal.vue'
+import MonthSelect from './base/MonthSelect.vue'
 import PrivilegeMask from './base/PrivilegeMask.vue'
 import SButton from './base/SButton.vue'
 import SCheck from './base/SCheck.vue'
@@ -26,6 +27,7 @@ export {
   EventOrgDot,
   MessageBox,
   Modal,
+  MonthSelect,
   PrivilegeMask,
   SButton,
   SCheck,

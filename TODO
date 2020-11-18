@@ -1,25 +1,37 @@
-Goodies:
-  Skills and other person data
+Tier 1:
   Event signups and RSVPs
     Send text messages to people who signed up for an event
-  Shift signups
-  Search engine covers document contents
-  View mailing list archives (maybe leads only)
-  Data export
+    Shift signups
+    Generate sign-in sheet for event
+  Schedule Zoom meetings through API
+  Refactor person/view edit
+  More BG check information
+  Edit person notes
+  Timesheet-style attendance entry
+  Combine person attendance history and hours entry
+  Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
+  Refactor permissions and leads based on org rather than group.
+
+Tier 2:
+  Refactor groups / email lists for current needs
+  Better support for mail lists without visible grouping
+    Email lists that people can choose to sign up for
+  More compact people list
+  Change username when changing email.
+    Remove email/username overlap?
+
+Unprioritized:
   Change text report to show delivered time
-  Shared Notes area (see Kent text 2/11)
-  Generate sign-in sheet for event
+  Search engine covers document contents
+  Skills and other person data
+  Data export
   Rearrange files and folders with drag-and-drop
-  Email lists that people can choose to sign up for
   Place to request print runs for documents e.g. brochures
   Contacts download to phone etc.
-Cosmetics:
-  Change username when changing email.
   Complete the implementation of serv-load venues.  Better validation, allow updates.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
   Start event list scrolled to "today".
-Internals:
   Search engine efficiency — encode type and ids in rowid
   Reuse google map instance on return to people map page.
-  Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
+

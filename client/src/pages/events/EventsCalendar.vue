@@ -6,15 +6,7 @@ EventsCalendar displays the events in a calendar form.
 #events-calendar
   #events-calendar-grid
     #events-calendar-heading
-      .events-calendar-arrow(@click='onYearBackward')
-        SIcon.events-calendar-year-arrow(icon='double-chevron-left')
-      .events-calendar-arrow(@click='onMonthBackward')
-        SIcon.events-calendar-month-arrow(icon='chevron-left')
-      #events-calendar-month(v-text='month.format("MMMM YYYY")')
-      .events-calendar-arrow(@click='onMonthForward')
-        SIcon.events-calendar-month-arrow(icon='chevron-right')
-      #events-calendar-arrow-last.events-calendar-arrow(@click='onYearForward')
-        SIcon.events-calendar-year-arrow(icon='double-chevron-right')
+      MonthSelect(v-model='monthfmt')
     .events-calendar-weekday(v-for='w in ["S", "M", "T", "W", "T", "F", "S"]', v-text='w')
     .events-calendar-day(
       v-for='date in dates',
@@ -43,7 +35,7 @@ import { defineComponent, inject, Ref, ref, onMounted, watch } from 'vue'
 import Cookies from 'js-cookie'
 import moment, { Moment } from 'moment-mini'
 import axios from '../../plugins/axios'
-import { EventOrgDot, SIcon } from '../../base'
+import { EventOrgDot, MonthSelect } from '../../base'
 import setPage from '../../plugins/page'
 
 export type ListEventsVenue = {
@@ -67,7 +59,7 @@ export type ListEvents = {
 }
 
 export default defineComponent({
-  components: { EventOrgDot, SIcon },
+  components: { EventOrgDot, MonthSelect },
   setup(props, { emit }) {
     setPage({ title: 'Events' })
 
@@ -75,22 +67,12 @@ export default defineComponent({
 
     // Choose the month being viewed.
     const month = ref(moment())
-    function onMonthBackward() {
-      month.value.subtract(1, 'month')
+    const monthfmt = ref(month.value.format('YYYY-MM'))
+    watch(monthfmt, () => {
+      console.log('monthfmt', monthfmt.value)
+      month.value = moment(monthfmt.value, 'YYYY-MM')
       newMonth()
-    }
-    function onMonthForward() {
-      month.value.add(1, 'month')
-      newMonth()
-    }
-    function onYearBackward() {
-      month.value.subtract(1, 'year')
-      newMonth()
-    }
-    function onYearForward() {
-      month.value.add(1, 'year')
-      newMonth()
-    }
+    })
 
     // Should we show the events on a particular date under the table?
     const showDate = ref(null as null | Moment)
@@ -146,11 +128,8 @@ export default defineComponent({
     })
 
     return {
-      onYearBackward,
-      onMonthBackward,
-      onMonthForward,
-      onYearForward,
       month,
+      monthfmt,
       dates,
       onHoverDate,
       onNoHoverDate,
@@ -194,44 +173,6 @@ export default defineComponent({
 #events-calendar-heading {
   display: flex;
   grid-area: 1 / 1 / 2 / 8;
-}
-.events-calendar-arrow {
-  display: flex;
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  width: var(--arrowSize);
-  height: var(--arrowSize);
-  cursor: pointer;
-  user-select: none;
-  &:hover {
-    background-color: #efefef;
-  }
-}
-#events-calendar-arrow-last {
-  @media (min-width: 576px) {
-    border-right: 1px solid #eee;
-  }
-}
-.events-calendar-year-arrow {
-  width: 1rem;
-  @media print {
-    display: none;
-  }
-}
-.events-calendar-month-arrow {
-  width: 0.625rem;
-  @media print {
-    display: none;
-  }
-}
-#events-calendar-month {
-  display: block;
-  flex: auto;
-  align-self: center;
-  text-align: center;
-  white-space: nowrap;
-  font-size: 1.2rem; /* lets longest month and year fit at 320px width */
 }
 .events-calendar-weekday {
   margin-top: 0.5rem;
