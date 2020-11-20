@@ -93,6 +93,27 @@ message Group {
   bool background_check_required = 13 [(gogoproto.jsontag) = "backgroundCheckRequired"];
 }
 
+message List {
+  // ID is the identifier of the List.
+  int64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "ListID"];
+  // Type is the list type.
+  int64 type = 2 [(gogoproto.casttype) = "ListType"];
+  // Name is the name of the list (and, for email lists, the local part of its
+  // email address).
+  string name = 3;
+  // People is a map from PersonID to that person's status on the list.
+  map<int64,int64> people = 4 [(gogoproto.castkey) = "PersonID", (gogoproto.castvalue) = "ListPersonStatus"];
+}
+
+// An OrgMembership describes the membership (or lack thereof) of a Person to an
+// Org.
+message OrgMembership {
+  // PrivLevel is the privilege level the person holds in the organization.
+  int64 privLevel = 1 [(gogoproto.casttype) = "PrivLevel"];
+  // Title is the person's title (or role description) in the organization.
+  string title = 2;
+}
+
 message Person {
   int64                     id                =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "PersonID"];
   string                    username          =  2;
@@ -133,6 +154,11 @@ message Person {
   // Identification is a bitmask of the types of identification that have been
   // issued to this person (and should be retrieved if they leave).
   int64 identification = 38 [(gogoproto.casttype) = "IdentType"];
+  // Roles is the ordered list of roles held by the person.
+  repeated int64 roles = 39 [(gogoproto.casttype) = "Role2ID"];
+  // Orgs is an array, indexed by Org, of descriptions of the person's
+  // membership (or lack thereof) in that Org.
+  repeated OrgMembership orgs = 40 [(gogoproto.embed) = true];
 }
 
 message PersonNote {

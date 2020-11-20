@@ -1,78 +1,165 @@
-The authorization model for the SERV Portal web site is based on people, roles,
-groups, and privileges:
+The authorization model for SunnyvaleSERV.org is based around people,
+organizations, privilege levels, roles, and lists.
 
 People are individuals who are, or have at some point been, affiliated with
-SERV.  Each person has a name and contact information, and a list of roles that
-they hold.  Each person may also have a username and password allowing them to
-log into the web site.  (See the note about who can log in, below.)
+SERV.  Each person holds zero or more roles, and is on zero or more lists.
 
-Groups are groups of people (teams, classes, etc.) who can be addressed as a
-unit.  One can view the list of people in a group, send emails or text messages
-to a group, invite a group to an event, etc.  Each group has a name and
-optionally a group email list name.
+Organizations are the SERV organizations: CERT, Listos, SARES, and SNAP.  For
+convenience, CERT is separated into CERT-Deployment and CERT-Training.  There is
+also a special "Admin" organization.
 
-Privileges are things that people can do to groups.  There are six:
-  "Member": the membership of a group is defined as the set of people who have
-      "Member" privilege on that group.
-  "Roster": people with this privilege on a group are able to see the list of
-      members of that group.
-  "Contact": people with this privilege on a group are able to see the contact
-      information for each of the members of that group.
-  "Admin": people with this privilege on a group are able to add and remove
-      members of the group.  This also means they are able to add people to the
-      web site.
-  "Events": people with this privilege on a group are able to invite the group
-      to events.  This also means they can create events, and record attendance
-      at events.  To modify or delete an existing event, a person must have this
-      privilege on every group invited to the event.
-  "Texts": people with this privilege on a group are able to send text messages
-      to the group (assuming the group supports text messaging at all).
+The privilege levels in each organization grant specific privileges, as follows:
+    Student:  can be on lists
+    Member:   all Student privileges, plus:
+              can view non-public files belonging to the organization
+              can view roster of members of the organization
+              may be able to view contact information of members of the
+                  organization (depends on the organization)
+    Leader:   all Member privileges, plus:
+              can add/edit calendar events for the organization
+              can view/edit attendance at events for the organization
+              can add/remove people to roles associated with their organization
+              can add/edit non-public files belonging to the organization
+              can add new people to the system
+              can view/edit names and contact info of any person
+              can view clearances for any person
+In addition, Leaders of the Admin organization:
+              have the Leader privileges in all organizations, plus:
+              can edit clearances of any person
+              can add/edit/approve public files
+              can reset passwords (to new random ones) and clear lockouts
+Finally, there are a few things that can only be done by Webmasters:
+              can add/remove organizations, roles, and lists
+              can change other people's passwords (to specific strings)
+              can set insecure passwords
+              can remove a person from a list's unsubscribe set
+              can turn off "unsubscribe all" for a person
 
-Roles are the glue between people, privileges, and groups.  It would be too
-difficult to manage the privileges for each person individually.  Instead,
-privileges are granted on a role-to-group basis, and people inherit the
-privileges granted to the roles they hold.  In addition, roles have names which
-help explain what the people who hold them do in SERV.  Some roles have a flag
-indicating that they can only be held by a single person.
+Roles serve several functions:
+  - They can convey membership in an organization, at a particular privilege
+    level, to the people who hold them.
+  - They can give people the titles that appear next to them in roster displays.
+    (For this reason, the roles associated with an organization are ordered;
+    if a person holds multiple roles within an organization, the highest
+    priority role that has a title is the one whose title is displayed.)
+  - They can group people within an organization, to display more targeted
+    rosters.
+  - They can subscribe people to lists, or allow people to subscribe themselves
+    to lists.  They can also allow people to send messages to lists.
+  - They can imply other roles, such that a person who is given role A
+    automatically receives role B as well (and when they lose role A, they also
+    lose role B).
 
-To illustrate all this, we will use Alex as an example.  Alex holds the
-following roles:
-    CERT Team Alpha Group 1 Lead
-    CERT Training Assistant Lead
-Both of these are individual roles: he's the only one who holds them.  Note that
-their names (which appear next to his name on the web site) are very specific
-descriptions of mhat he does.
+Lists are used for distribution of messages to people.  There are two kinds of
+list, email and SMS, but they largely work the same way.  Each list has a set of
+people who are subscribed to it, a set of people who can send to it, and a set
+of people who have unsubscribed from it.  To be subscribed to a list, a person
+must hold one or more roles that grant subscription.  There are four different
+subscription models that a role can grant its holders on a list:
+  - AllowSubscribe: holders of the role are allowed to subscribe and unsubscribe
+    themselves.  If they lose all roles that granted them subscription rights,
+    they will be removed from the list.
+  - AutoSubscribe: holders of the role are automatically subscribed to the list.
+    They can unsubscribe themselves at will.  If they lose all roles that
+    granted them subscription rights, they will be removed from the list.
+  - ShouldSubscribe: same as AutoSubscribe, except that if they try to
+    unsubscribe themselves, they will get a warning that they may lose the
+    role(s) that granted them subscription rights with this model.
+  - MustSubscribe: same as AutoSubscribe, except that if they unsubscribe
+    themselves, they automatically lose the role(s) that granted them
+    subscription rights with this model.  Note that the system will prevent
+    granting a role with such subscription rights to a person who has previously
+    unsubscribed from the list.
 
-Because he holds the CERT Team Alpha Group 1 Lead role, he has the following
-privileges that were granted to that role:
-    "Member" of CERT Deployment Teams, CERT Team Alpha, CERT Volunteers, and
-        SERV Volunteers.
-    "Roster" and "Contact" on CERT Deployment Teams and CERT Team Alpha.
-
-Because he holds the CERT Training Assistant Lead role, he has the following
-additional privileges that were granted to that role:
-    "Member" of CERT Trainers, CERT Volunteers, SERV Leads, and SERV Volunteers.
-    "Roster" on every past CERT class, and on the aggregate groups called "CERT
-        Classes (past)", "CERT Classes (all)", and "CERT Graduates".
-    "Roster", "Contact", "Admin", and "Events" on the current and every future
-        CERT class, and on CERT Trainers.
-    "Roster", "Contact", and "Events" on the aggregate group called "CERT
-        Classes (all)".  (He doesn't have "Admin" on this group because one
-        shouldn't add or remove members from an aggregate group.)
-    "Roster" and "Contact" on SERV Leads.
-
-The webmaster is a special role which irrevocably has all privileges on all
-groups.  The webmaster can also do other things that no one else can, such as
-change a person's username or set an insecure password.
+Note that when a person is removed from a list because they lose the role(s)
+that granted subscription rights, they are not added to the set of people who
+have "unsubscribed".  That only happens when the person in question actively
+unsubscribes from the list.  If a person actively unsubscribes, the person will
+never be re-subscribed, no matter what roles they have, until that unsubscribe
+is canceled by that person or a webmaster.
 
 In order to be able to log in to the web site, a person must satisfy all of
 the following criteria:
   - They must have a username assigned.  (If they have one, it will usually be
     their email address.)
   - They must have a password.
-  - They must not be a member of the special "Disabled Users" group.
-  - They must have at least one role.
+  - Their disabled flag must not be set.
+  - They must belong to at least one organization.
   - They must not have had too many recent failed login attempts.
 Going forward, all new people added to the web site will have usernames and
 passwords and will be able to log in.  However, many historical CERT students do
 not have a username or password.
+
+--- Attributes
+
+The canonical attributes of an organization are:
+  - Name
+  - Members Can View Contact Info (boolean)
+  - DSW Class (CERT, Communications, or none)
+and the computed attributes are:
+  - Ordered list of roles
+  - Set of members, with privilege levels for each
+
+The canonical attributes of a person (relevant to this discussion) are:
+  - Set of roles
+  - Disabled flag
+  - Username and password
+  - Failed login count and timestamp
+and the computed attributes are:
+  - Ordered list of roles (as opposed to set above)
+  - Set of organizations to which the person belongs, with privilege levels and titles for each
+
+The canonical attributes of a role are:
+  - Name
+  - Title (optional) (usually the singular form of Name)
+  - ShowRoster (boolean)
+  - Organization
+  - Privilege Level
+  - Set of directly implied other roles
+  - Set of lists, with subscription model and sender flag for each
+and the computed attributes are:
+  - Ordered list of people holding the role
+  - Set of recursively implied other roles
+
+The canonical attributes of a list are:
+  - Type (email or SMS)
+  - Name (which is the email address, for email lists)
+  - Set of unsubscribed people
+and the computed attributes are:
+  - Set of subscribers
+  - Set of allowed senders
+
+---
+
+* visit "Add Events" page: any org leader
+* visit "Add Person" page: any org leader
+* visit "Texts" module: any person with PrivSendTextMessages on any group
+* visit "Reports" module: any org leader
+* visit "People" module: any org member or leader
+* login: anyone affiliated with any org (and with password, not blocked, etc.)
+* member of email list (unsubscribe): any member of that group
+* record attendance for event: any leader of event org
+* view event: anyone (no more private events)
+* view attendance for event: any leader of event org
+* view folder contents: any member of folder org
+* edit folder contents: any leader of folder org
+* approve changes to folder contents: any leader of folder org
+* view members of group: any member of group org
+* view contact information of person: any member of group org, or any leader (per org switch)
+* create person: any org leader
+* change person roles: any org leader (for roles assoc. with that org)
+* edit person's contact information: self; any org leader
+* edit person's names / identity: self
+* view text messages sent: any person with PrivSendTextMessages on the recipient group
+* send text messages: any person with PrivSendTextMessages on the recipient group
+* view status of sent text message: any person with PrivSendTextMessages on the recipient group
+* view note on person: any leader of the note's org
+* send email message without moderation: any person with PrivSendEmailMessages on the recipient group
+* automatic bcc on email message: any person with PrivBCC on the recipient group
+* receive email message: any member of recipient group
+* edit person clearances: DPS Staff
+* view person clearances except BG check: any org leader
+* view person BG check: DPS Staff
+* edit public folder: webmaster
+* edit permissions, roles, groups: webmaster
+* edit person hours: self; any leader of event org

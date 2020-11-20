@@ -245,6 +245,111 @@ var IdentTypeNames = map[IdentType]string{
 	IDCERTShirt: "green CERT shirt",
 }
 
+// A ListID identifies a List.
+type ListID int
+
+// ListPersonStatus is a bitmask of flags describing a person's status on a
+// list.
+type ListPersonStatus uint8
+
+// Values for ListPersonStatus.
+const (
+	// ListSubscribed indicates that the person is subscribed to the list.
+	ListSubscribed ListPersonStatus = 1 << iota
+	// ListUnsubscribed indicates that the person has unsubscribed from the
+	// list.
+	ListUnsubscribed
+	// ListSender indicates that the person is allowed to send to the list.
+	ListSender
+)
+
+// ListSubModel describes the subscription model a given role grants to a given
+// list.
+type ListSubModel uint8
+
+// Values for ListSubModel.
+const (
+	// ListAllowSub indicates that holders of the role are allowed to
+	// subscribe to the list.
+	ListAllowSub ListSubModel = iota
+	// ListAutoSub indicates that holders of the role are automatically
+	// subscribed to the list.
+	ListAutoSub
+	// ListWarnUnsub is like ListAutoSub, but people trying to unsubscribe
+	// from the list are warned that they may lose the role if they do.
+	ListWarnUnsub
+	// ListMustSub is like ListWarnUnsub, but people who proceed to
+	// unsubscribe after being warned automatically lose the role.
+	ListMustSub
+)
+
+// AllListSubModels is a list of all list subscription models values.
+var AllListSubModels = []ListSubModel{ListAllowSub, ListAutoSub, ListWarnUnsub, ListMustSub}
+
+// ListSubModelNames gives the display names of the list subscription models.
+var ListSubModelNames = map[ListSubModel]string{
+	ListAllowSub:  "manual subscription",
+	ListAutoSub:   "automatic subscription",
+	ListWarnUnsub: "automatic, warn on unsubscribe",
+	ListMustSub:   "automatic, lose role on unsubscribe",
+}
+
+// ListType is the type of a list.
+type ListType uint8
+
+// Values for ListType.
+const (
+	// ListNone is an unspecified type.
+	ListNone ListType = iota
+	// ListEmail is an email distribution list.
+	ListEmail
+	// ListSMS is a text messaging distribution list.
+	ListSMS
+)
+
+// An Org identifies one of the SERV volunteer organizations.
+type Org uint8
+
+// Values for Org.
+const (
+	OrgNone2 Org = iota
+	OrgAdmin2
+	OrgCERTD2
+	OrgCERTT2
+	OrgListos
+	OrgSARES2
+	OrgSNAP2
+)
+
+// AllOrgs gives the list of all Orgs.
+var AllOrgs = []Org{OrgAdmin2, OrgCERTD2, OrgCERTT2, OrgListos, OrgSARES2, OrgSNAP2}
+
+// OrgNames gives the display names of the Orgs.
+var OrgNames = map[Org]string{
+	OrgAdmin2: "Admin",
+	OrgCERTD2: "CERT Deployment",
+	OrgCERTT2: "CERT Training",
+	OrgListos: "Listos",
+	OrgSARES2: "SARES",
+	OrgSNAP2:  "SNAP",
+}
+
+// MembersCanViewContactInfo returns whether Members of the receiver Org can
+// view contact info for members of the Org.
+func (o Org) MembersCanViewContactInfo() bool { return o != OrgSARES2 }
+
+// DSWClass returns the DSW class for the receiver Org.
+func (o Org) DSWClass() DSWClass {
+	switch o {
+	case OrgSARES2:
+		return DSWComm
+	case OrgCERTD2, OrgCERTT2:
+		return DSWCERT
+	default:
+		return 0
+	}
+}
+
 // An Organization identifies one of the SERV volunteer organizations.
 type Organization uint8
 
@@ -361,6 +466,32 @@ func (p *Permission) UnmarshalEasyJSON(l *jlexer.Lexer) {
 // A PersonID is a positive integer uniquely identifying a Person.
 type PersonID int
 
+// A PrivLevel is a privilege level for membership in an Org.
+type PrivLevel uint8
+
+// Values for PrivLevel.
+const (
+	// PrivNone indicates no membership in the Org.
+	PrivNone PrivLevel = iota
+	// PrivStudent indicates student-level membership in the Org, with
+	// essentially no privileges other than being on lists.
+	PrivStudent
+	// PrivMember2 indicates full membership in the Org.
+	PrivMember2
+	// PrivLeader indicates a leader of the Org.
+	PrivLeader
+)
+
+// AllPrivLevels is a list of all privilege levels.
+var AllPrivLevels = []PrivLevel{PrivStudent, PrivMember2, PrivLeader}
+
+// PrivLevelNames gives the display names of the privilege levels.
+var PrivLevelNames = map[PrivLevel]string{
+	PrivStudent: "Student",
+	PrivMember2: "Member",
+	PrivLeader:  "Leader",
+}
+
 // A Privilege is something holders of a role get to do to a target group.  The
 // type can be used as a single privilege or a bitmask of multiple privileges.
 type Privilege uint16
@@ -465,6 +596,9 @@ const (
 	// blocked from logging in.
 	RoleDisabled = "disabled"
 )
+
+// A Role2ID identifies a Role.
+type Role2ID int
 
 // A SessionToken is a string that uniquely identifies a login session.
 type SessionToken string
