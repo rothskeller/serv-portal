@@ -112,6 +112,7 @@ export default defineComponent({
     // Toggling the state of a person.
     function onTogglePerson(person: GetEventPerson) {
       if (person.attended && person.attended.type === setType.value) person.attended = false
+      else if (person.attended) person.attended.type = setType.value
       else person.attended = { type: setType.value, minutes: 60 * setHours.value }
     }
 
