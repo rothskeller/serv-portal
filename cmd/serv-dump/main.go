@@ -54,6 +54,8 @@ func main() {
 		dumpFolders(tx)
 	case strings.HasPrefix("groups", os.Args[1]):
 		dumpGroups(tx)
+	case strings.HasPrefix("lists", os.Args[1]):
+		dumpLists(tx)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		dumpPeople(tx)
 	case strings.HasPrefix("roles", os.Args[1]):
@@ -64,6 +66,8 @@ func main() {
 		dumpTextMessages(tx)
 	case strings.HasPrefix("venues", os.Args[1]):
 		dumpVenues(tx)
+	case os.Args[1] == "roles2":
+		dumpRoles2(tx)
 	default:
 		usage()
 	}
@@ -265,6 +269,49 @@ func dumpGroups(tx *store.Tx) {
 	}
 }
 
+func dumpLists(tx *store.Tx) {
+	for _, l := range tx.FetchLists() {
+		var out jwriter.Writer
+		out.NoEscapeHTML = true
+		dumpList(tx, &out, l)
+		out.DumpTo(os.Stdout)
+		os.Stdout.Write([]byte{'\n'})
+	}
+}
+
+func dumpList(tx *store.Tx, out *jwriter.Writer, l *model.List) {
+	out.RawString(`{"id":`)
+	out.Int(int(l.ID))
+	out.RawString(`,"type":`)
+	out.String(model.ListTypeNames[l.Type])
+	out.RawString(`,"name":`)
+	out.String(l.Name)
+	out.RawString(`,"people":[`)
+	var first = true
+	for pid, lps := range l.People {
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(pid))
+		out.RawString(`,"informalName":`)
+		out.String(tx.FetchPerson(pid).InformalName)
+		if lps&model.ListSubscribed != 0 {
+			out.RawString(`,"subscribed":true`)
+		}
+		if lps&model.ListUnsubscribed != 0 {
+			out.RawString(`,"unsubscribed":true`)
+		}
+		if lps&model.ListSender != 0 {
+			out.RawString(`,"sender":true`)
+		}
+		out.RawByte('}')
+	}
+	out.RawString(`]}`)
+}
+
 func dumpPeople(tx *store.Tx) {
 	for _, p := range tx.FetchPeople() {
 		var out jwriter.Writer
@@ -458,7 +505,43 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
-	out.RawByte('}')
+	var roles = model.Roles{Roles: make([]*model.Role2, 0, len(p.Roles))}
+	for rid := range p.Roles {
+		roles.Roles = append(roles.Roles, tx.FetchRole(rid))
+	}
+	sort.Sort(roles)
+	out.RawString(`,"roles2":[`)
+	for i, r := range roles.Roles {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(r.ID))
+		out.RawString(`,"name":`)
+		out.String(r.Name)
+		out.RawString(`,"direct":`)
+		out.Bool(p.Roles[r.ID])
+		out.RawByte('}')
+	}
+	out.RawString(`],"orgs":{`)
+	var first = true
+	for _, org := range model.AllOrgs {
+		if p.Orgs[org].PrivLevel == model.PrivNone {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.String(model.OrgNames[org])
+		out.RawString(`:{"privLevel":`)
+		out.String(model.PrivLevelNames[p.Orgs[org].PrivLevel])
+		out.RawString(`,"title":`)
+		out.String(p.Orgs[org].Title)
+		out.RawByte('}')
+	}
+	out.RawString(`}}`)
 }
 
 func dumpRoles(tx *store.Tx) {
@@ -518,6 +601,104 @@ func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 			out.String(model.PrivilegeNames[p])
 		}
 		out.RawString(`]}`)
+	}
+	out.RawString(`]}`)
+}
+
+func dumpRoles2(tx *store.Tx) {
+	for _, r := range tx.FetchRoles() {
+		var out jwriter.Writer
+		out.NoEscapeHTML = true
+		dumpRole2(tx, &out, r)
+		out.DumpTo(os.Stdout)
+		os.Stdout.Write([]byte{'\n'})
+	}
+}
+
+func dumpRole2(tx *store.Tx, out *jwriter.Writer, r *model.Role2) {
+	out.RawString(`{"id":`)
+	out.Int(int(r.ID))
+	out.RawString(`,"name":`)
+	out.String(r.Name)
+	if r.Title != "" {
+		out.RawString(`,"title":`)
+		out.String(r.Title)
+	}
+	if r.Org != model.OrgNone2 {
+		out.RawString(`,"org":`)
+		out.String(model.OrgNames[r.Org])
+	}
+	if r.PrivLevel != model.PrivNone {
+		out.RawString(`,"privLevel":`)
+		out.String(model.PrivLevelNames[r.PrivLevel])
+	}
+	if r.ShowRoster {
+		out.RawString(`,"showRoster":true`)
+	}
+	if r.ImplicitOnly {
+		out.RawString(`,"implicitOnly":true`)
+	}
+	out.RawString(`,"priority":`)
+	out.Int(r.Priority)
+	if len(r.Implies) != 0 {
+		var first = true
+		out.RawString(`,"implies":[`)
+		for irid, direct := range r.Implies {
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			ir := tx.FetchRole(irid)
+			out.RawString(`{"id":`)
+			out.Int(int(irid))
+			out.RawString(`,"name":`)
+			out.String(ir.Name)
+			out.RawString(`,"direct":`)
+			out.Bool(direct)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
+	if len(r.Lists) != 0 {
+		var first = true
+		out.RawString(`,"lists":[`)
+		for lid, rtl := range r.Lists {
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			l := tx.FetchList(lid)
+			out.RawString(`{"id":`)
+			out.Int(int(lid))
+			out.RawString(`,"name":`)
+			out.String(l.Name)
+			if sm := rtl.SubModel(); sm != model.ListNoSub {
+				out.RawString(`,"subModel":`)
+				out.String(model.ListSubModelNames[sm])
+			}
+			if rtl.Sender() {
+				out.RawString(`,"sender":true`)
+			}
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
+	var first = true
+	out.RawString(`,"people":[`)
+	for _, pid := range r.People {
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		p := tx.FetchPerson(pid)
+		out.RawString(`{"id":`)
+		out.Int(int(pid))
+		out.RawString(`,"informalName":`)
+		out.String(p.InformalName)
+		out.RawByte('}')
 	}
 	out.RawString(`]}`)
 }

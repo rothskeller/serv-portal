@@ -177,6 +177,16 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	if person.BackgroundCheck != "" && person.BackgroundCheck != "true" && !dateRE.MatchString(person.BackgroundCheck) {
 		return errors.New("invalid backgroundCheck")
 	}
+	for rid, direct := range person.Roles {
+		if !direct {
+			continue
+		}
+		if role := tx.FetchRole(rid); role == nil {
+			return errors.New("nonexistent role in roles")
+		} else if role.ImplicitOnly {
+			return errors.New("implicit-only role in roles")
+		}
+	}
 	return nil
 }
 

@@ -11,6 +11,7 @@ option (gogoproto.goproto_getters_all) = false;
 option (gogoproto.goproto_stringer_all) = false;
 option (gogoproto.stringer_all) = true;
 option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_sizecache_all) = false;
 
 message Address {
   string address       = 1;
@@ -93,6 +94,7 @@ message Group {
   bool background_check_required = 13 [(gogoproto.jsontag) = "backgroundCheckRequired"];
 }
 
+// List is a distribution list for messages to people.
 message List {
   // ID is the identifier of the List.
   int64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "ListID"];
@@ -103,6 +105,10 @@ message List {
   string name = 3;
   // People is a map from PersonID to that person's status on the list.
   map<int64,int64> people = 4 [(gogoproto.castkey) = "PersonID", (gogoproto.castvalue) = "ListPersonStatus"];
+}
+
+message Lists {
+  repeated List lists = 1;
 }
 
 // An OrgMembership describes the membership (or lack thereof) of a Person to an
@@ -154,11 +160,12 @@ message Person {
   // Identification is a bitmask of the types of identification that have been
   // issued to this person (and should be retrieved if they leave).
   int64 identification = 38 [(gogoproto.casttype) = "IdentType"];
-  // Roles is the ordered list of roles held by the person.
-  repeated int64 roles = 39 [(gogoproto.casttype) = "Role2ID"];
+  // Roles is the set of roles held by the person.  Each one maps to a boolean
+  // indicating whether the role is directly held (true) or implied (false).
+  map<int64,bool> roles = 39 [(gogoproto.castkey) = "Role2ID"];
   // Orgs is an array, indexed by Org, of descriptions of the person's
   // membership (or lack thereof) in that Org.
-  repeated OrgMembership orgs = 40 [(gogoproto.embed) = true];
+  repeated OrgMembership orgs = 40 [(gogoproto.nullable) = false];
 }
 
 message PersonNote {
@@ -174,6 +181,52 @@ message Role {
   bool   individual   = 4;
   bool   detail       = 5;
   uint32 permissions  = 6 [(gogoproto.casttype) = "Permission"];
+}
+
+// A Role2 is a role that one or more people hold, describing their
+// participation in SERV.
+message Role2 {
+  // ID is the unique identifier of the role.
+  int64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "Role2ID"];
+  // Name is the name of the role.  If multiple people can hold the role, this
+  // is generally a plural noun phrase; otherwise it is generally singular.
+  string name = 2;
+  // Title is the title describing people who hold this role.  It is generally
+  // the singular form of Name.  It may be empty, if this role should not be
+  // shown for the people who hold it.
+  string title = 3;
+  // Org is the organization to which this role belongs.
+  int64 org = 4 [(gogoproto.casttype) = "Org"];
+  // PrivLevel is the membership privilege level that this role conveys in Org
+  // to the people who hold the role.  If it is PrivNone, membership is not
+  // conveyed by the role.
+  int64 privLevel = 5 [(gogoproto.casttype) = "PrivLevel"];
+  // ShowRoster is a flag indicating that this role is a grouping that people
+  // can usefully select on the roster page.
+  bool showRoster = 6;
+  // ImplicitOnly is a flag indicating that this role cannot be granted to a
+  // person directly; it can only be implied through the granting of some other
+  // role.
+  bool implicitOnly = 7;
+  // Priority is the priority of this role within its organization, where lower
+  // numbers imply higher priority.  When displaying a person's title within an
+  // organization, the title is taken from the role, held by that person, with
+  // the lowest Priority value (excluding roles with empty Title).
+  int64 priority = 8 [(gogoproto.casttype) = "int"];
+  // Implies is the set of other roles are implied by this one. Each one is
+  // mapped to a flag indicating whether the role is directly implied (true) or
+  // indirectly implied (false).
+  map<int64,bool> implies = 9 [(gogoproto.castkey) = "Role2ID"];
+  // Lists is the set of lists associated with the role.  Each one is mapped to
+  // the subscription model and sender flag that together describe the
+  // relationship between the list and holders of the role.
+  map<int64,int64> lists = 10 [(gogoproto.castkey) = "ListID", (gogoproto.castvalue) = "RoleToList"];
+  // People is the ordered list of people holding the role.
+  repeated int64 people = 11 [(gogoproto.casttype) = "PersonID"];
+}
+
+message Roles {
+  repeated Role2 roles = 1;
 }
 
 message TextMessage {

@@ -20,7 +20,9 @@ type Tx struct {
 	entry           *log.Entry
 	auth            *authz.Authorizer
 	originalFolders map[model.FolderID]*model.Folder
+	originalLists   map[model.ListID]*model.List
 	originalPeople  map[model.PersonID]*model.Person
+	originalRoles   map[model.Role2ID]*model.Role2
 }
 
 // Begin starts a transaction, returning our Tx wrapper.
@@ -28,8 +30,10 @@ func Begin(entry *log.Entry) (tx *Tx) {
 	return &Tx{
 		Tx:              cache.Begin(),
 		entry:           entry,
-		originalPeople:  make(map[model.PersonID]*model.Person),
 		originalFolders: make(map[model.FolderID]*model.Folder),
+		originalLists:   make(map[model.ListID]*model.List),
+		originalPeople:  make(map[model.PersonID]*model.Person),
+		originalRoles:   make(map[model.Role2ID]*model.Role2),
 	}
 }
 

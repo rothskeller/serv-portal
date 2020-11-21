@@ -269,29 +269,28 @@ type ListSubModel uint8
 
 // Values for ListSubModel.
 const (
+	// ListNoSub indicates that holders of the role are not granted any
+	// subscription privileges on the list.
+	ListNoSub ListSubModel = iota
 	// ListAllowSub indicates that holders of the role are allowed to
 	// subscribe to the list.
-	ListAllowSub ListSubModel = iota
+	ListAllowSub
 	// ListAutoSub indicates that holders of the role are automatically
 	// subscribed to the list.
 	ListAutoSub
 	// ListWarnUnsub is like ListAutoSub, but people trying to unsubscribe
 	// from the list are warned that they may lose the role if they do.
 	ListWarnUnsub
-	// ListMustSub is like ListWarnUnsub, but people who proceed to
-	// unsubscribe after being warned automatically lose the role.
-	ListMustSub
 )
 
 // AllListSubModels is a list of all list subscription models values.
-var AllListSubModels = []ListSubModel{ListAllowSub, ListAutoSub, ListWarnUnsub, ListMustSub}
+var AllListSubModels = []ListSubModel{ListAllowSub, ListAutoSub, ListWarnUnsub}
 
 // ListSubModelNames gives the display names of the list subscription models.
 var ListSubModelNames = map[ListSubModel]string{
 	ListAllowSub:  "manual subscription",
 	ListAutoSub:   "automatic subscription",
 	ListWarnUnsub: "automatic, warn on unsubscribe",
-	ListMustSub:   "automatic, lose role on unsubscribe",
 }
 
 // ListType is the type of a list.
@@ -307,6 +306,12 @@ const (
 	ListSMS
 )
 
+// ListTypeNames gives the display names of all list types.
+var ListTypeNames = map[ListType]string{
+	ListEmail: "email",
+	ListSMS:   "SMS",
+}
+
 // An Org identifies one of the SERV volunteer organizations.
 type Org uint8
 
@@ -319,6 +324,7 @@ const (
 	OrgListos
 	OrgSARES2
 	OrgSNAP2
+	NumOrgs
 )
 
 // AllOrgs gives the list of all Orgs.
@@ -599,6 +605,36 @@ const (
 
 // A Role2ID identifies a Role.
 type Role2ID int
+
+// A RoleToList is a bitmask indicating the relationship between a list and the
+// people holding a role.  The lower nibble contains the ListSubModel value and
+// the upper nibble contains the Sender flag.
+type RoleToList uint8
+
+const rtlSender RoleToList = 0x10
+const rtlSubModelMask RoleToList = 0x0F
+
+// Sender returns whether holders of the role are allowed to send messages to
+// the list.
+func (rtl RoleToList) Sender() bool { return rtl&rtlSender != 0 }
+
+// SubModel returns the list subscription model for holders of the role.
+func (rtl RoleToList) SubModel() ListSubModel { return ListSubModel(rtl & rtlSubModelMask) }
+
+// SetSender sets whether holders of the role are allowed to send messages to
+// the list.
+func (rtl *RoleToList) SetSender(sender bool) {
+	if sender {
+		*rtl |= rtlSender
+	} else {
+		*rtl &^= rtlSender
+	}
+}
+
+// SetSubModel sets the list subscription model for holders of the role.
+func (rtl *RoleToList) SetSubModel(subModel ListSubModel) {
+	*rtl = (*rtl &^ rtlSubModelMask) | RoleToList(subModel)
+}
 
 // A SessionToken is a string that uniquely identifies a login session.
 type SessionToken string

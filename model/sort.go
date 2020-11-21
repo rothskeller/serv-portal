@@ -37,6 +37,15 @@ func (gs GroupSort) Len() int           { return len(gs) }
 func (gs GroupSort) Less(i, j int) bool { return gs[i].Name < gs[j].Name }
 func (gs GroupSort) Swap(i, j int)      { gs[i], gs[j] = gs[j], gs[i] }
 
+func (ls Lists) Len() int { return len(ls.Lists) }
+func (ls Lists) Less(i, j int) bool {
+	if ls.Lists[i].Type != ls.Lists[j].Type {
+		return ls.Lists[i].Type < ls.Lists[j].Type
+	}
+	return ls.Lists[i].Name < ls.Lists[j].Name
+}
+func (ls Lists) Swap(i, j int) { ls.Lists[i], ls.Lists[j] = ls.Lists[j], ls.Lists[i] }
+
 type PersonSort []*Person
 
 func (ps PersonSort) Len() int { return len(ps) }
@@ -68,6 +77,10 @@ type RoleSort []*Role
 func (rs RoleSort) Len() int           { return len(rs) }
 func (rs RoleSort) Less(i, j int) bool { return rs[i].Name < rs[j].Name }
 func (rs RoleSort) Swap(i, j int)      { rs[i], rs[j] = rs[j], rs[i] }
+
+func (rs Roles) Len() int           { return len(rs.Roles) }
+func (rs Roles) Less(i, j int) bool { return rs.Roles[i].Name < rs.Roles[j].Name }
+func (rs Roles) Swap(i, j int)      { rs.Roles[i], rs.Roles[j] = rs.Roles[j], rs.Roles[i] }
 
 func (vs Venues) Len() int           { return len(vs.Venues) }
 func (vs Venues) Less(i, j int) bool { return vs.Venues[i].Name < vs.Venues[j].Name }

@@ -113,8 +113,10 @@ The canonical attributes of a role are:
   - Name
   - Title (optional) (usually the singular form of Name)
   - ShowRoster (boolean)
+  - ImplicitOnly (boolean)
   - Organization
   - Privilege Level
+  - Priority (i.e, order within org)
   - Set of directly implied other roles
   - Set of lists, with subscription model and sender flag for each
 and the computed attributes are:
