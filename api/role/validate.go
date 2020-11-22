@@ -90,13 +90,11 @@ func ValidateRole2(tx *store.Tx, role *model.Role2) error {
 		if r.Title == role.Title && r.Title != "" {
 			return errors.New("duplicate title")
 		}
-		if r.Org == role.Org {
-			if r.Priority == role.Priority {
-				return errors.New("duplicate priority")
-			}
-			if r.Priority > maxprio {
-				maxprio = r.Priority
-			}
+		if r.Priority == role.Priority {
+			return errors.New("duplicate priority")
+		}
+		if r.Priority > maxprio {
+			maxprio = r.Priority
 		}
 	}
 	if role.Priority == 0 {

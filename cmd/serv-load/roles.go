@@ -141,7 +141,10 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	for {
-		var r = new(model.Role2)
+		var r = &model.Role2{
+			Implies: make(map[model.Role2ID]bool),
+			Lists:   make(map[model.ListID]model.RoleToList),
+		}
 		var first = true
 
 		in.Delim('{')

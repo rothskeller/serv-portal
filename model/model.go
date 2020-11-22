@@ -255,6 +255,7 @@ type ListPersonStatus uint8
 // Values for ListPersonStatus.
 const (
 	// ListSubscribed indicates that the person is subscribed to the list.
+	// It may be overridden if ListUnsubscribed is also set.
 	ListSubscribed ListPersonStatus = 1 << iota
 	// ListUnsubscribed indicates that the person has unsubscribed from the
 	// list.
@@ -288,9 +289,9 @@ var AllListSubModels = []ListSubModel{ListAllowSub, ListAutoSub, ListWarnUnsub}
 
 // ListSubModelNames gives the display names of the list subscription models.
 var ListSubModelNames = map[ListSubModel]string{
-	ListAllowSub:  "manual subscription",
-	ListAutoSub:   "automatic subscription",
-	ListWarnUnsub: "automatic, warn on unsubscribe",
+	ListAllowSub:  "allow",
+	ListAutoSub:   "auto",
+	ListWarnUnsub: "warn",
 }
 
 // ListType is the type of a list.
@@ -309,7 +310,7 @@ const (
 // ListTypeNames gives the display names of all list types.
 var ListTypeNames = map[ListType]string{
 	ListEmail: "email",
-	ListSMS:   "SMS",
+	ListSMS:   "sms",
 }
 
 // An Org identifies one of the SERV volunteer organizations.
@@ -332,12 +333,12 @@ var AllOrgs = []Org{OrgAdmin2, OrgCERTD2, OrgCERTT2, OrgListos, OrgSARES2, OrgSN
 
 // OrgNames gives the display names of the Orgs.
 var OrgNames = map[Org]string{
-	OrgAdmin2: "Admin",
-	OrgCERTD2: "CERT Deployment",
-	OrgCERTT2: "CERT Training",
-	OrgListos: "Listos",
-	OrgSARES2: "SARES",
-	OrgSNAP2:  "SNAP",
+	OrgAdmin2: "admin",
+	OrgCERTD2: "cert-d",
+	OrgCERTT2: "cert-t",
+	OrgListos: "listos",
+	OrgSARES2: "sares",
+	OrgSNAP2:  "snap",
 }
 
 // MembersCanViewContactInfo returns whether Members of the receiver Org can
@@ -493,9 +494,9 @@ var AllPrivLevels = []PrivLevel{PrivStudent, PrivMember2, PrivLeader}
 
 // PrivLevelNames gives the display names of the privilege levels.
 var PrivLevelNames = map[PrivLevel]string{
-	PrivStudent: "Student",
-	PrivMember2: "Member",
-	PrivLeader:  "Leader",
+	PrivStudent: "student",
+	PrivMember2: "member",
+	PrivLeader:  "leader",
 }
 
 // A Privilege is something holders of a role get to do to a target group.  The

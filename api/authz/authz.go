@@ -26,12 +26,12 @@ func UpdateAuthz(tx *store.Tx) {
 	// Clean out the computed data so that it can be recomputed.
 	for _, r := range tx.FetchRoles() {
 		for irid, direct := range r.Implies {
-			if !direct {
+			if !direct || tx.FetchRole(irid) == nil {
 				delete(r.Implies, irid)
 			}
 		}
 		for lid, rtl := range r.Lists {
-			if rtl == 0 {
+			if rtl == 0 || tx.FetchList(lid) == nil {
 				delete(r.Lists, lid)
 			}
 		}
@@ -48,7 +48,7 @@ func UpdateAuthz(tx *store.Tx) {
 	}
 	for _, p := range tx.FetchPeople() {
 		for r, direct := range p.Roles {
-			if !direct || tx.FetchRole(r).ImplicitOnly {
+			if role := tx.FetchRole(r); role == nil || role.ImplicitOnly || !direct {
 				delete(p.Roles, r)
 			}
 		}
@@ -104,9 +104,6 @@ func UpdateAuthz(tx *store.Tx) {
 				l := tx.FetchList(lid)
 				if rtl.Sender() {
 					l.People[p.ID] |= model.ListSender
-				}
-				if l.People[p.ID]&model.ListUnsubscribed != 0 {
-					continue
 				}
 				switch rtl.SubModel() {
 				case model.ListAllowSub:

@@ -39,6 +39,15 @@ const router = createRouter({
           component: () => import('./pages/admin/GroupEdit.vue'),
         },
         {
+          path: 'lists',
+          component: () => import('./pages/admin/ListsList.vue'),
+        },
+        {
+          name: 'lists-lid',
+          path: 'lists/:lid',
+          component: () => import('./pages/admin/ListEdit.vue'),
+        },
+        {
           path: 'roles',
           component: () => import('./pages/admin/RolesList.vue'),
         },
@@ -46,6 +55,15 @@ const router = createRouter({
           name: 'roles-rid',
           path: 'roles/:rid',
           component: () => import('./pages/admin/RoleEdit.vue'),
+        },
+        {
+          path: 'roles2',
+          component: () => import('./pages/admin/Roles2List.vue'),
+        },
+        {
+          name: 'roles2-rid',
+          path: 'roles2/:rid',
+          component: () => import('./pages/admin/Role2Edit.vue'),
         },
       ],
     },

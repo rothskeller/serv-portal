@@ -12,6 +12,7 @@ import SFFile from './base/SFFile.vue'
 import SFInput from './base/SFInput.vue'
 import SForm from './base/SForm.vue'
 import SFPassword from './base/SFPassword.vue'
+import SFRadioGroup from './base/SFRadioGroup.vue'
 import SFSelect from './base/SFSelect.vue'
 import SFTextArea from './base/SFTextArea.vue'
 import SFTimeRange from './base/SFTimeRange.vue'
@@ -38,6 +39,7 @@ export {
   SFInput,
   SForm,
   SFPassword,
+  SFRadioGroup,
   SFSelect,
   SFTextArea,
   SFTimeRange,

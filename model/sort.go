@@ -79,7 +79,7 @@ func (rs RoleSort) Less(i, j int) bool { return rs[i].Name < rs[j].Name }
 func (rs RoleSort) Swap(i, j int)      { rs[i], rs[j] = rs[j], rs[i] }
 
 func (rs Roles) Len() int           { return len(rs.Roles) }
-func (rs Roles) Less(i, j int) bool { return rs.Roles[i].Name < rs.Roles[j].Name }
+func (rs Roles) Less(i, j int) bool { return rs.Roles[i].Priority < rs.Roles[j].Priority }
 func (rs Roles) Swap(i, j int)      { rs.Roles[i], rs.Roles[j] = rs.Roles[j], rs.Roles[i] }
 
 func (vs Venues) Len() int           { return len(vs.Venues) }
