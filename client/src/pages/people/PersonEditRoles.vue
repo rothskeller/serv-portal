@@ -32,7 +32,7 @@ Modal(ref='modal')
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watch } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import axios from '../../plugins/axios'
 import { Modal, SForm, SFCheckGroup, SFSelect, SSpinner } from '../../base'
 
@@ -87,19 +87,24 @@ export default defineComponent({
   setup(props) {
     const modal = ref(null as any)
     function show() {
+      loadData()
       return modal.value.show()
     }
 
     // Load the form data.
     const orgs = ref([] as Array<GetPersonRolesOrg>)
     const org = ref('')
-    axios.get<Array<GetPersonRolesOrg>>(`/api/people/${props.pid}/roles`).then((resp) => {
-      orgs.value = resp.data
+    async function loadData() {
+      orgs.value = []
+      org.value = ''
+      orgs.value = (
+        await axios.get<Array<GetPersonRolesOrg>>(`/api/people/${props.pid}/roles`)
+      ).data
       orgs.value.forEach((o) => {
         o.fmtOrg = fmtOrg[o.org]
       })
       org.value = orgs.value[0].org
-    })
+    }
 
     // Handle the changing of the orgs.
     const orgRoleOptions = ref([] as Array<RoleOption>)
@@ -142,8 +147,6 @@ export default defineComponent({
             })
         }
       })
-      console.log('toSetDirectly', toSetDirectly)
-      console.log('toSetIndirectly', toSetIndirectly)
       // Reset the roles appropriately.
       orgs.value.forEach((o) => {
         o.roles.forEach((r) => {

@@ -100,6 +100,9 @@ func UpdateAuthz(tx *store.Tx) {
 				if rtl.Sender() {
 					l.People[p.ID] |= model.ListSender
 				}
+				if l.People[p.ID]&model.ListUnsubscribed != 0 {
+					continue
+				}
 				switch rtl.SubModel() {
 				case model.ListAllowSub:
 					if manualSubs[lid][p.ID] {
@@ -140,4 +143,19 @@ func addIndirectImplications(tx *store.Tx, r *model.Role2, seen map[model.Role2I
 		}
 	}
 	seen[r.ID] = true
+}
+
+// CanSubscribe returns a map of which lists the specified person is allowed to
+// subscribe to.
+func CanSubscribe(tx *store.Tx, person *model.Person) (can map[model.ListID]bool) {
+	can = make(map[model.ListID]bool)
+	for rid := range person.Roles {
+		role := tx.FetchRole(rid)
+		for lid, rtl := range role.Lists {
+			if rtl.SubModel() != model.ListNoSub {
+				can[lid] = true
+			}
+		}
+	}
+	return can
 }

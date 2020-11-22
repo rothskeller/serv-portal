@@ -1,0 +1,1 @@
+import{d as e,_ as t,W as a,x as o,c as r,o as s}from"./index.3ad8832d.js";var n=e({setup(){const e=o();t.post("/api/logout").then((()=>{a(),e.replace("/")}))}});const d={style:{margin:"1.5rem 0.75rem"}};n.render=function(e,t,a,o,n,i){return s(),r("div",d,"Logging out...")};export default n;

@@ -123,6 +123,29 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.String(role.Title)
 	}
 	out.RawByte(']')
+	if r.Person == person || r.Auth.IsWebmaster() {
+		canSubscribe := authz.CanSubscribe(r.Tx, person)
+		if len(canSubscribe) != 0 {
+			out.RawString(`,"lists":[`)
+			var first = true
+			for _, l := range r.Tx.FetchLists() {
+				if lps, ok := l.People[person.ID]; !ok || lps&model.ListSubscribed == 0 {
+					continue
+				}
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				if l.Type == model.ListEmail {
+					out.String(l.Name + "@SunnyvaleSERV.org")
+				} else {
+					out.String("SMS: " + l.Name)
+				}
+			}
+			out.RawByte(']')
+		}
+	}
 	if r.Auth.May(model.PermViewClearances) {
 		out.RawString(`,"identification":[`)
 		first = true
@@ -519,6 +542,115 @@ func needBackgroundCheck(r *util.Request, p *model.Person, g *model.Group) bool 
 		}
 	}
 	return false
+}
+
+// GetPersonLists handles GET /api/people/${id}/lists requests.
+func GetPersonLists(r *util.Request, idstr string) error {
+	var (
+		person       *model.Person
+		canSubscribe map[model.ListID]bool
+		out          jwriter.Writer
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if person != r.Person && !r.Auth.IsWebmaster() {
+		return util.Forbidden
+	}
+	if canSubscribe = authz.CanSubscribe(r.Tx, person); len(canSubscribe) == 0 {
+		return util.Forbidden
+	}
+	out.RawByte('[')
+	var first = true
+	for _, list := range r.Tx.FetchLists() {
+		if !canSubscribe[list.ID] {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(list.ID))
+		out.RawString(`,"name":`)
+		if list.Type == model.ListEmail {
+			out.String(list.Name + "@SunnyvaleSERV.org")
+		} else {
+			out.String("SMS: " + list.Name)
+		}
+		lps := list.People[person.ID]
+		out.RawString(`,"subscribed":`)
+		out.Bool(lps&model.ListSubscribed != 0)
+		var firstWarn = true
+		out.RawString(`,"subWarn":[`)
+		for rid := range person.Roles {
+			role := r.Tx.FetchRole(rid)
+			if role.Lists[list.ID].SubModel() == model.ListWarnUnsub {
+				if firstWarn {
+					firstWarn = false
+				} else {
+					out.RawByte(',')
+				}
+				if role.Title != "" {
+					out.String(role.Title)
+				} else {
+					out.String(role.Name)
+				}
+			}
+		}
+		out.RawString(`]}`)
+	}
+	out.RawByte(']')
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+// PostPersonLists handles POST /api/people/${id}/lists requests.
+func PostPersonLists(r *util.Request, idstr string) error {
+	var (
+		person       *model.Person
+		canSubscribe map[model.ListID]bool
+		subscribed   = make(map[model.ListID]bool)
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if person != r.Person && !r.Auth.IsWebmaster() {
+		return util.Forbidden
+	}
+	if canSubscribe = authz.CanSubscribe(r.Tx, person); len(canSubscribe) == 0 {
+		return util.Forbidden
+	}
+	r.ParseMultipartForm(1048576)
+	for _, lidstr := range r.Form["list"] {
+		list := r.Tx.FetchList(model.ListID(util.ParseID(lidstr)))
+		if list == nil {
+			return errors.New("nonexistent list")
+		}
+		if !canSubscribe[list.ID] {
+			return errors.New("forbidden list")
+		}
+		subscribed[list.ID] = true
+	}
+	for lid := range canSubscribe {
+		list := r.Tx.FetchList(lid)
+		if subscribed[list.ID] && list.People[person.ID]&model.ListSubscribed == 0 {
+			r.Tx.WillUpdateList(list)
+			list.People[person.ID] = (list.People[person.ID] &^ model.ListUnsubscribed) | model.ListSubscribed
+			r.Tx.UpdateList(list)
+		}
+		if !subscribed[list.ID] && list.People[person.ID]&model.ListUnsubscribed == 0 {
+			r.Tx.WillUpdateList(list)
+			list.People[person.ID] = (list.People[person.ID] &^ model.ListSubscribed) | model.ListUnsubscribed
+			r.Tx.UpdateList(list)
+		}
+	}
+	authz.UpdateAuthz(r.Tx)
+	r.Tx.Commit()
+	return nil
 }
 
 // GetPersonRoles handles GET /api/people/${id}/roles requests.

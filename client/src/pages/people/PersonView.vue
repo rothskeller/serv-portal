@@ -107,6 +107,12 @@ PersonView displays the information about a person, in non-editable form.
     div(v-if="person.canEditRoles2")
       SButton(variant='secondary', small, @click="onEditRoles") Edit
     PersonEditRoles(ref='editRolesModal', :pid='person.id')
+  #person-view-lists(v-if="me.webmaster && person.lists")
+    div Lists:
+    div(v-for="l in person.lists" v-text="l")
+    div(v-if="!person.lists.length") None
+    div: SButton(variant='secondary', small, @click='onEditLists') Edit
+    PersonEditLists(ref='editListsModal', :pid='person.id')
 </template>
 
 <script lang="ts">
@@ -115,6 +121,7 @@ import { useRoute } from 'vue-router'
 import axios from '../../plugins/axios'
 import { LoginData } from '../../plugins/login'
 import { SButton, SSpinner } from '../../base'
+import PersonEditLists from './PersonEditLists.vue'
 import PersonEditRoles from './PersonEditRoles.vue'
 
 export type GetPersonAddress = {
@@ -162,6 +169,7 @@ export interface GetPersonPersonBase {
   workPhone?: string
   roles: Array<GetPersonRole>
   roles2: Array<string>
+  lists?: Array<string>
   canEdit: boolean
   canEditRoles2: boolean
   canHours: boolean
@@ -180,7 +188,7 @@ interface GetPerson {
 }
 
 export default defineComponent({
-  components: { PersonEditRoles, SButton, SSpinner },
+  components: { PersonEditLists, PersonEditRoles, SButton, SSpinner },
   props: {
     onLoadPerson: { type: Function, required: true },
   },
@@ -197,7 +205,12 @@ export default defineComponent({
       if (!(await editRolesModal.value.show())) return
       person.value = (await axios.get<GetPerson>(`/api/people/${route.params.id}`)).data.person
     }
-    return { editRolesModal, me, onEditRoles, person }
+    const editListsModal = ref(null as any)
+    async function onEditLists() {
+      if (!(await editListsModal.value.show())) return
+      person.value = (await axios.get<GetPerson>(`/api/people/${route.params.id}`)).data.person
+    }
+    return { editListsModal, editRolesModal, me, onEditLists, onEditRoles, person }
   },
 })
 </script>

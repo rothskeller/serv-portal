@@ -87,7 +87,6 @@ export default defineComponent({
     function onChange({ target: { checked: nc } }: { target: HTMLInputElement }, option: any) {
       if (nc) checked.value.add(option[props.valueKey])
       else checked.value.delete(option[props.valueKey])
-      console.log('onChange', checked.value)
       emit('update:modelValue', checked.value)
     }
 

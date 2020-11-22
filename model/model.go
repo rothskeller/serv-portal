@@ -255,7 +255,6 @@ type ListPersonStatus uint8
 // Values for ListPersonStatus.
 const (
 	// ListSubscribed indicates that the person is subscribed to the list.
-	// It may be overridden if ListUnsubscribed is also set.
 	ListSubscribed ListPersonStatus = 1 << iota
 	// ListUnsubscribed indicates that the person has unsubscribed from the
 	// list.
