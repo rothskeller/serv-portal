@@ -648,7 +648,6 @@ func PostPersonLists(r *util.Request, idstr string) error {
 			r.Tx.UpdateList(list)
 		}
 	}
-	authz.UpdateAuthz(r.Tx)
 	r.Tx.Commit()
 	return nil
 }
