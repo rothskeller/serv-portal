@@ -19,7 +19,11 @@ label.form-item-label(v-text='label')
       :disabled='isDisabled(o)',
       @change='onChange($event, o)'
     )
-    label.sfcheckgroup-check-label(:for='`${id}-${i}`', v-text='o[labelKey]')
+    label.sfcheckgroup-check-label(
+      :for='`${id}-${i}`',
+      :class='{ "sfcheckgroup-check-label-disabled": isDisabled(o) }',
+      v-text='o[labelKey]'
+    )
 .form-item-help.sfcheckgroup-helpbox
   .form-item-error-text(v-if='error', v-text='error')
   .form-item-help-text(v-if='help', v-text='help')
@@ -83,6 +87,7 @@ export default defineComponent({
     function onChange({ target: { checked: nc } }: { target: HTMLInputElement }, option: any) {
       if (nc) checked.value.add(option[props.valueKey])
       else checked.value.delete(option[props.valueKey])
+      console.log('onChange', checked.value)
       emit('update:modelValue', checked.value)
     }
 
@@ -137,6 +142,9 @@ export default defineComponent({
     content: '';
     background: no-repeat 50%/50% 50%;
   }
+}
+.sfcheckgroup-check-label-disabled {
+  color: #888;
 }
 .sfcheckgroup-check-input:not(:disabled):active ~ .sfcheckgroup-check-label:before {
   color: #fff;

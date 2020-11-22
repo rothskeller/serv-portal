@@ -71,7 +71,8 @@ export default defineComponent({
     // Set our form layout based on our container size.
     const size: Size = provideSize()
     const layoutClass = computed(() => {
-      if (props.dialog) return 'form-dialog'
+      if (props.dialog && size.w >= 30) return 'form-dialog-m'
+      if (props.dialog) return 'form-dialog-xs'
       if (size.w >= 51) return 'form-l'
       if (size.w >= 30) return 'form-m'
       if (size.w >= 20) return 'form-s'
@@ -145,7 +146,8 @@ export default defineComponent({
 .form {
   display: grid;
   margin: 1.5rem 0.75rem;
-  &.form-dialog {
+  &.form-dialog-m,
+  &.form-dialog-xs {
     margin: 0;
   }
 }
@@ -154,6 +156,7 @@ export default defineComponent({
   font-weight: 500;
   padding: 0.75rem;
   color: #fff;
+  margin-bottom: 1.5rem;
 }
 .form-title-primary {
   background-color: #007bff;
@@ -219,6 +222,32 @@ export default defineComponent({
     max-width: 30rem;
   }
 }
+.form-dialog-m {
+  grid: auto-flow / min-content 1fr;
+  & .form-item-label {
+    grid-row-end: span 2;
+    margin-left: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  & .form-item-input {
+    grid-column: 2;
+    margin-right: 0.75rem;
+  }
+  & .form-item-input2 {
+    grid-column: 2;
+    margin-bottom: 1rem;
+    margin-right: 0.75rem;
+  }
+  & .form-item-help {
+    grid-column: 2;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+    margin-right: 0.75rem;
+  }
+  & .form-item {
+    grid-column: 1 / 3;
+  }
+}
 .form-s {
   grid: auto-flow / 20rem;
   & .form-item-input2 {
@@ -239,12 +268,15 @@ export default defineComponent({
     margin-bottom: 1rem;
   }
 }
-.form-dialog {
+.form-dialog-xs {
   grid: auto-flow / 100%;
   & .form-item-label {
     margin: 0 0.75rem;
   }
   & .form-item-input {
+    margin: 0 0.75rem;
+  }
+  & .form-item-input2 {
     margin: 0 0.75rem;
   }
   & .form-item-help {
@@ -266,7 +298,8 @@ export default defineComponent({
   & .sbtn {
     margin: 0 0 0.5rem 0.5rem;
   }
-  .form-dialog & {
+  .form-dialog-m &,
+  .form-dialog-xs & {
     justify-content: flex-end;
     padding: 0.75rem 0.25rem 0.25rem 0.75rem;
     border-top: 1px solid #dee2e6;

@@ -11,6 +11,7 @@ import (
 	"github.com/mailru/easyjson/jwriter"
 
 	"sunnyvaleserv.org/portal/api/authn"
+	"sunnyvaleserv.org/portal/api/authz"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -107,6 +108,19 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.Bool(roles[role.ID])
 		}
 		out.RawByte('}')
+	}
+	out.RawString(`],"roles2":[`)
+	first = true
+	for _, role := range r.Tx.FetchRoles() {
+		if !person.Roles[role.ID] || role.Title == "" {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.String(role.Title)
 	}
 	out.RawByte(']')
 	if r.Auth.May(model.PermViewClearances) {
@@ -269,6 +283,8 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
+	out.RawString(`,"canEditRoles2":`)
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.Username != "admin")
 	out.RawString(`,"canHours":`)
 	out.Bool(person.ID == r.Person.ID || r.Auth.IsWebmaster())
 	out.RawString(`,"noEmail":`)
@@ -503,4 +519,125 @@ func needBackgroundCheck(r *util.Request, p *model.Person, g *model.Group) bool 
 		}
 	}
 	return false
+}
+
+// GetPersonRoles handles GET /api/people/${id}/roles requests.
+func GetPersonRoles(r *util.Request, idstr string) error {
+	var (
+		person *model.Person
+		out    jwriter.Writer
+	)
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if person.Username == "admin" {
+		return util.Forbidden
+	}
+	out.RawByte('[')
+	var first = true
+	for _, org := range model.AllOrgs {
+		if person.Orgs[org].PrivLevel != model.PrivLeader && person.Orgs[model.OrgAdmin2].PrivLevel != model.PrivLeader {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"org":`)
+		out.String(model.OrgNames[org])
+		out.RawString(`,"roles":[`)
+		var firstRole = true
+		for _, role := range r.Tx.FetchRoles() {
+			if role.Org != org {
+				continue
+			}
+			if firstRole {
+				firstRole = false
+			} else {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(role.ID))
+			out.RawString(`,"name":`)
+			if role.Title != "" {
+				out.String(role.Title)
+			} else {
+				out.String(role.Name)
+			}
+			direct, held := person.Roles[role.ID]
+			out.RawString(`,"held":`)
+			out.Bool(held)
+			out.RawString(`,"direct":`)
+			out.Bool(direct)
+			if role.ImplicitOnly {
+				out.RawString(`,"implicitOnly":true`)
+			}
+			out.RawString(`,"implies":[`)
+			var firstImplies = true
+			for irid := range role.Implies {
+				if firstImplies {
+					firstImplies = false
+				} else {
+					out.RawByte(',')
+				}
+				out.Int(int(irid))
+			}
+			out.RawString(`]}`)
+		}
+		out.RawString(`]}`)
+	}
+	out.RawByte(']')
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+// PostPersonRoles handles POST /api/people/${id}/roles requests.
+func PostPersonRoles(r *util.Request, idstr string) error {
+	var person *model.Person
+
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if person.Username == "admin" {
+		return util.Forbidden
+	}
+	r.Tx.WillUpdatePerson(person)
+	for rid, direct := range person.Roles {
+		if !direct {
+			delete(person.Roles, rid)
+			continue
+		}
+		role := r.Tx.FetchRole(rid)
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin2].PrivLevel < model.PrivLeader {
+			continue
+		}
+		delete(person.Roles, rid)
+	}
+	r.ParseMultipartForm(1048576)
+	for _, ridstr := range r.Form["role"] {
+		role := r.Tx.FetchRole(model.Role2ID(util.ParseID(ridstr)))
+		if role == nil {
+			return errors.New("invalid role")
+		}
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin2].PrivLevel < model.PrivLeader {
+			return errors.New("forbidden role")
+		}
+		person.Roles[role.ID] = true
+	}
+	if err := ValidatePerson(r.Tx, person, r.Auth.RolesP(person.ID)); err != nil {
+		return err
+	}
+	r.Tx.UpdatePerson(person)
+	authz.UpdateAuthz(r.Tx)
+	r.Tx.Commit()
+	return nil
 }

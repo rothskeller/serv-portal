@@ -473,6 +473,17 @@ func (p *Permission) UnmarshalEasyJSON(l *jlexer.Lexer) {
 // A PersonID is a positive integer uniquely identifying a Person.
 type PersonID int
 
+// HasPrivLevel returns whether the receiver person has at least the specified
+// privilege level on any org.
+func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {
+	for _, org := range AllOrgs {
+		if p.Orgs[org].PrivLevel >= privLevel {
+			return true
+		}
+	}
+	return false
+}
+
 // A PrivLevel is a privilege level for membership in an Org.
 type PrivLevel uint8
 

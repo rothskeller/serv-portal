@@ -100,13 +100,22 @@ PersonView displays the information about a person, in non-editable form.
     div(v-if='person.noEmail && person.noText') from all emails and text messages
     div(v-else-if='person.noEmail') from all emails
     div(v-else) from all text messages
+  #person-view-roles2(v-if="me.webmaster")
+    div Roles:
+    div(v-for="r in person.roles2" v-text="r")
+    div(v-if="!person.roles2.length") None
+    div(v-if="person.canEditRoles2")
+      SButton(variant='secondary', small, @click="onEditRoles") Edit
+    PersonEditRoles(ref='editRolesModal', :pid='person.id')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, inject, Ref, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '../../plugins/axios'
-import { SSpinner } from '../../base'
+import { LoginData } from '../../plugins/login'
+import { SButton, SSpinner } from '../../base'
+import PersonEditRoles from './PersonEditRoles.vue'
 
 export type GetPersonAddress = {
   address?: string
@@ -152,7 +161,9 @@ export interface GetPersonPersonBase {
   homePhone?: string
   workPhone?: string
   roles: Array<GetPersonRole>
+  roles2: Array<string>
   canEdit: boolean
+  canEditRoles2: boolean
   canHours: boolean
   noEmail: boolean
   noText: boolean
@@ -169,18 +180,24 @@ interface GetPerson {
 }
 
 export default defineComponent({
-  components: { SSpinner },
+  components: { PersonEditRoles, SButton, SSpinner },
   props: {
     onLoadPerson: { type: Function, required: true },
   },
   setup(props) {
+    const me = inject<Ref<LoginData>>('me')!
     const route = useRoute()
     const person = ref(null as null | GetPersonPerson)
     axios.get<GetPerson>(`/api/people/${route.params.id}`).then((resp) => {
       person.value = resp.data.person
       props.onLoadPerson(person.value)
     })
-    return { person }
+    const editRolesModal = ref(null as any)
+    async function onEditRoles() {
+      if (!(await editRolesModal.value.show())) return
+      person.value = (await axios.get<GetPerson>(`/api/people/${route.params.id}`)).data.person
+    }
+    return { editRolesModal, me, onEditRoles, person }
   },
 })
 </script>
