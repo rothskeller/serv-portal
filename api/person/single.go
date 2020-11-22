@@ -539,7 +539,8 @@ func GetPersonRoles(r *util.Request, idstr string) error {
 	out.RawByte('[')
 	var first = true
 	for _, org := range model.AllOrgs {
-		if person.Orgs[org].PrivLevel != model.PrivLeader && person.Orgs[model.OrgAdmin2].PrivLevel != model.PrivLeader {
+		if r.Person.Orgs[org].PrivLevel != model.PrivLeader &&
+			r.Person.Orgs[model.OrgAdmin2].PrivLevel != model.PrivLeader {
 			continue
 		}
 		if first {
