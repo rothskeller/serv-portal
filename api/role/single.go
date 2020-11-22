@@ -185,7 +185,7 @@ func GetRole2(r *util.Request, idstr string) error {
 	out.RawString(`],"impliable":[`)
 	first = true
 	for _, ir := range r.Tx.FetchRoles() {
-		if ir == role {
+		if ir == role || ir.ID == model.Webmaster {
 			continue
 		}
 		if _, ok := ir.Implies[role.ID]; ok {

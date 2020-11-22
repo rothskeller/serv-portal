@@ -36,6 +36,9 @@ func ValidateRole(auth *authz.Authorizer, role *model.Role) error {
 func ValidateRole2(tx *store.Tx, role *model.Role2) error {
 	var maxprio int
 
+	if role.ID == model.Webmaster {
+		return errors.New("webmaster role cannot be changed")
+	}
 	if role.Name = strings.TrimSpace(role.Name); role.Name == "" {
 		return errors.New("missing name")
 	}
@@ -58,6 +61,9 @@ func ValidateRole2(tx *store.Tx, role *model.Role2) error {
 	for irid, direct := range role.Implies {
 		if !direct {
 			continue // they'll get recalculated later
+		}
+		if irid == model.Webmaster {
+			return errors.New("webmaster role cannot be implied")
 		}
 		ir := tx.FetchRole(irid)
 		if ir == nil {

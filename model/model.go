@@ -607,6 +607,9 @@ const (
 // A Role2ID identifies a Role.
 type Role2ID int
 
+// Webmaster is a role with special treatment.  It always has ID 1.
+const Webmaster Role2ID = 1
+
 // A RoleToList is a bitmask indicating the relationship between a list and the
 // people holding a role.  The lower nibble contains the ListSubModel value and
 // the upper nibble contains the Sender flag.
