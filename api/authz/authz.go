@@ -73,24 +73,19 @@ func UpdateAuthz(tx *store.Tx) {
 	}
 	// Fill in org memberships of people, and people list of each role.
 	for _, p := range tx.FetchPeople() {
-		var roles = make([]*model.Role2, 0, len(p.Roles))
-		for rid := range p.Roles {
+		var roles = model.Roles{Roles: make([]*model.Role2, 0, len(p.Roles))}
+		for rid, direct := range p.Roles {
 			r := tx.FetchRole(rid)
-			roles = append(roles, r)
-			if r.PrivLevel > model.PrivNone && p.Orgs[r.Org].PrivLevel == model.PrivNone {
-				r.People = append(r.People, p.ID)
+			r.People = append(r.People, p.ID)
+			if direct {
+				roles.Roles = append(roles.Roles, r)
 			}
 			if p.Orgs[r.Org].PrivLevel < r.PrivLevel {
 				p.Orgs[r.Org].PrivLevel = r.PrivLevel
 			}
 		}
-		sort.Slice(roles, func(i, j int) bool {
-			if roles[i].Org != roles[j].Org {
-				return roles[i].Org < roles[j].Org
-			}
-			return roles[i].Priority < roles[j].Priority
-		})
-		for _, r := range roles {
+		sort.Sort(roles)
+		for _, r := range roles.Roles {
 			if p.Orgs[r.Org].Title == "" && r.Title != "" {
 				p.Orgs[r.Org].Title = r.Title
 			}
