@@ -352,7 +352,6 @@ func (a *Authorizer) PeopleR(role model.RoleID) (people []model.PersonID) {
 	for person := 0; person < int(a.numPeople); person++ {
 		if a.holdsPR(model.PersonID(person), role) {
 			people = append(people, model.PersonID(person))
-			break
 		}
 	}
 	return people
