@@ -104,6 +104,11 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 			}
 		}
 	}
+	for r, direct := range p.Roles {
+		if direct {
+			tx.entry.Change("add person [%d] role %q [%d]", p.ID, tx.FetchRole(r).Name, r)
+		}
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -322,6 +327,36 @@ NOTES2:
 			tx.entry.Change("remove person %q [%d] identification %s", p.InformalName, p.ID, model.IdentTypeNames[t])
 		} else if op.Identification&t == 0 && p.Identification&t != 0 {
 			tx.entry.Change("add person %q [%d] identification %s", p.InformalName, p.ID, model.IdentTypeNames[t])
+		}
+	}
+	for r, direct := range p.Roles {
+		if !direct {
+			continue
+		}
+		var found = false
+		for or, odirect := range op.Roles {
+			if r == or && odirect {
+				found = true
+				break
+			}
+		}
+		if !found {
+			tx.entry.Change("add person %q [%d] role %q [%d]", p.InformalName, p.ID, tx.FetchRole(r).Name, r)
+		}
+	}
+	for or, odirect := range op.Roles {
+		if !odirect {
+			continue
+		}
+		var found = false
+		for r, direct := range p.Roles {
+			if r == or && direct {
+				found = true
+				break
+			}
+		}
+		if !found {
+			tx.entry.Change("remove person %q [%d] role %q [%d]", p.InformalName, p.ID, tx.FetchRole(or).Name, or)
 		}
 	}
 	tx.Tx.UpdatePerson(p)

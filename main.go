@@ -22,6 +22,7 @@ import (
 	"sunnyvaleserv.org/portal/api/event"
 	"sunnyvaleserv.org/portal/api/folder"
 	"sunnyvaleserv.org/portal/api/group"
+	"sunnyvaleserv.org/portal/api/list"
 	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/api/report"
 	"sunnyvaleserv.org/portal/api/role"
@@ -128,6 +129,14 @@ func router(r *util.Request) error {
 		return group.GetGroup(r, c[2])
 	case r.Method == "POST" && c[1] == "groups" && c[2] != "" && c[3] == "":
 		return group.PostGroup(r, c[2])
+	case r.Method == "GET" && c[1] == "lists" && c[2] == "":
+		return list.GetLists(r)
+	case r.Method == "GET" && c[1] == "lists" && c[2] != "" && c[3] == "":
+		return list.GetList(r, c[2])
+	case r.Method == "POST" && c[1] == "lists" && c[2] != "" && c[3] == "":
+		return list.PostList(r, c[2])
+	case r.Method == "DELETE" && c[1] == "lists" && c[2] != "" && c[3] == "":
+		return list.DeleteList(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] == "":
 		return person.GetPeople(r)
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "":
@@ -144,6 +153,16 @@ func router(r *util.Request) error {
 		return role.GetRole(r, c[2])
 	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
 		return role.PostRole(r, c[2])
+	case r.Method == "GET" && c[1] == "roles2" && c[2] == "":
+		return role.GetRoles2(r)
+	case r.Method == "POST" && c[1] == "roles2" && c[2] == "":
+		return role.PostRoles2(r)
+	case r.Method == "GET" && c[1] == "roles2" && c[2] != "" && c[3] == "":
+		return role.GetRole2(r, c[2])
+	case r.Method == "POST" && c[1] == "roles2" && c[2] != "" && c[3] == "":
+		return role.PostRole2(r, c[2])
+	case r.Method == "DELETE" && c[1] == "roles2" && c[2] != "" && c[3] == "":
+		return role.DeleteRole2(r, c[2])
 	case r.Method == "GET" && c[1] == "search" && c[2] == "":
 		return search.GetSearch(r)
 	case r.Method == "GET" && c[1] == "sms" && c[2] == "":

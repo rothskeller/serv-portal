@@ -78,6 +78,8 @@ func main() {
 		loadFolders(tx, in)
 	case strings.HasPrefix("groups", os.Args[1]):
 		loadGroups(tx, in)
+	case strings.HasPrefix("lists", os.Args[1]):
+		loadLists(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		loadPeople(tx, in)
 	case strings.HasPrefix("roles", os.Args[1]):
@@ -88,6 +90,8 @@ func main() {
 		loadTextMessages(tx, in)
 	case strings.HasPrefix("venues", os.Args[1]):
 		loadVenues(tx, in)
+	case os.Args[1] == "roles2":
+		loadRoles2(tx, in)
 	default:
 		usage()
 	}

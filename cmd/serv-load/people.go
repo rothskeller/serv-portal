@@ -9,6 +9,7 @@ import (
 
 	"github.com/mailru/easyjson/jlexer"
 
+	"sunnyvaleserv.org/portal/api/authz"
 	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
@@ -26,6 +27,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 		in.Delim('{')
 		if in.Error() == io.EOF {
 			auth.Save()
+			authz.UpdateAuthz(tx)
 			return
 		}
 		for !in.IsDelim('}') {
@@ -50,7 +52,11 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 						os.Exit(1)
 					}
 					tx.WillUpdatePerson(p)
-					*p = model.Person{ID: pid}
+					*p = model.Person{
+						ID:    pid,
+						Roles: make(map[model.Role2ID]bool),
+						Orgs:  make([]model.OrgMembership, model.NumOrgs),
+					}
 				}
 			case "username":
 				p.Username = in.String()
@@ -247,6 +253,44 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					}
 					if !found {
 						in.AddError(errors.New("invalid identification"))
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
+			case "roles2":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						var rid model.Role2ID
+						var direct bool
+
+						in.Delim('{')
+						for !in.IsDelim('}') {
+							key := in.UnsafeString()
+							in.WantColon()
+							if in.IsNull() {
+								in.Skip()
+								in.WantComma()
+								continue
+							}
+							switch key {
+							case "id":
+								rid = model.Role2ID(in.Int())
+							case "direct":
+								direct = in.Bool()
+							default:
+								in.SkipRecursive()
+							}
+							in.WantComma()
+						}
+						in.Delim('}')
+						if rid == 0 {
+							in.AddError(errors.New("missing id for role"))
+						} else if direct {
+							p.Roles[rid] = true
+						}
 					}
 					in.WantComma()
 				}

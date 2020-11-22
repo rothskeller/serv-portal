@@ -182,6 +182,10 @@ export default defineComponent({
     grid-column: 2;
     margin-bottom: 1rem;
   }
+  & .form-item-input2 {
+    grid-column: 2 / 4;
+    margin-bottom: 1rem;
+  }
   & .form-item-help {
     grid-column: 3;
     margin-left: 1rem;
@@ -201,6 +205,10 @@ export default defineComponent({
   & .form-item-input {
     grid-column: 2;
   }
+  & .form-item-input2 {
+    grid-column: 2;
+    margin-bottom: 1rem;
+  }
   & .form-item-help {
     grid-column: 2;
     margin-top: 0.25rem;
@@ -213,6 +221,9 @@ export default defineComponent({
 }
 .form-s {
   grid: auto-flow / 20rem;
+  & .form-item-input2 {
+    margin-bottom: 1rem;
+  }
   & .form-item-help {
     margin-top: 0.25rem;
     margin-bottom: 1rem;
@@ -220,6 +231,9 @@ export default defineComponent({
 }
 .form-xs {
   grid: auto-flow / 100%;
+  & .form-item-input2 {
+    margin-bottom: 1rem;
+  }
   & .form-item-help {
     margin-top: 0.25rem;
     margin-bottom: 1rem;

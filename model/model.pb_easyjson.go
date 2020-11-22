@@ -668,7 +668,397 @@ func (v *TextMessage) UnmarshalJSON(data []byte) error {
 func (v *TextMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson6578def1DecodeSunnyvaleservOrgPortalModel4(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *Role) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *Roles) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "roles":
+			if in.IsNull() {
+				in.Skip()
+				out.Roles = nil
+			} else {
+				in.Delim('[')
+				if out.Roles == nil {
+					if !in.IsDelim(']') {
+						out.Roles = make([]*Role2, 0, 8)
+					} else {
+						out.Roles = []*Role2{}
+					}
+				} else {
+					out.Roles = (out.Roles)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v13 *Role2
+					if in.IsNull() {
+						in.Skip()
+						v13 = nil
+					} else {
+						if v13 == nil {
+							v13 = new(Role2)
+						}
+						(*v13).UnmarshalEasyJSON(in)
+					}
+					out.Roles = append(out.Roles, v13)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in Roles) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if len(in.Roles) != 0 {
+		const prefix string = ",\"roles\":"
+		first = false
+		out.RawString(prefix[1:])
+		{
+			out.RawByte('[')
+			for v14, v15 := range in.Roles {
+				if v14 > 0 {
+					out.RawByte(',')
+				}
+				if v15 == nil {
+					out.RawString("null")
+				} else {
+					(*v15).MarshalEasyJSON(out)
+				}
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v Roles) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Roles) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *Roles) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Roles) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(l, v)
+}
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *Role2) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "id":
+			out.ID = Role2ID(in.Int())
+		case "name":
+			out.Name = string(in.String())
+		case "title":
+			out.Title = string(in.String())
+		case "org":
+			out.Org = Org(in.Uint8())
+		case "privLevel":
+			out.PrivLevel = PrivLevel(in.Uint8())
+		case "showRoster":
+			out.ShowRoster = bool(in.Bool())
+		case "implicitOnly":
+			out.ImplicitOnly = bool(in.Bool())
+		case "priority":
+			out.Priority = int(in.Int())
+		case "implies":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Implies = make(map[Role2ID]bool)
+				} else {
+					out.Implies = nil
+				}
+				for !in.IsDelim('}') {
+					key := Role2ID(in.IntStr())
+					in.WantColon()
+					var v16 bool
+					v16 = bool(in.Bool())
+					(out.Implies)[key] = v16
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
+		case "lists":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Lists = make(map[ListID]RoleToList)
+				} else {
+					out.Lists = nil
+				}
+				for !in.IsDelim('}') {
+					key := ListID(in.IntStr())
+					in.WantColon()
+					var v17 RoleToList
+					v17 = RoleToList(in.Uint8())
+					(out.Lists)[key] = v17
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
+		case "people":
+			if in.IsNull() {
+				in.Skip()
+				out.People = nil
+			} else {
+				in.Delim('[')
+				if out.People == nil {
+					if !in.IsDelim(']') {
+						out.People = make([]PersonID, 0, 8)
+					} else {
+						out.People = []PersonID{}
+					}
+				} else {
+					out.People = (out.People)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v18 PersonID
+					v18 = PersonID(in.Int())
+					out.People = append(out.People, v18)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in Role2) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.ID != 0 {
+		const prefix string = ",\"id\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Int(int(in.ID))
+	}
+	if in.Name != "" {
+		const prefix string = ",\"name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Name))
+	}
+	if in.Title != "" {
+		const prefix string = ",\"title\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Title))
+	}
+	if in.Org != 0 {
+		const prefix string = ",\"org\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Uint8(uint8(in.Org))
+	}
+	if in.PrivLevel != 0 {
+		const prefix string = ",\"privLevel\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Uint8(uint8(in.PrivLevel))
+	}
+	if in.ShowRoster {
+		const prefix string = ",\"showRoster\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.ShowRoster))
+	}
+	if in.ImplicitOnly {
+		const prefix string = ",\"implicitOnly\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.ImplicitOnly))
+	}
+	if in.Priority != 0 {
+		const prefix string = ",\"priority\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.Priority))
+	}
+	if len(in.Implies) != 0 {
+		const prefix string = ",\"implies\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('{')
+			v19First := true
+			for v19Name, v19Value := range in.Implies {
+				if v19First {
+					v19First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.IntStr(int(v19Name))
+				out.RawByte(':')
+				out.Bool(bool(v19Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	if len(in.Lists) != 0 {
+		const prefix string = ",\"lists\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('{')
+			v20First := true
+			for v20Name, v20Value := range in.Lists {
+				if v20First {
+					v20First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.IntStr(int(v20Name))
+				out.RawByte(':')
+				out.Uint8(uint8(v20Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	if len(in.People) != 0 {
+		const prefix string = ",\"people\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v21, v22 := range in.People {
+				if v21 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v22))
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v Role2) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Role2) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *Role2) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Role2) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(l, v)
+}
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *Role) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -709,7 +1099,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *R
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in Role) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in Role) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -775,27 +1165,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v Role) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Role) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Role) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Role) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *PersonNote) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *PersonNote) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -830,7 +1220,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *P
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in PersonNote) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in PersonNote) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -866,27 +1256,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v PersonNote) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PersonNote) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PersonNote) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PersonNote) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *Person) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *Person) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -968,17 +1358,17 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 					out.Notes = (out.Notes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v14 *PersonNote
+					var v24 *PersonNote
 					if in.IsNull() {
 						in.Skip()
-						v14 = nil
+						v24 = nil
 					} else {
-						if v14 == nil {
-							v14 = new(PersonNote)
+						if v24 == nil {
+							v24 = new(PersonNote)
 						}
-						(*v14).UnmarshalEasyJSON(in)
+						(*v24).UnmarshalEasyJSON(in)
 					}
-					out.Notes = append(out.Notes, v14)
+					out.Notes = append(out.Notes, v24)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1006,11 +1396,11 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 				for !in.IsDelim('}') {
 					key := DSWClass(in.IntStr())
 					in.WantColon()
-					var v15 time.Time
+					var v25 time.Time
 					if data := in.Raw(); in.Ok() {
-						in.AddError((v15).UnmarshalJSON(data))
+						in.AddError((v25).UnmarshalJSON(data))
 					}
-					(out.DSWRegistrations)[key] = v15
+					(out.DSWRegistrations)[key] = v25
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -1024,17 +1414,60 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 				for !in.IsDelim('}') {
 					key := DSWClass(in.IntStr())
 					in.WantColon()
-					var v16 time.Time
+					var v26 time.Time
 					if data := in.Raw(); in.Ok() {
-						in.AddError((v16).UnmarshalJSON(data))
+						in.AddError((v26).UnmarshalJSON(data))
 					}
-					(out.DSWUntil)[key] = v16
+					(out.DSWUntil)[key] = v26
 					in.WantComma()
 				}
 				in.Delim('}')
 			}
 		case "identification":
 			out.Identification = IdentType(in.Uint8())
+		case "roles":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Roles = make(map[Role2ID]bool)
+				} else {
+					out.Roles = nil
+				}
+				for !in.IsDelim('}') {
+					key := Role2ID(in.IntStr())
+					in.WantColon()
+					var v27 bool
+					v27 = bool(in.Bool())
+					(out.Roles)[key] = v27
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
+		case "orgs":
+			if in.IsNull() {
+				in.Skip()
+				out.Orgs = nil
+			} else {
+				in.Delim('[')
+				if out.Orgs == nil {
+					if !in.IsDelim(']') {
+						out.Orgs = make([]OrgMembership, 0, 2)
+					} else {
+						out.Orgs = []OrgMembership{}
+					}
+				} else {
+					out.Orgs = (out.Orgs)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v28 OrgMembership
+					(v28).UnmarshalEasyJSON(in)
+					out.Orgs = append(out.Orgs, v28)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1045,7 +1478,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *P
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in Person) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in Person) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1160,14 +1593,14 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v19, v20 := range in.Notes {
-				if v19 > 0 {
+			for v31, v32 := range in.Notes {
+				if v31 > 0 {
 					out.RawByte(',')
 				}
-				if v20 == nil {
+				if v32 == nil {
 					out.RawString("null")
 				} else {
-					(*v20).MarshalEasyJSON(out)
+					(*v32).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1215,16 +1648,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v21First := true
-			for v21Name, v21Value := range in.DSWRegistrations {
-				if v21First {
-					v21First = false
+			v33First := true
+			for v33Name, v33Value := range in.DSWRegistrations {
+				if v33First {
+					v33First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.IntStr(int(v21Name))
+				out.IntStr(int(v33Name))
 				out.RawByte(':')
-				out.Raw((v21Value).MarshalJSON())
+				out.Raw((v33Value).MarshalJSON())
 			}
 			out.RawByte('}')
 		}
@@ -1236,16 +1669,16 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v22First := true
-			for v22Name, v22Value := range in.DSWUntil {
-				if v22First {
-					v22First = false
+			v34First := true
+			for v34Name, v34Value := range in.DSWUntil {
+				if v34First {
+					v34First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.IntStr(int(v22Name))
+				out.IntStr(int(v34Name))
 				out.RawByte(':')
-				out.Raw((v22Value).MarshalJSON())
+				out.Raw((v34Value).MarshalJSON())
 			}
 			out.RawByte('}')
 		}
@@ -1255,33 +1688,391 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(out *jwriter.Writer, in 
 		out.RawString(prefix)
 		out.Uint8(uint8(in.Identification))
 	}
+	if len(in.Roles) != 0 {
+		const prefix string = ",\"roles\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('{')
+			v35First := true
+			for v35Name, v35Value := range in.Roles {
+				if v35First {
+					v35First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.IntStr(int(v35Name))
+				out.RawByte(':')
+				out.Bool(bool(v35Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	{
+		const prefix string = ",\"orgs\":"
+		out.RawString(prefix)
+		if in.Orgs == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v36, v37 := range in.Orgs {
+				if v36 > 0 {
+					out.RawByte(',')
+				}
+				(v37).MarshalEasyJSON(out)
+			}
+			out.RawByte(']')
+		}
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
 func (v Person) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Person) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel7(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Person) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Person) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *Group) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *OrgMembership) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "privLevel":
+			out.PrivLevel = PrivLevel(in.Uint8())
+		case "title":
+			out.Title = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in OrgMembership) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.PrivLevel != 0 {
+		const prefix string = ",\"privLevel\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Uint8(uint8(in.PrivLevel))
+	}
+	if in.Title != "" {
+		const prefix string = ",\"title\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Title))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v OrgMembership) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v OrgMembership) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *OrgMembership) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *OrgMembership) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(l, v)
+}
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(in *jlexer.Lexer, out *Lists) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "lists":
+			if in.IsNull() {
+				in.Skip()
+				out.Lists = nil
+			} else {
+				in.Delim('[')
+				if out.Lists == nil {
+					if !in.IsDelim(']') {
+						out.Lists = make([]*List, 0, 8)
+					} else {
+						out.Lists = []*List{}
+					}
+				} else {
+					out.Lists = (out.Lists)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v38 *List
+					if in.IsNull() {
+						in.Skip()
+						v38 = nil
+					} else {
+						if v38 == nil {
+							v38 = new(List)
+						}
+						(*v38).UnmarshalEasyJSON(in)
+					}
+					out.Lists = append(out.Lists, v38)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(out *jwriter.Writer, in Lists) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if len(in.Lists) != 0 {
+		const prefix string = ",\"lists\":"
+		first = false
+		out.RawString(prefix[1:])
+		{
+			out.RawByte('[')
+			for v39, v40 := range in.Lists {
+				if v39 > 0 {
+					out.RawByte(',')
+				}
+				if v40 == nil {
+					out.RawString("null")
+				} else {
+					(*v40).MarshalEasyJSON(out)
+				}
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v Lists) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Lists) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *Lists) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Lists) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(l, v)
+}
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(in *jlexer.Lexer, out *List) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "id":
+			out.ID = ListID(in.Int())
+		case "type":
+			out.Type = ListType(in.Uint8())
+		case "name":
+			out.Name = string(in.String())
+		case "people":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.People = make(map[PersonID]ListPersonStatus)
+				} else {
+					out.People = nil
+				}
+				for !in.IsDelim('}') {
+					key := PersonID(in.IntStr())
+					in.WantColon()
+					var v41 ListPersonStatus
+					v41 = ListPersonStatus(in.Uint8())
+					(out.People)[key] = v41
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(out *jwriter.Writer, in List) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.ID != 0 {
+		const prefix string = ",\"id\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Int(int(in.ID))
+	}
+	if in.Type != 0 {
+		const prefix string = ",\"type\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Uint8(uint8(in.Type))
+	}
+	if in.Name != "" {
+		const prefix string = ",\"name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Name))
+	}
+	if len(in.People) != 0 {
+		const prefix string = ",\"people\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('{')
+			v42First := true
+			for v42Name, v42Value := range in.People {
+				if v42First {
+					v42First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.IntStr(int(v42Name))
+				out.RawByte(':')
+				out.Uint8(uint8(v42Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v List) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v List) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *List) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *List) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(l, v)
+}
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(in *jlexer.Lexer, out *Group) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1324,9 +2115,9 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 					out.NoEmail = (out.NoEmail)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v23 PersonID
-					v23 = PersonID(in.Int())
-					out.NoEmail = append(out.NoEmail, v23)
+					var v43 PersonID
+					v43 = PersonID(in.Int())
+					out.NoEmail = append(out.NoEmail, v43)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1347,9 +2138,9 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 					out.NoText = (out.NoText)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v24 PersonID
-					v24 = PersonID(in.Int())
-					out.NoText = append(out.NoText, v24)
+					var v44 PersonID
+					v44 = PersonID(in.Int())
+					out.NoText = append(out.NoText, v44)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1372,7 +2163,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *G
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in Group) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(out *jwriter.Writer, in Group) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1422,11 +2213,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 		}
 		{
 			out.RawByte('[')
-			for v25, v26 := range in.NoEmail {
-				if v25 > 0 {
+			for v45, v46 := range in.NoEmail {
+				if v45 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v26))
+				out.Int(int(v46))
 			}
 			out.RawByte(']')
 		}
@@ -1441,11 +2232,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 		}
 		{
 			out.RawByte('[')
-			for v27, v28 := range in.NoText {
-				if v27 > 0 {
+			for v47, v48 := range in.NoText {
+				if v47 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v28))
+				out.Int(int(v48))
 			}
 			out.RawByte(']')
 		}
@@ -1486,27 +2277,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v Group) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Group) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Group) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Group) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *Folder) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel14(in *jlexer.Lexer, out *Folder) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1549,17 +2340,17 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *F
 					out.Documents = (out.Documents)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v29 *Document
+					var v49 *Document
 					if in.IsNull() {
 						in.Skip()
-						v29 = nil
+						v49 = nil
 					} else {
-						if v29 == nil {
-							v29 = new(Document)
+						if v49 == nil {
+							v49 = new(Document)
 						}
-						(*v29).UnmarshalEasyJSON(in)
+						(*v49).UnmarshalEasyJSON(in)
 					}
-					out.Documents = append(out.Documents, v29)
+					out.Documents = append(out.Documents, v49)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1576,7 +2367,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *F
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in Folder) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel14(out *jwriter.Writer, in Folder) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1626,14 +2417,14 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 		}
 		{
 			out.RawByte('[')
-			for v30, v31 := range in.Documents {
-				if v30 > 0 {
+			for v50, v51 := range in.Documents {
+				if v50 > 0 {
 					out.RawByte(',')
 				}
-				if v31 == nil {
+				if v51 == nil {
 					out.RawString("null")
 				} else {
-					(*v31).MarshalEasyJSON(out)
+					(*v51).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1655,27 +2446,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 // MarshalJSON supports json.Marshaler interface
 func (v Folder) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel14(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Folder) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel14(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Folder) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel14(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Folder) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel14(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *Event) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel15(in *jlexer.Lexer, out *Event) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1726,9 +2517,9 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v32 GroupID
-					v32 = GroupID(in.Int())
-					out.Groups = append(out.Groups, v32)
+					var v52 GroupID
+					v52 = GroupID(in.Int())
+					out.Groups = append(out.Groups, v52)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1751,7 +2542,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in Event) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel15(out *jwriter.Writer, in Event) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1841,11 +2632,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 		}
 		{
 			out.RawByte('[')
-			for v33, v34 := range in.Groups {
-				if v33 > 0 {
+			for v53, v54 := range in.Groups {
+				if v53 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v34))
+				out.Int(int(v54))
 			}
 			out.RawByte(']')
 		}
@@ -1896,27 +2687,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v Event) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel15(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Event) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel10(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel15(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Event) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel15(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Event) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel10(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel15(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(in *jlexer.Lexer, out *EmailMessage) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel16(in *jlexer.Lexer, out *EmailMessage) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1963,9 +2754,9 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(in *jlexer.Lexer, out *
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v35 GroupID
-					v35 = GroupID(in.Int())
-					out.Groups = append(out.Groups, v35)
+					var v55 GroupID
+					v55 = GroupID(in.Int())
+					out.Groups = append(out.Groups, v55)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1986,7 +2777,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(out *jwriter.Writer, in EmailMessage) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel16(out *jwriter.Writer, in EmailMessage) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2026,11 +2817,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(out *jwriter.Writer, in
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v36, v37 := range in.Groups {
-				if v36 > 0 {
+			for v56, v57 := range in.Groups {
+				if v56 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v37))
+				out.Int(int(v57))
 			}
 			out.RawByte(']')
 		}
@@ -2056,27 +2847,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v EmailMessage) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel16(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v EmailMessage) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel11(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel16(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *EmailMessage) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel16(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *EmailMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel11(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel16(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(in *jlexer.Lexer, out *Document) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel17(in *jlexer.Lexer, out *Document) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2117,7 +2908,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(out *jwriter.Writer, in Document) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel17(out *jwriter.Writer, in Document) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2168,27 +2959,27 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v Document) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel17(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Document) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel12(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel17(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Document) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel17(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Document) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel17(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(in *jlexer.Lexer, out *Address) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel18(in *jlexer.Lexer, out *Address) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2227,7 +3018,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(out *jwriter.Writer, in Address) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel18(out *jwriter.Writer, in Address) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2268,23 +3059,23 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v Address) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(&w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel18(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Address) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(w, v)
+	easyjson6578def1EncodeSunnyvaleservOrgPortalModel18(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Address) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(&r, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel18(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Address) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(l, v)
+	easyjson6578def1DecodeSunnyvaleservOrgPortalModel18(l, v)
 }

@@ -39,6 +39,11 @@ CREATE TABLE folder (
     data blob    NOT NULL
 );
 
+-- The lists table is a single-row, single-column table containing a BLOB.  The
+-- BLOB is the protocol buffer encoding of model.Lists, which contains all of
+-- the lists for the SERV portal.
+CREATE TABLE lists (data blob NOT NULL);
+
 -- The person table tracks all people associated (or formerly associated) with
 -- SERV.  There is one row in this table for each such person.  Since each such
 -- person has a (potentially disabled) login to the SERV portal, this table also
@@ -65,6 +70,11 @@ CREATE TABLE person_email (
     UNIQUE (email, person)
 );
 CREATE INDEX person_email_person_index ON person_email (person);
+
+-- The roles table is a single-row, single-column table containing a BLOB.  The
+-- BLOB is the protocol buffer encoding of model.Roles, which contains all of
+-- the roles for the SERV portal.
+CREATE TABLE roles (data blob NOT NULL);
 
 -- The session table tracks all logged-in sessions.
 CREATE TABLE session (
