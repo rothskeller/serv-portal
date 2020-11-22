@@ -14,6 +14,7 @@ func (tx *Tx) FetchPerson(id model.PersonID) (p *model.Person) {
 	}
 	if p = tx.Tx.FetchPerson(id); p != nil {
 		tx.people[id] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -26,6 +27,7 @@ func (tx *Tx) FetchPersonByUsername(username string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -38,6 +40,7 @@ func (tx *Tx) FetchPersonByPWResetToken(token string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -50,6 +53,7 @@ func (tx *Tx) FetchPersonByCellPhone(number string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -62,6 +66,7 @@ func (tx *Tx) FetchPersonByUnsubscribe(token string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -74,6 +79,7 @@ func (tx *Tx) FetchPersonByHoursToken(token string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -87,6 +93,7 @@ func (tx *Tx) FetchPersonByEmail(email string) (p *model.Person) {
 			return p2
 		}
 		tx.people[p.ID] = p
+		fleshOutPerson(p)
 	}
 	return p
 }
@@ -100,6 +107,7 @@ func (tx *Tx) FetchPeople() (people []*model.Person) {
 				tx.personList[i] = p2
 			} else {
 				tx.people[p.ID] = p
+				fleshOutPerson(p)
 			}
 		}
 	}
@@ -124,5 +132,15 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	tx.Tx.UpdatePerson(p)
 	if tx.personList != nil {
 		sort.Sort(model.PersonSort(tx.personList))
+	}
+}
+
+func fleshOutPerson(p *model.Person) {
+	if p.Roles == nil {
+		p.Roles = make(map[model.Role2ID]bool)
+	}
+	// This one shouldn't be needed after the transition to using orgs:
+	if p.Orgs == nil {
+		p.Orgs = make([]model.OrgMembership, model.NumOrgs)
 	}
 }
