@@ -46,7 +46,7 @@ func main() {
 	for _, p := range tx.FetchPeople() {
 		var sender, receiver []string
 
-		if p.NoEmail || (p.Email == "" && p.Email2 == "") || p.Disabled() {
+		if p.NoEmail || (p.Email == "" && p.Email2 == "") || !p.HasPrivLevel(model.PrivStudent) {
 			continue
 		}
 		for _, l := range lists {

@@ -80,18 +80,24 @@ func UpdateAuthz(tx *store.Tx) {
 			if direct {
 				roles.Roles = append(roles.Roles, r)
 			}
-			if p.Orgs[r.Org].PrivLevel < r.PrivLevel {
+			if p.Orgs[r.Org].PrivLevel < r.PrivLevel && p.Roles[model.CanLogIn] {
 				p.Orgs[r.Org].PrivLevel = r.PrivLevel
 			}
 		}
 		sort.Sort(roles)
+		if !p.Roles[model.CanLogIn] {
+			continue
+		}
 		for _, r := range roles.Roles {
 			if p.Orgs[r.Org].Title == "" && r.Title != "" {
 				p.Orgs[r.Org].Title = r.Title
 			}
 		}
 	}
-	// Populate the senders and subscribers of lists.
+	// Populate the senders and subscribers of lists.  Note that disabled
+	// users can still be subscribed to lists, but sending to those lists
+	// will omit them.  That way their manual subscriptions are retained if
+	// their account is re-enabled.
 	for _, p := range tx.FetchPeople() {
 		for rid := range p.Roles {
 			r := tx.FetchRole(rid)
