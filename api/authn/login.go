@@ -24,7 +24,7 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"informalName":`)
 	out.String(r.Person.InformalName)
 	out.RawString(`,"webmaster":`)
-	out.Bool(r.Auth.IsWebmaster())
+	out.Bool(r.Person.Roles[model.Webmaster])
 	out.RawString(`,"canAddEvents":`)
 	out.Bool(r.Auth.CanA(model.PrivManageEvents))
 	out.RawString(`,"canAddPeople":`)

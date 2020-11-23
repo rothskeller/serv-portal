@@ -255,16 +255,6 @@ func (a *Authorizer) holdsR(role model.RoleID) bool {
 	return a.holdsPR(a.me, role)
 }
 
-// IsWebmaster returns whether the API caller is a webmaster.
-func (a *Authorizer) IsWebmaster() bool {
-	for rid := range a.roles {
-		if a.roles[rid].Tag == model.RoleWebmaster {
-			return a.holdsR(model.RoleID(rid))
-		}
-	}
-	return false
-}
-
 // May returns whether the API caller has the specified permission.
 func (a *Authorizer) May(perm model.Permission) (hasPerm bool) {
 	a.forPersonRoles(a.me, func(rid model.RoleID) bool {

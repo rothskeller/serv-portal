@@ -3,6 +3,7 @@ package group
 import (
 	"github.com/mailru/easyjson/jwriter"
 
+	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -10,7 +11,7 @@ import (
 func GetGroups(r *util.Request) error {
 	var out jwriter.Writer
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	groups := r.Auth.FetchGroups(r.Auth.AllGroups())

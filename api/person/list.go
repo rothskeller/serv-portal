@@ -90,8 +90,8 @@ func GetPeople(r *util.Request) error {
 				}
 			}
 			if needBackgroundCheck(r, p, focus) {
-				if p.BackgroundCheck == "" && r.Auth.IsWebmaster() {
-					// Setting this to webmaster only until we have accurate BG check data.
+				if p.BackgroundCheck == "" && r.Person.IsAdminLeader() {
+					// Setting this to admins only until we have accurate BG check data.
 					badges = append(badges, "No BG Check")
 				}
 			} else {

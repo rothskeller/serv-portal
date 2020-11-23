@@ -44,7 +44,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) && person != r.Person {
 			return util.Forbidden
 		}
-		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
+		canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
 		canViewContact = canEditDetails || r.Auth.CanAP(model.PrivViewContactInfo, person.ID)
 	}
 	out.RawString(`{"person":{"id":`)
@@ -121,7 +121,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.String(role.Title)
 	}
 	out.RawByte(']')
-	if r.Person == person || r.Auth.IsWebmaster() {
+	if r.Person == person || r.Person.Roles[model.Webmaster] {
 		canSubscribe := authz.CanSubscribe(r.Tx, person)
 		if len(canSubscribe) != 0 {
 			out.RawString(`,"lists":[`)
@@ -230,8 +230,8 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 			switch person.BackgroundCheck {
 			case "":
-				if needBackgroundCheck(r, person, nil) && r.Auth.IsWebmaster() {
-					// Setting this to webmaster only until we have accurate BG check data.
+				if needBackgroundCheck(r, person, nil) && r.Person.IsAdminLeader() {
+					// Setting this to admins only until we have accurate BG check data.
 					out.RawString(`,"backgroundCheck":false`)
 				}
 			case "true":
@@ -283,7 +283,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"notes":[`)
 		first := true
 		for _, n := range person.Notes {
-			if n.Privilege == 0 && !r.Auth.IsWebmaster() {
+			if n.Privilege == 0 && !r.Person.IsAdminLeader() {
 				continue
 			}
 			if n.Privilege != 0 && !r.Auth.CanAP(n.Privilege, person.ID) {
@@ -307,7 +307,7 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"canEditRoles2":`)
 	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.ID != model.AdminPersonID)
 	out.RawString(`,"canHours":`)
-	out.Bool(person.ID == r.Person.ID || r.Auth.IsWebmaster())
+	out.Bool(person.ID == r.Person.ID || r.Person.IsAdminLeader())
 	out.RawString(`,"noEmail":`)
 	out.Bool(person.NoEmail)
 	out.RawString(`,"noText":`)
@@ -321,7 +321,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"canEditClearances":`)
 		out.Bool(r.Auth.May(model.PermEditClearances))
 		out.RawString(`,"allowBadPassword":`)
-		out.Bool(r.Auth.IsWebmaster())
+		out.Bool(r.Person.Roles[model.Webmaster])
 		out.RawString(`,"identTypes":[`)
 		for i, t := range model.AllIdentTypes {
 			if i != 0 {
@@ -368,7 +368,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			return util.NotFound
 		}
 		r.Tx.WillUpdatePerson(person)
-		canEditDetails = r.Person == person || r.Auth.IsWebmaster()
+		canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
 	}
 	if !canEditDetails && !r.Auth.CanA(model.PrivManageMembers) {
 		return util.Forbidden
@@ -472,7 +472,7 @@ func PostPerson(r *util.Request, idstr string) error {
 	// We do password after validation so that it can use the other
 	// fields as password hints.
 	if password := r.FormValue("password"); password != "" && canEditDetails {
-		if !r.Auth.IsWebmaster() {
+		if !r.Person.Roles[model.Webmaster] {
 			if oldPassword := r.FormValue("oldPassword"); !authn.CheckPassword(person, oldPassword) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"wrongOldPassword":true}`))
@@ -552,7 +552,7 @@ func GetPersonLists(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		if person != r.Person && !r.Auth.IsWebmaster() {
+		if person != r.Person && !r.Person.Roles[model.Webmaster] {
 			return util.Forbidden
 		}
 	} else {
@@ -624,7 +624,7 @@ func PostPersonLists(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		if person != r.Person && !r.Auth.IsWebmaster() {
+		if person != r.Person && !r.Person.Roles[model.Webmaster] {
 			return util.Forbidden
 		}
 	} else {

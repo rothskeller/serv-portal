@@ -148,7 +148,7 @@ func getFolder(r *util.Request, folder *model.FolderNode, doc *model.Document) (
 	if !first {
 		out.RawByte(']')
 	}
-	if folder.Group == 0 && r.Auth.IsWebmaster() {
+	if folder.Group == 0 && r.Person.IsAdminLeader() {
 		canEdit = true
 	} else if folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		canEdit = true
@@ -156,7 +156,7 @@ func getFolder(r *util.Request, folder *model.FolderNode, doc *model.Document) (
 	if canEdit {
 		out.RawString(`,"canEdit":true,"allowedGroups":[`)
 		first := true
-		if r.Auth.IsWebmaster() {
+		if r.Person.IsAdminLeader() {
 			out.RawString(`{"id":0,"name":"Public"}`)
 			first = false
 		}
@@ -206,7 +206,7 @@ func emitAllowedParents(r *util.Request, root *model.FolderNode, out *jwriter.Wr
 		out.String(strings.Repeat("\u00A0", indent*4) + f.Name)
 		out.RawString(`,"indent":`)
 		out.Int(indent)
-		if f.Group == 0 && !r.Auth.IsWebmaster() {
+		if f.Group == 0 && !r.Person.IsAdminLeader() {
 			out.RawString(`,"disabled":true`)
 		} else if f.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, f.Group) {
 			out.RawString(`,"disabled":true`)
@@ -249,7 +249,7 @@ func GetDocument(r *util.Request, fidstr, didstr string) (err error) {
 		switch {
 		case doc.PostedBy == r.Person.ID:
 		case folder.Group != 0 && r.Auth.CanAG(model.PrivManageFolders, folder.Group):
-		case r.Auth.IsWebmaster():
+		case r.Person.IsAdminLeader():
 			break
 		default:
 			return util.Forbidden

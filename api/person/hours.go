@@ -34,7 +34,7 @@ func GetPersonHours(r *util.Request, idstr string) error {
 		r.Person = person
 		r.Auth.SetMe(person)
 	}
-	if person != r.Person && !r.Auth.IsWebmaster() {
+	if person != r.Person && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if person.VolgisticsID == 0 {
@@ -132,7 +132,7 @@ func PostPersonHours(r *util.Request, idstr string) (err error) {
 		r.Person = person
 		r.Auth.SetMe(person)
 	}
-	if person != r.Person && !r.Auth.IsWebmaster() {
+	if person != r.Person && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if person.VolgisticsID == 0 {

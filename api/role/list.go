@@ -14,7 +14,7 @@ import (
 func GetRoles(r *util.Request) error {
 	var out jwriter.Writer
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	roles := r.Auth.FetchRoles(r.Auth.AllRoles())
@@ -47,7 +47,7 @@ func GetRoles(r *util.Request) error {
 func GetRoles2(r *util.Request) error {
 	var out jwriter.Writer
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	out.RawByte('[')
@@ -86,7 +86,7 @@ func GetRoles2(r *util.Request) error {
 func PostRoles2(r *util.Request) error {
 	var priorities = make(map[*model.Role2]int)
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	r.ParseMultipartForm(1048576)

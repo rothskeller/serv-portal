@@ -23,7 +23,7 @@ func GetGroup(r *util.Request, idstr string) error {
 			return util.NotFound
 		}
 	}
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	out.RawString(`{"group":{"id":`)
@@ -126,7 +126,7 @@ func PostGroup(r *util.Request, idstr string) error {
 		}
 		r.Auth.WillUpdateGroup(group)
 	}
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if r.FormValue("delete") != "" && group.Tag == "" && idstr != "NEW" {

@@ -486,6 +486,12 @@ func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {
 	return false
 }
 
+// IsAdminLeader returns whether the receiver person is a Leader in the Admin
+// org.
+func (p *Person) IsAdminLeader() bool {
+	return p.Orgs[OrgAdmin2].PrivLevel >= PrivLeader
+}
+
 // A PrivLevel is a privilege level for membership in an Org.
 type PrivLevel uint8
 

@@ -10,7 +10,7 @@ import (
 func GetLists(r *util.Request) error {
 	var out jwriter.Writer
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	out.RawByte('[')

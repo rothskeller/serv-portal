@@ -93,6 +93,16 @@ func UpdateAuthz(tx *store.Tx) {
 				p.Orgs[r.Org].Title = r.Title
 			}
 		}
+		// Webmasters are automatically Admin Leaders.
+		if p.Roles[model.Webmaster] {
+			p.Orgs[model.OrgAdmin2].PrivLevel = model.PrivLeader
+		}
+		// Admin Leaders are automatically leaders of every org.
+		if p.Orgs[model.OrgAdmin2].PrivLevel == model.PrivLeader {
+			for _, o := range model.AllOrgs {
+				p.Orgs[o].PrivLevel = model.PrivLeader
+			}
+		}
 	}
 	// Populate the senders and subscribers of lists.  Note that disabled
 	// users can still be subscribed to lists, but sending to those lists

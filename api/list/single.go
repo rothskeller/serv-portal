@@ -15,7 +15,7 @@ func GetList(r *util.Request, idstr string) error {
 		list *model.List
 		out  jwriter.Writer
 	)
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
@@ -42,7 +42,7 @@ func GetList(r *util.Request, idstr string) error {
 func PostList(r *util.Request, idstr string) error {
 	var list *model.List
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
@@ -85,7 +85,7 @@ func PostList(r *util.Request, idstr string) error {
 func DeleteList(r *util.Request, idstr string) error {
 	var list *model.List
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if list = r.Tx.FetchList(model.ListID(util.ParseID(idstr))); list == nil {

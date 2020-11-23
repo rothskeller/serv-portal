@@ -26,7 +26,7 @@ func GetRole(r *util.Request, idstr string) error {
 			return util.NotFound
 		}
 	}
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	out.RawString(`{"role":{"id":`)
@@ -79,7 +79,7 @@ func PostRole(r *util.Request, idstr string) error {
 		}
 		r.Auth.WillUpdateRole(role)
 	}
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if r.FormValue("delete") != "" && role.Tag == "" && idstr != "NEW" {
@@ -142,7 +142,7 @@ func GetRole2(r *util.Request, idstr string) error {
 		role *model.Role2
 		out  jwriter.Writer
 	)
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
@@ -231,7 +231,7 @@ func GetRole2(r *util.Request, idstr string) error {
 func PostRole2(r *util.Request, idstr string) error {
 	var role *model.Role2
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
@@ -343,7 +343,7 @@ func PostRole2(r *util.Request, idstr string) error {
 func DeleteRole2(r *util.Request, idstr string) error {
 	var role *model.Role2
 
-	if !r.Auth.IsWebmaster() {
+	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if role = r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {

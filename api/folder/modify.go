@@ -22,7 +22,7 @@ func PostFolder(r *util.Request, idstr string) (err error) {
 	if folder.ParentNode = r.Tx.FetchFolder(parentID); folder.ParentNode == nil {
 		return util.NotFound
 	}
-	if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.ParentNode.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
@@ -34,7 +34,7 @@ func PostFolder(r *util.Request, idstr string) (err error) {
 	if err = ValidateFolder(r.Tx, &folder); err != nil {
 		return err
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
@@ -56,7 +56,7 @@ func PutFolder(r *util.Request, idstr string) (err error) {
 	if folder.ID == 0 {
 		return util.Forbidden
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
@@ -70,17 +70,17 @@ func PutFolder(r *util.Request, idstr string) (err error) {
 	if err = ValidateFolder(r.Tx, folder); err != nil {
 		return err
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
 		return util.Forbidden
 	}
-	if folder.ParentNode == nil && !r.Auth.IsWebmaster() {
+	if folder.ParentNode == nil && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.ParentNode != nil {
-		if folder.ParentNode.Group == 0 && !r.Auth.IsWebmaster() {
+		if folder.ParentNode.Group == 0 && !r.Person.IsAdminLeader() {
 			return util.Forbidden
 		}
 		if folder.ParentNode.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.ParentNode.Group) {
@@ -102,7 +102,7 @@ func DeleteFolder(r *util.Request, idstr string) (err error) {
 	if folder.ID == 0 {
 		return util.Forbidden
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
@@ -125,7 +125,7 @@ func PostDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(fidstr))); folder == nil {
 		return util.NotFound
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
@@ -229,7 +229,7 @@ func PostNewDocuments(r *util.Request, idstr string) (err error) {
 		return util.Forbidden
 	}
 	r.Tx.WillUpdateFolder(folder)
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		needsApproval = true
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
@@ -306,7 +306,7 @@ func DeleteDocument(r *util.Request, fidstr, didstr string) (err error) {
 	if folder = r.Tx.FetchFolder(model.FolderID(util.ParseID(fidstr))); folder == nil {
 		return util.NotFound
 	}
-	if folder.Group == 0 && !r.Auth.IsWebmaster() {
+	if folder.Group == 0 && !r.Person.IsAdminLeader() {
 		return util.Forbidden
 	}
 	if folder.Group != 0 && !r.Auth.CanAG(model.PrivManageFolders, folder.Group) {
