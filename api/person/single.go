@@ -551,11 +551,19 @@ func GetPersonLists(r *util.Request, idstr string) error {
 		canSubscribe map[model.ListID]bool
 		out          jwriter.Writer
 	)
-	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-		return util.NotFound
-	}
-	if person != r.Person && !r.Auth.IsWebmaster() {
-		return util.Forbidden
+	// idstr may be either a person ID, in string format, or an unsubscribe
+	// token.  We can distinguish between them by the length.
+	if len(idstr) <= 5 {
+		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+			return util.NotFound
+		}
+		if person != r.Person && !r.Auth.IsWebmaster() {
+			return util.Forbidden
+		}
+	} else {
+		if person = r.Tx.FetchPersonByUnsubscribe(idstr); person == nil {
+			return util.NotFound
+		}
 	}
 	if canSubscribe = authz.CanSubscribe(r.Tx, person); len(canSubscribe) == 0 {
 		return util.Forbidden
@@ -615,11 +623,19 @@ func PostPersonLists(r *util.Request, idstr string) error {
 		canSubscribe map[model.ListID]bool
 		subscribed   = make(map[model.ListID]bool)
 	)
-	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-		return util.NotFound
-	}
-	if person != r.Person && !r.Auth.IsWebmaster() {
-		return util.Forbidden
+	// idstr may be either a person ID, in string format, or an unsubscribe
+	// token.  We can distinguish between them by the length.
+	if len(idstr) <= 5 {
+		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+			return util.NotFound
+		}
+		if person != r.Person && !r.Auth.IsWebmaster() {
+			return util.Forbidden
+		}
+	} else {
+		if person = r.Tx.FetchPersonByUnsubscribe(idstr); person == nil {
+			return util.NotFound
+		}
 	}
 	if canSubscribe = authz.CanSubscribe(r.Tx, person); len(canSubscribe) == 0 {
 		return util.Forbidden

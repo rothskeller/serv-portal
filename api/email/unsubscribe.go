@@ -118,20 +118,15 @@ func PostUnsubscribeList(r *util.Request, token, email string) error {
 	if person = r.Tx.FetchPersonByUnsubscribe(token); person == nil {
 		return util.NotFound
 	}
-	r.Auth.SetMe(person)
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivMember)) {
-		if g.Email != email {
+	for _, list := range r.Tx.FetchLists() {
+		if list.Type != model.ListEmail || list.Name != email {
 			continue
 		}
-		for _, p := range g.NoEmail {
-			if p == person.ID {
-				return nil
-			}
-		}
-		r.Auth.WillUpdateGroup(g)
-		g.NoEmail = append(g.NoEmail, person.ID)
-		r.Auth.UpdateGroup(g)
-		r.Auth.Save()
+		r.Tx.WillUpdateList(list)
+		list.People[person.ID] &^= model.ListSubscribed
+		list.People[person.ID] |= model.ListUnsubscribed
+		r.Tx.UpdateList(list)
+		r.Tx.Commit()
 		return nil
 	}
 	return util.NotFound
