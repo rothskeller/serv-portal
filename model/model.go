@@ -6,6 +6,7 @@ package model
 //go:generate easyjson -all model.pb.go
 
 import (
+	"bytes"
 	"errors"
 	"time"
 
@@ -481,6 +482,31 @@ func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {
 		}
 	}
 	return false
+}
+
+// disabledPrefix is added to the start of a person's password in order to
+// disable their account.
+var disabledPrefix = []byte("DISABLED ")
+
+// Disabled returns whether the receiver person is disabled.
+func (p *Person) Disabled() bool {
+	return bytes.HasPrefix(p.Password, disabledPrefix)
+}
+
+// SetDisabled disables (or re-enables) the receiver person's account.
+func (p *Person) SetDisabled(disabled bool) {
+	if bytes.HasPrefix(p.Password, disabledPrefix) {
+		if !disabled {
+			p.Password = p.Password[len(disabledPrefix):]
+		}
+	} else {
+		if disabled {
+			np := make([]byte, len(disabledPrefix)+len(p.Password))
+			copy(np, disabledPrefix)
+			copy(np[len(disabledPrefix):], p.Password)
+			p.Password = np
+		}
+	}
 }
 
 // A PrivLevel is a privilege level for membership in an Org.

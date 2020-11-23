@@ -9,21 +9,18 @@ import (
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
-	"sunnyvaleserv.org/portal/store/authz"
 )
 
 func main() {
 	var (
-		tx       *store.Tx
-		auth     *authz.Authorizer
-		groups   []*model.Group
-		out      jwriter.Writer
-		disabled model.GroupID
-		tempfn   string
-		permfn   string
-		tempfh   *os.File
-		err      error
-		first    = true
+		tx     *store.Tx
+		lists  []*model.List
+		out    jwriter.Writer
+		tempfn string
+		permfn string
+		tempfh *os.File
+		err    error
+		first  = true
 	)
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
@@ -39,37 +36,26 @@ func main() {
 	}
 	store.Open("serv.db")
 	tx = store.Begin(nil)
-	auth = tx.Authorizer()
-	for _, g := range auth.FetchGroups(auth.AllGroups()) {
-		if g.Email != "" {
-			g.Email += "@sunnyvaleserv.org"
-			groups = append(groups, g)
-		}
-		if g.Tag == model.GroupDisabled {
-			disabled = g.ID
+	for _, l := range tx.FetchLists() {
+		if l.Type == model.ListEmail {
+			l.Name += "@sunnyvaleserv.org"
+			lists = append(lists, l)
 		}
 	}
 	out.RawByte('[')
 	for _, p := range tx.FetchPeople() {
 		var sender, receiver []string
 
-		if auth.MemberPG(p.ID, disabled) || p.NoEmail || (p.Email == "" && p.Email2 == "") {
+		if p.NoEmail || (p.Email == "" && p.Email2 == "") || p.Disabled() {
 			continue
 		}
-	GROUPS:
-		for _, g := range groups {
-			if auth.CanPAG(p.ID, model.PrivSendEmailMessages, g.ID) {
-				sender = append(sender, g.Email)
+		for _, l := range lists {
+			if l.People[p.ID]&model.ListSender != 0 {
+				sender = append(sender, l.Name)
 			}
-			if !auth.MemberPG(p.ID, g.ID) && !auth.CanPAG(p.ID, model.PrivBCC, g.ID) {
-				continue
+			if l.People[p.ID]&model.ListSubscribed != 0 {
+				receiver = append(receiver, l.Name)
 			}
-			for _, pid := range g.NoEmail {
-				if pid == p.ID {
-					continue GROUPS
-				}
-			}
-			receiver = append(receiver, g.Email)
 		}
 		if len(sender) == 0 && len(receiver) == 0 {
 			continue
