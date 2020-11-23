@@ -41,7 +41,7 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	if person.Email2 != "" && !emailRE.MatchString(person.Email2) {
 		return errors.New("invalid email2")
 	}
-	if person.Email2 != "" && (person.Email == "" || person.Email == person.Email2) {
+	if person.Email2 != "" && person.Email == person.Email2 {
 		return errors.New("invalid email2")
 	}
 	switch person.CellPhone = strings.Map(util.KeepDigits, person.CellPhone); len(person.CellPhone) {
