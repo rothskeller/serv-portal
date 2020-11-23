@@ -22,12 +22,12 @@ const pwresetThreshold = time.Hour
 // PostPasswordReset handles POST /api/password-reset requests.
 func PostPasswordReset(r *util.Request) error {
 	var (
-		person   *model.Person
-		body     bytes.Buffer
-		emails   []string
-		username = r.FormValue("username")
+		person *model.Person
+		body   bytes.Buffer
+		emails []string
+		email  = r.FormValue("email")
 	)
-	if person = r.Tx.FetchPersonByUsername(username); person == nil {
+	if person = r.Tx.FetchPersonByUsername(email); person == nil {
 		return nil
 	}
 	if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
@@ -40,9 +40,7 @@ func PostPasswordReset(r *util.Request) error {
 		return nil // person has no email address
 	}
 	r.Tx.WillUpdatePerson(person)
-	if person.Email != "" {
-		emails = append(emails, person.Email)
-	}
+	emails = append(emails, person.Email)
 	if person.Email2 != "" {
 		emails = append(emails, person.Email2)
 	}
@@ -92,10 +90,6 @@ func GetPasswordResetToken(r *util.Request, token string) error {
 	if person.CallSign != "" {
 		out.RawByte(',')
 		out.String(person.CallSign)
-	}
-	if person.Username != "" {
-		out.RawByte(',')
-		out.String(person.Username)
 	}
 	if person.HomeAddress.Address != "" {
 		out.RawByte(',')

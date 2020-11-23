@@ -30,15 +30,6 @@ SForm(v-else, :submitLabel='submitLabel', @submit='onSubmit')
       :errorFn='sortNameError',
       help='For appearance in sorted lists, e.g. “Banks, Joe”'
     )
-    SFInput#person-username(
-      v-if='canEditUsername',
-      label='Username',
-      trim,
-      v-model='person.username',
-      :errorFn='usernameError',
-      help='Usually the same as primary email address',
-      style='text-transform:lowercase'
-    )
     SFInput#person-callSign(
       label='Call sign',
       trim,
@@ -93,6 +84,7 @@ SForm(v-else, :submitLabel='submitLabel', @submit='onSubmit')
     .form-item.person-edit-block-head Contact Information
     SFInput#person-email(
       label='Email',
+      help='This is the email address you log in with.',
       trim,
       v-model='person.email',
       :errorFn='emailError',
@@ -179,7 +171,6 @@ interface GetPersonEditBase {
   canEditDetails: boolean
   canEditClearances: boolean
   allowBadPassword: boolean
-  canEditUsername: boolean
   identTypes: Array<string>
 }
 interface GetPersonEditNED extends GetPersonEditBase {
@@ -195,7 +186,7 @@ type PostPersonEdit = {
   duplicateCallSign?: boolean
   duplicateCellPhone?: boolean
   duplicateSortName?: boolean
-  duplicateUsername?: boolean
+  duplicateEmail?: boolean
   wrongOldPassword?: boolean
 }
 
@@ -221,7 +212,6 @@ export default defineComponent({
     const canEditClearances = ref(false)
     const canEditDetails = ref(false)
     const canEditRoles = ref(false)
-    const canEditUsername = ref(false)
     let passwordHints: Array<string>
     const person = ref(null as null | GetPersonEditPerson)
     const volgistics = ref('')
@@ -233,7 +223,6 @@ export default defineComponent({
       canEditClearances.value = resp.data.canEditClearances
       canEditDetails.value = resp.data.canEditDetails
       canEditRoles.value = resp.data.canEditRoles
-      canEditUsername.value = resp.data.canEditUsername
       if (resp.data.canEditDetails) passwordHints = resp.data.passwordHints || []
       if (resp.data.person.backgroundCheck === 'true') resp.data.person.backgroundCheck = 'TRUE'
       person.value = resp.data.person
@@ -255,7 +244,6 @@ export default defineComponent({
       if (person.value.informalName) hints.push(person.value.informalName)
       if (person.value.formalName) hints.push(person.value.formalName)
       if (person.value.callSign) hints.push(person.value.callSign)
-      if (person.value.username) hints.push(person.value.username)
       if (person.value.email) hints.push(person.value.email)
       if (person.value.email2) hints.push(person.value.email2)
       if (person.value.homeAddress && person.value.homeAddress.address)
@@ -275,7 +263,7 @@ export default defineComponent({
     const duplicateCallSign = ref('')
     const duplicateCellPhone = ref('')
     const duplicateSortName = ref('')
-    const duplicateUsername = ref('')
+    const duplicateEmail = ref('')
     const wrongOldPassword = ref('')
 
     // Validation functions for the various input fields (except password and
@@ -295,12 +283,6 @@ export default defineComponent({
       if (!person.value?.sortName) return lostFocus ? 'A name is required.' : ''
       if (duplicateSortName.value === person.value?.sortName)
         return 'A different person has this name.'
-      return ''
-    }
-    function usernameError() {
-      if (!person.value?.username) return ''
-      if (duplicateUsername.value === person.value.username)
-        return 'A different person has this username.'
       return ''
     }
     function callSignError(lostFocus: boolean) {
@@ -345,6 +327,7 @@ export default defineComponent({
         )
       )
         return 'This is not a valid email address.'
+      if (duplicateEmail.value === person.value.email) return 'Another user has this email address.'
       return ''
     }
     function email2Error(lostFocus: boolean) {
@@ -401,14 +384,6 @@ export default defineComponent({
       }
     )
 
-    // When the email address is changed, we may update the username.
-    watch(
-      () => person.value?.email,
-      (n, o) => {
-        if (person.value && person.value.username === o) person.value.username = n!
-      }
-    )
-
     // Label for the Submit button.
     const me = inject<Ref<LoginData>>('me')!
     const submitLabel =
@@ -426,7 +401,6 @@ export default defineComponent({
         body.append('informalName', person.value.informalName)
         body.append('formalName', person.value.formalName)
         body.append('sortName', person.value.sortName)
-        body.append('username', person.value.username.toLowerCase())
         body.append('callSign', person.value.callSign.toUpperCase())
         body.append('email', (person.value.email || person.value.email2 || '').toLowerCase())
         body.append('email2', person.value.email ? (person.value.email2 || '').toLowerCase() : '')
@@ -479,7 +453,7 @@ export default defineComponent({
       const resp = (await axios.post<PostPersonEdit>(`/api/people/${route.params.id}`, body)).data
       if (resp) {
         if (resp.duplicateSortName) duplicateSortName.value = person.value.sortName
-        if (resp.duplicateUsername) duplicateUsername.value = person.value.username
+        if (resp.duplicateEmail) duplicateEmail.value = person.value.email!
         if (resp.duplicateCallSign) duplicateCallSign.value = person.value.callSign
         if (resp.duplicateCellPhone) duplicateCellPhone.value = person.value.cellPhone!
         if (resp.wrongOldPassword) wrongOldPassword.value = oldPassword.value
@@ -496,7 +470,6 @@ export default defineComponent({
       canEditClearances,
       canEditDetails,
       canEditRoles,
-      canEditUsername,
       cellPhoneError,
       emailError,
       email2Error,
@@ -515,45 +488,11 @@ export default defineComponent({
       rolesError,
       sortNameError,
       submitLabel,
-      usernameError,
       volgistics,
       volgisticsError,
       workPhoneError,
     }
   },
-  data: () => ({
-    person: null,
-    allowBadPassword: false,
-    canEditClearances: false,
-    canEditDetails: false,
-    canEditRoles: false,
-    canEditUsername: false,
-    passwordHints: [],
-    informalNameError: null,
-    formalNameError: null,
-    sortNameError: null,
-    duplicateSortName: null,
-    usernameError: null,
-    duplicateUsername: null,
-    callSignError: null,
-    volgisticsError: null,
-    dswError: {},
-    backgroundError: null,
-    duplicateCallSign: null,
-    emailError: null,
-    email2Error: null,
-    cellPhoneError: null,
-    duplicateCellPhone: null,
-    homePhoneError: null,
-    workPhoneError: null,
-    oldPassword: null,
-    oldPasswordError: null,
-    wrongOldPassword: null,
-    password: '',
-    rolesError: null,
-    submitted: false,
-    suggestions: null,
-  }),
 })
 </script>
 

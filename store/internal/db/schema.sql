@@ -60,17 +60,6 @@ CREATE TABLE person (
     data          blob    NOT NULL
 );
 
--- The person_email table maps email addresses to people; it is used when
--- receiving an email to determine which of our people (if any) it is from.
--- Note that people can have multiple email addresses, and that people can share
--- email addresses.
-CREATE TABLE person_email (
-    email  text    NOT NULL COLLATE NOCASE,
-    person integer NOT NULL REFERENCES person ON DELETE CASCADE,
-    UNIQUE (email, person)
-);
-CREATE INDEX person_email_person_index ON person_email (person);
-
 -- The roles table is a single-row, single-column table containing a BLOB.  The
 -- BLOB is the protocol buffer encoding of model.Roles, which contains all of
 -- the roles for the SERV portal.

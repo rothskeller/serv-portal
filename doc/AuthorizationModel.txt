@@ -80,15 +80,11 @@ is canceled by that person or a webmaster.
 
 In order to be able to log in to the web site, a person must satisfy all of
 the following criteria:
-  - They must have a username assigned.  (If they have one, it will usually be
-    their email address.)
+  - They must have a primary email address, which serves as their username.
   - They must have a password.
-  - Their disabled flag must not be set.
+  - They must not hold the Disabled Users role.
   - They must belong to at least one organization.
   - They must not have had too many recent failed login attempts.
-Going forward, all new people added to the web site will have usernames and
-passwords and will be able to log in.  However, many historical CERT students do
-not have a username or password.
 
 --- Attributes
 

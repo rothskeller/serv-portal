@@ -1297,8 +1297,6 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *P
 		switch key {
 		case "id":
 			out.ID = PersonID(in.Int())
-		case "username":
-			out.Username = string(in.String())
 		case "informalName":
 			out.InformalName = string(in.String())
 		case "formalName":
@@ -1487,16 +1485,6 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 		first = false
 		out.RawString(prefix[1:])
 		out.Int(int(in.ID))
-	}
-	if in.Username != "" {
-		const prefix string = ",\"username\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Username))
 	}
 	{
 		const prefix string = ",\"informalName\":"

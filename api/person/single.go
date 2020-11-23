@@ -49,8 +49,6 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`{"person":{"id":`)
 	out.Int(int(person.ID))
-	out.RawString(`,"username":`)
-	out.String(person.Username)
 	out.RawString(`,"informalName":`)
 	out.String(person.InformalName)
 	out.RawString(`,"formalName":`)
@@ -307,7 +305,7 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
 	out.RawString(`,"canEditRoles2":`)
-	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.Username != "admin")
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.ID != model.AdminPersonID)
 	out.RawString(`,"canHours":`)
 	out.Bool(person.ID == r.Person.ID || r.Auth.IsWebmaster())
 	out.RawString(`,"noEmail":`)
@@ -323,8 +321,6 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"canEditClearances":`)
 		out.Bool(r.Auth.May(model.PermEditClearances))
 		out.RawString(`,"allowBadPassword":`)
-		out.Bool(r.Auth.IsWebmaster())
-		out.RawString(`,"canEditUsername":`)
 		out.Bool(r.Auth.IsWebmaster())
 		out.RawString(`,"identTypes":[`)
 		for i, t := range model.AllIdentTypes {
@@ -405,7 +401,6 @@ func PostPerson(r *util.Request, idstr string) error {
 		person.InformalName = r.FormValue("informalName")
 		person.FormalName = r.FormValue("formalName")
 		person.SortName = r.FormValue("sortName")
-		person.Username = r.FormValue("username")
 		person.CallSign = r.FormValue("callSign")
 		person.Email = r.FormValue("email")
 		person.Email2 = r.FormValue("email2")
@@ -680,7 +675,7 @@ func GetPersonRoles(r *util.Request, idstr string) error {
 	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 		return util.NotFound
 	}
-	if person.Username == "admin" {
+	if person.ID == model.AdminPersonID {
 		return util.Forbidden
 	}
 	out.RawByte('[')
@@ -755,7 +750,7 @@ func PostPersonRoles(r *util.Request, idstr string) error {
 	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 		return util.NotFound
 	}
-	if person.Username == "admin" {
+	if person.ID == model.AdminPersonID {
 		return util.Forbidden
 	}
 	r.Tx.WillUpdatePerson(person)

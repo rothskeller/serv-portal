@@ -472,6 +472,9 @@ func (p *Permission) UnmarshalEasyJSON(l *jlexer.Lexer) {
 // A PersonID is a positive integer uniquely identifying a Person.
 type PersonID int
 
+// AdminPersonID is the PersonID for the dedicated admin user.
+const AdminPersonID PersonID = 1
+
 // HasPrivLevel returns whether the receiver person has at least the specified
 // privilege level on any org.
 func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {

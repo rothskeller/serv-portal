@@ -10,13 +10,13 @@ PWReset displays the password reset page.
       | To reset your password, please enter your email address. If it's one we
       | have on file, we'll send a password reset link to it.
     SForm#pwreset-form(@submit='onSubmit')
-      SFInput#pwreset-username(
+      SFInput#pwreset-email(
         label='Email address',
         autocorrect='off',
         autocapitalize='none',
         autofocus,
         trim,
-        v-model='username'
+        v-model='email'
       )
       template(#buttons)
         #pwreset-submit-row
@@ -47,18 +47,18 @@ export default defineComponent({
   setup() {
     setPage({ title: '', browserTitle: 'Password Reset' })
 
-    const username = ref('')
+    const email = ref('')
     const finished = ref(false)
 
     async function onSubmit() {
-      if (!username.value) return
+      if (!email.value) return
       const body = new FormData()
-      body.append('username', username.value)
+      body.append('email', email.value)
       const data = (await axios.post('/api/password-reset', body)).data
       finished.value = true
     }
 
-    return { username, finished, onSubmit }
+    return { email, finished, onSubmit }
   },
 })
 </script>

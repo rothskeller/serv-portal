@@ -58,8 +58,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 						Orgs:  make([]model.OrgMembership, model.NumOrgs),
 					}
 				}
-			case "username":
-				p.Username = in.String()
 			case "informalName":
 				p.InformalName = in.String()
 			case "formalName":

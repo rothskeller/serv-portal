@@ -154,7 +154,6 @@ interface GetPersonNote {
 }
 export interface GetPersonPersonBase {
   id: number
-  username: string
   informalName: string
   formalName: string
   sortName: string

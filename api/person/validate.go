@@ -31,7 +31,6 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	if person.SortName = strings.TrimSpace(person.SortName); person.SortName == "" {
 		return errors.New("missing sortName")
 	}
-	person.Username = strings.ToLower(strings.TrimSpace(person.Username))
 	person.CallSign = strings.ToUpper(strings.TrimSpace(person.CallSign))
 	person.Email = strings.ToLower(strings.TrimSpace(person.Email))
 	if person.Email != "" && !emailRE.MatchString(person.Email) {
@@ -113,8 +112,8 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		if strings.EqualFold(p.SortName, person.SortName) {
 			return errors.New("duplicate sortName")
 		}
-		if p.Username != "" && p.Username == person.Username {
-			return errors.New("duplicate username")
+		if p.Email != "" && p.Email == person.Email {
+			return errors.New("duplicate email")
 		}
 		if p.CallSign != "" && p.CallSign == person.CallSign {
 			return errors.New("duplicate callSign")

@@ -55,7 +55,7 @@ func PostLogin(r *util.Request) error {
 	if person = r.Tx.FetchPersonByUsername(username); person == nil {
 		goto FAIL // no person with that username
 	}
-	if username != "admin" { // admin cannot be disabled or locked out
+	if person.ID != model.AdminPersonID { // admin cannot be disabled or locked out
 		if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
 			goto FAIL // person is disabled
 		}

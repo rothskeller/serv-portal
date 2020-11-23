@@ -1,7 +1,7 @@
-// send-invite generates a username and password for a person and sends them an
-// invitation email.
+// send-invite generates a password for a person and sends them an invitation
+// email.
 //
-// usage: send-invite «personID|username|email»
+// usage: send-invite «personID|email»
 package main
 
 import (
@@ -44,7 +44,7 @@ func main() {
 		}
 	}
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: send-invite personID-or-username-or-email\n")
+		fmt.Fprintf(os.Stderr, "usage: send-invite personID-or-email\n")
 		os.Exit(2)
 	}
 	store.Open("serv.db")
@@ -57,30 +57,21 @@ func main() {
 			os.Exit(1)
 		}
 	} else if person = tx.FetchPersonByUsername(os.Args[1]); person == nil {
-		if person = tx.FetchPersonByEmail(os.Args[1]); person == nil {
-			fmt.Fprintf(os.Stderr, "ERROR: no existing person with the username or email %q\n", os.Args[1])
-			os.Exit(1)
-		}
+		fmt.Fprintf(os.Stderr, "ERROR: no existing person with the email %q\n", os.Args[1])
+		os.Exit(1)
 	}
 	tx.WillUpdatePerson(person)
-	if person.Username != "" && len(person.Password) != 0 {
-		fmt.Fprintf(os.Stderr, "ERROR: person already has a username and password\n")
+	if len(person.Password) != 0 {
+		fmt.Fprintf(os.Stderr, "ERROR: person already has a password\n")
 		os.Exit(1)
 	}
 	if tx.Authorizer().MemberPG(person.ID, tx.Authorizer().FetchGroupByTag(model.GroupDisabled).ID) {
 		fmt.Fprintf(os.Stderr, "ERROR: person is disabled\n")
 		os.Exit(1)
 	}
-	if person.Username == "" {
-		if person.Email == "" {
-			fmt.Fprintf(os.Stderr, "ERROR: person has no email address\n")
-			os.Exit(1)
-		}
-		if tx.FetchPersonByUsername(person.Email) != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: person's email %q is already in use as a username\n", person.Email)
-			os.Exit(1)
-		}
-		person.Username = person.Email
+	if person.Email == "" {
+		fmt.Fprintf(os.Stderr, "ERROR: person has no email address\n")
+		os.Exit(1)
 	}
 	password = authn.RandomPassword()
 	authn.SetPassword(&util.Request{Tx: tx}, person, password)
@@ -187,7 +178,7 @@ interest in emergency response.</div>
 
 --BOUNDARY--
 `, &mail.Address{Name: person.InformalName, Address: person.Email}, person.InformalName,
-		time.Now().Format(time.RFC1123Z), person.Username, password)
+		time.Now().Format(time.RFC1123Z), person.Email, password)
 	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{person.Email}, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sending email: %s\n", err)
 		os.Exit(1)

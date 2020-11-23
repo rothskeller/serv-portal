@@ -104,29 +104,6 @@ func (tx *Tx) FetchPersonByHoursToken(token string) (p *model.Person) {
 	}
 }
 
-// FetchPersonByEmail retrieves a single person from the database, given an
-// email address.  It returns nil if no such person exists or if more than one
-// person has that email address.
-func (tx *Tx) FetchPersonByEmail(email string) (p *model.Person) {
-	var (
-		rows *sql.Rows
-		pid  model.PersonID
-		err  error
-	)
-	p = new(model.Person)
-	rows, err = tx.tx.Query(`SELECT person FROM person_email WHERE email=?`, email)
-	panicOnError(err)
-	for rows.Next() {
-		if pid != 0 {
-			rows.Close()
-			return nil
-		}
-		panicOnError(rows.Scan(&pid))
-	}
-	panicOnError(rows.Err())
-	return tx.FetchPerson(pid)
-}
-
 // FetchPeople returns all of the people in the database, in order by sortname.
 func (tx *Tx) FetchPeople() (people []*model.Person) {
 	var (
@@ -158,13 +135,7 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	p.ID++
 	data, err = p.Marshal()
 	panicOnError(err)
-	panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, unsubscribe, hours_token, data) VALUES (?,?,?,?,?,?,?)`, p.ID, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data))
-	if p.Email != "" {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email))
-	}
-	if p.Email2 != "" {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email2))
-	}
+	panicOnExecError(tx.tx.Exec(`INSERT INTO person (id, username, pwreset_token, cell_phone, unsubscribe, hours_token, data) VALUES (?,?,?,?,?,?,?)`, p.ID, IDStr(p.Email), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data))
 	tx.indexPerson(p, false)
 }
 
@@ -176,14 +147,7 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	)
 	data, err = p.Marshal()
 	panicOnError(err)
-	panicOnNoRows(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, unsubscribe, hours_token, data) = (?,?,?,?,?,?) WHERE id=?`, IDStr(p.Username), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data, p.ID))
-	panicOnExecError(tx.tx.Exec(`DELETE FROM person_email WHERE person=?`, p.ID))
-	if p.Email != "" {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email))
-	}
-	if p.Email2 != "" {
-		panicOnExecError(tx.tx.Exec(`INSERT INTO person_email (person, email) VALUES (?,?)`, p.ID, p.Email2))
-	}
+	panicOnNoRows(tx.tx.Exec(`UPDATE person SET (username, pwreset_token, cell_phone, unsubscribe, hours_token, data) = (?,?,?,?,?,?) WHERE id=?`, IDStr(p.Email), IDStr(p.PWResetToken), IDStr(p.CellPhone), p.UnsubscribeToken, IDStr(p.HoursToken), data, p.ID))
 	tx.indexPerson(p, true)
 }
 

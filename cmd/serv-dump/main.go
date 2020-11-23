@@ -325,10 +325,6 @@ func dumpPeople(tx *store.Tx) {
 func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	out.RawString(`{"id":`)
 	out.Int(int(p.ID))
-	if p.Username != "" {
-		out.RawString(`,"username":`)
-		out.String(p.Username)
-	}
 	out.RawString(`,"informalName":`)
 	out.String(p.InformalName)
 	out.RawString(`,"formalName":`)

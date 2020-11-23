@@ -19,9 +19,6 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		tx.auth.AddPerson(p.ID)
 	}
 	tx.entry.Change("create person [%d]", p.ID)
-	if p.Username != "" {
-		tx.entry.Change("set person [%d] username to %q", p.ID, p.Username)
-	}
 	tx.entry.Change("set person [%d] informalName to %q", p.ID, p.InformalName)
 	tx.entry.Change("set person [%d] formalName to %q", p.ID, p.FormalName)
 	tx.entry.Change("set person [%d] sortName to %q", p.ID, p.SortName)
@@ -146,9 +143,6 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 
 	if op == nil {
 		panic("must call WillUpdatePerson before UpdatePerson")
-	}
-	if p.Username != op.Username {
-		tx.entry.Change("set person %q [%d] username to %q", p.InformalName, p.ID, p.Username)
 	}
 	if p.InformalName != op.InformalName {
 		tx.entry.Change("set person %q [%d] informalName to %q", p.InformalName, p.ID, p.InformalName)
