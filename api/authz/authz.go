@@ -80,12 +80,12 @@ func UpdateAuthz(tx *store.Tx) {
 			if direct {
 				roles.Roles = append(roles.Roles, r)
 			}
-			if p.Orgs[r.Org].PrivLevel < r.PrivLevel && p.Roles[model.CanLogIn] {
+			if p.Orgs[r.Org].PrivLevel < r.PrivLevel && !p.Roles[model.DisabledUser] {
 				p.Orgs[r.Org].PrivLevel = r.PrivLevel
 			}
 		}
 		sort.Sort(roles)
-		if !p.Roles[model.CanLogIn] {
+		if p.Roles[model.DisabledUser] {
 			continue
 		}
 		for _, r := range roles.Roles {

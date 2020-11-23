@@ -620,8 +620,8 @@ type Role2ID int
 // Webmaster is a role with special treatment.  It always has ID 1.
 const Webmaster Role2ID = 1
 
-// CanLogIn is a role with special treatment.  It always has ID 2.
-const CanLogIn Role2ID = 2
+// DisabledUser is a role with special treatment.  It always has ID 2.
+const DisabledUser Role2ID = 2
 
 // A RoleToList is a bitmask indicating the relationship between a list and the
 // people holding a role.  The lower nibble contains the ListSubModel value and
