@@ -175,7 +175,7 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 	}
 	out.RawString(`,"org":`)
 	out.String(model.OrgNames[e.Org])
-	out.RawString(`,"groups":[`)
+	out.RawString(`,"roles":[`)
 	for i, r := range e.Roles {
 		if i != 0 {
 			out.RawByte(',')
