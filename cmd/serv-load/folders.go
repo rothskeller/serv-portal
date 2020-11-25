@@ -116,6 +116,8 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 				if f.Org == model.OrgNone2 {
 					in.AddError(errors.New("invalid org"))
 				}
+			case "public":
+				f.Public = in.Bool()
 			case "documents":
 				in.Delim('[')
 				for !in.IsDelim(']') {

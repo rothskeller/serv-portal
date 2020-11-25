@@ -21,6 +21,9 @@ func (tx *Tx) CreateFolder(f *model.FolderNode) {
 	if f.Org != model.OrgNone2 {
 		tx.entry.Change("set folder [%d] org to %s", f.ID, model.OrgNames[f.Org])
 	}
+	if f.Public {
+		tx.entry.Change("set folder [%d] public", f.ID)
+	}
 }
 
 // WillUpdateFolder saves a copy of a folder's data prior to updating it, so
@@ -66,6 +69,13 @@ func (tx *Tx) UpdateFolder(f *model.FolderNode) {
 			tx.entry.Change("set folder %q [%d] org to %s", f.Name, f.ID, model.OrgNames[f.Org])
 		} else {
 			tx.entry.Change("clear folder %q [%d] org", f.Name, f.ID)
+		}
+	}
+	if f.Public != of.Public {
+		if f.Public {
+			tx.entry.Change("set folder %q [%d] public", f.Name, f.ID)
+		} else {
+			tx.entry.Change("clear folder %q [%d] public", f.Name, f.ID)
 		}
 	}
 DOCS1:

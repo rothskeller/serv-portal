@@ -50,6 +50,9 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 		return errors.New("nonexistent group")
 	}
 	if folder.Org != model.OrgNone2 {
+		if folder.Public {
+			return errors.New("public folder with org")
+		}
 		var found = false
 		for _, o := range model.AllOrgs {
 			if folder.Org == o {
@@ -63,6 +66,9 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 	}
 	if folder.ParentNode != nil && folder.ParentNode.Org != model.OrgNone2 && folder.Org != folder.ParentNode.Org {
 		return errors.New("folder has different org than parent")
+	}
+	if folder.ParentNode != nil && !folder.ParentNode.Public && folder.Public {
+		return errors.New("public folder under non-public parent")
 	}
 	folder.Approvals = 0
 	for _, cf := range folder.ChildNodes {

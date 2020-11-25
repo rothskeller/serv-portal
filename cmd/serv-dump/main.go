@@ -178,6 +178,9 @@ func dumpFolder(tx *store.Tx, f *model.FolderNode) {
 		out.RawString(`,"org":`)
 		out.String(model.OrgNames[f.Org])
 	}
+	if f.Public {
+		out.RawString(`,"public":true`)
+	}
 	if f.Approvals != 0 {
 		out.RawString(`,"approvals":`)
 		out.Int(f.Approvals)
