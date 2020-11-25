@@ -119,14 +119,10 @@ CREATE VIRTUAL TABLE search USING fts5 (
     id2  UNINDEXED,
     documentName,
     documentContents,
-    emailMessageFrom,
-    emailMessageSubject,
-    emailMessageBody,
     eventName,
     eventDetails,
     eventDate,
     folderName,
-    groupName,
     personInformalName,
     personFormalName,
     personCallSign,
@@ -135,6 +131,8 @@ CREATE VIRTUAL TABLE search USING fts5 (
     personHomeAddress,
     personWorkAddress,
     personMailAddress,
+    roleNamo,
+    roleTitle,
     textMessage,
     tokenize = 'unicode61'
 );

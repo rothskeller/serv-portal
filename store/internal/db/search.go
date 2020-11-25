@@ -39,7 +39,11 @@ func (tx *Tx) RebuildSearchIndex(groups []*model.Group) {
 	for _, p := range tx.FetchPeople() {
 		tx.indexPerson(p, false)
 	}
-	tx.IndexGroups(groups, false)
+	for _, r := range tx.FetchRoles() {
+		if r.ShowRoster {
+			tx.IndexRole(r, false)
+		}
+	}
 	for _, f := range tx.FetchFolders() {
 		tx.indexFolder(f, false)
 		for _, d := range f.Documents {

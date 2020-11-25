@@ -10,10 +10,10 @@ Search displays the search page.
       SButton(type='submit', variant='primary') Search
   #search-error(v-if='error', v-text='error')
   #search-results
-    template(v-if='groups.length')
-      .search-result-type Groups
-      .search-result(v-for='g in groups')
-        router-link(:to='`/people/list?group=${g.id}`') {{ g.name }}
+    template(v-if='roles.length')
+      .search-result-type Roles
+      .search-result(v-for='r in roles')
+        router-link(:to='`/people/list?role=${r.id}`') {{ r.name }}
     template(v-if='people.length')
       .search-result-type People
       .search-result(v-for='p in people')
@@ -37,7 +37,7 @@ Search displays the search page.
       .search-result(v-for='tm in textMessages')
         router-link(:to='`/texts/${tm.id}`') From {{ tm.sender }} on {{ tm.timestamp.substr(0, 10) }}
     .search-result(
-      v-if='submitted && !error && !groups.length && !people.length && !events.length && !folders.length && !documents.length && !textMessages.length'
+      v-if='submitted && !error && !roles.length && !people.length && !events.length && !folders.length && !documents.length && !textMessages.length'
     ) No results found.
 </template>
 
@@ -67,15 +67,15 @@ interface GetSearchResultFolder {
   id: number
   name: string
 }
-interface GetSearchResultGroup {
-  type: 'group'
-  id: number
-  name: string
-}
 interface GetSearchResultPerson {
   type: 'person'
   id: number
   informalName: string
+}
+interface GetSearchResultRole {
+  type: 'role'
+  id: number
+  name: string
 }
 interface GetSearchResultText {
   type: 'textMessage'
@@ -86,8 +86,8 @@ type GetSearchResult =
   | GetSearchResultDoc
   | GetSearchResultEvent
   | GetSearchResultFolder
-  | GetSearchResultGroup
   | GetSearchResultPerson
+  | GetSearchResultRole
   | GetSearchResultText
 interface GetSearch {
   results: Array<GetSearchResult>
@@ -115,15 +115,15 @@ export default defineComponent({
     const documents = ref([] as Array<GetSearchResultDoc>)
     const events = ref([] as Array<GetSearchResultEvent>)
     const folders = ref([] as Array<GetSearchResultFolder>)
-    const groups = ref([] as Array<GetSearchResultGroup>)
     const people = ref([] as Array<GetSearchResultPerson>)
+    const roles = ref([] as Array<GetSearchResultRole>)
     const textMessages = ref([] as Array<GetSearchResultText>)
     const error = ref('')
     const submitted = ref(false)
     async function onSubmit() {
       query.value = query.value.trim()
       if (!query.value) {
-        documents.value = events.value = folders.value = groups.value = people.value = textMessages.value = []
+        documents.value = events.value = folders.value = roles.value = people.value = textMessages.value = []
         error.value = ''
         return
       }
@@ -138,8 +138,8 @@ export default defineComponent({
       folders.value = resp.results.filter((r) => r.type === 'folder') as Array<
         GetSearchResultFolder
       >
-      groups.value = resp.results.filter((r) => r.type === 'group') as Array<GetSearchResultGroup>
       people.value = resp.results.filter((r) => r.type === 'person') as Array<GetSearchResultPerson>
+      roles.value = resp.results.filter((r) => r.type === 'role') as Array<GetSearchResultRole>
       textMessages.value = resp.results.filter((r) => r.type === 'textMessage') as Array<
         GetSearchResultText
       >
@@ -155,12 +155,12 @@ export default defineComponent({
       error,
       events,
       folders,
-      groups,
       onSubmit,
       people,
       query,
       queryRef,
       resultPath,
+      roles,
       submitted,
       textMessages,
     }

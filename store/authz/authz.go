@@ -65,7 +65,6 @@ type Authorizer struct {
 	bytesPerPerson int
 	originalGroups map[model.GroupID]*model.Group
 	originalRoles  map[model.RoleID]*model.Role
-	dirtyGroups    bool
 }
 
 // SetMe sets the identity of the API caller in the authorizer.

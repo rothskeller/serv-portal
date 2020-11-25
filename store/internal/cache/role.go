@@ -45,6 +45,7 @@ func (tx *Tx) CreateRole(role *model.Role2) {
 	sort.Sort(model.Roles{Roles: tx.roleList})
 	tx.roles[role.ID] = role
 	tx.rolesDirty = true
+	tx.Tx.IndexRole(role, false)
 }
 
 // UpdateRole updates an existing role in the database.
@@ -55,6 +56,7 @@ func (tx *Tx) UpdateRole(role *model.Role2) {
 	}
 	sort.Sort(model.Roles{Roles: tx.roleList})
 	tx.rolesDirty = true
+	tx.Tx.IndexRole(role, true)
 }
 
 // DeleteRole deletes a role from the database.
@@ -73,4 +75,6 @@ func (tx *Tx) DeleteRole(role *model.Role2) {
 	}
 	tx.roleList = tx.roleList[:j]
 	tx.rolesDirty = true
+	role.ShowRoster = false // forces deletion
+	tx.Tx.IndexRole(role, true)
 }

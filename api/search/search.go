@@ -49,13 +49,31 @@ func GetSearch(r *util.Request) error {
 				return true
 			}
 		case *model.Person:
-			if !r.Auth.CanAP(model.PrivViewMembers, tobj.ID) && tobj != r.Person {
+			if tobj == r.Person || r.Person.HasPrivLevel(model.PrivLeader) {
+				break
+			}
+			found := false
+			for _, o := range model.AllOrgs {
+				if tobj.Orgs[o].PrivLevel >= model.PrivMember2 && r.Person.Orgs[o].PrivLevel >= model.PrivMember2 {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return true
+			}
+		case *model.Role2:
+			switch {
+			case r.Person.Orgs[tobj.Org].PrivLevel >= model.PrivMember2:
+			case r.Person.HasPrivLevel(model.PrivLeader):
+				break
+			default:
 				return true
 			}
 		case *model.TextMessage:
 			var canView bool
-			for _, gid := range tobj.Groups {
-				if r.Auth.CanAG(model.PrivSendTextMessages, gid) {
+			for _, list := range r.Tx.FetchLists() {
+				if list.Type == model.ListSMS && list.People[r.Person.ID]&model.ListSender != 0 {
 					canView = true
 					break
 				}
@@ -118,17 +136,17 @@ func GetSearch(r *util.Request) error {
 			out.RawString(`,"name":`)
 			out.String(tobj.Name)
 			out.RawByte('}')
-		case *model.Group:
-			out.RawString(`{"type":"group","id":`)
-			out.Int(int(tobj.ID))
-			out.RawString(`,"name":`)
-			out.String(tobj.Name)
-			out.RawByte('}')
 		case *model.Person:
 			out.RawString(`{"type":"person","id":`)
 			out.Int(int(tobj.ID))
 			out.RawString(`,"informalName":`)
 			out.String(tobj.InformalName)
+			out.RawByte('}')
+		case *model.Role2:
+			out.RawString(`{"type":"role","id":`)
+			out.Int(int(tobj.ID))
+			out.RawString(`,"name":`)
+			out.String(tobj.Name)
 			out.RawByte('}')
 		case *model.TextMessage:
 			out.RawString(`{"type":"textMessage","id":`)
