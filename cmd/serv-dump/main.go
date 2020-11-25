@@ -620,10 +620,8 @@ func dumpRole2(tx *store.Tx, out *jwriter.Writer, r *model.Role2) {
 		out.RawString(`,"title":`)
 		out.String(r.Title)
 	}
-	if r.Org != model.OrgNone2 {
-		out.RawString(`,"org":`)
-		out.String(model.OrgNames[r.Org])
-	}
+	out.RawString(`,"org":`)
+	out.String(model.OrgNames[r.Org])
 	if r.PrivLevel != model.PrivNone {
 		out.RawString(`,"privLevel":`)
 		out.String(model.PrivLevelNames[r.PrivLevel])

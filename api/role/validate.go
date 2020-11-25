@@ -43,7 +43,10 @@ func ValidateRole2(tx *store.Tx, role *model.Role2) error {
 		return errors.New("missing name")
 	}
 	role.Title = strings.TrimSpace(role.Title)
-	if _, ok := model.OrgNames[role.Org]; !ok && role.Org != model.OrgNone2 {
+	if role.Org == model.OrgNone2 {
+		return errors.New("missing org")
+	}
+	if _, ok := model.OrgNames[role.Org]; !ok {
 		return errors.New("invalid org")
 	}
 	if _, ok := model.PrivLevelNames[role.PrivLevel]; !ok && role.PrivLevel != model.PrivNone {

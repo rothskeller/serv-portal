@@ -132,7 +132,6 @@ interface EditingList {
 }
 
 const orgOptions = [
-  { value: '', label: '(none)' },
   { value: 'admin', label: 'Admin' },
   { value: 'cert-d', label: 'CERT-D' },
   { value: 'cert-t', label: 'CERT-T' },
