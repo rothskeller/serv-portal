@@ -2520,6 +2520,31 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel15(in *jlexer.Lexer, out *
 			out.RenewsDSW = bool(in.Bool())
 		case "coveredByDSW":
 			out.CoveredByDSW = bool(in.Bool())
+		case "org":
+			out.Org = Org(in.Uint8())
+		case "roles":
+			if in.IsNull() {
+				in.Skip()
+				out.Roles = nil
+			} else {
+				in.Delim('[')
+				if out.Roles == nil {
+					if !in.IsDelim(']') {
+						out.Roles = make([]Role2ID, 0, 8)
+					} else {
+						out.Roles = []Role2ID{}
+					}
+				} else {
+					out.Roles = (out.Roles)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v53 Role2ID
+					v53 = Role2ID(in.Int())
+					out.Roles = append(out.Roles, v53)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -2620,11 +2645,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel15(out *jwriter.Writer, in
 		}
 		{
 			out.RawByte('[')
-			for v53, v54 := range in.Groups {
-				if v53 > 0 {
+			for v54, v55 := range in.Groups {
+				if v54 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v54))
+				out.Int(int(v55))
 			}
 			out.RawByte(']')
 		}
@@ -2668,6 +2693,35 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel15(out *jwriter.Writer, in
 			out.RawString(prefix)
 		}
 		out.Bool(bool(in.CoveredByDSW))
+	}
+	if in.Org != 0 {
+		const prefix string = ",\"org\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Uint8(uint8(in.Org))
+	}
+	if len(in.Roles) != 0 {
+		const prefix string = ",\"roles\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v56, v57 := range in.Roles {
+				if v56 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v57))
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -2742,9 +2796,9 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel16(in *jlexer.Lexer, out *
 					out.Groups = (out.Groups)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v55 GroupID
-					v55 = GroupID(in.Int())
-					out.Groups = append(out.Groups, v55)
+					var v58 GroupID
+					v58 = GroupID(in.Int())
+					out.Groups = append(out.Groups, v58)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2805,11 +2859,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel16(out *jwriter.Writer, in
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v56, v57 := range in.Groups {
-				if v56 > 0 {
+			for v59, v60 := range in.Groups {
+				if v59 > 0 {
 					out.RawByte(',')
 				}
-				out.Int(int(v57))
+				out.Int(int(v60))
 			}
 			out.RawByte(']')
 		}

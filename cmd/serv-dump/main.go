@@ -173,7 +173,20 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 	if e.CoveredByDSW {
 		out.RawString(`,"coveredByDSW":true`)
 	}
-	out.RawString(`,"attendance":[`)
+	out.RawString(`,"org":`)
+	out.String(model.OrgNames[e.Org])
+	out.RawString(`,"groups":[`)
+	for i, r := range e.Roles {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(r))
+		out.RawString(`,"name":`)
+		out.String(role2Name(tx, r))
+		out.RawByte('}')
+	}
+	out.RawString(`],"attendance":[`)
 	var eattend = tx.FetchAttendanceByEvent(e)
 	var pids = make([]model.PersonID, 0, len(eattend))
 	for p := range eattend {
@@ -806,6 +819,12 @@ func personName(tx *store.Tx, id model.PersonID) string {
 }
 func roleName(tx *store.Tx, id model.RoleID) string {
 	if v := tx.Authorizer().FetchRole(id); v != nil {
+		return v.Name
+	}
+	return ""
+}
+func role2Name(tx *store.Tx, id model.Role2ID) string {
+	if v := tx.FetchRole(id); v != nil {
 		return v.Name
 	}
 	return ""

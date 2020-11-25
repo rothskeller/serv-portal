@@ -25,6 +25,7 @@ var yearRE = regexp.MustCompile(`^20\d\d$`)
 // ValidateEvent validates the details of an event.
 func ValidateEvent(tx *store.Tx, event *model.Event) error {
 	var seenGroups = map[model.GroupID]bool{}
+	var seenRoles = map[model.Role2ID]bool{}
 
 	if event.Name = strings.TrimSpace(event.Name); event.Name == "" {
 		return errors.New("missing name")
@@ -81,6 +82,21 @@ func ValidateEvent(tx *store.Tx, event *model.Event) error {
 		seenGroups[g] = true
 		if tx.Authorizer().FetchGroup(g) == nil {
 			return errors.New("invalid group")
+		}
+	}
+	if event.Org == model.OrgNone2 {
+		return errors.New("missing org")
+	}
+	if _, ok := model.OrgNames[event.Org]; !ok {
+		return errors.New("invalid org")
+	}
+	for _, r := range event.Roles {
+		if seenRoles[r] {
+			return errors.New("duplicate role in roles list")
+		}
+		seenRoles[r] = true
+		if tx.FetchRole(r) == nil {
+			return errors.New("invalid role")
 		}
 	}
 	for _, e := range tx.FetchEvents(event.Date, event.Date) {

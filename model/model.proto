@@ -61,6 +61,12 @@ message Event {
   // DSW for attendees with current DSW registration.  For training events, it
   // essentially indicates that the event has been pre-approved by the ADC.
   bool coveredByDSW = 14 [(gogoproto.customname) = "CoveredByDSW"];
+  // Org is the org that owns the event.  Leaders of this org (and admins) are
+  // the ones who can manage this event.
+  int64 org = 15 [(gogoproto.casttype) = "Org"];
+  // Roles are the roles "invited" to the event.  They control which people are
+  // displayed on the attendance page for the event.
+  repeated int64 roles = 16 [(gogoproto.casttype) = "Role2ID"];
 }
 
 message Folder {

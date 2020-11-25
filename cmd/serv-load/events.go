@@ -150,6 +150,55 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 				e.RenewsDSW = in.Bool()
 			case "coveredByDSW":
 				e.CoveredByDSW = in.Bool()
+			case "org":
+				org := in.String()
+				for _, o := range model.AllOrgs {
+					if org == model.OrgNames[o] {
+						e.Org = o
+					}
+				}
+				if e.Org == 0 {
+					in.AddError(errors.New("invalid org"))
+				}
+			case "roles":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						var rid model.Role2ID
+						if in.IsDelim('{') {
+							var seen bool
+							in.Delim('{')
+							for !in.IsDelim('}') {
+								key := in.UnsafeString()
+								in.WantColon()
+								if in.IsNull() {
+									in.Skip()
+									in.WantComma()
+									continue
+								}
+								switch key {
+								case "id":
+									rid = model.Role2ID(in.Int())
+									seen = true
+								default:
+									in.SkipRecursive()
+								}
+								in.WantComma()
+							}
+							in.Delim('}')
+							if !seen {
+								in.AddError(errors.New("missing roles.id"))
+							}
+						} else {
+							rid = model.Role2ID(in.Int())
+						}
+						e.Roles = append(e.Roles, rid)
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
 			case "attendance":
 				in.Delim('[')
 				for !in.IsDelim(']') {

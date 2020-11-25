@@ -11,6 +11,7 @@ import (
 // CreateEvent creates a new event in the database.
 func (tx *Tx) CreateEvent(e *model.Event) {
 	var gstr []string
+	var rstr []string
 
 	tx.Tx.CreateEvent(e)
 	tx.entry.Change("create event [%d]", e.ID)
@@ -40,6 +41,13 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	}
 	if e.CoveredByDSW {
 		tx.entry.Change("set event [%d] coveredByDSW", e.ID)
+	}
+	tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, model.OrgNames[e.Org])
+	if len(e.Roles) != 0 {
+		for _, r := range e.Roles {
+			rstr = append(rstr, fmt.Sprintf("%q [%d]", tx.FetchRole(r).Name, r))
+		}
+		tx.entry.Change("set event [%d] roles to %s", e.ID, strings.Join(rstr, ", "))
 	}
 }
 
@@ -108,7 +116,7 @@ GROUPS2:
 		} else {
 			tx.entry.Change("clear event %s %q [%d] renewsDSW", e.Date, e.Name, e.ID)
 		}
-		tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], tx.Tx.FetchAttendanceByEvent(e), nil, nil)
+		tx.recalculateDSWUntil(e.Org.DSWClass(), tx.Tx.FetchAttendanceByEvent(e), nil, nil)
 	}
 	if e.CoveredByDSW != oe.CoveredByDSW {
 		if e.CoveredByDSW {
@@ -116,6 +124,27 @@ GROUPS2:
 		} else {
 			tx.entry.Change("clear event %s %q [%d] coveredByDSW", e.Date, e.Name, e.ID)
 		}
+	}
+	if e.Org != oe.Org {
+		tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, model.OrgNames[e.Org])
+	}
+ROLES1:
+	for _, or := range oe.Roles {
+		for _, r := range e.Roles {
+			if or == r {
+				continue ROLES1
+			}
+		}
+		tx.entry.Change("remove event %s %q [%d] role %q [%d]", e.Date, e.Name, e.ID, tx.FetchRole(or).Name, or)
+	}
+ROLES2:
+	for _, r := range e.Roles {
+		for _, or := range oe.Roles {
+			if or == r {
+				continue ROLES2
+			}
+		}
+		tx.entry.Change("add event %s %q [%d] role %q [%d]", e.Date, e.Name, e.ID, tx.FetchRole(r).Name, r)
 	}
 }
 
@@ -140,7 +169,7 @@ func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]mode
 			tx.entry.Change("remove event %s %q [%d] person %q [%d] attendance", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid)
 		}
 	}
-	tx.recalculateDSWUntil(model.OrganizationToDSWClass[e.Organization], attend, oattend, nil)
+	tx.recalculateDSWUntil(e.Org.DSWClass(), attend, oattend, nil)
 }
 
 // recalculateDSWUntil recalculates the DSWUntil values, for the specified DSW
@@ -189,7 +218,7 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 		return
 	}
 	for _, e := range tx.FetchEvents(oldest.Format("2006-01-02"), time.Now().Format("2006-01-02")) {
-		if !e.RenewsDSW || model.OrganizationToDSWClass[e.Organization] != class {
+		if !e.RenewsDSW || e.Org.DSWClass() != class {
 			continue
 		}
 		edate, _ := time.ParseInLocation("2006-01-02", e.Date, time.Local)
