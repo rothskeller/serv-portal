@@ -19,6 +19,7 @@ const badLoginThreshold = 20 * time.Minute
 // GetLogin handles GET /api/login requests.
 func GetLogin(r *util.Request) error {
 	var out jwriter.Writer
+	var sender bool
 	out.RawString(`{"id":`)
 	out.Int(int(r.Person.ID))
 	out.RawString(`,"informalName":`)
@@ -26,15 +27,21 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"webmaster":`)
 	out.Bool(r.Person.Roles[model.Webmaster])
 	out.RawString(`,"canAddEvents":`)
-	out.Bool(r.Auth.CanA(model.PrivManageEvents))
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canAddPeople":`)
-	out.Bool(r.Auth.CanA(model.PrivManageMembers))
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
+	for _, l := range r.Tx.FetchLists() {
+		if l.Type == model.ListSMS && l.People[r.Person.ID]&model.ListSender != 0 {
+			sender = true
+			break
+		}
+	}
 	out.RawString(`,"canSendTextMessages":`)
-	out.Bool(r.Auth.CanA(model.PrivSendTextMessages))
+	out.Bool(sender)
 	out.RawString(`,"canViewReports":`)
-	out.Bool(r.Auth.CanA(model.PrivManageEvents))
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canViewRosters":`)
-	out.Bool(r.Auth.CanA(model.PrivViewMembers))
+	out.Bool(r.Person.HasPrivLevel(model.PrivMember2))
 	out.RawString(`,"csrf":`)
 	out.String(string(r.Session.CSRF))
 	out.RawByte('}')
@@ -56,8 +63,11 @@ func PostLogin(r *util.Request) error {
 		goto FAIL // no person with that username
 	}
 	if person.ID != model.AdminPersonID { // admin cannot be disabled or locked out
-		if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
+		if person.Roles[model.DisabledUser] {
 			goto FAIL // person is disabled
+		}
+		if !person.HasPrivLevel(model.PrivStudent) {
+			goto FAIL // person belongs to no orgs
 		}
 		if person.BadLoginCount >= maxBadLogins && time.Now().Before(person.BadLoginTime.Add(badLoginThreshold)) {
 			goto FAIL // locked out

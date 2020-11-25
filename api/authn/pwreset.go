@@ -30,14 +30,11 @@ func PostPasswordReset(r *util.Request) error {
 	if person = r.Tx.FetchPersonByUsername(email); person == nil {
 		return nil
 	}
-	if r.Auth.MemberPG(person.ID, r.Auth.FetchGroupByTag(model.GroupDisabled).ID) {
+	if person.Roles[model.DisabledUser] {
 		return nil // person is disabled
 	}
-	if !r.Auth.CanPA(person.ID, model.PrivMember) {
-		return nil // person belongs to no groups
-	}
-	if person.Email == "" && person.Email2 == "" {
-		return nil // person has no email address
+	if !person.HasPrivLevel(model.PrivStudent) {
+		return nil // person belongs to no orgs
 	}
 	r.Tx.WillUpdatePerson(person)
 	emails = append(emails, person.Email)
