@@ -105,6 +105,17 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 				} else {
 					f.Group = model.GroupID(in.Int())
 				}
+			case "org":
+				ostr := in.String()
+				for v, s := range model.OrgNames {
+					if s == ostr {
+						f.Org = v
+						break
+					}
+				}
+				if f.Org == model.OrgNone2 {
+					in.AddError(errors.New("invalid org"))
+				}
 			case "documents":
 				in.Delim('[')
 				for !in.IsDelim(']') {

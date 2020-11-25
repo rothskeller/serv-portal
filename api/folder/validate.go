@@ -49,6 +49,21 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 	if folder.Group > 0 && tx.Authorizer().FetchGroup(folder.Group) == nil {
 		return errors.New("nonexistent group")
 	}
+	if folder.Org != model.OrgNone2 {
+		var found = false
+		for _, o := range model.AllOrgs {
+			if folder.Org == o {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return errors.New("invalid org")
+		}
+	}
+	if folder.ParentNode != nil && folder.ParentNode.Org != model.OrgNone2 && folder.Org != folder.ParentNode.Org {
+		return errors.New("folder has different org than parent")
+	}
 	folder.Approvals = 0
 	for _, cf := range folder.ChildNodes {
 		folder.Approvals += cf.Approvals

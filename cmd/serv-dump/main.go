@@ -174,6 +174,10 @@ func dumpFolder(tx *store.Tx, f *model.FolderNode) {
 		out.String(tx.Authorizer().FetchGroup(f.Group).Name)
 		out.RawByte('}')
 	}
+	if f.Org != model.OrgNone2 {
+		out.RawString(`,"org":`)
+		out.String(model.OrgNames[f.Org])
+	}
 	if f.Approvals != 0 {
 		out.RawString(`,"approvals":`)
 		out.Int(f.Approvals)

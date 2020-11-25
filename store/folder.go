@@ -18,6 +18,9 @@ func (tx *Tx) CreateFolder(f *model.FolderNode) {
 	if f.Group != 0 {
 		tx.entry.Change("set folder [%d] group to %q [%d]", f.ID, tx.auth.FetchGroup(f.Group).Name, f.Group)
 	}
+	if f.Org != model.OrgNone2 {
+		tx.entry.Change("set folder [%d] org to %s", f.ID, model.OrgNames[f.Org])
+	}
 }
 
 // WillUpdateFolder saves a copy of a folder's data prior to updating it, so
@@ -56,6 +59,13 @@ func (tx *Tx) UpdateFolder(f *model.FolderNode) {
 			tx.entry.Change("set folder %q [%d] group to %q [%d]", f.Name, f.ID, tx.auth.FetchGroup(f.Group).Name, f.Group)
 		} else {
 			tx.entry.Change("remove folder %q [%d] group", f.Name, f.ID)
+		}
+	}
+	if f.Org != of.Org {
+		if f.Org != model.OrgNone2 {
+			tx.entry.Change("set folder %q [%d] org to %s", f.Name, f.ID, model.OrgNames[f.Org])
+		} else {
+			tx.entry.Change("clear folder %q [%d] org", f.Name, f.ID)
 		}
 	}
 DOCS1:
