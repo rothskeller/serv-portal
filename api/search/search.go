@@ -28,18 +28,7 @@ func GetSearch(r *util.Request) error {
 				return true
 			}
 		case *model.Event:
-			if tobj.Private {
-				var canView bool
-				for _, group := range tobj.Groups {
-					if r.Auth.MemberG(group) || r.Auth.CanAG(model.PrivManageEvents, group) {
-						canView = true
-						break
-					}
-				}
-				if !canView {
-					return true
-				}
-			}
+			break
 		case *model.FolderNode:
 			if tobj.Group != 0 && !r.Auth.MemberG(tobj.Group) && !r.Auth.CanAG(model.PrivManageFolders, tobj.Group) {
 				return true

@@ -7,7 +7,7 @@ Event displays the event viewing/editing page.
   SSpinner
 #event-view(v-else)
   #event-view-name(v-text='event.name')
-  #event-view-orgtype(v-text='`${event.organization} ${event.type}`')
+  #event-view-orgtype(v-text='`${orgNames[event.org]} ${event.type}`')
   #event-view-date-time(v-text='dateTimeFmt')
   #event-view-venue
     #event-view-venue-name(v-text='event.venue ? event.venue.name : "Location TBD"')
@@ -48,16 +48,24 @@ export type GetEventEvent = {
   details: string
   renewsDSW: boolean
   coveredByDSW: boolean
-  organization: string
-  private: boolean
+  org: string
   type: string
-  groups: Array<number>
+  roles: Array<number>
   canEdit: boolean
   canAttendance: boolean
   canEditDSWFlags: boolean
 }
 type GetEvent = {
   event: GetEventEvent
+}
+
+const orgNames = {
+  admin: 'Admin',
+  'cert-d': 'CERT Deployment',
+  'cert-t': 'CERT Training',
+  listos: 'Listos',
+  sares: 'SARES',
+  snap: 'SNAP',
 }
 
 export default defineComponent({
@@ -93,7 +101,7 @@ export default defineComponent({
         )}`
     })
 
-    return { event, dateTimeFmt }
+    return { event, dateTimeFmt, orgNames }
   },
 })
 </script>

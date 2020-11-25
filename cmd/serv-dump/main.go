@@ -46,9 +46,7 @@ func main() {
 	}
 	tx = store.Begin(nil)
 	switch {
-	case (strings.HasPrefix("email_messages", os.Args[1]) && len(os.Args[1]) > 1) || os.Args[1] == "emails":
-		dumpEmailMessages(tx)
-	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
+	case strings.HasPrefix("events", os.Args[1]):
 		dumpEvents(tx)
 	case strings.HasPrefix("folders", os.Args[1]):
 		dumpFolders(tx)
@@ -73,47 +71,6 @@ func main() {
 	}
 	tx.Rollback()
 }
-
-func dumpEmailMessages(tx *store.Tx) {
-	tx.FetchEmailMessages(func(em *model.EmailMessage) bool {
-		var out jwriter.Writer
-		out.NoEscapeHTML = true
-		dumpEmailMessage(tx, &out, em)
-		out.DumpTo(os.Stdout)
-		os.Stdout.Write([]byte{'\n'})
-		return true
-	})
-}
-
-func dumpEmailMessage(tx *store.Tx, out *jwriter.Writer, em *model.EmailMessage) {
-	out.RawString(`{"id":`)
-	out.Int(int(em.ID))
-	out.RawString(`,"messageID":`)
-	out.String(em.MessageID)
-	out.RawString(`,"timestamp":`)
-	out.Raw(em.Timestamp.MarshalJSON())
-	out.RawString(`,"type":`)
-	out.String(model.EmailMessageTypeNames[em.Type])
-	out.RawString(`,"attention":`)
-	out.Bool(em.Attention)
-	out.RawString(`,"groups":[`)
-	for i, g := range em.Groups {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(g))
-		out.RawString(`,"name":`)
-		out.String(groupName(tx, g))
-		out.RawByte('}')
-	}
-	out.RawString(`],"from":`)
-	out.String(em.From)
-	out.RawString(`,"subject":`)
-	out.String(em.Subject)
-	out.RawByte('}')
-}
-
 func dumpEvents(tx *store.Tx) {
 	for _, e := range tx.FetchEvents("2000-01-01", "2099-12-31") {
 		var out jwriter.Writer
@@ -146,27 +103,8 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawString(`,"details":`)
 		out.String(e.Details)
 	}
-	if e.Organization != model.OrgNone {
-		out.RawString(`,"organization":`)
-		out.String(model.OrganizationNames[e.Organization])
-	}
-	if e.Private {
-		out.RawString(`,"private":true`)
-	}
 	out.RawString(`,"type":`)
 	out.String(model.EventTypeNames[e.Type])
-	out.RawString(`,"groups":[`)
-	for i, g := range e.Groups {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(g))
-		out.RawString(`,"name":`)
-		out.String(groupName(tx, g))
-		out.RawByte('}')
-	}
-	out.RawByte(']')
 	if e.RenewsDSW {
 		out.RawString(`,"renewsDSW":true`)
 	}

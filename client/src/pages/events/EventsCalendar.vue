@@ -17,15 +17,15 @@ EventsCalendar displays the events in a calendar form.
     )
       div(v-text='date ? date.date() : null')
       .events-calendar-day-dots
-        EventOrgDot(v-for='e in eventsOn(date)', :key='e.id', :organization='e.organization')
+        EventOrgDot(v-for='e in eventsOn(date)', :key='e.id', :org='e.org')
       .events-calendar-day-event(v-for='event in eventsOn(date)', :key='event.id')
-        EventOrgDot.events-calendar-dot-space(:organization='event.organization')
+        EventOrgDot.events-calendar-dot-space(:org='event.org')
         span(v-if='touch', v-text='event.name')
         router-link(v-else, :to='`/events/${event.id}`', :title='event.name', v-text='event.name')
   #events-calendar-footer(v-if='showDate')
     #events-calendar-date(v-text='showDate.format("dddd, MMMM D, YYYY")')
     .events-calendar-event(v-for='e in eventsOn(showDate)', :key='e.id')
-      EventOrgDot.mr-1(:organization='e.organization')
+      EventOrgDot.mr-1(:org='e.org')
       router-link(:to='`/events/${e.id}`', v-text='e.name')
     .events-calendar-event(v-if='!eventsOn(showDate).length') No events scheduled.
 </template>
@@ -49,9 +49,8 @@ export type ListEventsEvent = {
   date: string
   start: string
   venue: null | ListEventsVenue
-  organization: string
+  org: string
   type: string
-  groups: Array<string>
 }
 export type ListEvents = {
   canAdd: boolean

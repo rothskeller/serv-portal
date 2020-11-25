@@ -85,18 +85,6 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 				}
 			case "details":
 				e.Details = in.String()
-			case "organization":
-				org := in.String()
-				for _, o := range model.AllOrganizations {
-					if org == model.OrganizationNames[o] {
-						e.Organization = o
-					}
-				}
-				if e.Organization == 0 {
-					in.AddError(errors.New("invalid organization"))
-				}
-			case "private":
-				e.Private = in.Bool()
 			case "type":
 				etype := in.String()
 				for _, et := range model.AllEventTypes {
@@ -107,45 +95,6 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 				if e.Type == 0 {
 					in.AddError(errors.New("invalid type"))
 				}
-			case "groups":
-				in.Delim('[')
-				for !in.IsDelim(']') {
-					if in.IsNull() {
-						in.Skip()
-					} else {
-						var gid model.GroupID
-						if in.IsDelim('{') {
-							var seen bool
-							in.Delim('{')
-							for !in.IsDelim('}') {
-								key := in.UnsafeString()
-								in.WantColon()
-								if in.IsNull() {
-									in.Skip()
-									in.WantComma()
-									continue
-								}
-								switch key {
-								case "id":
-									gid = model.GroupID(in.Int())
-									seen = true
-								default:
-									in.SkipRecursive()
-								}
-								in.WantComma()
-							}
-							in.Delim('}')
-							if !seen {
-								in.AddError(errors.New("missing groups.id"))
-							}
-						} else {
-							gid = model.GroupID(in.Int())
-						}
-						e.Groups = append(e.Groups, gid)
-					}
-					in.WantComma()
-				}
-				in.Delim(']')
 			case "renewsDSW":
 				e.RenewsDSW = in.Bool()
 			case "coveredByDSW":

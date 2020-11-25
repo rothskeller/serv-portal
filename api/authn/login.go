@@ -45,6 +45,7 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"csrf":`)
 	out.String(string(r.Session.CSRF))
 	out.RawByte('}')
+	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json")
 	out.DumpTo(r)
 	return nil
@@ -87,7 +88,6 @@ func PostLogin(r *util.Request) error {
 		r.Tx.UpdatePerson(person)
 	}
 	util.CreateSession(r, remember)
-	r.Tx.Commit()
 	return GetLogin(r)
 
 FAIL:

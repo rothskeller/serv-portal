@@ -29,18 +29,6 @@ message Document {
   bool                      needs_approval = 5;
 }
 
-message EmailMessage {
-  int64                     id         = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EmailMessageID"];
-  string                    message_id = 2 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageID"];
-  google.protobuf.Timestamp timestamp  = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  int32                     type       = 4 [(gogoproto.casttype) = "EmailMessageType"];
-  bool                      attention  = 5;
-  repeated int64            groups     = 6 [(gogoproto.casttype) = "GroupID"];
-  string                    from       = 7;
-  string                    subject    = 8;
-  string                    error      = 9;
-}
-
 message Event {
   int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
   string         name         = 2;
@@ -50,9 +38,6 @@ message Event {
   int64          venue        = 6 [(gogoproto.casttype) = "VenueID"];
   string         details      = 7;
   int32          type         = 8 [(gogoproto.casttype) = "EventType"];
-  repeated int64 groups       = 9 [(gogoproto.casttype) = "GroupID"];
-  int32          organization = 11 [(gogoproto.casttype) = "Organization"];
-  bool           private      = 12;
   // RenewsDSW, if true, indicates that a person whose DSW registration is valid
   // at the time of the event, and who is marked as attending the event, gets
   // their DSW registration automatically renewed.

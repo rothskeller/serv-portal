@@ -15,7 +15,7 @@ import (
 
 type attrepDataKey struct {
 	pid model.PersonID
-	org model.Organization
+	org model.Org
 }
 type attrepColumn struct {
 	ctype string
@@ -67,7 +67,7 @@ func getAttrepEvents(r *util.Request, params attrepParameters) (events []*model.
 		if !params.eventTypes[e.Type] {
 			continue
 		}
-		if !params.orgs[e.Organization] {
+		if !params.orgs[e.Org] {
 			continue
 		}
 		events = append(events, e)
@@ -80,7 +80,7 @@ func getAttrepData(r *util.Request, events []*model.Event, params attrepParamete
 	for idx, e := range events {
 		for pid, att := range r.Tx.FetchAttendanceByEvent(e) {
 			var value = 1
-			var key = attrepDataKey{pid: pid, org: e.Organization}
+			var key = attrepDataKey{pid: pid, org: e.Org}
 
 			if !params.attendanceTypes[att.Type] && e.Type != model.EventHours {
 				continue
@@ -220,15 +220,13 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 	// people who didn't have attendance.  If it's false, we need to remove
 	// rows that have only zero values.
 	if params.includeZerosY {
-		auth := r.Tx.Authorizer()
-		for _, g := range auth.FetchGroups(auth.AllGroups()) {
-			if !params.orgs[g.Organization] {
-				continue
-			}
-			for _, pid := range auth.PeopleG(g.ID) {
-				key := attrepDataKey{pid: pid, org: g.Organization}
-				if data[key] == nil {
-					data[key] = make([]int, len(columns))
+		for _, p := range r.Tx.FetchPeople() {
+			for o := range params.orgs {
+				if p.Orgs[o].PrivLevel >= model.PrivMember2 {
+					key := attrepDataKey{pid: p.ID, org: o}
+					if data[key] == nil {
+						data[key] = make([]int, len(columns))
+					}
 				}
 			}
 		}
@@ -249,14 +247,14 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 	// Now, generate the rows, in random order.
 	switch {
 	case params.collapseY && params.groupByOrg:
-		var index = make(map[model.Organization]int)
+		var index = make(map[model.Org]int)
 		for key, vals := range data {
 			idx, ok := index[key.org]
 			if !ok {
 				idx = len(rows)
 				index[key.org] = idx
 				rows = append(rows, attrepRow{
-					label1: model.OrganizationNames[key.org],
+					label1: orgNames[key.org],
 					data:   make([]int, len(columns)),
 				})
 			}
@@ -268,7 +266,7 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 				pnames[key.pid] = r.Tx.FetchPerson(key.pid).SortName
 			}
 			rows = append(rows, attrepRow{
-				label1: model.OrganizationNames[key.org],
+				label1: orgNames[key.org],
 				label2: pnames[key.pid],
 				data:   vals,
 			})
@@ -294,7 +292,7 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 			}
 			rows = append(rows, attrepRow{
 				label1: pnames[key.pid],
-				label2: model.OrganizationNames[key.org],
+				label2: orgNames[key.org],
 				data:   vals,
 			})
 		}
@@ -555,4 +553,13 @@ func renderAttrepJSON(r *util.Request, rows []attrepRow, columns []attrepColumn,
 	out.RawString(`]}`)
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
+}
+
+var orgNames = map[model.Org]string{
+	model.OrgAdmin2: "Admin",
+	model.OrgCERTD2: "CERT-D",
+	model.OrgCERTT2: "CERT-T",
+	model.OrgListos: "Listos",
+	model.OrgSARES2: "SARES",
+	model.OrgSNAP2:  "SNAP",
 }

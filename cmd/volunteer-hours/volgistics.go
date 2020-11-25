@@ -33,7 +33,7 @@ func submitHours(tx *store.Tx) {
 	)
 	mstr = time.Time(mflag).Format("2006-01")
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		assn := orgToAssignment[e.Organization]
+		assn := orgToAssignment[e.Org]
 		if assn == 0 {
 			continue
 		}

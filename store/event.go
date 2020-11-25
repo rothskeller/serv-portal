@@ -10,7 +10,6 @@ import (
 
 // CreateEvent creates a new event in the database.
 func (tx *Tx) CreateEvent(e *model.Event) {
-	var gstr []string
 	var rstr []string
 
 	tx.Tx.CreateEvent(e)
@@ -25,17 +24,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	if e.Details != "" {
 		tx.entry.Change("set event [%d] details to %q", e.ID, e.Details)
 	}
-	tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
-	if e.Private {
-		tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
-	}
 	tx.entry.Change("set event [%d] type to %s", e.ID, model.EventTypeNames[e.Type])
-	if len(e.Groups) != 0 {
-		for _, g := range e.Groups {
-			gstr = append(gstr, fmt.Sprintf("%q [%d]", tx.Authorizer().FetchGroup(g).Name, g))
-		}
-		tx.entry.Change("set event [%d] groups to %s", e.ID, strings.Join(gstr, ", "))
-	}
 	if e.RenewsDSW {
 		tx.entry.Change("set event [%d] renewsDSW", e.ID)
 	}
@@ -79,36 +68,8 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 	if e.Details != oe.Details {
 		tx.entry.Change("set event %s %q [%d] details to %q", e.Date, e.Name, e.ID, e.Details)
 	}
-	if e.Organization != oe.Organization {
-		tx.entry.Change("set event %s %q [%d] organization to %s", e.Date, e.Name, e.ID, model.OrganizationNames[e.Organization])
-	}
-	if e.Private != oe.Private {
-		if e.Private {
-			tx.entry.Change("set event %s %q [%d] private flag", e.Date, e.Name, e.ID)
-		} else {
-			tx.entry.Change("clear event %s %q [%d] private flag", e.Date, e.Name, e.ID)
-		}
-	}
 	if e.Type != oe.Type {
 		tx.entry.Change("set event %s %q [%d] type to %s", e.Date, e.Name, e.ID, model.EventTypeNames[e.Type])
-	}
-GROUPS1:
-	for _, og := range oe.Groups {
-		for _, g := range e.Groups {
-			if og == g {
-				continue GROUPS1
-			}
-		}
-		tx.entry.Change("remove event %s %q [%d] group %q [%d]", e.Date, e.Name, e.ID, tx.Authorizer().FetchGroup(og).Name, og)
-	}
-GROUPS2:
-	for _, g := range e.Groups {
-		for _, og := range oe.Groups {
-			if og == g {
-				continue GROUPS2
-			}
-		}
-		tx.entry.Change("add event %s %q [%d] group %q [%d]", e.Date, e.Name, e.ID, tx.Authorizer().FetchGroup(g).Name, g)
 	}
 	if e.RenewsDSW != oe.RenewsDSW {
 		if e.RenewsDSW {

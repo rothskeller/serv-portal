@@ -15,7 +15,7 @@ type attrepParameters struct {
 	dateFrom        string
 	dateTo          string
 	eventTypes      map[model.EventType]bool
-	orgs            map[model.Organization]bool
+	orgs            map[model.Org]bool
 	attendanceTypes map[model.AttendanceType]bool
 	collapseX       bool
 	collapseY       bool
@@ -25,7 +25,7 @@ type attrepParameters struct {
 	groupByOrg      bool
 	renderCSV       bool
 	// Not really parameters, but cached here for convenience:
-	allowedOrgs map[model.Organization]bool
+	allowedOrgs map[model.Org]bool
 	dateRanges  []attrepDateRange
 }
 type attrepDateRange struct {
@@ -86,9 +86,9 @@ func readAttrepParameters(r *util.Request) (params attrepParameters) {
 	}
 
 	// Organizations
-	params.orgs = make(map[model.Organization]bool)
-	for _, oidstr := range strings.Split(r.FormValue("organizations"), ",") {
-		if o := model.Organization(util.ParseID(oidstr)); model.OrganizationNames[o] != "" {
+	params.orgs = make(map[model.Org]bool)
+	for _, oidstr := range strings.Split(r.FormValue("orgs"), ",") {
+		if o := model.Org(util.ParseID(oidstr)); orgNames[o] != "" {
 			params.orgs[o] = params.allowedOrgs[o]
 		}
 	}
@@ -151,7 +151,7 @@ func attrepRenderParams(out *jwriter.Writer, params attrepParameters) {
 	out.Bool(params.includeZerosX)
 	out.RawString(`,"includeZerosY":`)
 	out.Bool(params.includeZerosY)
-	out.RawString(`,"organizations":[`)
+	out.RawString(`,"orgs":[`)
 	var first = true
 	for o, v := range params.orgs {
 		if !v {
@@ -205,9 +205,9 @@ func attrepRenderParams(out *jwriter.Writer, params attrepParameters) {
 		out.String(dr.dateTo)
 		out.RawByte('}')
 	}
-	out.RawString(`],"organizations":[`)
+	out.RawString(`],"orgs":[`)
 	first = true
-	for _, o := range model.AllOrganizations {
+	for _, o := range model.AllOrgs {
 		if !params.allowedOrgs[o] {
 			continue
 		}
@@ -219,7 +219,7 @@ func attrepRenderParams(out *jwriter.Writer, params attrepParameters) {
 		out.RawString(`{"id":`)
 		out.Int(int(o))
 		out.RawString(`,"label":`)
-		out.String(model.OrganizationNames[o])
+		out.String(orgNames[o])
 		out.RawByte('}')
 	}
 	out.RawString(`],"eventTypes":[`)
@@ -249,10 +249,12 @@ func attrepRenderParams(out *jwriter.Writer, params attrepParameters) {
 
 // allowedOrgs returns a map of which organizations the current caller has
 // reporting capabilities on.
-func allowedOrgs(r *util.Request) (orgs map[model.Organization]bool) {
-	orgs = make(map[model.Organization]bool)
-	for _, g := range r.Tx.Authorizer().FetchGroups(r.Tx.Authorizer().GroupsA(model.PrivManageEvents)) {
-		orgs[g.Organization] = true
+func allowedOrgs(r *util.Request) (orgs map[model.Org]bool) {
+	orgs = make(map[model.Org]bool)
+	for _, o := range model.AllOrgs {
+		if r.Person.Orgs[o].PrivLevel >= model.PrivLeader {
+			orgs[o] = true
+		}
 	}
 	return orgs
 }

@@ -98,35 +98,6 @@ func (c *DSWClass) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	l.AddError(errors.New("unrecognized value for DSWClass"))
 }
 
-// An EmailMessageID is a positive integer uniquely identifying an email message
-// handled by the portal.
-type EmailMessageID int
-
-// An EmailMessageType describes the type of an email message handled by the
-// portal.
-type EmailMessageType byte
-
-// Values for EmailMessageType
-const (
-	EmailBounce EmailMessageType = iota
-	EmailSent
-	EmailSendFailed
-	EmailModerated
-	EmailUnrecognized
-)
-
-// AllEmailMessageTypes lists all of the known email message types.
-var AllEmailMessageTypes = []EmailMessageType{EmailBounce, EmailSent, EmailSendFailed, EmailModerated, EmailUnrecognized}
-
-// EmailMessageTypeNames gives names to all of the EmailMessageType values.
-var EmailMessageTypeNames = map[EmailMessageType]string{
-	EmailBounce:       "bounce",
-	EmailSent:         "sent",
-	EmailSendFailed:   "send_failed",
-	EmailModerated:    "moderated",
-	EmailUnrecognized: "unrecognized",
-}
-
 // An EventID is a positive integer uniquely identifying an Event.
 type EventID int
 

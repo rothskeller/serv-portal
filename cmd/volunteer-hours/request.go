@@ -35,9 +35,6 @@ func sendRequests(tx *store.Tx) {
 	// hours at those events.
 	mstr = time.Time(mflag).Format("2006-01")
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		if e.Organization == model.OrgNone {
-			continue
-		}
 		events = append(events, e)
 		eatt[e.ID] = tx.FetchAttendanceByEvent(e)
 		for pid, ai := range eatt[e.ID] {
@@ -185,9 +182,6 @@ func sendReminders(tx *store.Tx) {
 	// each.
 	mstr = time.Time(mflag).Format("2006-01")
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		if e.Organization == model.OrgNone {
-			continue
-		}
 		events = append(events, e)
 		eatt[e.ID] = tx.FetchAttendanceByEvent(e)
 		for pid, ai := range eatt[e.ID] {

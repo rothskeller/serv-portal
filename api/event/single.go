@@ -3,7 +3,6 @@ package event
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -16,7 +15,6 @@ import (
 func GetEvent(r *util.Request, idstr string) error {
 	var (
 		event          *model.Event
-		canView        bool
 		canEdit        bool
 		canAttendance  bool
 		out            jwriter.Writer
@@ -24,7 +22,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
-		if !r.Auth.CanA(model.PrivManageEvents) {
+		if !r.Person.HasPrivLevel(model.PrivLeader) {
 			return util.Forbidden
 		}
 		event = new(model.Event)
@@ -33,21 +31,9 @@ func GetEvent(r *util.Request, idstr string) error {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		canEdit = true
-		canView = !event.Private
-		for _, group := range event.Groups {
-			if r.Auth.MemberG(group) {
-				canView = true
-			}
-			if r.Auth.CanAG(model.PrivManageEvents, group) {
-				canView = true
-				canAttendance = true
-			} else {
-				canEdit = false
-			}
-		}
-		if !canView {
-			return util.Forbidden
+		if r.Person.Orgs[event.Org].PrivLevel >= model.PrivLeader {
+			canEdit = true
+			canAttendance = true
 		}
 	}
 	out.RawString(`{"event":{"id":`)
@@ -83,28 +69,25 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.Bool(event.RenewsDSW)
 	out.RawString(`,"coveredByDSW":`)
 	out.Bool(event.CoveredByDSW)
-	out.RawString(`,"organization":`)
-	out.String(model.OrganizationNames[event.Organization])
-	out.RawString(`,"private":`)
-	out.Bool(event.Private)
+	out.RawString(`,"org":`)
+	out.String(model.OrgNames[event.Org])
 	out.RawString(`,"type":`)
 	out.String(model.EventTypeNames[event.Type])
-	out.RawString(`,"groups":[`)
-	for i, g := range event.Groups {
+	out.RawString(`,"roles":[`)
+	for i, r := range event.Roles {
 		if i != 0 {
 			out.RawByte(',')
 		}
-		out.Int(int(g))
+		out.Int(int(r))
 	}
 	out.RawString(`],"canEdit":`)
 	out.Bool(canEdit)
 	out.RawString(`,"canAttendance":`)
 	out.Bool(canAttendance)
 	out.RawString(`,"canEditDSWFlags":`)
-	out.Bool(r.Auth.May(model.PermEditClearances))
+	out.Bool(r.Person.IsAdminLeader())
 	out.RawByte('}')
 	if canEdit && wantEdit {
-		var orgs = make(map[model.Organization]bool)
 		out.RawString(`,"types":[`)
 		var first = true
 		for _, et := range model.AllEventTypes {
@@ -118,19 +101,24 @@ func GetEvent(r *util.Request, idstr string) error {
 			}
 			out.String(model.EventTypeNames[et])
 		}
-		out.RawString(`],"groups":[`)
-		for i, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivManageEvents)) {
-			if i != 0 {
+		out.RawString(`],"roles":[`)
+		first = true
+		for _, role := range r.Tx.FetchRoles() {
+			if !role.ShowRoster || r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader {
+				continue
+			}
+			if first {
+				first = false
+			} else {
 				out.RawByte(',')
 			}
 			out.RawString(`{"id":`)
-			out.Int(int(g.ID))
+			out.Int(int(role.ID))
 			out.RawString(`,"name":`)
-			out.String(g.Name)
-			out.RawString(`,"organization":`)
-			out.String(model.OrganizationNames[g.Organization])
+			out.String(role.Name)
+			out.RawString(`,"org":`)
+			out.String(model.OrgNames[role.Org])
 			out.RawByte('}')
-			orgs[g.Organization] = true
 		}
 		out.RawString(`],"venues":[`)
 		for i, v := range r.Tx.FetchVenues() {
@@ -143,11 +131,10 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(v.Name)
 			out.RawByte('}')
 		}
-		out.RawString(`],"organizations":[`)
-		var found = false
+		out.RawString(`],"orgs":[`)
 		first = true
-		for _, o := range model.CurrentOrganizations {
-			if !orgs[o] {
+		for _, o := range model.AllOrgs {
+			if r.Person.Orgs[o].PrivLevel < model.PrivLeader {
 				continue
 			}
 			if first {
@@ -155,14 +142,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			} else {
 				out.RawByte(',')
 			}
-			out.String(model.OrganizationNames[o])
-			if event.Organization == o {
-				found = true
-			}
-		}
-		if !found && event.Organization != model.OrgNone {
-			out.RawByte(',')
-			out.String(model.OrganizationNames[event.Organization])
+			out.String(model.OrgNames[o])
 		}
 		out.RawByte(']')
 	}
@@ -172,16 +152,16 @@ func GetEvent(r *util.Request, idstr string) error {
 			first    = true
 		)
 		out.RawString(`,"people":[`)
-		for _, p := range r.Auth.FetchPeople(r.Auth.PeopleA(model.PrivViewMembers)) {
+		for _, p := range r.Tx.FetchPeople() {
 			ai, att := attended[p.ID]
-			canView := att
-			for _, group := range event.Groups {
-				if r.Auth.MemberPG(p.ID, group) {
-					canView = true
+			show := att
+			for _, role := range event.Roles {
+				if _, ok := p.Roles[role]; ok {
+					show = true
 					break
 				}
 			}
-			if !canView {
+			if !show {
 				continue
 			}
 			if first {
@@ -220,7 +200,7 @@ func PostEvent(r *util.Request, idstr string) error {
 		org   string
 	)
 	if idstr == "NEW" {
-		if !r.Auth.CanA(model.PrivManageEvents) {
+		if !r.Person.HasPrivLevel(model.PrivLeader) {
 			return util.Forbidden
 		}
 		event = new(model.Event)
@@ -228,10 +208,8 @@ func PostEvent(r *util.Request, idstr string) error {
 		if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 			return util.NotFound
 		}
-		for _, group := range event.Groups {
-			if !r.Auth.CanAG(model.PrivManageEvents, group) {
-				return util.Forbidden
-			}
+		if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
+			return util.Forbidden
 		}
 	}
 	if r.FormValue("delete") != "" && event.ID != 0 {
@@ -269,17 +247,19 @@ func PostEvent(r *util.Request, idstr string) error {
 		event.RenewsDSW = r.FormValue("renewsDSW") == "true"
 		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
 	}
-	org = r.FormValue("organization")
-	event.Organization = 0
-	for _, o := range model.AllOrganizations {
-		if org == model.OrganizationNames[o] {
-			event.Organization = o
+	org = r.FormValue("org")
+	event.Org = model.OrgNone2
+	for _, o := range model.AllOrgs {
+		if org == model.OrgNames[o] {
+			event.Org = o
 		}
 	}
-	if event.Organization == 0 {
-		return errors.New("invalid organization")
+	if event.Org == model.OrgNone2 {
+		return errors.New("invalid org")
 	}
-	event.Private, _ = strconv.ParseBool(r.FormValue("private"))
+	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
+		return errors.New("forbidden org")
+	}
 	event.Type = 0
 	for _, et := range model.AllEventTypes {
 		if model.EventTypeNames[et] == r.FormValue("type") {
@@ -290,13 +270,10 @@ func PostEvent(r *util.Request, idstr string) error {
 	if event.Type == 0 {
 		return errors.New("invalid type")
 	}
-	event.Groups = event.Groups[:0]
-	for _, idstr := range r.Form["group"] {
-		var gid = model.GroupID(util.ParseID(idstr))
-		if !r.Auth.CanAG(model.PrivManageEvents, gid) {
-			return util.Forbidden
-		}
-		event.Groups = append(event.Groups, gid)
+	event.Roles = event.Roles[:0]
+	for _, idstr := range r.Form["role"] {
+		var rid = model.Role2ID(util.ParseID(idstr))
+		event.Roles = append(event.Roles, rid)
 	}
 	if err := ValidateEvent(r.Tx, event); err != nil {
 		if err.Error() == "duplicate name" {

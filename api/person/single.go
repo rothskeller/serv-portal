@@ -247,15 +247,8 @@ func GetPerson(r *util.Request, idstr string) error {
 				continue
 			}
 			event := r.Tx.FetchEvent(eid)
-			if r.Person == person {
+			if r.Person == person || r.Person.Orgs[event.Org].PrivLevel >= model.PrivLeader {
 				attended = append(attended, event)
-			} else {
-				for _, group := range event.Groups {
-					if r.Auth.CanAG(model.PrivManageEvents, group) {
-						attended = append(attended, event)
-						break
-					}
-				}
 			}
 		}
 		if len(attended) > 0 {

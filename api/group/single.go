@@ -175,22 +175,6 @@ func PostGroup(r *util.Request, idstr string) error {
 }
 
 func deleteGroup(r *util.Request, group *model.Group) error {
-	for _, event := range r.Tx.FetchEvents("2000-01-01", "2099-12-31") {
-		found := false
-		j := 0
-		for _, g := range event.Groups {
-			if g != group.ID {
-				event.Groups[j] = g
-				j++
-			} else {
-				found = true
-			}
-		}
-		if found {
-			event.Groups = event.Groups[:j]
-			r.Tx.UpdateEvent(event)
-		}
-	}
 	r.Auth.DeleteGroup(group.ID)
 	r.Auth.Save()
 	r.Tx.Commit()

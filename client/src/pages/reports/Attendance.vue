@@ -33,12 +33,7 @@ Attendance displays the attendance report.
     tr
       td Organizations
       td
-        SCheckGroup#attrep-organizations(
-          inline,
-          :options='options.organizations',
-          valueKey='id',
-          v-model='organizations'
-        )
+        SCheckGroup#attrep-orgs(inline, :options='options.orgs', valueKey='id', v-model='orgs')
     tr
       td Events
       td
@@ -84,6 +79,11 @@ interface GetReportsAttendanceIDLabel {
   id: number
   label: string
 }
+interface GetReportsAttendanceOrg {
+  id: number
+  label: string
+  fmtOrg: string // added locally
+}
 interface AttendanceReportParams {
   dateRange: string
   dateFrom: string
@@ -93,13 +93,13 @@ interface AttendanceReportParams {
   cells: string
   includeZerosX: boolean
   includeZerosY: boolean
-  organizations: Array<number>
+  orgs: Array<number>
   eventTypes: Array<number>
   attendanceTypes: Array<number>
 }
 interface AttendanceReportOptions {
   dateRanges: Array<GetReportsAttendanceDateRange>
-  organizations: Array<GetReportsAttendanceIDLabel>
+  orgs: Array<GetReportsAttendanceOrg>
   eventTypes: Array<GetReportsAttendanceIDLabel>
   attendanceTypes: Array<GetReportsAttendanceIDLabel>
 }
@@ -139,7 +139,7 @@ export default defineComponent({
     const columns = ref([] as Array<string>)
     const rows = ref([] as Array<string>)
     const cells = ref([] as Array<Array<string>>)
-    const organizations = ref(new Set<number>())
+    const orgs = ref(new Set<number>())
     const eventTypes = ref(new Set<number>())
     const attendanceTypes = ref(new Set<number>())
     watchEffect(async () => {
@@ -151,21 +151,21 @@ export default defineComponent({
       columns.value = report.columns
       rows.value = report.rows
       cells.value = report.cells
-      organizations.value = new Set(report.parameters.organizations)
+      orgs.value = new Set(report.parameters.orgs)
       eventTypes.value = new Set(report.parameters.eventTypes)
       attendanceTypes.value = new Set(report.parameters.attendanceTypes)
     })
 
     // Watch for changes to the parameters.
     watch(
-      [params, attendanceTypes, eventTypes, organizations],
+      [params, attendanceTypes, eventTypes, orgs],
       () => {
         const query = {} as any
         query.dateRange = params.value.dateRange
         query.rows = params.value.rows
         query.columns = params.value.columns
         query.cells = params.value.cells
-        query.organizations = Array.from(organizations.value.keys(), (v) => v.toString())
+        query.orgs = Array.from(orgs.value.keys(), (v) => v.toString())
           .sort()
           .join(',')
         query.eventTypes = Array.from(eventTypes.value.keys(), (v) => v.toString())
@@ -189,7 +189,7 @@ export default defineComponent({
       columnOptions,
       eventTypes,
       options,
-      organizations,
+      orgs,
       params,
       rows,
       rowOptions,

@@ -349,6 +349,19 @@ func DeleteRole2(r *util.Request, idstr string) error {
 	if role = r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {
 		return util.NotFound
 	}
+	for _, e := range r.Tx.FetchEvents("2001-01-01", "2099-12-31") {
+		j := 0
+		for _, r := range e.Roles {
+			if r != role.ID {
+				e.Roles[j] = r
+				j++
+			}
+		}
+		if j < len(e.Roles) {
+			e.Roles = e.Roles[:j]
+			r.Tx.UpdateEvent(e)
+		}
+	}
 	r.Tx.DeleteRole(role)
 	authz.UpdateAuthz(r.Tx)
 	r.Tx.Commit()

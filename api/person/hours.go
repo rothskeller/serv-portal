@@ -63,10 +63,9 @@ func GetPersonHours(r *util.Request, idstr string) error {
 }
 func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, month time.Time) {
 	var (
-		mstr    = month.Format("2006-01")
-		first   = true
-		pgroups = r.Auth.FetchGroups(r.Auth.GroupsP(person.ID))
-		today   = time.Now().Format("2006-01-02")
+		mstr  = month.Format("2006-01")
+		first = true
+		today = time.Now().Format("2006-01-02")
 	)
 	out.RawString(`{"month":`)
 	out.String(month.Format("January 2006"))
@@ -83,13 +82,8 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 		if !show && e.Type != model.EventHours && e.Date > today {
 			continue
 		}
-		if !show && e.Organization != model.OrgNone {
-			for _, g := range pgroups {
-				if g.Organization == e.Organization {
-					show = true
-					break
-				}
-			}
+		if person.Orgs[e.Org].PrivLevel >= model.PrivMember2 {
+			show = true
 		}
 		if !show {
 			continue

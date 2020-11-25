@@ -21,9 +21,9 @@ SForm(v-else, @submit='onSubmit', submitLabel='Save Event', @cancel='() => {}')
   )
   SFSelect#event-type(
     label='Organization',
-    :options='organizations',
-    v-model='event.organization',
-    :errorFn='organizationError'
+    :options='orgs',
+    v-model='event.org',
+    :errorFn='orgError'
   )
   SFInput#event-date(label='Event date', type='date', v-model='event.date', :errorFn='dateError')
   SFTimeRange#event-times(label='Event time', v-model:start='event.start', v-model:end='event.end')
@@ -65,13 +65,12 @@ SForm(v-else, @submit='onSubmit', submitLabel='Save Event', @cancel='() => {}')
     help='This may contain HTML <a> tags for links, but no other tags.'
   )
   SFCheckGroup#event-flags(label='Flags', :options='flagOptions', v-model='flags')
-  SFCheckGroup#event-groups(
-    label='Invited groups',
-    :options='filteredGroups',
+  SFCheckGroup#event-roles(
+    label='Invited roles',
+    :options='filteredRoles',
     valueKey='id',
     labelKey='name',
-    v-model='groups',
-    :errorFn='groupsError'
+    v-model='roles'
   )
   template(v-if='event.id', #extraButtons)
     SButton(@click='onDelete', variant='danger') Delete Event
@@ -105,22 +104,35 @@ import {
 } from '../../base'
 import type { GetEventEvent, GetEventVenue } from './EventView.vue'
 
-type GetEventGroup = {
+type GetEventRole = {
   id: number
   name: string
-  organization: string
+  org: string
 }
 type GetEventEdit = {
   event: GetEventEvent
   types: Array<string>
-  groups: Array<GetEventGroup>
+  roles: Array<GetEventRole>
   venues: Array<GetEventVenue>
-  organizations: Array<string>
+  orgs: Array<string>
 }
 type PostEvent = {
   // It will be one or the other of:
   id?: number
   nameError?: true
+}
+type OrgLabel = {
+  value: string
+  label: string
+}
+
+const orgNames: Record<string, string> = {
+  admin: 'Admin',
+  'cert-d': 'CERT Deployment',
+  'cert-t': 'CERT Training',
+  listos: 'Listos',
+  sares: 'SARES',
+  snap: 'SNAP',
 }
 
 export default defineComponent({
@@ -145,20 +157,20 @@ export default defineComponent({
 
     // Load the event to be edited.
     const event = ref(null as null | GetEventEvent)
-    const allGroups = ref([] as Array<GetEventGroup>)
+    const allRoles = ref([] as Array<GetEventRole>)
     const allVenues = ref([] as Array<GetEventVenue>)
     const types = ref([] as Array<string>)
-    const organizations = ref([] as Array<string>)
+    const orgs = ref([] as Array<OrgLabel>)
     axios.get(`/api/events/${route.params.id}?edit=1`).then((resp: AxiosResponse<GetEventEdit>) => {
       event.value = resp.data.event
-      allGroups.value = resp.data.groups
+      allRoles.value = resp.data.roles
       allVenues.value = resp.data.venues
       allVenues.value.unshift({ id: 0, name: 'TBD' })
       allVenues.value.push({ id: -1, name: '(create a new venue)' })
       types.value = resp.data.types
       if (!event.value.type) types.value.unshift('(select type)')
-      organizations.value = resp.data.organizations
-      if (!event.value.organization) organizations.value.unshift('(select organization)')
+      orgs.value = resp.data.orgs.map((o) => ({ value: o, label: orgNames[o] }))
+      if (!event.value.org) orgs.value.unshift({ value: '', label: '(select organization)' })
       if (route.params.id === 'NEW') setPage({ title: 'New Event' })
       else
         setPage({
@@ -191,9 +203,9 @@ export default defineComponent({
     }
 
     // Organization field.
-    function organizationError(lostFocus: boolean) {
+    function orgError(lostFocus: boolean) {
       if (!lostFocus || !event.value) return ''
-      if (!event.value.organization || event.value.organization === '(select organization)')
+      if (!event.value.org || event.value.org === '(select organization)')
         return 'The organization is required.'
       return ''
     }
@@ -260,43 +272,33 @@ export default defineComponent({
         const flags = new Set()
         if (event.value!.renewsDSW) flags.add('renewsDSW')
         if (event.value!.coveredByDSW) flags.add('coveredByDSW')
-        if (event.value!.private) flags.add('private')
         return flags
       },
       set: (flags) => {
         event.value!.renewsDSW = flags.has('renewsDSW')
         event.value!.coveredByDSW = flags.has('coveredByDSW')
-        event.value!.private = flags.has('private')
       },
     })
     const flagOptions = [
       { value: 'renewsDSW', label: 'Attendance renews DSW registration' },
       { value: 'coveredByDSW', label: 'Event is covered by DSW insurance' },
-      { value: 'private', label: 'Event is visible only to invited groups' },
     ]
 
-    // Invited groups.
-    const filteredGroups = computed(() =>
-      allGroups.value.filter((f) => f.organization === event.value!.organization || !f.organization)
-    )
-    const groups = computed({
-      get: () => new Set(event.value!.groups),
-      set: (groups) => {
-        event.value!.groups = Array.from(groups.values()) as [number]
+    // Invited roles.
+    const filteredRoles = computed(() => allRoles.value.filter((f) => f.org === event.value!.org))
+    const roles = computed({
+      get: () => new Set(event.value!.roles),
+      set: (roles) => {
+        event.value!.roles = Array.from(roles.values()) as [number]
       },
     })
-    function groupsError(_: boolean, submitted: boolean) {
-      if (!submitted) return ''
-      if (groups.value.size === 0) return 'At least one group must be invited.'
-      return ''
-    }
 
     async function onSubmit() {
       if (!event.value) return
       const body = new FormData()
       body.append('name', event.value.name)
       body.append('type', event.value.type)
-      body.append('organization', event.value.organization)
+      body.append('org', event.value.org)
       body.append('date', event.value.date)
       body.append('start', event.value.start)
       body.append('end', event.value.end)
@@ -309,10 +311,9 @@ export default defineComponent({
       } else body.append('venue', event.value.venue.id.toString())
       body.append('renewsDSW', event.value.renewsDSW.toString())
       body.append('coveredByDSW', event.value.coveredByDSW.toString())
-      body.append('private', event.value.private.toString())
       body.append('details', event.value.details)
-      event.value.groups.forEach((g) => {
-        body.append('group', g.toString())
+      event.value.roles.forEach((r) => {
+        body.append('role', r.toString())
       })
       const resp: PostEvent = (await axios.post(`/api/events/${route.params.id}`, body)).data
       if (resp.nameError) {
@@ -343,8 +344,8 @@ export default defineComponent({
       nameError,
       types,
       typeError,
-      organizations,
-      organizationError,
+      orgs,
+      orgError,
       dateError,
       allVenues,
       venueName,
@@ -354,9 +355,8 @@ export default defineComponent({
       venueURLError,
       flags,
       flagOptions,
-      filteredGroups,
-      groups,
-      groupsError,
+      filteredRoles,
+      roles,
       onSubmit,
       onDelete,
       deleteModal,

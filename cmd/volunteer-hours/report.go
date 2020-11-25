@@ -14,15 +14,13 @@ import (
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
-var orgToAssignment = map[model.Organization]int{
-	model.OrgAdmin:    1052,
-	model.OrgCERTD:    1047,
-	model.OrgCERTT:    1047,
-	model.OrgLISTOS:   1048,
-	model.OrgOutreach: 1048,
-	model.OrgPEP:      1048,
-	model.OrgSARES:    399,
-	model.OrgSNAP:     373,
+var orgToAssignment = map[model.Org]int{
+	model.OrgAdmin2: 1052,
+	model.OrgCERTD2: 1047,
+	model.OrgCERTT2: 1047,
+	model.OrgListos: 1048,
+	model.OrgSARES2: 399,
+	model.OrgSNAP2:  373,
 }
 var assnToName = map[int]string{
 	0:    "TOTAL", // as used in this program
@@ -67,7 +65,7 @@ func reportHours(tx *store.Tx) {
 	report.Month = time.Time(mflag).Format("January 2006")
 	report.ByGroup = make(map[int]uint16)
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		assn := orgToAssignment[e.Organization]
+		assn := orgToAssignment[e.Org]
 		if assn == 0 {
 			continue
 		}

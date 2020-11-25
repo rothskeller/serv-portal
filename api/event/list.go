@@ -24,22 +24,10 @@ func GetEvents(r *util.Request) error {
 	}
 	events = r.Tx.FetchEvents(fmt.Sprintf("%d-01-01", year), fmt.Sprintf("%d-12-31", year))
 	out.RawString(`{"canAdd":`)
-	out.Bool(r.Auth.CanA(model.PrivManageEvents))
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"events":[`)
 	for _, e := range events {
 		if e.Type == model.EventHours {
-			continue
-		}
-		var canView = !e.Private
-		if !canView {
-			for _, group := range e.Groups {
-				if r.Auth.MemberG(group) || r.Auth.CanAG(model.PrivManageEvents, group) {
-					canView = true
-					break
-				}
-			}
-		}
-		if !canView {
 			continue
 		}
 		if first {
@@ -68,18 +56,11 @@ func GetEvents(r *util.Request) error {
 		} else {
 			out.RawString(`null`)
 		}
-		out.RawString(`,"organization":`)
-		out.String(model.OrganizationNames[e.Organization])
+		out.RawString(`,"org":`)
+		out.String(model.OrgNames[e.Org])
 		out.RawString(`,"type":`)
 		out.String(model.EventTypeNames[e.Type])
-		out.RawString(`,"groups":[`)
-		for i, g := range e.Groups {
-			if i != 0 {
-				out.RawByte(',')
-			}
-			out.String(r.Auth.FetchGroup(g).Name)
-		}
-		out.RawString(`]}`)
+		out.RawString(`}`)
 	}
 	out.RawString(`]}`)
 	r.Tx.Commit()

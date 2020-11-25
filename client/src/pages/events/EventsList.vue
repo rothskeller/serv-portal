@@ -21,7 +21,7 @@ EventsList displays the list of events.
         span(v-text='e.date.substr(5)')
         span.events-list-start(v-text='e.start')
       .events-list-event
-        EventOrgDot(:organization='e.organization')
+        EventOrgDot(:org='e.org')
         router-link(:to='`/events/${e.id}`', v-text='e.name')
       .events-list-location
         a(

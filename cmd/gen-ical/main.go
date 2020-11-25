@@ -40,9 +40,6 @@ func main() {
 	now = time.Now()
 	start = time.Date(now.Year(), now.Month()-6, now.Day(), 0, 0, 0, 0, time.Local).Format("2006-01-02")
 	for _, e := range tx.FetchEvents(start, "2099-12-31") {
-		if e.Private {
-			continue
-		}
 		ie := cal.AddEvent(fmt.Sprintf("%d@sunnyvaleserv.org", e.ID))
 		ie.SetDtStampTime(time.Now())
 		ie.SetSummary(e.Name)
@@ -51,9 +48,7 @@ func main() {
 		end, _ := time.ParseInLocation("2006-01-02 15:04", e.Date+" "+e.End, time.Local)
 		ie.SetEndAt(end)
 		ie.SetURL(fmt.Sprintf("https://sunnyvaleserv.org/events/%d", e.ID))
-		if e.Organization != model.OrgNone {
-			ie.AddProperty(ics.ComponentPropertyCategories, model.OrganizationNames[e.Organization])
-		}
+		ie.AddProperty(ics.ComponentPropertyCategories, model.OrgNames[e.Org])
 		if e.Details != "" {
 			ie.SetDescription(e.Details)
 			// TODO render links in plain text

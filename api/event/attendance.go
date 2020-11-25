@@ -11,21 +11,14 @@ import (
 // PostEventAttendance handles POST /api/events/$id/attendance requests.
 func PostEventAttendance(r *util.Request, idstr string) error {
 	var (
-		event   *model.Event
-		person  *model.Person
-		allowed bool
-		attend  map[model.PersonID]model.AttendanceInfo
+		event  *model.Event
+		person *model.Person
+		attend map[model.PersonID]model.AttendanceInfo
 	)
 	if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 		return util.NotFound
 	}
-	for _, group := range event.Groups {
-		if r.Auth.CanAG(model.PrivManageEvents, group) {
-			allowed = true
-			break
-		}
-	}
-	if !allowed {
+	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
 		return util.Forbidden
 	}
 	attend = r.Tx.FetchAttendanceByEvent(event)
@@ -39,9 +32,6 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 		var ai model.AttendanceInfo
 		var typestr string
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-			return errors.New("invalid person")
-		}
-		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) {
 			return errors.New("invalid person")
 		}
 		if len(r.Form["type"]) > i {

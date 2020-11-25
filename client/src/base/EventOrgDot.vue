@@ -3,15 +3,27 @@ EventOrgDot displays an appropriately colored dot for an event organization.
 -->
 
 <template lang="pug">
-span.dot(:class='`dot-${organization.replace(" ", "")}`', :title='organization')
+span.dot(:class='`dot-${org}`', :title='orgNames[org]')
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+const orgNames = {
+  admin: 'Admin',
+  'cert-d': 'CERT Deployment',
+  'cert-t': 'CERT Training',
+  listos: 'Listos',
+  sares: 'SARES',
+  snap: 'SNAP',
+}
+
 export default defineComponent({
   props: {
-    organization: String,
+    org: String,
+  },
+  setup() {
+    return { orgNames }
   },
 })
 </script>
@@ -27,30 +39,23 @@ export default defineComponent({
     margin-left: 0;
   }
 }
-.dot-Admin,
-.dot- {
+.dot-admin {
   background-color: #a9a9a9; /* gray */
 }
-.dot-CERTTraining {
+.dot-cert-t {
   background-color: #3cb44b; /* green */
 }
-.dot-CERTDeployment {
+.dot-cert-d {
   border: 2px solid #3cb44b; /* green */
   background-color: white;
 }
-.dot-LISTOS {
+.dot-listos {
   background-color: #f58231; /* orange */
 }
-.dot-Outreach {
-  background-color: #000000; /* black */
-}
-.dot-PEP {
-  background-color: #e6194b; /* red */
-}
-.dot-SARES {
+.dot-sares {
   background-color: #ffe119; /* yellow */
 }
-.dot-SNAP {
+.dot-snap {
   background-color: #4363d8; /* blue */
 }
 /* colors taken from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/ */

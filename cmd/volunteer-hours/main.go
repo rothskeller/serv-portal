@@ -143,25 +143,34 @@ func makePlaceholders(tx *store.Tx) {
 	var (
 		now   = time.Now()
 		mstr  = now.Format("2006-01")
-		found = make(map[model.Organization]bool)
+		found = make(map[model.Org]bool)
 	)
 	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
 		if e.Type == model.EventHours {
-			found[e.Organization] = true
+			found[e.Org] = true
 		}
 	}
 	mstr = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.Local).Add(-time.Second).Format("2006-01-02")
-	for _, o := range model.CurrentOrganizations {
+	for _, o := range model.AllOrgs {
 		if !found[o] {
 			var e = model.Event{
-				Date:         mstr,
-				Start:        "23:59",
-				End:          "23:59",
-				Name:         fmt.Sprintf("Other %s Hours", model.OrganizationNames[o]),
-				Organization: o,
-				Type:         model.EventHours,
+				Date:  mstr,
+				Start: "23:59",
+				End:   "23:59",
+				Name:  fmt.Sprintf("Other %s Hours", orgNames[o]),
+				Org:   o,
+				Type:  model.EventHours,
 			}
 			tx.CreateEvent(&e)
 		}
 	}
+}
+
+var orgNames = map[model.Org]string{
+	model.OrgAdmin2: "Admin",
+	model.OrgCERTD2: "CERT Deployment",
+	model.OrgCERTT2: "CERT Training",
+	model.OrgListos: "Listos",
+	model.OrgSARES2: "SARES",
+	model.OrgSNAP2:  "SNAP",
 }
