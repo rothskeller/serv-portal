@@ -23,10 +23,10 @@ func (tx *Tx) Search(query string, handler func(interface{}) bool) (err error) {
 			return handler(tx.FetchEvent(model.EventID(id)))
 		case "folder":
 			return handler(tx.FetchFolder(model.FolderID(id)))
-		case "group":
-			return handler(tx.Authorizer().FetchGroup(model.GroupID(id)))
 		case "person":
 			return handler(tx.FetchPerson(model.PersonID(id)))
+		case "role":
+			return handler(tx.FetchRole(model.Role2ID(id)))
 		case "textMessage":
 			return handler(tx.FetchTextMessage(model.TextMessageID(id)))
 		default:

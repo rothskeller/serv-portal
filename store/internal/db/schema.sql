@@ -131,7 +131,7 @@ CREATE VIRTUAL TABLE search USING fts5 (
     personHomeAddress,
     personWorkAddress,
     personMailAddress,
-    roleNamo,
+    roleName,
     roleTitle,
     textMessage,
     tokenize = 'unicode61'
