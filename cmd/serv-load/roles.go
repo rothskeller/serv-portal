@@ -140,6 +140,7 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 
 func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
+	var err error
 	for {
 		var r = &model.Role2{
 			Implies: make(map[model.Role2ID]bool),
@@ -185,16 +186,8 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 			case "title":
 				r.Title = in.String()
 			case "org":
-				str := in.String()
-				for v, s := range model.OrgNames {
-					if s == str {
-						r.Org = v
-						break
-					}
-				}
-				if r.Org == model.OrgNone2 {
-					in.AddError(errors.New("invalid org"))
-				}
+				r.Org, err = model.ParseOrg(in.String())
+				in.AddError(err)
 			case "privLevel":
 				str := in.String()
 				for v, s := range model.PrivLevelNames {

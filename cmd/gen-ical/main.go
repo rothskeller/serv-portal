@@ -7,7 +7,6 @@ import (
 
 	ics "github.com/arran4/golang-ical"
 
-	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 )
 
@@ -48,7 +47,7 @@ func main() {
 		end, _ := time.ParseInLocation("2006-01-02 15:04", e.Date+" "+e.End, time.Local)
 		ie.SetEndAt(end)
 		ie.SetURL(fmt.Sprintf("https://sunnyvaleserv.org/events/%d", e.ID))
-		ie.AddProperty(ics.ComponentPropertyCategories, model.OrgNames[e.Org])
+		ie.AddProperty(ics.ComponentPropertyCategories, e.Org.Label())
 		if e.Details != "" {
 			ie.SetDescription(e.Details)
 			// TODO render links in plain text

@@ -49,26 +49,11 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 	if folder.Group > 0 && tx.Authorizer().FetchGroup(folder.Group) == nil {
 		return errors.New("nonexistent group")
 	}
-	if folder.Org != model.OrgNone2 {
-		if folder.Public {
-			return errors.New("public folder with org")
-		}
-		var found = false
-		for _, o := range model.AllOrgs {
-			if folder.Org == o {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return errors.New("invalid org")
-		}
+	if !folder.Org.Valid() {
+		return errors.New("invalid org")
 	}
-	if folder.ParentNode != nil && folder.ParentNode.Org != model.OrgNone2 && folder.Org != folder.ParentNode.Org {
-		return errors.New("folder has different org than parent")
-	}
-	if folder.ParentNode != nil && !folder.ParentNode.Public && folder.Public {
-		return errors.New("public folder under non-public parent")
+	if folder.ParentNode != nil && !canParent(folder.ParentNode, folder) {
+		return errors.New("folder org is incompatible with parent")
 	}
 	folder.Approvals = 0
 	for _, cf := range folder.ChildNodes {
@@ -103,4 +88,15 @@ func ValidateFolder(tx *store.Tx, folder *model.FolderNode) (err error) {
 		}
 	}
 	return nil
+}
+
+func canParent(p, c *model.FolderNode) bool {
+	switch p.Org {
+	case model.OrgPublic:
+		return true
+	case model.OrgSERV:
+		return c.Org != model.OrgPublic
+	default:
+		return c.Org == p.Org
+	}
 }

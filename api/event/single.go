@@ -70,7 +70,7 @@ func GetEvent(r *util.Request, idstr string) error {
 	out.RawString(`,"coveredByDSW":`)
 	out.Bool(event.CoveredByDSW)
 	out.RawString(`,"org":`)
-	out.String(model.OrgNames[event.Org])
+	out.String(event.Org.String())
 	out.RawString(`,"type":`)
 	out.String(model.EventTypeNames[event.Type])
 	out.RawString(`,"roles":[`)
@@ -117,7 +117,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.RawString(`,"name":`)
 			out.String(role.Name)
 			out.RawString(`,"org":`)
-			out.String(model.OrgNames[role.Org])
+			out.String(role.Org.String())
 			out.RawByte('}')
 		}
 		out.RawString(`],"venues":[`)
@@ -142,7 +142,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			} else {
 				out.RawByte(',')
 			}
-			out.String(model.OrgNames[o])
+			out.String(o.String())
 		}
 		out.RawByte(']')
 	}
@@ -197,7 +197,7 @@ func GetEvent(r *util.Request, idstr string) error {
 func PostEvent(r *util.Request, idstr string) error {
 	var (
 		event *model.Event
-		org   string
+		err   error
 	)
 	if idstr == "NEW" {
 		if !r.Person.HasPrivLevel(model.PrivLeader) {
@@ -247,15 +247,8 @@ func PostEvent(r *util.Request, idstr string) error {
 		event.RenewsDSW = r.FormValue("renewsDSW") == "true"
 		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
 	}
-	org = r.FormValue("org")
-	event.Org = model.OrgNone2
-	for _, o := range model.AllOrgs {
-		if org == model.OrgNames[o] {
-			event.Org = o
-		}
-	}
-	if event.Org == model.OrgNone2 {
-		return errors.New("invalid org")
+	if event.Org, err = model.ParseOrg(r.FormValue("org")); err != nil {
+		return err
 	}
 	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
 		return errors.New("forbidden org")

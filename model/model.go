@@ -283,50 +283,6 @@ var ListTypeNames = map[ListType]string{
 	ListSMS:   "sms",
 }
 
-// An Org identifies one of the SERV volunteer organizations.
-type Org uint8
-
-// Values for Org.
-const (
-	OrgNone2 Org = iota
-	OrgAdmin2
-	OrgCERTD2
-	OrgCERTT2
-	OrgListos
-	OrgSARES2
-	OrgSNAP2
-	NumOrgs
-)
-
-// AllOrgs gives the list of all Orgs.
-var AllOrgs = []Org{OrgAdmin2, OrgCERTD2, OrgCERTT2, OrgListos, OrgSARES2, OrgSNAP2}
-
-// OrgNames gives the display names of the Orgs.
-var OrgNames = map[Org]string{
-	OrgAdmin2: "admin",
-	OrgCERTD2: "cert-d",
-	OrgCERTT2: "cert-t",
-	OrgListos: "listos",
-	OrgSARES2: "sares",
-	OrgSNAP2:  "snap",
-}
-
-// MembersCanViewContactInfo returns whether Members of the receiver Org can
-// view contact info for members of the Org.
-func (o Org) MembersCanViewContactInfo() bool { return o != OrgSARES2 }
-
-// DSWClass returns the DSW class for the receiver Org.
-func (o Org) DSWClass() DSWClass {
-	switch o {
-	case OrgSARES2:
-		return DSWComm
-	case OrgCERTD2, OrgCERTT2:
-		return DSWCERT
-	default:
-		return 0
-	}
-}
-
 // An Organization identifies one of the SERV volunteer organizations.
 type Organization uint8
 

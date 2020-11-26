@@ -61,16 +61,8 @@ message Folder {
   int64             group       = 4 [(gogoproto.casttype) = "GroupID"];
   repeated Document documents   = 5;
   int64             approvals   = 6 [(gogoproto.casttype) = "int"];
-  // Org is the organization that owns the folder; only members of that org can
-  // view its contents, and only leaders of that org can modify it.  If this is
-  // set to OrgNone, any member of any org can view it and any leader of any org
-  // can modify it.
-  int64 org = 7 [(gogoproto.casttype) = "Org"];
-  // Public is a flag indicating that the folder is visible to the general
-  // public without a login.  (Org will be OrgNone for such folders.)  It also
-  // indicates that only Admin Leaders can modify it.  Approvals are only
-  // tracked for public folders.
-  bool public = 8;
+  // Org is the organization that can see the folder.
+  int64 org = 7 [(gogoproto.casttype) = "FolderOrg"];
 }
 
 message Group {

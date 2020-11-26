@@ -57,7 +57,7 @@ func GetEvents(r *util.Request) error {
 			out.RawString(`null`)
 		}
 		out.RawString(`,"org":`)
-		out.String(model.OrgNames[e.Org])
+		out.String(e.Org.String())
 		out.RawString(`,"type":`)
 		out.String(model.EventTypeNames[e.Type])
 		out.RawString(`}`)

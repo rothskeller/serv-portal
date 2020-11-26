@@ -31,7 +31,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 	if e.CoveredByDSW {
 		tx.entry.Change("set event [%d] coveredByDSW", e.ID)
 	}
-	tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, model.OrgNames[e.Org])
+	tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, e.Org.String())
 	if len(e.Roles) != 0 {
 		for _, r := range e.Roles {
 			rstr = append(rstr, fmt.Sprintf("%q [%d]", tx.FetchRole(r).Name, r))
@@ -87,7 +87,7 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 		}
 	}
 	if e.Org != oe.Org {
-		tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, model.OrgNames[e.Org])
+		tx.entry.Change("set event %s %q [%d] org to %s", e.Date, e.Name, e.ID, e.Org.String())
 	}
 ROLES1:
 	for _, or := range oe.Roles {

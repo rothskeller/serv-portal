@@ -684,7 +684,7 @@ func GetPersonRoles(r *util.Request, idstr string) error {
 			out.RawByte(',')
 		}
 		out.RawString(`{"org":`)
-		out.String(model.OrgNames[org])
+		out.String(org.String())
 		out.RawString(`,"roles":[`)
 		var firstRole = true
 		for _, role := range r.Tx.FetchRoles() {

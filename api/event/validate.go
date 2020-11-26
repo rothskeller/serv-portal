@@ -61,10 +61,7 @@ func ValidateEvent(tx *store.Tx, event *model.Event) error {
 	if !matched {
 		return errors.New("invalid type")
 	}
-	if event.Org == model.OrgNone2 {
-		return errors.New("missing org")
-	}
-	if _, ok := model.OrgNames[event.Org]; !ok {
+	if !event.Org.Valid() {
 		return errors.New("invalid org")
 	}
 	for _, r := range event.Roles {

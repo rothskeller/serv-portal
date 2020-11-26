@@ -15,6 +15,7 @@ import (
 
 func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
+	var err error
 	for {
 		var f = &model.FolderNode{Folder: &model.Folder{}}
 		var first = true
@@ -106,18 +107,8 @@ func loadFolders(tx *store.Tx, in *jlexer.Lexer) {
 					f.Group = model.GroupID(in.Int())
 				}
 			case "org":
-				ostr := in.String()
-				for v, s := range model.OrgNames {
-					if s == ostr {
-						f.Org = v
-						break
-					}
-				}
-				if f.Org == model.OrgNone2 {
-					in.AddError(errors.New("invalid org"))
-				}
-			case "public":
-				f.Public = in.Bool()
+				f.Org, err = model.ParseFolderOrg(in.String())
+				in.AddError(err)
 			case "documents":
 				in.Delim('[')
 				for !in.IsDelim(']') {

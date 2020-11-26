@@ -61,7 +61,7 @@ func GetRoles2(r *util.Request) error {
 		out.String(role.Name)
 		if role.Org != model.OrgNone2 {
 			out.RawString(`,"org":`)
-			out.String(model.OrgNames[role.Org])
+			out.String(role.Org.String())
 		}
 		if role.PrivLevel != model.PrivNone {
 			out.RawString(`,"privLevel":`)

@@ -15,6 +15,7 @@ import (
 
 func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
+	var err error
 	for {
 		var e = new(model.Event)
 		var ea = map[model.PersonID]model.AttendanceInfo{}
@@ -100,15 +101,8 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 			case "coveredByDSW":
 				e.CoveredByDSW = in.Bool()
 			case "org":
-				org := in.String()
-				for _, o := range model.AllOrgs {
-					if org == model.OrgNames[o] {
-						e.Org = o
-					}
-				}
-				if e.Org == 0 {
-					in.AddError(errors.New("invalid org"))
-				}
+				e.Org, err = model.ParseOrg(in.String())
+				in.AddError(err)
 			case "roles":
 				in.Delim('[')
 				for !in.IsDelim(']') {

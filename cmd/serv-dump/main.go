@@ -112,7 +112,7 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawString(`,"coveredByDSW":true`)
 	}
 	out.RawString(`,"org":`)
-	out.String(model.OrgNames[e.Org])
+	out.String(e.Org.String())
 	out.RawString(`,"roles":[`)
 	for i, r := range e.Roles {
 		if i != 0 {
@@ -174,13 +174,8 @@ func dumpFolder(tx *store.Tx, f *model.FolderNode) {
 		out.String(tx.Authorizer().FetchGroup(f.Group).Name)
 		out.RawByte('}')
 	}
-	if f.Org != model.OrgNone2 {
-		out.RawString(`,"org":`)
-		out.String(model.OrgNames[f.Org])
-	}
-	if f.Public {
-		out.RawString(`,"public":true`)
-	}
+	out.RawString(`,"org":`)
+	out.String(f.Org.String())
 	if f.Approvals != 0 {
 		out.RawString(`,"approvals":`)
 		out.Int(f.Approvals)
@@ -488,7 +483,7 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		} else {
 			out.RawByte(',')
 		}
-		out.String(model.OrgNames[org])
+		out.String(org.String())
 		out.RawString(`:{"privLevel":`)
 		out.String(model.PrivLevelNames[p.Orgs[org].PrivLevel])
 		out.RawString(`,"title":`)
@@ -579,7 +574,7 @@ func dumpRole2(tx *store.Tx, out *jwriter.Writer, r *model.Role2) {
 		out.String(r.Title)
 	}
 	out.RawString(`,"org":`)
-	out.String(model.OrgNames[r.Org])
+	out.String(r.Org.String())
 	if r.PrivLevel != model.PrivNone {
 		out.RawString(`,"privLevel":`)
 		out.String(model.PrivLevelNames[r.PrivLevel])

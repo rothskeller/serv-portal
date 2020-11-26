@@ -162,7 +162,7 @@ func GetRole2(r *util.Request, idstr string) error {
 	out.RawString(`,"title":`)
 	out.String(role.Title)
 	out.RawString(`,"org":`)
-	out.String(model.OrgNames[role.Org])
+	out.String(role.Org.String())
 	out.RawString(`,"privLevel":`)
 	out.String(model.PrivLevelNames[role.PrivLevel])
 	out.RawString(`,"showRoster":`)
@@ -230,6 +230,7 @@ func GetRole2(r *util.Request, idstr string) error {
 // PostRole2 handles POST /api/roles2/${id} requests.
 func PostRole2(r *util.Request, idstr string) error {
 	var role *model.Role2
+	var err error
 
 	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
@@ -253,18 +254,8 @@ func PostRole2(r *util.Request, idstr string) error {
 	}
 	role.Name = r.FormValue("name")
 	role.Title = r.FormValue("title")
-	if str := r.FormValue("org"); str != "" {
-		var found = false
-		for v, s := range model.OrgNames {
-			if s == str {
-				role.Org = v
-				found = true
-				break
-			}
-		}
-		if !found {
-			return errors.New("invalid org")
-		}
+	if role.Org, err = model.ParseOrg(r.FormValue("org")); err != nil {
+		return err
 	}
 	if str := r.FormValue("privLevel"); str != "" {
 		var found = false
