@@ -65,7 +65,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "ERROR: person already has a password\n")
 		os.Exit(1)
 	}
-	if tx.Authorizer().MemberPG(person.ID, tx.Authorizer().FetchGroupByTag(model.GroupDisabled).ID) {
+	if person.Roles[model.DisabledUser] {
 		fmt.Fprintf(os.Stderr, "ERROR: person is disabled\n")
 		os.Exit(1)
 	}

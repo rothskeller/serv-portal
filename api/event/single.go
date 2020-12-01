@@ -243,7 +243,7 @@ func PostEvent(r *util.Request, idstr string) error {
 		return errors.New("invalid venue")
 	}
 	event.Details = r.FormValue("details")
-	if r.Auth.May(model.PermEditClearances) {
+	if r.Person.IsAdminLeader() {
 		event.RenewsDSW = r.FormValue("renewsDSW") == "true"
 		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
 	}

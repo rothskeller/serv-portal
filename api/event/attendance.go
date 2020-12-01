@@ -13,19 +13,13 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	var (
 		event  *model.Event
 		person *model.Person
-		attend map[model.PersonID]model.AttendanceInfo
+		attend = make(map[model.PersonID]model.AttendanceInfo)
 	)
 	if event = r.Tx.FetchEvent(model.EventID(util.ParseID(idstr))); event == nil {
 		return util.NotFound
 	}
 	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
 		return util.Forbidden
-	}
-	attend = r.Tx.FetchAttendanceByEvent(event)
-	for pid := range attend {
-		if r.Auth.CanAP(model.PrivViewMembers, pid) {
-			delete(attend, pid)
-		}
 	}
 	r.ParseMultipartForm(1048576)
 	for i, idstr := range r.Form["person"] {

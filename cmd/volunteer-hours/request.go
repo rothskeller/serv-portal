@@ -18,14 +18,12 @@ import (
 
 func sendRequests(tx *store.Tx) {
 	var (
-		mstr             string
-		events           []*model.Event
-		eatt             = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
-		people           = make(map[model.PersonID]*model.Person)
-		requestFromRoles = make(map[model.RoleID]bool)
-		auth             = tx.Authorizer()
-		mailer           *sendmail.Mailer
-		err              error
+		mstr   string
+		events []*model.Event
+		eatt   = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
+		people = make(map[model.PersonID]*model.Person)
+		mailer *sendmail.Mailer
+		err    error
 	)
 	if mailer, err = sendmail.OpenMailer(); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: can't open mailer: %s\n", err)
@@ -55,27 +53,15 @@ func sendRequests(tx *store.Tx) {
 			delete(people, p.ID)
 		}
 	}
-	// Next, we need to add in all of the people who are in groups that we
-	// request volunteer hours from (and who are in Volgistics).  For
-	// starters, let's get a list of those groups.
-	for _, g := range auth.FetchGroups(auth.AllGroups()) {
-		if g.GetHours {
-			for _, r := range auth.RolesG(g.ID) {
-				requestFromRoles[r] = true
-			}
-		}
-	}
+	// Next, we need to add in all of the people who are members of orgs,
+	// and also in Volgistics.
 	for _, p := range tx.FetchPeople() {
 		if len(pflags) != 0 && !pflags[p.ID] {
 			continue
 		}
-		if people[p.ID] == nil && p.VolgisticsID != 0 && !p.NoEmail && (p.Email != "" || p.Email2 != "") {
-			for _, r := range auth.RolesP(p.ID) {
-				if requestFromRoles[r] {
-					people[p.ID] = p
-					break
-				}
-			}
+		if people[p.ID] == nil && p.VolgisticsID != 0 && !p.NoEmail && (p.Email != "" || p.Email2 != "") &&
+			p.HasPrivLevel(model.PrivMember2) {
+			people[p.ID] = p
 		}
 	}
 	// Send an email to each of those people.
