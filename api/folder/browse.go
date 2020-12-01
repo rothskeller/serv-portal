@@ -41,7 +41,7 @@ func getBrowseFolder(r *util.Request, folder *model.Folder) (err error) {
 		if d.URL != "" {
 			out.String(d.URL)
 		} else {
-			out.String("/dl/" + folder.URL + "/" + url.PathEscape(d.Name))
+			out.String("/dl" + folder.URL + "/" + url.PathEscape(d.Name))
 		}
 		if CanShowInBrowser(d) {
 			out.RawString(`,"newtab":true`)
