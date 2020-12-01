@@ -209,6 +209,8 @@ message TextMessage {
   google.protobuf.Timestamp timestamp  = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
   string                    message    = 5;
   repeated TextRecipient    recipients = 6;
+  // Lists is the array of lists to which the message was sent.
+  repeated int64 lists = 7 [(gogoproto.casttype) = "ListID"];
 }
 
 message TextRecipient {

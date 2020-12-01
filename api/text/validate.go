@@ -25,6 +25,17 @@ func ValidateTextMessage(tx *store.Tx, tm *model.TextMessage) (err error) {
 			return errors.New("nonexistent group")
 		}
 	}
+	var seenLists = make(map[model.ListID]bool)
+	for _, lid := range tm.Lists {
+		if seenLists[lid] {
+			return errors.New("duplicate list")
+		}
+		if list := tx.FetchList(lid); list == nil {
+			return errors.New("nonexistent list")
+		} else if list.Type != model.ListSMS {
+			return errors.New("invalid list type")
+		}
+	}
 	if tm.Timestamp.IsZero() {
 		return errors.New("missing timestamp")
 	}

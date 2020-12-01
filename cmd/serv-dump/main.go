@@ -635,6 +635,17 @@ func dumpTextMessage(tx *store.Tx, out *jwriter.Writer, t *model.TextMessage) {
 		out.String(groupName(tx, g))
 		out.RawByte('}')
 	}
+	out.RawString(`],"lists":[`)
+	for i, l := range t.Lists {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"id":`)
+		out.Int(int(l))
+		out.RawString(`,"name":`)
+		out.String(listName(tx, l))
+		out.RawByte('}')
+	}
 	out.RawString(`],"timestamp":`)
 	out.Raw(t.Timestamp.MarshalJSON())
 	out.RawString(`,"message":`)
@@ -682,6 +693,12 @@ func dumpVenues(tx *store.Tx) {
 
 func groupName(tx *store.Tx, id model.GroupID) string {
 	if v := tx.Authorizer().FetchGroup(id); v != nil {
+		return v.Name
+	}
+	return ""
+}
+func listName(tx *store.Tx, id model.ListID) string {
+	if v := tx.FetchList(id); v != nil {
 		return v.Name
 	}
 	return ""

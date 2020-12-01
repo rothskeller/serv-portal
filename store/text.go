@@ -30,6 +30,9 @@ func (tx *Tx) CreateTextMessage(message *model.TextMessage) {
 			tx.entry.Change("add text [%d] recipient %q [%d] number %s", message.ID, tx.FetchPerson(r.Recipient).InformalName, r.Recipient, r.Number)
 		}
 	}
+	for _, l := range message.Lists {
+		tx.entry.Change("add text [%d] list %q [%d]", message.ID, l, tx.FetchList(l).Name)
+	}
 }
 
 // UpdateTextMessage updates an existing text message in the database.

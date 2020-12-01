@@ -102,6 +102,38 @@ func loadTextMessages(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "lists":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						if in.IsDelim('{') {
+							in.Delim('{')
+							for !in.IsDelim('}') {
+								key := in.UnsafeString()
+								in.WantColon()
+								if in.IsNull() {
+									in.Skip()
+									in.WantComma()
+									continue
+								}
+								switch key {
+								case "id":
+									t.Lists = append(t.Lists, model.ListID(in.Int()))
+								default:
+									in.SkipRecursive()
+								}
+								in.WantComma()
+							}
+							in.Delim('}')
+						} else {
+							t.Lists = append(t.Lists, model.ListID(in.Int()))
+						}
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
 			case "timestamp":
 				if data := in.Raw(); in.Ok() {
 					in.AddError(t.Timestamp.UnmarshalJSON(data))
