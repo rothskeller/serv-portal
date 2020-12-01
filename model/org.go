@@ -48,17 +48,17 @@ func (o Org) String() string {
 func (o Org) Label() string {
 	switch o {
 	case OrgAdmin2:
-		return "Admin"
+		return "SERV Leads"
 	case OrgCERTD2:
-		return "CERT-D"
+		return "CERT Deployment Teams"
 	case OrgCERTT2:
-		return "CERT-T"
+		return "CERT Training Committee"
 	case OrgListos:
-		return "Listos"
+		return "Listos Team"
 	case OrgSARES2:
-		return "SARES"
+		return "SARES Members"
 	case OrgSNAP2:
-		return "SNAP"
+		return "SNAP Team"
 	default:
 		return ""
 	}

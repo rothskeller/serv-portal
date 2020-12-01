@@ -10,13 +10,6 @@ CREATE TABLE approval (data BLOB);
 -- all of the groups, roles, and privileges for the SERV portal.
 CREATE TABLE authorizer (data BLOB);
 
--- The folder table tracks all document folders.  The data column contains most
--- of the folder data, in protocol buffer encoding of model.Folder.
-CREATE TABLE folder (
-    id   integer PRIMARY KEY,
-    data blob    NOT NULL
-);
-
 -- The lists table is a single-row, single-column table containing a BLOB.  The
 -- BLOB is the protocol buffer encoding of model.Lists, which contains all of
 -- the lists for the SERV portal.

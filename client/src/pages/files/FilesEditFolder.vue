@@ -1,186 +1,141 @@
 <!--
-FilesEditFolder displays the modal popup for editing a folder.
+FilesEditFolder is the dialog box for editing a folder (or adding a new one).
 -->
 
 <template lang="pug">
 Modal(ref='modal')
-  SForm#files-edit-folder-form(
+  SForm(
     dialog,
-    :title='editFolder ? "Edit Folder" : "Add Folder"',
-    submitLabel='OK',
-    :disabled='confirmingDelete',
+    variant='primary',
+    :title='title',
+    :submitLabel='submitLabel',
+    :disabled='submitting',
     @submit='onSubmit',
-    :onCancel='onCancel'
+    @cancel='onCancel'
   )
-    SFInput#files-edit-folder-name(
-      ref='editFolderNameRef',
-      label='Name',
-      trim,
-      v-model='editFolderName',
-      :errorFn='editFolderNameError'
-    )
-    SFSelect#files-edit-folder-group(
-      label='Group',
-      v-model='editFolderGroup',
-      :options='allowedGroups',
-      valueKey='id',
-      labelKey='name'
-    )
-    SFSelect#files-edit-folder-parent(
-      v-if='editFolder',
-      label='Parent Folder',
-      v-model='editFolderParent',
-      :options='allowedParents',
-      valueKey='id',
-      labelKey='name'
-    )
-    template(v-if='editFolder', #extraButtons)
-      SButton(@click='onDelete', :disabled='confirmingDelete', variant='danger') Delete
-    template(v-if='confirmingDelete', #feedback)
-      #files-edit-folder-confirm-label.form-item.
-        Are you sure you want to delete the folder "{{editFolder.name}}",
-        along with all of its files and sub-folders?
-        It cannot be restored.
-      #files-edit-folder-confirm-buttons.form-item
-        SButton(variant='secondary', @click='cancelDelete') Keep
-        SButton(variant='danger', @click='confirmDelete') Delete
+    SSpinner(v-if='!visibilities.length')
+    template(v-else)
+      SFInput#files-editf-name(
+        ref='nameRef',
+        label='Name',
+        trim,
+        v-model='folder.name',
+        :errorFn='nameError'
+      )
+      SFSelect#files-editf-vis(
+        label='Visibility',
+        :options='visibilities',
+        v-model='folder.visibility'
+      )
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref, toRefs, watchEffect } from 'vue'
+import { computed, defineComponent, nextTick, PropType, ref, watch } from 'vue'
 import axios from '../../plugins/axios'
-import { Modal, SButton, SFInput, SForm, SFSelect } from '../../base'
-import type {
-  GetFolderEditAllowedGroup,
-  GetFolderEditAllowedParent,
-  GetFolderChild,
-  GetFolderEdit,
-} from '../Files.vue'
+import { Modal, SForm, SFInput, SFSelect, SSpinner } from '../../base'
+
+interface GetFolderEdit {
+  name: string
+  visibility: string
+  allowedVisibilities: Array<string>
+}
+
+const fmtVis: Record<string, string> = {
+  public: 'Public',
+  serv: 'SERV Volunteers',
+  admin: 'SERV Leads',
+  'cert-d': 'CERT Deployment Teams',
+  'cert-t': 'CERT Training Committee',
+  listos: 'Listos Team',
+  sares: 'SARES Members',
+  snap: 'SNAP Team',
+}
 
 export default defineComponent({
-  components: { Modal, SButton, SFInput, SForm, SFSelect },
-  props: {
-    allowedGroups: { type: Array as PropType<Array<GetFolderEditAllowedGroup>>, required: true },
-    allowedParents: { type: Array as PropType<Array<GetFolderEditAllowedParent>>, required: true },
-    editFolder: Object as PropType<GetFolderChild>,
-    parentID: { type: Number, required: true },
-    siblings: { type: Array as PropType<Array<GetFolderChild>>, required: true },
-  },
-  emits: ['delete'],
-  setup(props, { emit }) {
-    const { allowedParents, editFolder, parentID } = toRefs(props)
-
-    // Show the modal.
+  components: { Modal, SForm, SFInput, SFSelect, SSpinner },
+  setup() {
     const modal = ref(null as any)
-    function show() {
-      confirmingDelete.value = false
+    let url: string
+    let op: string
+    function showAdd(parent: string) {
+      url = parent
+      op = 'newFolder'
+      loadData()
+      return modal.value.show()
+    }
+    function showEdit(folder: string) {
+      url = folder
+      op = 'editFolder'
+      loadData()
       return modal.value.show()
     }
 
-    // Copy information about the folder being edited into local refs.
-    const editFolderName = ref('')
-    const editFolderGroup = ref(0)
-    const editFolderParent = ref(0)
-    watchEffect(() => {
-      editFolderName.value = editFolder?.value?.name || ''
-      editFolderGroup.value = editFolder?.value?.group || 0
-      editFolderParent.value = parentID.value
-    })
-
-    // Focus on the name field when mounted.
-    const editFolderNameRef = ref(null as null | HTMLInputElement)
-    onMounted(() => {
-      if (editFolderNameRef.value) editFolderNameRef.value.focus()
-    })
-
-    // Filter the overall list of allowed parents to remove the folder being
-    // edited and its descendants.
-    const filteredParents = computed(() => {
-      if (!editFolder!.value) return []
-      let ignoreAbove: null | number
-      return allowedParents.value.filter((p) => {
-        if (p.id === editFolder!.value!.id) {
-          ignoreAbove = p.indent
-          return false
-        }
-        if (ignoreAbove !== null && p.indent > ignoreAbove) {
-          return false
-        }
-        ignoreAbove = null
-        return true
+    // Load the form data.
+    const folder = ref({} as GetFolderEdit)
+    const visibilities = ref([] as any)
+    async function loadData() {
+      folder.value = (await axios.get<GetFolderEdit>(`/api/folders${url}?op=${op}`)).data
+      visibilities.value = folder.value.allowedVisibilities.map((v) => ({
+        value: v,
+        label: fmtVis[v],
+      }))
+      nextTick(() => {
+        nameRef.value.focus()
       })
-    })
+    }
 
-    // Validate the folder name.
-    function editFolderNameError(lostFocus: boolean): string {
+    // The name field.
+    const nameRef = ref(null as any)
+    const duplicateName = ref('')
+    function nameError(lostFocus: boolean): string {
       if (!lostFocus) return ''
-      if (!editFolderName.value) return 'The folder name is required.'
-      if (props.siblings.find((f) => f !== editFolder?.value && f.name === editFolderName.value))
-        return 'This folder name is already in use.'
+      if (!folder.value.name) return 'The folder name is required.'
+      if (folder.value.name === duplicateName.value) return 'This name is already in use.'
       return ''
     }
 
-    // Submit the folder edit.
+    // Labels.
+    const title = computed(() => (op === 'newFolder' ? 'Add Folder' : 'Edit Folder'))
+    const submitLabel = computed(() => (op === 'newFolder' ? 'Add' : 'Save'))
+
+    // Save and close.
+    const submitting = ref(false)
     async function onSubmit() {
+      submitting.value = true
       const body = new FormData()
-      body.append('name', editFolderName.value)
-      body.append('group', editFolderGroup.value.toString())
-      if (editFolder?.value) body.append('parent', editFolderParent.value.toString())
-      let response: GetFolderEdit
-      if (editFolder?.value)
-        response = (await axios.put<GetFolderEdit>(`/api/folders/${editFolder.value.id}`, body))
-          .data
-      else response = (await axios.post<GetFolderEdit>(`/api/folders/${parentID.value}`, body)).data
-      modal.value.close(response)
+      body.append('name', folder.value.name)
+      body.append('visibility', folder.value.visibility)
+      try {
+        const newURL = (await axios.post<string>(`/api/folders${url}?op=${op}`, body)).data
+        modal.value.close(newURL || true)
+      } catch (err) {
+        if (err.response && err.response.status == 409) duplicateName.value = folder.value.name
+        else throw err
+      } finally {
+        submitting.value = false
+      }
     }
     function onCancel() {
-      modal.value.close(null)
-    }
-
-    // Delete.
-    const confirmingDelete = ref(false)
-    function onDelete() {
-      confirmingDelete.value = true
-    }
-    function cancelDelete() {
-      confirmingDelete.value = false
-    }
-    async function confirmDelete() {
-      const response = (await axios.delete<GetFolderEdit>(`/api/folders/${editFolder!.value!.id}`))
-        .data
-      modal.value.close(response)
+      modal.value.close(false)
     }
 
     return {
-      allowedParents: filteredParents,
-      cancelDelete,
-      confirmDelete,
-      confirmingDelete,
-      editFolderGroup,
-      editFolderName,
-      editFolderNameError,
-      editFolderNameRef,
-      editFolderParent,
+      folder,
       modal,
+      nameError,
+      nameRef,
       onCancel,
-      onDelete,
       onSubmit,
-      show,
+      showAdd,
+      showEdit,
+      submitLabel,
+      submitting,
+      title,
+      visibilities,
     }
   },
 })
 </script>
 
 <style lang="postcss">
-#files-edit-folder-confirm-label {
-  border-top: 1px solid #dee2e6;
-  padding: 0.75rem;
-}
-#files-edit-folder-confirm-buttons {
-  padding: 0 0.75rem 0.75rem;
-  text-align: right;
-  & .sbtn {
-    margin-left: 0.5rem;
-  }
-}
 </style>

@@ -48,8 +48,6 @@ func main() {
 	switch {
 	case strings.HasPrefix("events", os.Args[1]):
 		dumpEvents(tx)
-	case strings.HasPrefix("folders", os.Args[1]):
-		dumpFolders(tx)
 	case strings.HasPrefix("groups", os.Args[1]):
 		dumpGroups(tx)
 	case strings.HasPrefix("lists", os.Args[1]):
@@ -147,69 +145,6 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawByte('}')
 	}
 	out.RawString(`]}`)
-}
-
-func dumpFolders(tx *store.Tx) {
-	dumpFolder(tx, tx.FetchRootFolder())
-}
-
-func dumpFolder(tx *store.Tx, f *model.FolderNode) {
-	var out jwriter.Writer
-	out.NoEscapeHTML = true
-	out.RawString(`{"id":`)
-	out.Int(int(f.ID))
-	if f.Parent != 0 {
-		out.RawString(`,"parent":{"id":`)
-		out.Int(int(f.Parent))
-		out.RawString(`,"name":`)
-		out.String(tx.FetchFolder(f.Parent).Name)
-		out.RawByte('}')
-	}
-	out.RawString(`,"name":`)
-	out.String(f.Name)
-	if f.Group != 0 {
-		out.RawString(`,"group":{"id":`)
-		out.Int(int(f.Group))
-		out.RawString(`,"name":`)
-		out.String(tx.Authorizer().FetchGroup(f.Group).Name)
-		out.RawByte('}')
-	}
-	out.RawString(`,"org":`)
-	out.String(f.Org.String())
-	if f.Approvals != 0 {
-		out.RawString(`,"approvals":`)
-		out.Int(f.Approvals)
-	}
-	out.RawString(`,"documents":[`)
-	for i, d := range f.Documents {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(d.ID))
-		out.RawString(`,"name":`)
-		out.String(d.Name)
-		if d.PostedBy != 0 {
-			out.RawString(`,"postedBy":{"id":`)
-			out.Int(int(d.PostedBy))
-			out.RawString(`,"sortName":`)
-			out.String(tx.FetchPerson(d.PostedBy).SortName)
-			out.RawByte('}')
-		}
-		if !d.PostedAt.IsZero() {
-			out.RawString(`,"postedAt":`)
-			out.Raw(d.PostedAt.MarshalJSON())
-		}
-		if d.NeedsApproval {
-			out.RawString(`,"needsApproval":true`)
-		}
-		out.RawByte('}')
-	}
-	out.RawString("]}\n")
-	out.DumpTo(os.Stdout)
-	for _, cf := range f.ChildNodes {
-		dumpFolder(tx, cf)
-	}
 }
 
 func dumpGroups(tx *store.Tx) {

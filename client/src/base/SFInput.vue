@@ -57,13 +57,25 @@ export default defineComponent({
         error.value = props.errorFn!(lostFocus.value, submitted.value)
       })
 
+    // Apply trim when losing focus.  If we apply it more eagerly, backspacing
+    // over the start of a word also removes the space before it, which is
+    // disturbing.
+    function myOnBlur() {
+      const trimmed = props.trim ? input.value.trim() : input.value
+      if (input.value !== trimmed) {
+        input.value = trimmed
+        emit('update:modelValue', input.value)
+      }
+      onBlur() // the one from provideValidation
+    }
+
     // Watch for local changes and send them to the parent.
     function onInput({ target: { value } }: { target: HTMLInputElement }) {
-      input.value = props.trim ? value.trim() : value
+      input.value = value
       emit('update:modelValue', input.value)
     }
 
-    return { inputRef, input, onInput, onFocus, onBlur, error, focus }
+    return { inputRef, input, onInput, onFocus, onBlur: myOnBlur, error, focus }
   },
 })
 </script>

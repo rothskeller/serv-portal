@@ -27,7 +27,7 @@ shown at / when the user is not logged in.
         .public-folder-link
           a(href='/classes', target='_blank') Class schedules and registration
         .public-folder-link
-          router-link(to='/disaster-preparedness') Disaster preparedness materials
+          router-link(to='/files/disaster-preparedness') Disaster preparedness materials
         .public-folder-link
           | Email <a href="mailto:listos@sunnyvaleserv.org">Listos@SunnyvaleSERV.org</a>
     #public-folder-spanish.public-folder
@@ -42,7 +42,7 @@ shown at / when the user is not logged in.
         .public-folder-link
           a(href='/classes', target='_blank') Horarios de clases y registro
         .public-folder-link
-          router-link(to='/preparacion-para-desastres') Materiales de preparación para desastres
+          router-link(to='/files/preparacion-para-desastres') Materiales de preparación para desastres
         .public-folder-link
           | Email <a href="mailto:listos@sunnyvaleserv.org">Listos@SunnyvaleSERV.org</a>
     #public-folder-snap.public-folder
@@ -54,7 +54,7 @@ shown at / when the user is not logged in.
         response&nbsp;volunteers.
       .public-folder-links
         .public-folder-link
-          router-link(to='/neighborhood-organization') Neighborhood organization materials
+          router-link(to='/files/neighborhood-organization') Neighborhood organization materials
         .public-folder-link
           | Email <a href="mailto:snap@sunnyvaleserv.org">SNAP@SunnyvaleSERV.org</a>
     #public-folder-cert.public-folder
@@ -68,7 +68,7 @@ shown at / when the user is not logged in.
         .public-folder-link
           a(href='/classes', target='_blank') Class schedules and registration
         .public-folder-link
-          router-link(to='/disaster-response') Disaster response and CERT materials
+          router-link(to='/files/disaster-response') Disaster response and CERT materials
         .public-folder-link
           | Email <a href="mailto:cert@sunnyvaleserv.org">CERT@SunnyvaleSERV.org</a>
     #public-folder-sares.public-folder

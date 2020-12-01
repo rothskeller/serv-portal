@@ -54,10 +54,14 @@ var AttendanceTypeNames = map[AttendanceType]string{
 // our own site and not from a forgery.
 type CSRFToken string
 
-// A DocumentID is a positive integer uniquely identifying a document within its
-// folder.  For cache-busting purposes, each new revision of a document gets a
-// new DocumentID.
-type DocumentID int
+// A Document represents a document (either a file or a link) in a folder.
+type Document struct {
+	// Name is the name of the document.  For files, it is the filename.
+	// For links, it is the link title.
+	Name string
+	// URL is the URL for link documents.  For files, it is empty.
+	URL string
+}
 
 // A DSWClass identifies a DSW classification as defined in state regulations
 // (19 CCR § 2572.1).
@@ -156,15 +160,18 @@ func (e *Event) Hours() float64 {
 	return float64(end.Sub(start)) / float64(time.Hour)
 }
 
-// A FolderID is a positive integer uniquely identifying a Folder.
-type FolderID int
-
-// A FolderNode is a Folder, plus the link fields necessary to construct the
-// tree of folders.
-type FolderNode struct {
-	*Folder
-	ParentNode *FolderNode
-	ChildNodes []*FolderNode
+// A Folder represents a folder of documents in the site's repository.
+type Folder struct {
+	// Name is the display name of the folder.
+	Name string
+	// URL is the URL of the folder, relative to the root of the folder
+	// tree.  It should start with a slash unless it is empty.
+	URL string
+	// Visibility determines who can see the folder.
+	Visibility FolderVisibility
+	// Org determines which organization can see the folder when Visibility
+	// is set to FolderVisibleToOrg.
+	Org Org
 }
 
 // A GroupID is a positive integer uniquely identifying a Group.

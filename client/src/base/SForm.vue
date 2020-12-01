@@ -12,7 +12,7 @@ form.form(:class='layoutClass', @submit.prevent='onSubmitInner')
         slot(v-if='dialog', name='extraButtons')
         span(:class='{ "form-buttons-1": hasExtraButtons }')
           SButton(
-            v-if='dialog',
+            v-if='dialog && cancelLabel',
             @click='onCancelInner',
             variant='secondary',
             :disabled='disabled',
@@ -232,6 +232,7 @@ export default defineComponent({
   & .form-item-input {
     grid-column: 2;
     margin-right: 0.75rem;
+    min-width: 1px;
   }
   & .form-item-input2 {
     grid-column: 2;
@@ -303,6 +304,7 @@ export default defineComponent({
     justify-content: flex-end;
     padding: 0.75rem 0.25rem 0.25rem 0.75rem;
     border-top: 1px solid #dee2e6;
+    margin: 1rem 0 0;
     & .sbtn {
       margin: 0 0.5rem 0.5rem 0;
     }
@@ -310,7 +312,8 @@ export default defineComponent({
 }
 .form-buttons-1 {
   margin: 0 2rem 0 0;
-  .form-dialog & {
+  .form-dialog-m &,
+  .form-dialog-xs & {
     margin: 0 0 0 2rem;
   }
 }

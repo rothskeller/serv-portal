@@ -73,12 +73,10 @@ func router(r *util.Request) error {
 		c = append(c, "")
 	}
 	switch {
-	case r.Method == "GET" && c[1] == "folders" && c[2] == "":
-		return folder.GetPath(r)
-	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] == "":
-		return folder.GetFolder(r, c[2])
-	case r.Method == "GET" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
-		return folder.GetDocument(r, c[2], c[3])
+	case r.Method == "GET" && c[0] == "dl":
+		return folder.GetDocument(r)
+	case r.Method == "GET" && c[1] == "folders":
+		return folder.GetFolder(r)
 	case r.Method == "POST" && c[1] == "login" && c[2] == "":
 		return authn.PostLogin(r)
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] == "":
@@ -99,6 +97,12 @@ func router(r *util.Request) error {
 		return authn.GetLogin(r)
 	case r.Method == "POST" && c[1] == "logout" && c[2] == "":
 		return authn.PostLogout(r)
+	case r.Method == "GET" && c[1] == "document":
+		return folder.GetDocument(r)
+	case r.Method == "POST" && c[1] == "document":
+		return folder.PostDocument(r)
+	case r.Method == "DELETE" && c[1] == "document":
+		return folder.DeleteDocument(r)
 	case r.Method == "GET" && c[1] == "events" && c[2] == "":
 		return event.GetEvents(r)
 	case r.Method == "GET" && c[1] == "events" && c[2] != "" && c[3] == "":
@@ -107,18 +111,10 @@ func router(r *util.Request) error {
 		return event.PostEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "attendance" && c[4] == "":
 		return event.PostEventAttendance(r, c[2])
-	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "":
-		return folder.PostFolder(r, c[2])
-	case r.Method == "PUT" && c[1] == "folders" && c[2] != "" && c[3] == "":
-		return folder.PutFolder(r, c[2])
-	case r.Method == "DELETE" && c[1] == "folders" && c[2] != "" && c[3] == "":
-		return folder.DeleteFolder(r, c[2])
-	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] == "NEW" && c[4] == "":
-		return folder.PostNewDocuments(r, c[2])
-	case r.Method == "POST" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
-		return folder.PostDocument(r, c[2], c[3])
-	case r.Method == "DELETE" && c[1] == "folders" && c[2] != "" && c[3] != "" && c[4] == "":
-		return folder.DeleteDocument(r, c[2], c[3])
+	case r.Method == "POST" && c[1] == "folders":
+		return folder.PostFolder(r)
+	case r.Method == "DELETE" && c[1] == "folders":
+		return folder.DeleteFolder(r)
 	case r.Method == "GET" && c[1] == "groups" && c[2] == "":
 		return group.GetGroups(r)
 	case r.Method == "GET" && c[1] == "groups" && c[2] != "" && c[3] == "":

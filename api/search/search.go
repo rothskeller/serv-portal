@@ -1,7 +1,11 @@
 package search
 
 import (
+	"net/url"
+
 	"github.com/mailru/easyjson/jwriter"
+
+	"sunnyvaleserv.org/portal/api/folder"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util"
@@ -21,16 +25,13 @@ func GetSearch(r *util.Request) error {
 		// object.  It returns from the function if they can't see it.
 		switch tobj := obj.(type) {
 		case store.FolderAndDocument:
-			if tobj.Folder.Group != 0 && !r.Auth.MemberG(tobj.Folder.Group) && !r.Auth.CanAG(model.PrivManageFolders, tobj.Folder.Group) {
-				return true
-			}
-			if tobj.Document.NeedsApproval {
+			if !folder.CanViewFolder(r.Person, tobj.Folder) {
 				return true
 			}
 		case *model.Event:
 			break
-		case *model.FolderNode:
-			if tobj.Group != 0 && !r.Auth.MemberG(tobj.Group) && !r.Auth.CanAG(model.PrivManageFolders, tobj.Group) {
+		case *model.Folder:
+			if !folder.CanViewFolder(r.Person, tobj) {
 				return true
 			}
 		case *model.Group:
@@ -83,22 +84,28 @@ func GetSearch(r *util.Request) error {
 		switch tobj := obj.(type) {
 		case store.FolderAndDocument:
 			var path []string
-			for p := tobj.Folder; p != nil; p = p.ParentNode {
-				path = append(path, p.Name)
+			for f := tobj.Folder; f.URL != ""; f = r.Tx.FetchParentFolder(f) {
+				path = append(path, f.Name)
 			}
-			out.RawString(`{"type":"document","path":[`)
+			out.RawString(`{"type":"document","name":`)
+			out.String(tobj.Document.Name)
+			out.RawString(`,"url":`)
+			if tobj.Document.URL != "" {
+				out.String(tobj.Document.URL)
+			} else {
+				out.String("/dl" + tobj.Folder.URL + "/" + url.PathEscape(tobj.Document.Name))
+			}
+			out.RawString(`,"path":[`)
 			for i := len(path) - 1; i >= 0; i-- {
 				if i != len(path)-1 {
 					out.RawByte(',')
 				}
 				out.String(path[i])
 			}
-			out.RawString(`],"folderID":`)
-			out.Int(int(tobj.Folder.ID))
-			out.RawString(`,"documentID":`)
-			out.Int(int(tobj.Document.ID))
-			out.RawString(`,"name":`)
-			out.String(tobj.Document.Name)
+			out.RawByte(']')
+			if folder.CanShowInBrowser(tobj.Document) {
+				out.RawString(`,"newtab":true`)
+			}
 			out.RawByte('}')
 		case *model.Event:
 			out.RawString(`{"type":"event","id":`)
@@ -108,23 +115,23 @@ func GetSearch(r *util.Request) error {
 			out.RawString(`,"name":`)
 			out.String(tobj.Name)
 			out.RawByte('}')
-		case *model.FolderNode:
+		case *model.Folder:
 			var path []string
-			for p := tobj.ParentNode; p != nil; p = p.ParentNode {
-				path = append(path, p.Name)
+			for f := r.Tx.FetchParentFolder(tobj); f.URL != ""; f = r.Tx.FetchParentFolder(f) {
+				path = append(path, f.Name)
 			}
-			out.RawString(`{"type":"folder","path":[`)
+			out.RawString(`{"type":"folder","name":`)
+			out.String(tobj.Name)
+			out.RawString(`,"url":`)
+			out.String(tobj.URL)
+			out.RawString(`,"path":[`)
 			for i := len(path) - 1; i >= 0; i-- {
 				if i != len(path)-1 {
 					out.RawByte(',')
 				}
 				out.String(path[i])
 			}
-			out.RawString(`],"id":`)
-			out.Int(int(tobj.ID))
-			out.RawString(`,"name":`)
-			out.String(tobj.Name)
-			out.RawByte('}')
+			out.RawString(`]}`)
 		case *model.Person:
 			out.RawString(`{"type":"person","id":`)
 			out.Int(int(tobj.ID))

@@ -119,7 +119,6 @@ func PostGroup(r *util.Request, idstr string) error {
 
 	if idstr == "NEW" {
 		group = r.Auth.CreateGroup()
-		println(group.ID)
 	} else {
 		if group = r.Auth.FetchGroup(model.GroupID(util.ParseID(idstr))); group == nil {
 			return util.NotFound

@@ -1,388 +1,228 @@
 <!--
-Files displays the Files browser.
+Files displays a folder's contents.  It is used both in public and logged-in
+contexts.
 -->
 
 <template lang="pug">
-div(v-if='!folder')
+NotFound(v-if='notFound')
+#files(v-else-if='!folder.ancestors')
   SSpinner
-#files(
-  v-else,
-  :class='dragging ? "dragging" : null',
-  @drop='onDrop',
-  @dragover='onDragOver',
-  @dragleave='onDragLeave'
-)
-  SProgress#files-progress(v-if='uploadProgress !== null', :value='uploadProgress')
-  .files-line(v-if='folder.id')
-    .files-icon: SIcon(icon='up')
-    router-link.files-name(:to='`/files/${folder.parent ? folder.parent.id : 0}`') {{ folder.parent ? folder.parent.name : "Files" }}
-  FilesFolder(
-    v-for='child in folder.children',
-    :key='`f${child.id}`',
-    :folder='child',
-    :canEdit='folder.canEdit',
-    @edit='onEditFolder(child)'
-  )
-  FilesDocument(
-    v-for='doc in folder.documents',
-    :key='`d${doc.id}`',
-    :folderID='folder.id',
-    :doc='doc',
-    :canEdit='folder.canEdit',
-    @edit='onEditDocument(doc)'
-  )
-  #files-add(v-if='folder.canEdit || folder.canAdd')
-    SButton(v-if='folder.canEdit', variant='primary', @click='onAddFolder') Add Folder
-    SButton(variant='primary', @click='onAddDocument') Add File
-  MessageBox(
-    ref='replaceConfirmRef',
-    :title='replace.length > 1 ? "Replace Files" : "Replace File"',
-    cancelLabel='Keep',
-    okLabel='Replace',
-    variant='warning'
-  ) This will replace {{ replace.length > 1 ? `${replace.length} existing files with the same names` : `the existing file named "${replace[0]}"` }}. Are you sure?
-  FilesAddDocument(ref='addDocumentRef', :parentID='folder.id', :siblings='folder.documents')
-  FilesEditDocument(
-    ref='editDocumentRef',
-    :doc='editDocument',
-    :allowedParents='folder.allowedParents',
-    :parentID='folder.id',
-    :siblings='folder.documents'
-  )
-  FilesEditFolder(
-    ref='editFolderRef',
-    :allowedGroups='folder.allowedGroups',
-    :allowedParents='folder.allowedParents',
-    :editFolder='editFolder',
-    :parentID='folder.id',
-    :siblings='folder.children'
-  )
+#files(v-else)
+  SProgress.files-progress(v-if='progress', :value='progress')
+  transition-group(name='files')
+    FilesFolder.files-item(
+      v-for='(p, i) in folder.ancestors',
+      :folder='p',
+      :key='p.url',
+      :indent='i * ancestorsIndent',
+      @progress='onProgress',
+      @reload='onReload',
+      @showTrash='onShowTrash'
+    )
+    FilesFolder.files-item(
+      v-for='c in folder.children',
+      :folder='c',
+      :key='c.url',
+      :indent='contentsIndent',
+      @progress='onProgress',
+      @reload='onReload',
+      @showTrash='onShowTrash'
+    )
+    FilesDocument.files-item(
+      v-for='d in folder.documents',
+      :folder='folder.ancestors[folder.ancestors.length - 1]',
+      :doc='d',
+      :key='d.name',
+      :indent='contentsIndent',
+      @progress='onProgress',
+      @reload='onReload',
+      @showTrash='onShowTrash'
+    )
+    div(
+      v-if='!folder.children.length && !folder.documents.length',
+      key='.empty',
+      :style='{ marginLeft: `${1.5 * contentsIndent + 0.25}rem` }'
+    ) (folder is empty)
+  FilesTrash(v-if='showTrash > 0', @reload='onReload', @showTrash='onShowTrash')
+  #files-buttons(v-else-if='canEdit')
+    SButton(variant='primary', small, @click='onAddFolder') Add Folder
+    SButton(variant='primary', small, @click='onAddFiles') Add File
+    SButton(variant='primary', small, @click='onAddURL') Add Link
+  FilesEditFolder(v-if='canEdit', ref='editFolderModal')
+  FilesEditLink(v-if='canEdit', ref='editLinkModal')
+  FilesAddFiles(v-if='canEdit', ref='addFilesModal')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, defineComponent, inject, Ref, ref, watchEffect } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from '../plugins/axios'
+import { LoginData } from '../plugins/login'
 import setPage from '../plugins/page'
-import { MessageBox, SButton, SIcon, SProgress, SSpinner } from '../base'
-import FilesAddDocument from './files/FilesAddDocument.vue'
+import { Size } from '../plugins/size'
+import { SButton, SProgress, SSpinner } from '../base'
+import NotFound from './NotFound.vue'
+import FilesAddFiles from './files/FilesAddFiles.vue'
 import FilesDocument from './files/FilesDocument.vue'
-import FilesEditDocument from './files/FilesEditDocument.vue'
 import FilesEditFolder from './files/FilesEditFolder.vue'
+import FilesEditLink from './files/FilesEditLink.vue'
 import FilesFolder from './files/FilesFolder.vue'
+import FilesTrash from './files/FilesTrash.vue'
 
-type GetFolderParent = {
-  id: number
+export interface GetFolderFolder {
   name: string
   url: string
-}
-export type GetFolderDocument = {
-  id: number
-  name: string
-  needsApproval?: true
-}
-export type GetFolderChild = {
-  id: number
-  name: string
-  url: string
-  group: number
-  approvals?: number
-}
-interface GetFolderBase {
-  id: number
-  parent?: GetFolderParent
-  group: number
-  name: string
-  url: string
-  documents: Array<GetFolderDocument>
-  children?: Array<GetFolderChild>
   canEdit: boolean
-  canAdd: boolean
 }
-export type GetFolderEditAllowedGroup = {
-  id: number
+export interface GetFolderDocument {
   name: string
+  url: string
+  newtab: boolean
 }
-export type GetFolderEditAllowedParent = {
-  id: number
-  name: string
-  indent: number
-  disabled?: true
+interface GetFolder {
+  ancestors: Array<GetFolderFolder>
+  children: Array<GetFolderFolder>
+  documents: Array<GetFolderDocument>
 }
-export interface GetFolderEdit extends GetFolderBase {
-  canEdit: true
-  allowedGroups: Array<GetFolderEditAllowedGroup>
-  allowedParents: Array<GetFolderEditAllowedParent>
-}
-type GetFolder = GetFolderBase | GetFolderEdit
 
 export default defineComponent({
   components: {
-    FilesAddDocument,
+    FilesAddFiles,
     FilesDocument,
-    FilesEditDocument,
     FilesEditFolder,
+    FilesEditLink,
     FilesFolder,
-    MessageBox,
+    FilesTrash,
+    NotFound,
     SButton,
-    SIcon,
     SProgress,
     SSpinner,
   },
   setup() {
-    setPage({ title: 'Files' })
-
-    // First, load the folder data.
     const route = useRoute()
-    const folder = ref(null as null | GetFolder)
-    watch(folder, () => {
-      if (!folder.value!.children) folder.value!.children = []
-      if (!folder.value!.documents) folder.value!.documents = []
-      setPage({ title: folder.value!.name || 'Files' })
-    })
-    watchEffect(async () => {
-      folder.value = (await axios.get<GetFolder>(`/api/folders/${route.params.id}`)).data
-    })
+    const router = useRouter()
+    const me = inject<Ref<LoginData>>('me')!
+    const size = inject<Size>('containerSize')!
+    setPage({ title: me.value ? 'Files' : '' })
 
-    // Handle drag and drop, and the message box for replace confirmation.
-    const dragging = ref(false)
-    const uploadProgress = ref(null as null | number)
-    const replace = ref([] as Array<string>)
-    const replaceConfirmRef = ref(null as any)
-    function onUploadProgress(evt: ProgressEvent) {
-      if (evt.lengthComputable && evt.total) uploadProgress.value = evt.loaded / evt.total
-    }
-    function onDragOver(evt: DragEvent) {
-      evt.preventDefault()
-      dragging.value = true
-    }
-    function onDragLeave() {
-      dragging.value = false
-    }
-    async function onDrop(evt: DragEvent) {
-      if (!folder.value!.canAdd && !folder.value!.canEdit) return
-      evt.preventDefault()
-      dragging.value = false
-      replace.value = []
-      const droppedFiles = evt.dataTransfer!.files
-      for (let i = 0; i < droppedFiles.length; i++) {
-        const nf = droppedFiles[i]
-        if (folder.value!.documents.find((d) => d.name === nf.name)) replace.value.push(nf.name)
+    // Load the requested folder.
+    const folder = ref({} as GetFolder)
+    const notFound = ref(false)
+    const canEdit = ref(false)
+    async function loadFolder() {
+      try {
+        const url = route.params.path
+          ? `/api/folders/${route.params.path}?op=browse`
+          : '/api/folders?op=browse'
+        const resp = await axios.get<GetFolder>(url)
+        notFound.value = false
+        folder.value = resp.data
+        canEdit.value = folder.value.ancestors[folder.value.ancestors.length - 1].canEdit
+      } catch (err) {
+        if (err.response && err.response.status === 404) notFound.value = true
+        else throw err
       }
-      if (replace.value.length > 0) if (!(await replaceConfirmRef.value.show())) return
-      const body = new FormData()
-      for (let i = 0; i < droppedFiles.length; i++) {
-        body.append('file', droppedFiles[i])
-      }
-      folder.value = (
-        await axios.post<GetFolder>(`/api/folders/${route.params.id}/NEW`, body, {
-          onUploadProgress,
-        })
-      ).data
-      uploadProgress.value = null
+    }
+    watchEffect(loadFolder)
+
+    // Reload the folder when requested by a sub-component.  The optional
+    // parameter is a URL mapper function.  If provided, it tells how to map the
+    // URL we've been viewing to the correct URL reflecting whatever change was
+    // just made.
+    function onReload(urlMapper?: (u: string) => string) {
+      if (urlMapper) {
+        const oldURL = route.params.path ? `/${route.params.path}` : ''
+        let newURL = urlMapper(oldURL)
+        if (newURL !== oldURL && newURL !== '') router.replace(`/files${newURL}`)
+        else if (newURL !== oldURL) router.replace('/files')
+        else loadFolder()
+      } else loadFolder()
     }
 
-    // Editing of folders.
-    const editFolder = ref(null as null | GetFolderChild)
-    const editFolderRef = ref(null as any)
-    async function onEditFolder(cf: GetFolderChild) {
-      if (!folder.value!.canEdit) return
-      editFolder.value = cf
-      const updated: GetFolderEdit = await editFolderRef.value.show()
-      if (updated) folder.value = updated
-      editFolder.value = null
+    // The indentation style depends on the size of the window.
+    const ancestorsIndent = computed(() => (size.w >= 24 ? 1 : 0))
+    const contentsIndent = computed(() =>
+      size.w >= 24 && folder.value.ancestors ? folder.value.ancestors.length : 1
+    )
+
+    // Showing or hiding the trash can.  It is shown while an item is being
+    // dragged, and also after an item has been dropped on the trash can and the
+    // deletion is still in progress.
+    const showTrash = ref(0)
+    function onShowTrash(flag: boolean) {
+      if (flag) showTrash.value++
+      else showTrash.value--
     }
+
+    // Adding folders, files, and links.
+    const editFolderModal = ref(null as any)
+    const editLinkModal = ref(null as any)
+    const addFilesModal = ref(null as any)
     async function onAddFolder() {
-      if (!folder.value!.canEdit) return
-      editFolder.value = null
-      const updated: GetFolderEdit = await editFolderRef.value.show()
-      if (updated) folder.value = updated
+      const parent = folder.value.ancestors[folder.value.ancestors.length - 1].url
+      if (await editFolderModal.value.showAdd(parent)) loadFolder()
+    }
+    async function onAddFiles() {
+      const parent = folder.value.ancestors[folder.value.ancestors.length - 1].url
+      if (await addFilesModal.value.show(parent)) loadFolder()
+    }
+    async function onAddURL() {
+      const parent = folder.value.ancestors[folder.value.ancestors.length - 1].url
+      if (await editLinkModal.value.showAdd(parent)) loadFolder()
     }
 
-    // Editing of documents.
-    const editDocument = ref(null as null | GetFolderDocument)
-    const editDocumentRef = ref(null as any)
-    async function onEditDocument(doc: GetFolderDocument) {
-      if (!folder.value!.canEdit) return
-      editDocument.value = doc
-      const updated: GetFolderEdit = await editDocumentRef.value.show()
-      if (updated) folder.value = updated
-      editDocument.value = null
-    }
-    const addDocumentRef = ref(null as any)
-    async function onAddDocument() {
-      if (!folder.value!.canEdit) return
-      const updated: GetFolderEdit = await addDocumentRef.value.show()
-      if (updated) folder.value = updated
+    // Displaying upload progress.
+    const progress = ref(0)
+    function onProgress(p: number) {
+      progress.value = p
     }
 
     return {
-      addDocumentRef,
-      dragging,
-      editDocument,
-      editDocumentRef,
-      editFolder,
-      editFolderRef,
+      addFilesModal,
+      ancestorsIndent,
+      canEdit,
+      contentsIndent,
+      editFolderModal,
+      editLinkModal,
       folder,
-      onAddDocument,
+      onReload,
+      notFound,
+      onAddFiles,
       onAddFolder,
-      onDragLeave,
-      onDragOver,
-      onDrop,
-      onEditDocument,
-      onEditFolder,
-      replace,
-      replaceConfirmRef,
-      uploadProgress,
+      onAddURL,
+      onProgress,
+      onShowTrash,
+      progress,
+      showTrash,
     }
   },
-  /*
-  methods: {
-    async doEditDocument() {
-      const body = new FormData
-      const docID = this.editDocument ? this.editDocument.id : 'NEW'
-      if (this.editDocument) {
-        if (!this.editDocumentName) {
-          this.editDocumentNameError = 'The file name is required.'
-          return false
-        }
-        if (!extension(this.editDocumentName)) {
-          this.editDoumentNameError = 'The file must have an extension indicating its type.'
-          return false
-        }
-        if (extension(this.editDocumentName) !== extension(this.editDocument.name)) {
-          this.editDocumentNameError = `The new file name must end with "${extension(this.editDocument.name)}".`
-          return false
-        }
-        if (this.folder.documents.find(f => f !== this.editDocument && f.name === this.editDocumentName && !this.editDocument.needsApproval)) {
-          this.editDocumentNameError = 'This file name is already in use.'
-          return false
-        }
-        body.append('name', this.editDocumentName)
-        if (this.editDocument) body.append('folder', this.editDocumentFolder)
-      } else {
-        if (!this.editDocumentFiles || !this.editDocumentFiles.length) {
-          this.editDocumentFilesError = 'Select the file(s) to be added.'
-          return false
-        }
-        const replace = []
-        this.editDocumentFiles.forEach(nf => {
-          if (this.folder.documents.find(d => d.name === nf.name))
-            replace.push(nf.name)
-        })
-        if (replace.length === 1) {
-          if (!await this.$bvModal.msgBoxConfirm(
-            `This will replace the existing file named "${replace[0]}".  Are you sure?`,
-            {
-              title: 'Replace File', headerBgVariant: 'warning', headerTextVariant: 'white',
-              okTitle: 'Replace', okVariant: 'warning', cancelTitle: 'Keep',
-            })) return false
-        } else if (replace.length > 1) {
-          if (!await this.$bvModal.msgBoxConfirm(
-            `This will replace ${replace.length} existing files with the same names.  Are you sure?`,
-            {
-              title: 'Replace Files', headerBgVariant: 'warning', headerTextVariant: 'white',
-              okTitle: 'Replace', okVariant: 'warning', cancelTitle: 'Keep',
-            })) return false
-        }
-        this.editDocumentFiles.forEach(nf => { body.append('file', nf) })
-      }
-      this.folder = (await this.$axios.post(`/api/folders/${this.$route.params.id}/${docID}`, body, {
-        onUploadProgress: this.onUploadProgress,
-      })).data
-      this.uploadProgress = null
-      this.$bvModal.hide('files-edit-doc')
-      return true
-    },
-    onAddDocument() {
-      this.editDocument = null
-      this.editDocumentName = null
-      this.editDocumentNameError = null
-      this.editDocumentFilesError = null
-      this.editDocumentFolder = this.folder.id
-      this.$bvModal.show('files-edit-doc')
-    },
-    onEditDocument(doc) {
-      if (!this.folder.canEdit) return
-      this.editDocument = doc
-      this.editDocumentName = doc.name
-      this.editDocumentNameError = null
-      this.editDocumentFolder = this.folder.id || 0
-      this.$bvModal.show('files-edit-doc')
-    },
-  */
 })
 </script>
 
 <style lang="postcss">
 #files {
+  margin: 1.5rem 0.75rem;
+  display: grid;
+  grid: auto-flow min-content / fit-content(100%);
   position: relative;
-  height: 100%;
-  .mouse & {
-    padding: 1.5rem 0.75rem;
-  }
-  &.dragging {
-    box-shadow: inset 0 0 0 0.25rem #006600;
-  }
 }
-#files-progress {
+.files-progress {
   position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
+  top: -1.5rem;
+  left: -0.75rem;
+  right: -0.75rem;
 }
-.files-line {
-  display: flex;
-  align-items: center;
-  .touch & {
-    padding: 0.25rem 0.5rem;
-    min-height: 40px;
-    border-bottom: 1px solid #ccc;
-  }
+.files-item {
+  transition: opacity 0.5s ease, height 0.5s ease, margin-left 0.5s ease;
+  height: 1.5rem;
 }
-.files-icon {
-  display: flex;
-  flex: none;
-  justify-content: center;
-  align-items: center;
-  margin-right: 0.5rem;
-  padding: 0;
-  width: 1rem;
-  height: 1rem;
-  border: none;
-  background-color: white;
-  color: black;
-  &:hover,
-  &:active,
-  &:focus {
-    background-color: white !important;
-    color: black !important;
-  }
-  .touch & {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+.files-enter-from,
+.files-leave-to {
+  opacity: 0;
+  height: 0;
 }
-.files-name {
-  flex: 1 1 auto;
-  overflow: hidden;
-  min-width: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  .touch & {
-    white-space: normal;
-    line-height: 1.2;
-  }
-}
-.files-pending {
-  color: red;
-}
-#files-add {
-  margin-top: 1rem;
+#files-buttons {
+  margin-top: 1.5rem;
   & .sbtn {
     margin-right: 0.5rem;
   }

@@ -21,14 +21,6 @@ message Address {
   uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
 }
 
-message Document {
-  int64                     id             = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "DocumentID"];
-  string                    name           = 2;
-  int64                     posted_by      = 3 [(gogoproto.casttype) = "PersonID"];
-  google.protobuf.Timestamp posted_at      = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
-  bool                      needs_approval = 5;
-}
-
 message Event {
   int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
   string         name         = 2;
@@ -52,17 +44,6 @@ message Event {
   // Roles are the roles "invited" to the event.  They control which people are
   // displayed on the attendance page for the event.
   repeated int64 roles = 16 [(gogoproto.casttype) = "Role2ID"];
-}
-
-message Folder {
-  int64             id          = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "FolderID"];
-  int64             parent      = 2 [(gogoproto.casttype) = "FolderID"];
-  string            name        = 3;
-  int64             group       = 4 [(gogoproto.casttype) = "GroupID"];
-  repeated Document documents   = 5;
-  int64             approvals   = 6 [(gogoproto.casttype) = "int"];
-  // Org is the organization that can see the folder.
-  int64 org = 7 [(gogoproto.casttype) = "FolderOrg"];
 }
 
 message Group {

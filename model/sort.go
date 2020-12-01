@@ -19,17 +19,17 @@ func (es EventSort) Less(i, j int) bool {
 }
 func (es EventSort) Swap(i, j int) { es[i], es[j] = es[j], es[i] }
 
+type DocumentSort []*Document
+
+func (ds DocumentSort) Len() int           { return len(ds) }
+func (ds DocumentSort) Less(i, j int) bool { return ds[i].Name < ds[j].Name }
+func (ds DocumentSort) Swap(i, j int)      { ds[i], ds[j] = ds[j], ds[i] }
+
 type FolderSort []*Folder
 
 func (fs FolderSort) Len() int           { return len(fs) }
 func (fs FolderSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
 func (fs FolderSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
-
-type FolderNodeSort []*FolderNode
-
-func (fs FolderNodeSort) Len() int           { return len(fs) }
-func (fs FolderNodeSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
-func (fs FolderNodeSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
 
 type GroupSort []*Group
 

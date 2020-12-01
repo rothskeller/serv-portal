@@ -25,12 +25,12 @@ Search displays the search page.
     template(v-if='folders.length')
       .search-result-type Folders
       .search-result(v-for='f in folders')
-        router-link(:to='`/files/${f.id}`') {{ f.name }}
-        span.search-result-path(v-if='f.path.length', v-text='resultPath(f)')
+        router-link(:to='`/files${f.url}`') {{ f.name }}
+        span.search-result-path(v-text='resultPath(f)')
     template(v-if='documents.length')
       .search-result-type Files
       .search-result(v-for='d in documents')
-        a(:href='`/api/folders/${d.folderID}/${d.documentID}`', download) {{ d.name }}
+        a(:href='d.url', :target='d.newtab ? "_blank" : null') {{ d.name }}
         span.search-result-path(v-text='resultPath(d)')
     template(v-if='textMessages.length')
       .search-result-type Text Messages
@@ -50,10 +50,10 @@ import { SButton, SInput } from '../base'
 
 interface GetSearchResultDoc {
   type: 'document'
-  path: Array<string>
-  folderID: number
-  documentID: number
   name: string
+  url: string
+  path: Array<string>
+  newtab: boolean
 }
 interface GetSearchResultEvent {
   type: 'event'
@@ -63,9 +63,9 @@ interface GetSearchResultEvent {
 }
 interface GetSearchResultFolder {
   type: 'folder'
-  path: Array<string>
-  id: number
   name: string
+  url: string
+  path: Array<string>
 }
 interface GetSearchResultPerson {
   type: 'person'
@@ -131,22 +131,23 @@ export default defineComponent({
         router.replace({ path: '/search', query: { q: query.value } })
       const resp = (await axios.get<GetSearch>('/api/search', { params: { q: query.value } })).data
       error.value = resp.error || ''
-      documents.value = resp.results.filter((r) => r.type === 'document') as Array<
-        GetSearchResultDoc
-      >
+      documents.value = resp.results.filter(
+        (r) => r.type === 'document'
+      ) as Array<GetSearchResultDoc>
       events.value = resp.results.filter((r) => r.type === 'event') as Array<GetSearchResultEvent>
-      folders.value = resp.results.filter((r) => r.type === 'folder') as Array<
-        GetSearchResultFolder
-      >
+      folders.value = resp.results.filter(
+        (r) => r.type === 'folder'
+      ) as Array<GetSearchResultFolder>
       people.value = resp.results.filter((r) => r.type === 'person') as Array<GetSearchResultPerson>
       roles.value = resp.results.filter((r) => r.type === 'role') as Array<GetSearchResultRole>
-      textMessages.value = resp.results.filter((r) => r.type === 'textMessage') as Array<
-        GetSearchResultText
-      >
+      textMessages.value = resp.results.filter(
+        (r) => r.type === 'textMessage'
+      ) as Array<GetSearchResultText>
       submitted.value = true
     }
 
     function resultPath(result: GetSearchResultDoc | GetSearchResultFolder) {
+      if (!result.path.length) return ''
       return 'in ' + result.path.join(' > ')
     }
 

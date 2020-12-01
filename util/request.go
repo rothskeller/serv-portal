@@ -164,3 +164,12 @@ func KeepDigits(r rune) rune {
 	}
 	return -1
 }
+
+// SendConflict sends a plain-text error message to the client as the body
+// of the response, with a 409 status code.
+func SendConflict(r *Request, msg string, args ...interface{}) error {
+	r.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	r.WriteHeader(http.StatusConflict)
+	fmt.Fprintf(r, msg, args...)
+	return httpError{"Conflict", http.StatusConflict}
+}

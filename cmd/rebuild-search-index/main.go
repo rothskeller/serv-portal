@@ -12,12 +12,12 @@ func main() {
 
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
-		store.Open("/home/snyserv/sunnyvaleserv.org/data/serv.db")
+		os.Chdir("/home/snyserv/sunnyvaleserv.org/data")
 	case "/Users/stever":
-		store.Open("/Users/stever/src/serv-portal/data/serv.db")
+		os.Chdir("/Users/stever/src/serv-portal/data")
 	default:
-		store.Open("./serv.db")
 	}
+	store.Open("./serv.db")
 	tx = store.Begin(nil)
 	tx.RebuildSearchIndex()
 	tx.Commit()

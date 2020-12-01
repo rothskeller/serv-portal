@@ -7,15 +7,15 @@ import (
 )
 
 // Search executes a search and calls the supplied function for each match.
-func (tx *Tx) Search(query string, handler func(string, int, int) bool) error {
+func (tx *Tx) Search(query string, handler func(string, int, string) bool) error {
 	var (
 		rows *sql.Rows
 		typ  string
 		id   int
-		id2  int
+		id2  string
 		err  error
 	)
-	rows, err = tx.tx.Query(`SELECT type, id, COALESCE(id2, 0) FROM search WHERE search MATCH ? ORDER BY rank`, query)
+	rows, err = tx.tx.Query(`SELECT type, COALESCE(id, 0), COALESCE(id2, '') FROM search WHERE search MATCH ? ORDER BY rank`, query)
 	panicOnError(err)
 	for rows.Next() {
 		panicOnError(rows.Scan(&typ, &id, &id2))
@@ -44,12 +44,7 @@ func (tx *Tx) RebuildSearchIndex(groups []*model.Group) {
 			tx.IndexRole(r, false)
 		}
 	}
-	for _, f := range tx.FetchFolders() {
-		tx.indexFolder(f, false)
-		for _, d := range f.Documents {
-			tx.indexDocument(f, d, false)
-		}
-	}
+	tx.indexFolder(tx.FetchFolder(""))
 	for _, e := range tx.FetchEvents("2000-01-01", "2099-12-31") {
 		tx.indexEvent(e, false)
 	}

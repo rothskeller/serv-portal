@@ -101,12 +101,9 @@ const router = createRouter({
       ]
     },
     {
-      path: '/files',
-      redirect: '/files/0',
-    },
-    {
-      path: '/files/:id',
+      path: '/files/:path(.*)?',
       component: () => import('./pages/Files.vue'),
+      meta: { public: true },
     },
     {
       path: '/home',
@@ -217,16 +214,6 @@ const router = createRouter({
     {
       path: '/volunteer-hours/:id',
       component: () => import('./pages/people/PersonHours.vue'),
-    },
-    {
-      path: '/:path(disaster-preparedness|preparacion-para-desastres|neighborhood-organization|disaster-response|emergency-communications)',
-      component: () => import('./pages/public/PublicFolder.vue'),
-      meta: { public: true },
-    },
-    {
-      path: '/:path(disaster-preparedness|preparacion-para-desastres|neighborhood-organization|disaster-response|emergency-communications)/:rest(.*)',
-      component: () => import('./pages/public/PublicFolder.vue'),
-      meta: { public: true },
     },
     {
       path: '/:catchAll(.*)',

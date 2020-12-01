@@ -22,10 +22,14 @@ export default defineComponent({
     variant: { type: String, default: 'secondary' },
     type: { type: String, default: 'button' },
     to: [String, Object],
+    small: { type: Boolean, default: false },
   },
   setup(props) {
     const tag = computed(() => (props.to ? 'router-link' : 'button'))
-    const classes = computed(() => [`sbtn-${props.variant}`, { 'sbtn-disabled': props.disabled }])
+    const classes = computed(() => [
+      `sbtn-${props.variant}`,
+      { 'sbtn-disabled': props.disabled, 'sbtn-small': props.small },
+    ])
     return { tag, classes }
   },
 })
@@ -48,6 +52,10 @@ export default defineComponent({
   border-radius: 0.25rem;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.sbtn-small {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
 }
 .sbtn-primary {
   color: #fff;

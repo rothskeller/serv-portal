@@ -7,22 +7,17 @@ import (
 // Search executes a search and returns the matched objects.  It returns an
 // error if the search string syntax is invalid.
 func (tx *Tx) Search(query string, handler func(interface{}) bool) (err error) {
-	err = tx.Tx.Search(query, func(typ string, id, id2 int) bool {
+	err = tx.Tx.Search(query, func(typ string, id int, id2 string) bool {
 		switch typ {
 		case "document":
 			var fd FolderAndDocument
-			fd.Folder = tx.FetchFolder(model.FolderID(id))
-			for _, d := range fd.Folder.Documents {
-				if d.ID == model.DocumentID(id2) {
-					fd.Document = d
-					break
-				}
-			}
+
+			fd.Folder, fd.Document = tx.FetchDocument(id2)
 			return handler(fd)
 		case "event":
 			return handler(tx.FetchEvent(model.EventID(id)))
 		case "folder":
-			return handler(tx.FetchFolder(model.FolderID(id)))
+			return handler(tx.FetchFolder(id2))
 		case "person":
 			return handler(tx.FetchPerson(model.PersonID(id)))
 		case "role":
@@ -39,7 +34,7 @@ func (tx *Tx) Search(query string, handler func(interface{}) bool) (err error) {
 // FolderAndDocument is the object returned by Search when the search matches a
 // document in a folder.
 type FolderAndDocument struct {
-	Folder   *model.FolderNode
+	Folder   *model.Folder
 	Document *model.Document
 }
 

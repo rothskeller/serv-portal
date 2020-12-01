@@ -28,21 +28,39 @@ Main is the top application component for the client.
             @click='onMenuClick'
           )
     router-link#page-policies(to='/policies', @click='onMenuClick') Policies/Legal
-  #page-content(:class='contentClasses')
-    router-view
+  Content(:contentClasses='contentClasses')
 #modal-port
 </template>
 
 <script lang="ts">
-import { defineComponent, provide, reactive, ref, computed } from 'vue'
+import { defineComponent, provide, reactive, ref, computed, h } from 'vue'
 import { me, LoginData } from './plugins/login'
 import { PageData } from './plugins/page'
+import provideSize from './plugins/size'
 import { touch } from './plugins/touch'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, RouterView } from 'vue-router'
 import SIcon from './base/SIcon.vue'
 
+const Content = defineComponent({
+  props: {
+    contentClasses: Object,
+  },
+  setup(props) {
+    provideSize()
+    return () =>
+      h(
+        'div',
+        {
+          id: 'page-content',
+          class: props.contentClasses,
+        },
+        [h(RouterView)]
+      )
+  },
+})
+
 export default defineComponent({
-  components: { SIcon },
+  components: { Content, SIcon },
   setup() {
     provide('me', me)
     provide('touch', touch)
@@ -111,7 +129,7 @@ export default defineComponent({
       },
       {
         label: 'Files',
-        to: '/files/0',
+        to: '/files',
         active: page.menuItem === 'files',
         show: true,
       },
