@@ -13,17 +13,14 @@ func GetSMS(r *util.Request) error {
 	var (
 		out jwriter.Writer
 	)
-	if !r.Auth.CanA(model.PrivSendTextMessages) {
-		return util.Forbidden
-	}
 	out.RawString(`{"messages":[`)
 	first := true
 	for _, m := range r.Tx.FetchTextMessages() {
 		var visible bool
-		for _, g := range m.Groups {
-			if r.Auth.CanAG(model.PrivSendTextMessages, g) {
+		for _, lid := range m.Lists {
+			list := r.Tx.FetchList(lid)
+			if list.People[r.Person.ID]&model.ListSender != 0 {
 				visible = true
-				break
 			}
 		}
 		if !visible {
@@ -40,12 +37,12 @@ func GetSMS(r *util.Request) error {
 		out.String(m.Timestamp.In(time.Local).Format("2006-01-02 15:04"))
 		out.RawString(`,"sender":`)
 		out.String(r.Tx.FetchPerson(m.Sender).InformalName)
-		out.RawString(`,"groups":[`)
-		for i, g := range m.Groups {
+		out.RawString(`,"lists":[`)
+		for i, lid := range m.Lists {
 			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(r.Auth.FetchGroup(g).Name)
+			out.String(r.Tx.FetchList(lid).Name)
 		}
 		out.RawString(`],"message":`)
 		out.String(m.Message)

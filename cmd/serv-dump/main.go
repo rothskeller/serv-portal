@@ -624,18 +624,7 @@ func dumpTextMessage(tx *store.Tx, out *jwriter.Writer, t *model.TextMessage) {
 	out.Int(int(t.Sender))
 	out.RawString(`,"sortName":`)
 	out.String(personName(tx, t.Sender))
-	out.RawString(`},"groups":[`)
-	for i, g := range t.Groups {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(g))
-		out.RawString(`,"name":`)
-		out.String(groupName(tx, g))
-		out.RawByte('}')
-	}
-	out.RawString(`],"lists":[`)
+	out.RawString(`},"lists":[`)
 	for i, l := range t.Lists {
 		if i != 0 {
 			out.RawByte(',')

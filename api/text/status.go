@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
+
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
 )
@@ -15,14 +16,11 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 		visible bool
 		out     jwriter.Writer
 	)
-	if !r.Auth.CanA(model.PrivSendTextMessages) {
-		return util.Forbidden
-	}
 	if message = r.Tx.FetchTextMessage(model.TextMessageID(util.ParseID(idstr))); message == nil {
 		return util.NotFound
 	}
-	for _, gid := range message.Groups {
-		if r.Auth.CanAG(model.PrivSendTextMessages, gid) {
+	for _, lid := range message.Lists {
+		if r.Tx.FetchList(lid).People[r.Person.ID]&model.ListSender != 0 {
 			visible = true
 			break
 		}
@@ -34,12 +32,12 @@ func GetSMS1(r *util.Request, idstr string) (err error) {
 	out.Int(int(message.ID))
 	out.RawString(`,"sender":`)
 	out.String(r.Tx.FetchPerson(message.Sender).InformalName)
-	out.RawString(`,"groups":[`)
-	for i, gid := range message.Groups {
+	out.RawString(`,"lists":[`)
+	for i, lid := range message.Lists {
 		if i != 0 {
 			out.RawByte(',')
 		}
-		out.String(r.Auth.FetchGroup(gid).Name)
+		out.String(r.Tx.FetchList(lid).Name)
 	}
 	out.RawString(`],"timestamp":`)
 	out.String(message.Timestamp.In(time.Local).Format("2006-01-02 15:04:05"))

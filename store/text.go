@@ -1,26 +1,15 @@
 package store
 
 import (
-	"fmt"
-	"strings"
-
 	"sunnyvaleserv.org/portal/model"
 )
 
 // CreateTextMessage creates a new text message in the database, with the next
 // available ID.
 func (tx *Tx) CreateTextMessage(message *model.TextMessage) {
-	var gstr []string
-
 	tx.Tx.CreateTextMessage(message)
 	tx.entry.Change("create text [%d]", message.ID)
 	tx.entry.Change("set text [%d] sender to person %q [%d]", message.ID, tx.FetchPerson(message.Sender).InformalName, message.Sender)
-	if len(message.Groups) != 0 {
-		for _, g := range message.Groups {
-			gstr = append(gstr, fmt.Sprintf("%q [%d]", tx.Authorizer().FetchGroup(g).Name, g))
-		}
-		tx.entry.Change("set text [%d] groups to %s", message.ID, strings.Join(gstr, ", "))
-	}
 	tx.entry.Change("set text [%d] timestamp to %s", message.ID, message.Timestamp.Format("2006-01-02 15:04:05"))
 	tx.entry.Change("set text [%d] message to %q", message.ID, message.Message)
 	for _, r := range message.Recipients {

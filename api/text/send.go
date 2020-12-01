@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,18 +26,24 @@ func GetSMSNew(r *util.Request) error {
 	if !r.Auth.CanA(model.PrivSendTextMessages) {
 		return util.Forbidden
 	}
-	out.RawString(`{"groups":[`)
+	out.RawString(`{"lists":[`)
 	first := true
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
+	for _, l := range r.Tx.FetchLists() {
+		if l.Type != model.ListSMS {
+			continue
+		}
+		if l.People[r.Person.ID]&model.ListSender == 0 {
+			continue
+		}
 		if first {
 			first = false
 		} else {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
-		out.Int(int(g.ID))
+		out.Int(int(l.ID))
 		out.RawString(`,"name":`)
-		out.String(g.Name)
+		out.String(l.Name)
 		out.RawByte('}')
 	}
 	out.RawString(`]}`)
@@ -55,13 +62,13 @@ type twilioMessage struct {
 // PostSMS handles POST /api/sms requests.
 func PostSMS(r *util.Request) error {
 	var (
-		message  model.TextMessage
-		request  *http.Request
-		response *http.Response
-		tmessage twilioMessage
-		err      error
-		params   = url.Values{}
-		groups   = map[*model.Group]bool{}
+		message    model.TextMessage
+		request    *http.Request
+		response   *http.Response
+		tmessage   twilioMessage
+		err        error
+		params     = url.Values{}
+		recipients = map[model.PersonID]string{}
 	)
 	if !r.Auth.CanA(model.PrivSendTextMessages) {
 		return util.Forbidden
@@ -70,56 +77,42 @@ func PostSMS(r *util.Request) error {
 	if message.Message = r.FormValue("message"); message.Message == "" {
 		return errors.New("missing message")
 	}
-	for _, g := range r.Form["group"] {
-		if group := r.Auth.FetchGroup(model.GroupID(util.ParseID(g))); group != nil && r.Auth.CanAG(model.PrivSendTextMessages, group.ID) {
-			groups[group] = true
-			message.Groups = append(message.Groups, group.ID)
-		} else {
-			return errors.New("invalid group")
-		}
+	if len(r.Form["list"]) == 0 {
+		return errors.New("no lists selected")
 	}
-	if len(groups) == 0 {
-		return errors.New("no groups selected")
-	}
-PEOPLE:
-	for _, p := range r.Tx.FetchPeople() {
-		var blocked bool
-		var added bool
-	GROUPS:
-		for group := range groups {
-			if r.Auth.MemberPG(p.ID, group.ID) {
-				if p.NoText {
-					blocked = true
-					break GROUPS
+	for _, l := range r.Form["list"] {
+		if list := r.Tx.FetchList(model.ListID(util.ParseID(l))); list != nil && list.Type == model.ListSMS && list.People[r.Person.ID]&model.ListSender != 0 {
+			message.Lists = append(message.Lists, list.ID)
+			for pid, lps := range list.People {
+				if lps&model.ListSubscribed != 0 {
+					recipients[pid] = ""
 				}
-				for _, nt := range group.NoText {
-					if p.ID == nt {
-						blocked = true
-						continue GROUPS
-					}
-				}
-				added = true
-				if p.CellPhone != "" {
-					message.Recipients = append(message.Recipients, &model.TextRecipient{
-						Recipient: p.ID,
-						Number:    formatPhoneForText(p.CellPhone),
-					})
-				} else {
-					message.Recipients = append(message.Recipients, &model.TextRecipient{
-						Recipient: p.ID,
-						Status:    "No Cell Phone",
-					})
-				}
-				continue PEOPLE
 			}
+		} else {
+			return errors.New("invalid list")
 		}
-		if blocked && !added {
+	}
+	for pid := range recipients {
+		p := r.Tx.FetchPerson(pid)
+		recipients[pid] = p.SortName
+		if p.NoText {
+			continue
+		}
+		if p.CellPhone != "" {
 			message.Recipients = append(message.Recipients, &model.TextRecipient{
-				Recipient: p.ID,
-				Status:    "Texting Blocked",
+				Recipient: pid,
+				Number:    formatPhoneForText(p.CellPhone),
+			})
+		} else {
+			message.Recipients = append(message.Recipients, &model.TextRecipient{
+				Recipient: pid,
+				Status:    "No Cell Phone",
 			})
 		}
 	}
+	sort.Slice(message.Recipients, func(i, j int) bool {
+		return recipients[message.Recipients[i].Recipient] < recipients[message.Recipients[j].Recipient]
+	})
 	r.Tx.CreateTextMessage(&message)
 	params.Set("From", config.Get("twilioPhoneNumber"))
 	params.Set("Body", message.Message)

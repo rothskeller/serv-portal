@@ -3,7 +3,7 @@ TextsSend sends a new text message.
 -->
 
 <template lang="pug">
-#texts-send(v-if='!groups.length')
+#texts-send(v-if='!lists.length')
   SSpinner
 SForm#texts-send(v-else, @submit='onSubmit', :submitLabel='submitLabel', :disabled='disabled')
   SFTextArea#texts-send-message(
@@ -15,13 +15,13 @@ SForm#texts-send(v-else, @submit='onSubmit', :submitLabel='submitLabel', :disabl
     :help='countMessage',
     :errorFn='messageError'
   )
-  SFCheckGroup#texts-send-groups(
+  SFCheckGroup#texts-send-lists(
     label='Recipients',
-    :options='groups',
+    :options='lists',
     valueKey='id',
     labelKey='name',
     v-model='recipients',
-    :errorFn='groupsError'
+    :errorFn='listsError'
   )
 </template>
 
@@ -32,12 +32,12 @@ import axios from '../../plugins/axios'
 import setPage from '../../plugins/page'
 import { SForm, SFCheckGroup, SFTextArea, SSpinner } from '../../base'
 
-type GetSMSNewGroup = {
+type GetSMSNewList = {
   id: number
   name: string
 }
 type GetSMSNew = {
-  groups: Array<GetSMSNewGroup>
+  lists: Array<GetSMSNewList>
 }
 type PostSMS = {
   id: number
@@ -48,10 +48,10 @@ export default defineComponent({
   setup() {
     setPage({ title: 'New Text Message' })
 
-    // Get the list of allowed recipient groups.
-    const groups = ref([] as Array<GetSMSNewGroup>)
+    // Get the list of allowed SMS lists.
+    const lists = ref([] as Array<GetSMSNewList>)
     axios.get<GetSMSNew>(`/api/sms/NEW`).then((resp) => {
-      groups.value = resp.data.groups
+      lists.value = resp.data.lists
     })
 
     // Message field.
@@ -82,7 +82,7 @@ export default defineComponent({
 
     // Recipients.
     const recipients = ref(new Set() as Set<number>)
-    function groupsError(lostFocus: boolean, submitted: boolean) {
+    function listsError(lostFocus: boolean, submitted: boolean) {
       if (submitted && !recipients.value.size)
         return 'Please select the recipients of your message.'
       return ''
@@ -97,7 +97,7 @@ export default defineComponent({
       sending.value = true
       const body = new FormData()
       body.append('message', message.value)
-      recipients.value.forEach((r) => body.append('group', r.toString()))
+      recipients.value.forEach((r) => body.append('list', r.toString()))
       const resp = await axios.post<PostSMS>(`/api/sms`, body)
       router.push(`/texts/${resp.data.id}`)
     }
@@ -105,8 +105,8 @@ export default defineComponent({
     return {
       countMessage,
       disabled,
-      groups,
-      groupsError,
+      lists,
+      listsError,
       message,
       messageError,
       onSubmit,

@@ -70,38 +70,6 @@ func loadTextMessages(tx *store.Tx, in *jlexer.Lexer) {
 				} else {
 					t.Sender = model.PersonID(in.Int())
 				}
-			case "groups":
-				in.Delim('[')
-				for !in.IsDelim(']') {
-					if in.IsNull() {
-						in.Skip()
-					} else {
-						if in.IsDelim('{') {
-							in.Delim('{')
-							for !in.IsDelim('}') {
-								key := in.UnsafeString()
-								in.WantColon()
-								if in.IsNull() {
-									in.Skip()
-									in.WantComma()
-									continue
-								}
-								switch key {
-								case "id":
-									t.Groups = append(t.Groups, model.GroupID(in.Int()))
-								default:
-									in.SkipRecursive()
-								}
-								in.WantComma()
-							}
-							in.Delim('}')
-						} else {
-							t.Groups = append(t.Groups, model.GroupID(in.Int()))
-						}
-					}
-					in.WantComma()
-				}
-				in.Delim(']')
 			case "lists":
 				in.Delim('[')
 				for !in.IsDelim(']') {

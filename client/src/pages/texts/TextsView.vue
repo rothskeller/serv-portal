@@ -14,7 +14,7 @@ deliveries and replies.
     .texts-view-meta(v-text='message.sender')
     .texts-view-meta-label Sent to
     .texts-view-meta
-      div(v-for='g in message.groups', v-text='g')
+      div(v-for='l in message.lists', v-text='l')
     .texts-view-meta-label Message text
     .texts-view-meta(v-text='message.message')
   #texts-view-deliveries
@@ -56,7 +56,7 @@ type GetSMS1Delivery = {
 type GetSMS1 = {
   id: number
   sender: string
-  groups: Array<string>
+  lists: Array<string>
   timestamp: string
   deliveries: Array<GetSMS1Delivery>
 }

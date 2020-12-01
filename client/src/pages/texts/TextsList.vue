@@ -14,7 +14,7 @@ TextsList displays the list of previously sent text messages.
       .texts-list-timestamp
         router-link(:to='`/texts/${m.id}`', v-text='m.timestamp')
       .texts-list-groups
-        .texts-list-group(v-for='g in m.groups', v-text='g')
+        .texts-list-group(v-for='l in m.lists', v-text='l')
       .texts-list-message(v-text='m.message')
 </template>
 
@@ -28,7 +28,7 @@ type GetSMSMessage = {
   id: number
   timestamp: string
   sender: string
-  groups: Array<string>
+  lists: Array<string>
   message: string
 }
 type GetSMSGroup = {

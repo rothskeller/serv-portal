@@ -15,16 +15,6 @@ func ValidateTextMessage(tx *store.Tx, tm *model.TextMessage) (err error) {
 	if tx.FetchPerson(tm.Sender) == nil {
 		return errors.New("nonexistent sender")
 	}
-	var seenGroups = make(map[model.GroupID]bool)
-	for _, gid := range tm.Groups {
-		if seenGroups[gid] {
-			return errors.New("duplicate group")
-		}
-		seenGroups[gid] = true
-		if tx.Authorizer().FetchGroup(gid) == nil {
-			return errors.New("nonexistent group")
-		}
-	}
 	var seenLists = make(map[model.ListID]bool)
 	for _, lid := range tm.Lists {
 		if seenLists[lid] {
