@@ -11,11 +11,11 @@ func (tx *Tx) cacheRoles() {
 		return
 	}
 	tx.roleList = tx.Tx.FetchRoles()
-	tx.roles = make(map[model.Role2ID]*model.Role2, len(tx.roleList))
+	tx.roles = make(map[model.RoleID]*model.Role, len(tx.roleList))
 	for _, v := range tx.roleList {
 		tx.roles[v.ID] = v
 		if v.Implies == nil {
-			v.Implies = make(map[model.Role2ID]bool)
+			v.Implies = make(map[model.RoleID]bool)
 		}
 		if v.Lists == nil {
 			v.Lists = make(map[model.ListID]model.RoleToList)
@@ -25,19 +25,19 @@ func (tx *Tx) cacheRoles() {
 
 // FetchRole retrieves a single role from the database.  It returns nil if the
 // specified role doesn't exist.
-func (tx *Tx) FetchRole(id model.Role2ID) *model.Role2 {
+func (tx *Tx) FetchRole(id model.RoleID) *model.Role {
 	tx.cacheRoles()
 	return tx.roles[id]
 }
 
 // FetchRoles retrieves all of the roles from the database.
-func (tx *Tx) FetchRoles() []*model.Role2 {
+func (tx *Tx) FetchRoles() []*model.Role {
 	tx.cacheRoles()
 	return tx.roleList
 }
 
 // CreateRole creates a new role in the database, with the next available ID.
-func (tx *Tx) CreateRole(role *model.Role2) {
+func (tx *Tx) CreateRole(role *model.Role) {
 	tx.cacheRoles()
 	for role.ID = 1; tx.roles[role.ID] != nil; role.ID++ {
 	}
@@ -49,7 +49,7 @@ func (tx *Tx) CreateRole(role *model.Role2) {
 }
 
 // UpdateRole updates an existing role in the database.
-func (tx *Tx) UpdateRole(role *model.Role2) {
+func (tx *Tx) UpdateRole(role *model.Role) {
 	tx.cacheRoles()
 	if role != tx.roles[role.ID] {
 		panic("role must be updated in place")
@@ -60,7 +60,7 @@ func (tx *Tx) UpdateRole(role *model.Role2) {
 }
 
 // DeleteRole deletes a role from the database.
-func (tx *Tx) DeleteRole(role *model.Role2) {
+func (tx *Tx) DeleteRole(role *model.Role) {
 	tx.cacheRoles()
 	if role != tx.roles[role.ID] {
 		panic("deleting role that is not in cache")

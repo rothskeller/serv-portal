@@ -23,7 +23,7 @@ func CanViewFolder(p *model.Person, f *model.Folder) bool {
 	if f.Visibility != model.FolderVisibleToOrg {
 		return true
 	}
-	return p.Orgs[f.Org].PrivLevel >= model.PrivMember2
+	return p.Orgs[f.Org].PrivLevel >= model.PrivMember
 }
 
 // canEditFolder returns whether the specified person (which may be nil, for

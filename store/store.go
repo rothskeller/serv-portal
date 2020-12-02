@@ -19,7 +19,7 @@ type Tx struct {
 	entry          *log.Entry
 	originalLists  map[model.ListID]*model.List
 	originalPeople map[model.PersonID]*model.Person
-	originalRoles  map[model.Role2ID]*model.Role2
+	originalRoles  map[model.RoleID]*model.Role
 }
 
 // Begin starts a transaction, returning our Tx wrapper.
@@ -29,6 +29,6 @@ func Begin(entry *log.Entry) (tx *Tx) {
 		entry:          entry,
 		originalLists:  make(map[model.ListID]*model.List),
 		originalPeople: make(map[model.PersonID]*model.Person),
-		originalRoles:  make(map[model.Role2ID]*model.Role2),
+		originalRoles:  make(map[model.RoleID]*model.Role),
 	}
 }

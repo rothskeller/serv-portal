@@ -43,7 +43,7 @@ message Event {
   int64 org = 15 [(gogoproto.casttype) = "Org"];
   // Roles are the roles "invited" to the event.  They control which people are
   // displayed on the attendance page for the event.
-  repeated int64 roles = 16 [(gogoproto.casttype) = "Role2ID"];
+  repeated int64 roles = 16 [(gogoproto.casttype) = "RoleID"];
 }
 
 // List is a distribution list for messages to people.
@@ -113,7 +113,7 @@ message Person {
   int64 identification = 38 [(gogoproto.casttype) = "IdentType"];
   // Roles is the set of roles held by the person.  Each one maps to a boolean
   // indicating whether the role is directly held (true) or implied (false).
-  map<int64,bool> roles = 39 [(gogoproto.castkey) = "Role2ID"];
+  map<int64,bool> roles = 39 [(gogoproto.castkey) = "RoleID"];
   // Orgs is an array, indexed by Org, of descriptions of the person's
   // membership (or lack thereof) in that Org.
   repeated OrgMembership orgs = 40 [(gogoproto.nullable) = false];
@@ -124,11 +124,11 @@ message PersonNote {
   string date = 4;
 }
 
-// A Role2 is a role that one or more people hold, describing their
+// A Role is a role that one or more people hold, describing their
 // participation in SERV.
-message Role2 {
+message Role {
   // ID is the unique identifier of the role.
-  int64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "Role2ID"];
+  int64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
   // Name is the name of the role.  If multiple people can hold the role, this
   // is generally a plural noun phrase; otherwise it is generally singular.
   string name = 2;
@@ -157,7 +157,7 @@ message Role2 {
   // Implies is the set of other roles are implied by this one. Each one is
   // mapped to a flag indicating whether the role is directly implied (true) or
   // indirectly implied (false).
-  map<int64,bool> implies = 9 [(gogoproto.castkey) = "Role2ID"];
+  map<int64,bool> implies = 9 [(gogoproto.castkey) = "RoleID"];
   // Lists is the set of lists associated with the role.  Each one is mapped to
   // the subscription model and sender flag that together describe the
   // relationship between the list and holders of the role.
@@ -167,7 +167,7 @@ message Role2 {
 }
 
 message Roles {
-  repeated Role2 roles = 1;
+  repeated Role roles = 1;
 }
 
 message TextMessage {

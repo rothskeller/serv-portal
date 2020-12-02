@@ -14,12 +14,12 @@ import (
 	"sunnyvaleserv.org/portal/store"
 )
 
-func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
+func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	var err error
 	for {
-		var r = &model.Role2{
-			Implies: make(map[model.Role2ID]bool),
+		var r = &model.Role{
+			Implies: make(map[model.RoleID]bool),
 			Lists:   make(map[model.ListID]model.RoleToList),
 		}
 		var first = true
@@ -43,7 +43,7 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 					fmt.Fprintf(os.Stderr, "ERROR: id must be first key in role\n")
 					os.Exit(1)
 				}
-				r.ID = model.Role2ID(in.Int())
+				r.ID = model.RoleID(in.Int())
 				if r.ID != 0 {
 					rid := r.ID
 					if r = tx.FetchRole(r.ID); r == nil {
@@ -51,9 +51,9 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 						os.Exit(1)
 					}
 					tx.WillUpdateRole(r)
-					*r = model.Role2{
+					*r = model.Role{
 						ID:      r.ID,
-						Implies: make(map[model.Role2ID]bool),
+						Implies: make(map[model.RoleID]bool),
 						Lists:   make(map[model.ListID]model.RoleToList),
 					}
 				}
@@ -87,7 +87,7 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						var rid model.Role2ID
+						var rid model.RoleID
 						var direct bool
 
 						in.Delim('{')
@@ -101,7 +101,7 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 							}
 							switch key {
 							case "id":
-								rid = model.Role2ID(in.Int())
+								rid = model.RoleID(in.Int())
 							case "direct":
 								direct = in.Bool()
 							default:
@@ -183,7 +183,7 @@ func loadRoles2(tx *store.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: id must be first key in role\n")
 			os.Exit(1)
 		}
-		if err := role.ValidateRole2(tx, r); err != nil {
+		if err := role.ValidateRole(tx, r); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}

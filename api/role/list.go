@@ -10,8 +10,8 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetRoles2 handles GET /api/roles2 requests.
-func GetRoles2(r *util.Request) error {
+// GetRoles handles GET /api/roles requests.
+func GetRoles(r *util.Request) error {
 	var out jwriter.Writer
 
 	if !r.Person.Roles[model.Webmaster] {
@@ -26,7 +26,7 @@ func GetRoles2(r *util.Request) error {
 		out.Int(int(role.ID))
 		out.RawString(`,"name":`)
 		out.String(role.Name)
-		if role.Org != model.OrgNone2 {
+		if role.Org != model.OrgNone {
 			out.RawString(`,"org":`)
 			out.String(role.Org.String())
 		}
@@ -48,10 +48,10 @@ func GetRoles2(r *util.Request) error {
 	return nil
 }
 
-// PostRoles2 handles POST /api/roles2 requests (which re-order the existing
+// PostRoles handles POST /api/roles requests (which re-order the existing
 // roles).
-func PostRoles2(r *util.Request) error {
-	var priorities = make(map[*model.Role2]int)
+func PostRoles(r *util.Request) error {
+	var priorities = make(map[*model.Role]int)
 
 	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
@@ -61,7 +61,7 @@ func PostRoles2(r *util.Request) error {
 		return errors.New("wrong number of roles")
 	}
 	for i, idstr := range r.Form["role"] {
-		if role := r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {
+		if role := r.Tx.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return errors.New("invalid role")
 		} else if priorities[role] != 0 {
 			return errors.New("role appears twice")

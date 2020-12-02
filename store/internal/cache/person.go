@@ -123,7 +123,7 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 
 func fleshOutPerson(p *model.Person) {
 	if p.Roles == nil {
-		p.Roles = make(map[model.Role2ID]bool)
+		p.Roles = make(map[model.RoleID]bool)
 	}
 	// This one shouldn't be needed after the transition to using orgs:
 	if p.Orgs == nil {

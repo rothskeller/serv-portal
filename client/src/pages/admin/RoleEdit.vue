@@ -1,251 +1,325 @@
 <!--
-RoleEdit displays the role viewing/editing page.
+RoleEdit displays the page for creating and editing roles.
 -->
 
 <template lang="pug">
-#role-edit(v-if='!role')
-  SSpinner
-SForm#role-edit(v-else, @submit='onSubmit', :submitLabel='submitLabel')
-  SFInput#role-edit-name(
-    label='Role name',
-    trim,
-    autofocus,
-    v-model='role.name',
-    :errorFn='nameError'
-  )
-  SFCheckGroup#role-edit-flags(label='Flags', :options='allFlags', v-model='flags')
-  #role-edit-privs.form-item
-    .role-edit-group.role-edit-heading Group
-    .role-edit-privs.role-edit-heading
-      | Privileges (
-      a(href='#', @click='onShowKey') Key
-      | )
-    template(v-for='(g, i) in privs')
-      .role-edit-group(v-text='g.name')
-      PrivilegeMask.role-edit-privs(v-model='privs[i]')
-  template(v-if='canDelete || canClone', #extraButtons)
-    SButton(v-if='canClone', @click='onClone') Clone Role
-    SButton(v-if='canDelete', variant='danger', @click='onDelete') Delete Role
-  Modal(ref='keyModal', v-slot='{ close }')
-    SForm(dialog, title='Privileges Key')
-      #role-edit-priv-key-body.form-item
-        div M = Role conveys membership in group
-        div R = Role allows viewing group roster
-        div C = Role allows viewing contact info of group members
-        div A = Role allows admin of group (adding/removing members)
-        div E = Role allows management of events for group
-        div F = Role allows management of files for group
-        div T = Role allows sending text messages to group
-        div @ = Role allows sending email messages to group
-        div B = Role gets bcc'd on email messages to group
-      template(#buttons)
-        SButton#role-edit-priv-key-ok(variant='primary', @click='close(null)') OK
-  MessageBox(
-    ref='deleteModal',
-    title='Delete Role',
-    cancelLabel='Keep',
-    okLabel='Delete',
-    variant='danger'
-  )
-    | Are you sure you want to delete this role? All associated data,
-    | including privileges and role assignments, will be permanently lost.
+#role
+  SSpinner(v-if='loading')
+  template(v-else)
+    SForm(:submitLabel='submitLabel', :disabled='submitting', @submit='onSubmit')
+      SFInput#role-name(
+        label='Name',
+        help='Collective name for those who hold the role',
+        trim,
+        v-model='role.name',
+        :errorFn='nameError'
+      )
+      SFInput#role-title(
+        label='Title',
+        help='Name for a single person who holds this role, or empty',
+        trim,
+        v-model='role.title',
+        :errorFn='titleError'
+      )
+      SFRadioGroup#role-org(label='Org', :options='orgOptions', v-model='role.org')
+      SFRadioGroup#role-privLevel(
+        label='Priv Level',
+        :options='role.org ? privLevelOptions : privLevelNoOption',
+        v-model='role.privLevel'
+      )
+      SFCheckGroup#role-flags(label='Flags', :options='flagOptions', v-model='flags')
+      SFCheckGroup#role-implies(
+        v-if='role.impliable.length',
+        label='Implies',
+        :options='role.impliable',
+        valueKey='id',
+        labelKey='name',
+        v-model='implies'
+      )
+      label#role-lists-label.form-item-label Lists
+      .form-item-input2
+        template(v-for='l in role.lists')
+          div(v-if='l.subModel || l.sender')
+            a(href='#', @click.prevent='editList(l)') {{ l.type === "sms" ? `SMS: ${l.name}` : `${l.name}@SunnyvaleSERV.org` }}
+            | : {{ l.subModel ? subModelNames[l.subModel] : "" }}{{ l.subModel && l.sender ? ", " : "" }}{{ l.sender ? "can send" : "" }}
+        div: a(href='#', @click.prevent='editList(null)') Add List
+      template(v-if='role.id', #extraButtons)
+        SButton(@click='onDelete', variant='danger', :disabled='submitting') Delete Role
+      Modal(ref='listEditModal', v-slot='{ close }')
+        SForm(
+          dialog,
+          variant='primary',
+          title='Connect to List',
+          submitLabel='OK',
+          @submit='close(true)',
+          @cancel='close(false)'
+        )
+          SFSelect#role-listEdit-list(
+            label='List',
+            :options='selectableLists',
+            valueKey='id',
+            labelKey='nameFmt',
+            v-model='editingList.list'
+          )
+          SFRadioGroup#role-listEdit-subModel(
+            label='Subscription',
+            :options='subModelOptions',
+            v-model='editingList.subModel'
+          )
+          SFCheck#role-listEdit-sender(label='Can Send', v-model='editingList.sender')
+      MessageBox(
+        ref='deleteModal',
+        title='Delete Role',
+        cancelLabel='Keep',
+        okLabel='Delete',
+        variant='danger'
+      )
+        | Are you sure you want to delete this role? All associated data,
+        | including role assignments, list associations, etc. will be
+        | permanently lost.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../../plugins/axios'
 import setPage from '../../plugins/page'
 import {
   MessageBox,
   Modal,
-  Privileges,
-  PrivilegeMask,
   SButton,
   SForm,
+  SFCheck,
   SFCheckGroup,
   SFInput,
+  SFRadioGroup,
+  SFSelect,
   SSpinner,
 } from '../../base'
 
-interface GetRoleEditPrivilege extends Privileges {
+interface GetRoleImpliableRole {
   id: number
   name: string
 }
-type GetRoleEditRole = {
+interface GetRoleList {
+  id: number
+  type: string
+  name: string
+  subModel: string
+  sender: boolean
+  nameFmt: string // added locally
+}
+interface GetRole {
   id: number
   name: string
-  individual: boolean
-  detail: boolean
-  permViewClearances: boolean
-  permEditClearances: boolean
+  title: string
+  org: string
+  privLevel: string
+  showRoster: boolean
+  implicitOnly: boolean
+  implies: Array<number>
+  impliable: Array<GetRoleImpliableRole>
+  lists: Array<GetRoleList>
 }
-type GetRoleEdit = {
-  role: GetRoleEditRole
-  canDelete: boolean
-  privs: Array<GetRoleEditPrivilege>
+interface PostRole {
+  duplicateName?: true
+  duplicateTitle?: true
 }
-type PostRole = {
-  duplicateName?: boolean
+interface EditingList {
+  list: number
+  subModel: string
+  sender: boolean
 }
+
+const orgOptions = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'cert-d', label: 'CERT-D' },
+  { value: 'cert-t', label: 'CERT-T' },
+  { value: 'listos', label: 'Listos' },
+  { value: 'sares', label: 'SARES' },
+  { value: 'snap', label: 'SNAP' },
+]
+const privLevelOptions = [
+  { value: '', label: '(none)' },
+  { value: 'student', label: 'Student' },
+  { value: 'member', label: 'Member' },
+  { value: 'leader', label: 'Leader' },
+]
+const privLevelNoOption = [{ value: '', label: '(none)' }]
+const flagOptions = [
+  { value: 'showRoster', label: 'Available choice on People list page' },
+  { value: 'implicitOnly', label: 'Role can only be implied, not assigned' },
+]
+const subModelNames = {
+  allow: 'manual subscr.',
+  auto: 'auto subscr.',
+  warn: 'warn on unsub.',
+}
+const subModelOptions = [
+  { value: '', label: 'No Subscription' },
+  { value: 'allow', label: 'Manual Subscription' },
+  { value: 'auto', label: 'Automatic Subscription' },
+  { value: 'warn', label: 'Warn on Unsubscribe' },
+]
 
 export default defineComponent({
   components: {
     MessageBox,
     Modal,
-    PrivilegeMask,
     SButton,
     SForm,
+    SFCheck,
     SFCheckGroup,
     SFInput,
+    SFRadioGroup,
+    SFSelect,
     SSpinner,
   },
   setup() {
-    // Handle page load and change.
     const route = useRoute()
     const router = useRouter()
-    const role = ref(null as null | GetRoleEditRole)
-    const privs = ref([] as Array<GetRoleEditPrivilege>)
-    const canDelete = ref(false)
-    watchEffect(() => {
-      setPage({ title: route.params.rid === 'NEW' ? 'Create Role' : 'Edit Role' })
-      const rid = route.params.clone || route.params.rid
-      axios.get<GetRoleEdit>(`/api/roles/${rid}`).then((resp) => {
-        role.value = resp.data.role
-        privs.value = resp.data.privs
-        canDelete.value = resp.data.canDelete
-        flags.value.clear()
-        allFlags.forEach((f) => {
-          // @ts-ignore
-          if (resp.data.role[f.value]) flags.value.add(f.value)
-        })
-      })
+    setPage({ title: route.params.lid === 'NEW' ? 'Add Role' : 'Edit Role' })
+    const submitLabel = route.params.lid === 'NEW' ? 'Add Role' : 'Save Role'
+
+    // Load the page data.
+    const loading = ref(true)
+    const role = ref({} as GetRole)
+    const flags = ref(new Set<string>())
+    const implies = ref(new Set<number>())
+    axios.get<GetRole>(`/api/roles/${route.params.rid}`).then((resp) => {
+      role.value = resp.data
+      flags.value.clear()
+      if (role.value.showRoster) flags.value.add('showRoster')
+      if (role.value.implicitOnly) flags.value.add('implicitOnly')
+      implies.value = new Set(role.value.implies)
+      loading.value = false
     })
 
-    // Name field.
-    let duplicateName = ref('')
-    function nameError(lostFocus: boolean) {
-      if (!lostFocus || !role.value) return ''
+    // The name field.
+    const duplicateName = ref('')
+    function nameError(lostFocus: boolean): string {
+      if (!lostFocus) return ''
       if (!role.value.name) return 'The role name is required.'
       if (duplicateName.value === role.value.name) return 'Another role has this name.'
       return ''
     }
 
-    // Flags field.
-    const flags = ref(new Set() as Set<string>)
-    const allFlags = [
-      { value: 'individual', label: 'Individual (one person only)' },
-      { value: 'detail', label: 'Hide in person list' },
-      { value: 'permViewClearances', label: 'Can view clearances' },
-      { value: 'permEditClearances', label: 'Can edit clearances' },
-    ]
-
-    // Clone.
-    const canClone = computed(() => route.params.rid !== 'NEW')
-    function onClone() {
-      router.push({ name: 'roles-rid', params: { rid: 'NEW', clone: route.params.rid } })
+    // The title field.
+    const duplicateTitle = ref('')
+    function titleError(lostFocus: boolean): string {
+      if (!lostFocus) return ''
+      if (duplicateTitle.value && duplicateTitle.value === role.value.title)
+        return 'Another role has this title.'
+      return ''
     }
+    watch(
+      computed(() => role.value.name),
+      (n, o) => {
+        if (role.value.title === o) role.value.title = n
+      }
+    )
 
-    // Delete.
-    const deleteModal = ref(null as any)
-    async function onDelete() {
-      if (!(await deleteModal.value.show())) return
-      const body = new FormData()
-      body.append('delete', 'true')
-      await axios.post(`/api/roles/${route.params.rid}`, body)
-      router.push('/admin/roles')
-    }
-
-    // Submit.
-    const submitLabel = computed(() => (route.params.rid === 'NEW' ? 'Create Role' : 'Save Role'))
+    // Submit the changes.
+    const submitting = ref(false)
     async function onSubmit() {
-      if (!role.value) return
       const body = new FormData()
       body.append('name', role.value.name)
-      allFlags.forEach((f) => {
-        body.append(f.value, flags.value.has(f.value).toString())
+      body.append('title', role.value.title)
+      body.append('org', role.value.org)
+      body.append('privLevel', role.value.org ? role.value.privLevel : '')
+      body.append('showRoster', flags.value.has('showRoster').toString())
+      body.append('implicitOnly', flags.value.has('implicitOnly').toString())
+      implies.value.forEach((v) => {
+        body.append('implies', v.toString())
       })
-      privs.value.forEach((r) => {
-        if (r.member) body.append(`member:${r.id}`, 'true')
-        if (r.roster) body.append(`roster:${r.id}`, 'true')
-        if (r.contact) body.append(`contact:${r.id}`, 'true')
-        if (r.admin) body.append(`admin:${r.id}`, 'true')
-        if (r.events) body.append(`events:${r.id}`, 'true')
-        if (r.texts) body.append(`texts:${r.id}`, 'true')
-        if (r.emails) body.append(`emails:${r.id}`, 'true')
-        if (r.bcc) body.append(`bcc:${r.id}`, 'true')
-        if (r.folders) body.append(`folders:${r.id}`, 'true')
+      role.value.lists.forEach((l) => {
+        if (l.subModel || l.sender) body.append('lists', `${l.id}:${l.subModel}:${l.sender}`)
       })
+      submitting.value = true
       const resp = (await axios.post<PostRole>(`/api/roles/${route.params.rid}`, body)).data
+      submitting.value = false
       if (resp) {
         if (resp.duplicateName) duplicateName.value = role.value.name
+        if (resp.duplicateTitle) duplicateTitle.value = role.value.title
       } else {
         router.push('/admin/roles')
       }
     }
 
-    // Privileges Key.
-    const keyModal = ref(null as any)
-    function onShowKey() {
-      keyModal.value.show()
+    // List editing.
+    const listEditModal = ref(null as any)
+    const editingList = ref({} as EditingList)
+    const selectableLists = ref([] as Array<GetRoleList>)
+    async function editList(list: null | GetRoleList) {
+      selectableLists.value = role.value.lists.filter(
+        (l) => l === list || (!l.subModel && !l.sender)
+      )
+      selectableLists.value.forEach((l) => {
+        l.nameFmt = l.type === 'sms' ? `SMS: ${l.name}` : `${l.name}@SunnyvaleSERV.org`
+      })
+      if (list) {
+        editingList.value.list = list.id
+        editingList.value.subModel = list.subModel
+        editingList.value.sender = list.sender
+      } else {
+        if (!selectableLists.value.length) return
+        editingList.value.list = selectableLists.value[0].id
+        editingList.value.subModel = ''
+        editingList.value.sender = false
+      }
+      if (!(await listEditModal.value.show())) return
+      if (list && list.id !== editingList.value.list) {
+        list.subModel = ''
+        list.sender = false
+      }
+      list = role.value.lists.find((l) => l.id === editingList.value.list)!
+      list.subModel = editingList.value.subModel
+      list.sender = editingList.value.sender
+    }
+
+    // Handle deletions of roles.
+    const deleteModal = ref(null as any)
+    async function onDelete() {
+      if (deleteModal.value) {
+        const confirmed: boolean = await deleteModal.value.show()
+        if (confirmed) {
+          submitting.value = true
+          await axios.delete(`/api/roles/${route.params.rid}`)
+          submitting.value = false
+          router.push('/admin/roles')
+        }
+      }
     }
 
     return {
-      allFlags,
-      canClone,
-      canDelete,
       deleteModal,
+      editList,
+      editingList,
       flags,
-      keyModal,
+      flagOptions,
+      implies,
+      listEditModal,
+      loading,
       nameError,
-      onClone,
       onDelete,
-      onShowKey,
       onSubmit,
-      privs,
+      orgOptions,
+      privLevelNoOption,
+      privLevelOptions,
       role,
+      selectableLists,
       submitLabel,
+      submitting,
+      subModelNames,
+      subModelOptions,
+      titleError,
     }
   },
 })
 </script>
 
 <style lang="postcss">
-#role-edit {
-  padding: 1.5rem 0.75rem;
-}
-#role-edit-privs {
-  display: grid;
-  grid: auto / 1fr;
-  @media (min-width: 450px) {
-    justify-content: start;
-    grid: auto / auto min-content;
-  }
-}
-.role-edit-heading {
-  display: none;
-  @media (min-width: 450px) {
-    display: block;
-    font-weight: bold;
-  }
-}
-.role-edit-group {
-  overflow: hidden;
-  margin-top: 0.75rem;
-  min-width: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  @media (min-width: 450px) {
-    align-self: center;
-    margin-top: 0;
-    margin-right: 0.75rem;
-  }
-}
-#role-edit-priv-key-body {
-  line-height: 1.2;
+#role {
   margin: 1.5rem 0.75rem;
-}
-#role-edit-priv-key-ok {
-  margin: 0 0.75rem 0.75rem;
 }
 </style>

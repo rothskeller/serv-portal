@@ -20,22 +20,10 @@ export default defineComponent({
     // List of tabs on the page.
     const tabs = computed(() => {
       const tabs = [] as Array<TabDef>
-      tabs.push({ to: '/admin/groups', label: 'Groups' })
-      if (route.params.gid)
-        tabs.push({
-          to: `/admin/groups/${route.params.gid}`,
-          label: route.params.gid === 'NEW' ? 'Add Group' : 'Edit Group',
-        })
-      tabs.push({ to: '/admin/roles', label: 'ORoles' })
+      tabs.push({ to: '/admin/roles', label: 'Roles' })
       if (route.params.rid)
         tabs.push({
           to: `/admin/roles/${route.params.rid}`,
-          label: route.params.rid === 'NEW' ? 'Add Role' : 'Edit Role',
-        })
-      tabs.push({ to: '/admin/roles2', label: 'Roles' })
-      if (route.params.rid)
-        tabs.push({
-          to: `/admin/roles2/${route.params.rid}`,
           label: route.params.rid === 'NEW' ? 'Add Role' : 'Edit Role',
         })
       tabs.push({ to: '/admin/lists', label: 'Lists' })

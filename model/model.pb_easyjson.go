@@ -690,21 +690,21 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *R
 				in.Delim('[')
 				if out.Roles == nil {
 					if !in.IsDelim(']') {
-						out.Roles = make([]*Role2, 0, 8)
+						out.Roles = make([]*Role, 0, 8)
 					} else {
-						out.Roles = []*Role2{}
+						out.Roles = []*Role{}
 					}
 				} else {
 					out.Roles = (out.Roles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v13 *Role2
+					var v13 *Role
 					if in.IsNull() {
 						in.Skip()
 						v13 = nil
 					} else {
 						if v13 == nil {
-							v13 = new(Role2)
+							v13 = new(Role)
 						}
 						(*v13).UnmarshalEasyJSON(in)
 					}
@@ -772,7 +772,7 @@ func (v *Roles) UnmarshalJSON(data []byte) error {
 func (v *Roles) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(l, v)
 }
-func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *Role2) {
+func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *Role) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -792,7 +792,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *R
 		}
 		switch key {
 		case "id":
-			out.ID = Role2ID(in.Int())
+			out.ID = RoleID(in.Int())
 		case "name":
 			out.Name = string(in.String())
 		case "title":
@@ -813,12 +813,12 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *R
 			} else {
 				in.Delim('{')
 				if !in.IsDelim('}') {
-					out.Implies = make(map[Role2ID]bool)
+					out.Implies = make(map[RoleID]bool)
 				} else {
 					out.Implies = nil
 				}
 				for !in.IsDelim('}') {
-					key := Role2ID(in.IntStr())
+					key := RoleID(in.IntStr())
 					in.WantColon()
 					var v16 bool
 					v16 = bool(in.Bool())
@@ -880,7 +880,7 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(in *jlexer.Lexer, out *R
 		in.Consumed()
 	}
 }
-func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in Role2) {
+func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in Role) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1031,26 +1031,26 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(out *jwriter.Writer, in 
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v Role2) MarshalJSON() ([]byte, error) {
+func (v Role) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v Role2) MarshalEasyJSON(w *jwriter.Writer) {
+func (v Role) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson6578def1EncodeSunnyvaleservOrgPortalModel6(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *Role2) UnmarshalJSON(data []byte) error {
+func (v *Role) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *Role2) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *Role) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson6578def1DecodeSunnyvaleservOrgPortalModel6(l, v)
 }
 func easyjson6578def1DecodeSunnyvaleservOrgPortalModel7(in *jlexer.Lexer, out *PersonNote) {
@@ -1285,12 +1285,12 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *P
 			} else {
 				in.Delim('{')
 				if !in.IsDelim('}') {
-					out.Roles = make(map[Role2ID]bool)
+					out.Roles = make(map[RoleID]bool)
 				} else {
 					out.Roles = nil
 				}
 				for !in.IsDelim('}') {
-					key := Role2ID(in.IntStr())
+					key := RoleID(in.IntStr())
 					in.WantColon()
 					var v27 bool
 					v27 = bool(in.Bool())
@@ -1965,16 +1965,16 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel12(in *jlexer.Lexer, out *
 				in.Delim('[')
 				if out.Roles == nil {
 					if !in.IsDelim(']') {
-						out.Roles = make([]Role2ID, 0, 8)
+						out.Roles = make([]RoleID, 0, 8)
 					} else {
-						out.Roles = []Role2ID{}
+						out.Roles = []RoleID{}
 					}
 				} else {
 					out.Roles = (out.Roles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v43 Role2ID
-					v43 = Role2ID(in.Int())
+					var v43 RoleID
+					v43 = RoleID(in.Int())
 					out.Roles = append(out.Roles, v43)
 					in.WantComma()
 				}

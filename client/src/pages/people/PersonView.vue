@@ -15,7 +15,7 @@ PersonView displays the information about a person, in non-editable form.
       v-text='`(formally ${person.formalName})`'
     )
   #person-view-roles
-    div(v-for='role in person.roles2', v-text='role')
+    div(v-for='role in person.roles', v-text='role')
   #person-view-emails(v-if='person.email')
     div: a(:href='`mailto:${person.email}`', v-text='person.email')
     div(v-if='person.email2')
@@ -100,11 +100,11 @@ PersonView displays the information about a person, in non-editable form.
     div(v-if='person.noEmail && person.noText') from all emails and text messages
     div(v-else-if='person.noEmail') from all emails
     div(v-else) from all text messages
-  #person-view-roles2(v-if="me.webmaster")
+  #person-view-roles(v-if="me.webmaster")
     div Roles:
-    div(v-for="r in person.roles2" v-text="r")
-    div(v-if="!person.roles2.length") None
-    div(v-if="person.canEditRoles2")
+    div(v-for="r in person.roles" v-text="r")
+    div(v-if="!person.roles.length") None
+    div(v-if="person.canEditRoles")
       SButton(variant='secondary', small, @click="onEditRoles") Edit
     PersonEditRoles(ref='editRolesModal', :pid='person.id')
   #person-view-lists(v-if="me.webmaster && person.lists")
@@ -130,10 +130,6 @@ export type GetPersonAddress = {
   latitude?: number
   longitude?: number
   fireDistrict: number
-}
-export type GetPersonRole = {
-  id: number
-  name: string
 }
 interface GetPersonDSW {
   needed?: true
@@ -166,11 +162,10 @@ export interface GetPersonPersonBase {
   cellPhone?: string
   homePhone?: string
   workPhone?: string
-  roles: Array<GetPersonRole>
-  roles2: Array<string>
+  roles: Array<string>
   lists?: Array<string>
   canEdit: boolean
-  canEditRoles2: boolean
+  canEditRoles: boolean
   canHours: boolean
   noEmail: boolean
   noText: boolean

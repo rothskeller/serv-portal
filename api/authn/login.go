@@ -41,7 +41,7 @@ func GetLogin(r *util.Request) error {
 	out.RawString(`,"canViewReports":`)
 	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canViewRosters":`)
-	out.Bool(r.Person.HasPrivLevel(model.PrivMember2))
+	out.Bool(r.Person.HasPrivLevel(model.PrivMember))
 	out.RawString(`,"csrf":`)
 	out.String(string(r.Session.CSRF))
 	out.RawByte('}')

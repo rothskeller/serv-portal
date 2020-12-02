@@ -54,7 +54,7 @@ func init() {
 				allVOs = append(allVOs, vo{v, o})
 			}
 		} else {
-			allVOs = append(allVOs, vo{v, model.OrgNone2})
+			allVOs = append(allVOs, vo{v, model.OrgNone})
 		}
 	}
 }

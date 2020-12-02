@@ -13,15 +13,15 @@ import (
 // GetPeople handles GET /api/people requests.
 func GetPeople(r *util.Request) error {
 	var (
-		focus *model.Role2
+		focus *model.Role
 		out   jwriter.Writer
 		now   = time.Now()
 	)
-	focus = r.Tx.FetchRole(model.Role2ID(util.ParseID(r.FormValue("role"))))
+	focus = r.Tx.FetchRole(model.RoleID(util.ParseID(r.FormValue("role"))))
 	if _, ok := r.Form["search"]; ok {
 		return getPeopleSearch(r)
 	}
-	if focus != nil && r.Person.Orgs[focus.Org].PrivLevel < model.PrivMember2 {
+	if focus != nil && r.Person.Orgs[focus.Org].PrivLevel < model.PrivMember {
 		focus = nil
 	}
 	out.RawString(`{"people":[`)
@@ -89,7 +89,7 @@ func GetPeople(r *util.Request) error {
 					}
 				}
 			}
-			if (focus == nil && p.HasPrivLevel(model.PrivMember2)) || (focus != nil && p.Orgs[focus.Org].PrivLevel >= model.PrivMember2) {
+			if (focus == nil && p.HasPrivLevel(model.PrivMember)) || (focus != nil && p.Orgs[focus.Org].PrivLevel >= model.PrivMember) {
 				if p.BackgroundCheck == "" && r.Person.IsAdminLeader() {
 					// Setting this to admins only until we have accurate BG check data.
 					badges = append(badges, "No BG Check")
@@ -128,7 +128,7 @@ func GetPeople(r *util.Request) error {
 	out.RawString(`],"viewableRoles":[`)
 	first = true
 	for _, role := range r.Tx.FetchRoles() {
-		if r.Person.Orgs[role.Org].PrivLevel < model.PrivMember2 {
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivMember {
 			continue
 		}
 		if !role.ShowRoster {
@@ -200,14 +200,14 @@ func canViewPerson(viewer, viewee *model.Person) (roster, contact bool) {
 		return true, true
 	}
 	for o, om := range viewer.Orgs {
-		if om.PrivLevel < model.PrivMember2 {
+		if om.PrivLevel < model.PrivMember {
 			continue
 		}
 		if viewee.Orgs[o].PrivLevel == model.PrivNone {
 			continue
 		}
 		roster = true
-		if om.PrivLevel == model.PrivMember2 && !model.Org(o).MembersCanViewContactInfo() {
+		if om.PrivLevel == model.PrivMember && !model.Org(o).MembersCanViewContactInfo() {
 			continue
 		}
 		contact = true

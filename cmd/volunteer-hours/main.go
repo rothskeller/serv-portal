@@ -167,10 +167,10 @@ func makePlaceholders(tx *store.Tx) {
 }
 
 var orgNames = map[model.Org]string{
-	model.OrgAdmin2: "Admin",
-	model.OrgCERTD2: "CERT Deployment",
-	model.OrgCERTT2: "CERT Training",
+	model.OrgAdmin:  "Admin",
+	model.OrgCERTD:  "CERT Deployment",
+	model.OrgCERTT:  "CERT Training",
 	model.OrgListos: "Listos",
-	model.OrgSARES2: "SARES",
-	model.OrgSNAP2:  "SNAP",
+	model.OrgSARES:  "SARES",
+	model.OrgSNAP:   "SNAP",
 }

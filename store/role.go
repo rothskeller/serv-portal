@@ -5,7 +5,7 @@ import (
 )
 
 // CreateRole creates a new role in the database, with the next available ID.
-func (tx *Tx) CreateRole(role *model.Role2) {
+func (tx *Tx) CreateRole(role *model.Role) {
 	tx.Tx.CreateRole(role)
 	tx.entry.Change("create role [%d]", role.ID)
 	tx.entry.Change("set role [%d] name to %q", role.ID, role.Name)
@@ -40,12 +40,12 @@ func (tx *Tx) CreateRole(role *model.Role2) {
 
 // WillUpdateRole saves a copy of a role before it's updated, so that we can
 // compare against it to generate audit log entries.
-func (tx *Tx) WillUpdateRole(r *model.Role2) {
+func (tx *Tx) WillUpdateRole(r *model.Role) {
 	if tx.originalRoles[r.ID] != nil {
 		return
 	}
 	var or = *r
-	or.Implies = make(map[model.Role2ID]bool, len(r.Implies))
+	or.Implies = make(map[model.RoleID]bool, len(r.Implies))
 	for irid, direct := range r.Implies {
 		or.Implies[irid] = direct
 	}
@@ -57,7 +57,7 @@ func (tx *Tx) WillUpdateRole(r *model.Role2) {
 }
 
 // UpdateRole updates a role in the database.
-func (tx *Tx) UpdateRole(r *model.Role2) {
+func (tx *Tx) UpdateRole(r *model.Role) {
 	var or = tx.originalRoles[r.ID]
 
 	if or == nil {
@@ -145,7 +145,7 @@ func (tx *Tx) UpdateRole(r *model.Role2) {
 }
 
 // DeleteRole deletes a role from the database.
-func (tx *Tx) DeleteRole(role *model.Role2) {
+func (tx *Tx) DeleteRole(role *model.Role) {
 	tx.Tx.DeleteRole(role)
 	tx.entry.Change("delete role %q [%d]", role.Name, role.ID)
 }

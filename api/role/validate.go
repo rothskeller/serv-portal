@@ -8,8 +8,8 @@ import (
 	"sunnyvaleserv.org/portal/store"
 )
 
-// ValidateRole2 verifies that the role passes all consistency checks.
-func ValidateRole2(tx *store.Tx, role *model.Role2) error {
+// ValidateRole verifies that the role passes all consistency checks.
+func ValidateRole(tx *store.Tx, role *model.Role) error {
 	var maxprio int
 
 	if role.ID == model.Webmaster {
@@ -25,7 +25,7 @@ func ValidateRole2(tx *store.Tx, role *model.Role2) error {
 	if _, ok := model.PrivLevelNames[role.PrivLevel]; !ok && role.PrivLevel != model.PrivNone {
 		return errors.New("invalid privLevel")
 	}
-	if role.PrivLevel != model.PrivNone && role.Org == model.OrgNone2 {
+	if role.PrivLevel != model.PrivNone && role.Org == model.OrgNone {
 		return errors.New("missing org")
 	}
 	if role.Priority < 0 {

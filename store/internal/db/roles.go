@@ -5,7 +5,7 @@ import (
 )
 
 // FetchRoles retrieves all of the roles from the database.
-func (tx *Tx) FetchRoles() []*model.Role2 {
+func (tx *Tx) FetchRoles() []*model.Role {
 	var (
 		data  []byte
 		roles model.Roles
@@ -16,7 +16,7 @@ func (tx *Tx) FetchRoles() []*model.Role2 {
 }
 
 // SaveRoles saves the list of roles in the database.
-func (tx *Tx) SaveRoles(list []*model.Role2) {
+func (tx *Tx) SaveRoles(list []*model.Role) {
 	var (
 		roles model.Roles
 		data  []byte
@@ -29,7 +29,7 @@ func (tx *Tx) SaveRoles(list []*model.Role2) {
 }
 
 // indexRole updates the search index with information about a roster role.
-func (tx *Tx) IndexRole(r *model.Role2, replace bool) {
+func (tx *Tx) IndexRole(r *model.Role, replace bool) {
 	if replace {
 		panicOnExecError(tx.tx.Exec(`DELETE FROM search WHERE type='role' AND id=?`, r.ID))
 	}

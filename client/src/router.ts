@@ -27,16 +27,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/admin/groups'
-        },
-        {
-          path: 'groups',
-          component: () => import('./pages/admin/GroupsList.vue'),
-        },
-        {
-          name: 'groups-gid',
-          path: 'groups/:gid',
-          component: () => import('./pages/admin/GroupEdit.vue'),
+          redirect: '/admin/roles'
         },
         {
           path: 'lists',
@@ -55,15 +46,6 @@ const router = createRouter({
           name: 'roles-rid',
           path: 'roles/:rid',
           component: () => import('./pages/admin/RoleEdit.vue'),
-        },
-        {
-          path: 'roles2',
-          component: () => import('./pages/admin/Roles2List.vue'),
-        },
-        {
-          name: 'roles2-rid',
-          path: 'roles2/:rid',
-          component: () => import('./pages/admin/Role2Edit.vue'),
         },
       ],
     },

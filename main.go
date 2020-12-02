@@ -137,16 +137,16 @@ func router(r *util.Request) error {
 		return person.PostPersonRoles(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "attendance" && c[3] == "":
 		return report.GetAttendance(r)
-	case r.Method == "GET" && c[1] == "roles2" && c[2] == "":
-		return role.GetRoles2(r)
-	case r.Method == "POST" && c[1] == "roles2" && c[2] == "":
-		return role.PostRoles2(r)
-	case r.Method == "GET" && c[1] == "roles2" && c[2] != "" && c[3] == "":
-		return role.GetRole2(r, c[2])
-	case r.Method == "POST" && c[1] == "roles2" && c[2] != "" && c[3] == "":
-		return role.PostRole2(r, c[2])
-	case r.Method == "DELETE" && c[1] == "roles2" && c[2] != "" && c[3] == "":
-		return role.DeleteRole2(r, c[2])
+	case r.Method == "GET" && c[1] == "roles" && c[2] == "":
+		return role.GetRoles(r)
+	case r.Method == "POST" && c[1] == "roles" && c[2] == "":
+		return role.PostRoles(r)
+	case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
+		return role.GetRole(r, c[2])
+	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
+		return role.PostRole(r, c[2])
+	case r.Method == "DELETE" && c[1] == "roles" && c[2] != "" && c[3] == "":
+		return role.DeleteRole(r, c[2])
 	case r.Method == "GET" && c[1] == "search" && c[2] == "":
 		return search.GetSearch(r)
 	case r.Method == "GET" && c[1] == "sms" && c[2] == "":

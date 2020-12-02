@@ -19,8 +19,8 @@ type Tx struct {
 	listsDirty bool
 	people     map[model.PersonID]*model.Person
 	personList []*model.Person
-	roles      map[model.Role2ID]*model.Role2
-	roleList   []*model.Role2
+	roles      map[model.RoleID]*model.Role
+	roleList   []*model.Role
 	rolesDirty bool
 	venues     map[model.VenueID]*model.Venue
 	venueList  []*model.Venue

@@ -12,22 +12,22 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetRole2 handles GET /api/roles2/${id} requests.
-func GetRole2(r *util.Request, idstr string) error {
+// GetRole handles GET /api/roles/${id} requests.
+func GetRole(r *util.Request, idstr string) error {
 	var (
-		role *model.Role2
+		role *model.Role
 		out  jwriter.Writer
 	)
 	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
-		role = &model.Role2{
-			Implies: make(map[model.Role2ID]bool),
+		role = &model.Role{
+			Implies: make(map[model.RoleID]bool),
 			Lists:   make(map[model.ListID]model.RoleToList),
 		}
 	} else {
-		if role = r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {
+		if role = r.Tx.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return util.NotFound
 		}
 	}
@@ -103,28 +103,28 @@ func GetRole2(r *util.Request, idstr string) error {
 	return nil
 }
 
-// PostRole2 handles POST /api/roles2/${id} requests.
-func PostRole2(r *util.Request, idstr string) error {
-	var role *model.Role2
+// PostRole handles POST /api/roles/${id} requests.
+func PostRole(r *util.Request, idstr string) error {
+	var role *model.Role
 	var err error
 
 	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	if idstr == "NEW" {
-		role = &model.Role2{
-			Implies: make(map[model.Role2ID]bool),
+		role = &model.Role{
+			Implies: make(map[model.RoleID]bool),
 			Lists:   make(map[model.ListID]model.RoleToList),
 		}
 	} else {
-		if role = r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {
+		if role = r.Tx.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 			return util.NotFound
 		}
 		r.Tx.WillUpdateRole(role)
-		*role = model.Role2{
+		*role = model.Role{
 			ID:       role.ID,
 			Priority: role.Priority,
-			Implies:  make(map[model.Role2ID]bool),
+			Implies:  make(map[model.RoleID]bool),
 			Lists:    make(map[model.ListID]model.RoleToList),
 		}
 	}
@@ -149,7 +149,7 @@ func PostRole2(r *util.Request, idstr string) error {
 	role.ShowRoster, _ = strconv.ParseBool(r.FormValue("showRoster"))
 	role.ImplicitOnly, _ = strconv.ParseBool(r.FormValue("implicitOnly"))
 	for _, iridstr := range r.Form["implies"] {
-		if irid := model.Role2ID(util.ParseID(iridstr)); irid > 0 {
+		if irid := model.RoleID(util.ParseID(iridstr)); irid > 0 {
 			role.Implies[irid] = true
 		} else {
 			return errors.New("invalid implies")
@@ -182,7 +182,7 @@ func PostRole2(r *util.Request, idstr string) error {
 		rtl.SetSender(sender)
 		role.Lists[list.ID] = rtl
 	}
-	if err := ValidateRole2(r.Tx, role); err != nil {
+	if err := ValidateRole(r.Tx, role); err != nil {
 		switch err.Error() {
 		case "duplicate name":
 			r.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -206,14 +206,14 @@ func PostRole2(r *util.Request, idstr string) error {
 	return nil
 }
 
-// DeleteRole2 handles DELETE /api/roles2/${id} requests.
-func DeleteRole2(r *util.Request, idstr string) error {
-	var role *model.Role2
+// DeleteRole handles DELETE /api/roles/${id} requests.
+func DeleteRole(r *util.Request, idstr string) error {
+	var role *model.Role
 
 	if !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
-	if role = r.Tx.FetchRole(model.Role2ID(util.ParseID(idstr))); role == nil {
+	if role = r.Tx.FetchRole(model.RoleID(util.ParseID(idstr))); role == nil {
 		return util.NotFound
 	}
 	for _, e := range r.Tx.FetchEvents("2001-01-01", "2099-12-31") {

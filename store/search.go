@@ -21,7 +21,7 @@ func (tx *Tx) Search(query string, handler func(interface{}) bool) (err error) {
 		case "person":
 			return handler(tx.FetchPerson(model.PersonID(id)))
 		case "role":
-			return handler(tx.FetchRole(model.Role2ID(id)))
+			return handler(tx.FetchRole(model.RoleID(id)))
 		case "textMessage":
 			return handler(tx.FetchTextMessage(model.TextMessageID(id)))
 		default:

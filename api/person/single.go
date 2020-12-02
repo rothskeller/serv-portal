@@ -74,7 +74,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
-	out.RawString(`,"roles2":[`)
+	out.RawString(`,"roles":[`)
 	var first = true
 	for _, role := range r.Tx.FetchRoles() {
 		if !person.Roles[role.ID] || role.Title == "" {
@@ -197,7 +197,7 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 			switch person.BackgroundCheck {
 			case "":
-				if person.HasPrivLevel(model.PrivMember2) && r.Person.IsAdminLeader() {
+				if person.HasPrivLevel(model.PrivMember) && r.Person.IsAdminLeader() {
 					// Setting this to admins only until we have accurate BG check data.
 					out.RawString(`,"backgroundCheck":false`)
 				}
@@ -264,7 +264,7 @@ func GetPerson(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails || canEditRoles)
-	out.RawString(`,"canEditRoles2":`)
+	out.RawString(`,"canEditRoles":`)
 	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.ID != model.AdminPersonID)
 	out.RawString(`,"canHours":`)
 	out.Bool(person.ID == r.Person.ID || r.Person.IsAdminLeader())
@@ -429,21 +429,21 @@ func PostPerson(r *util.Request, idstr string) error {
 
 // needVolgisticsID returns whether the person is in a group from which
 // volunteer hours are requested.
-func needVolgisticsID(r *util.Request, p *model.Person, role *model.Role2) bool {
+func needVolgisticsID(r *util.Request, p *model.Person, role *model.Role) bool {
 	if role != nil {
-		return p.Orgs[role.Org].PrivLevel >= model.PrivMember2
+		return p.Orgs[role.Org].PrivLevel >= model.PrivMember
 	}
-	return p.HasPrivLevel(model.PrivMember2)
+	return p.HasPrivLevel(model.PrivMember)
 }
 
 // needDSW returns whether the person is in a group that requires DSW clearance
 // for the specified class.
-func needDSW(r *util.Request, p *model.Person, c model.DSWClass, role *model.Role2) bool {
+func needDSW(r *util.Request, p *model.Person, c model.DSWClass, role *model.Role) bool {
 	if role != nil {
 		return role.Org.DSWClass() == c
 	}
 	for o, om := range p.Orgs {
-		if om.PrivLevel >= model.PrivMember2 && model.Org(o).DSWClass() == c {
+		if om.PrivLevel >= model.PrivMember && model.Org(o).DSWClass() == c {
 			return true
 		}
 	}
@@ -593,7 +593,7 @@ func GetPersonRoles(r *util.Request, idstr string) error {
 	var first = true
 	for _, org := range model.AllOrgs {
 		if r.Person.Orgs[org].PrivLevel != model.PrivLeader &&
-			r.Person.Orgs[model.OrgAdmin2].PrivLevel != model.PrivLeader {
+			r.Person.Orgs[model.OrgAdmin].PrivLevel != model.PrivLeader {
 			continue
 		}
 		if first {
@@ -671,18 +671,18 @@ func PostPersonRoles(r *util.Request, idstr string) error {
 			continue
 		}
 		role := r.Tx.FetchRole(rid)
-		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin2].PrivLevel < model.PrivLeader {
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin].PrivLevel < model.PrivLeader {
 			continue
 		}
 		delete(person.Roles, rid)
 	}
 	r.ParseMultipartForm(1048576)
 	for _, ridstr := range r.Form["role"] {
-		role := r.Tx.FetchRole(model.Role2ID(util.ParseID(ridstr)))
+		role := r.Tx.FetchRole(model.RoleID(util.ParseID(ridstr)))
 		if role == nil {
 			return errors.New("invalid role")
 		}
-		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin2].PrivLevel < model.PrivLeader {
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivLeader && r.Person.Orgs[model.OrgAdmin].PrivLevel < model.PrivLeader {
 			return errors.New("forbidden role")
 		}
 		person.Roles[role.ID] = true

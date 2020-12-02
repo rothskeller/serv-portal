@@ -60,7 +60,7 @@ func sendRequests(tx *store.Tx) {
 			continue
 		}
 		if people[p.ID] == nil && p.VolgisticsID != 0 && !p.NoEmail && (p.Email != "" || p.Email2 != "") &&
-			p.HasPrivLevel(model.PrivMember2) {
+			p.HasPrivLevel(model.PrivMember) {
 			people[p.ID] = p
 		}
 	}

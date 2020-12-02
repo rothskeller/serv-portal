@@ -51,7 +51,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					tx.WillUpdatePerson(p)
 					*p = model.Person{
 						ID:    pid,
-						Roles: make(map[model.Role2ID]bool),
+						Roles: make(map[model.RoleID]bool),
 						Orgs:  make([]model.OrgMembership, model.NumOrgs),
 					}
 				}
@@ -218,13 +218,13 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
-			case "roles2":
+			case "roles":
 				in.Delim('[')
 				for !in.IsDelim(']') {
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						var rid model.Role2ID
+						var rid model.RoleID
 						var direct bool
 
 						in.Delim('{')
@@ -238,7 +238,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 							}
 							switch key {
 							case "id":
-								rid = model.Role2ID(in.Int())
+								rid = model.RoleID(in.Int())
 							case "direct":
 								direct = in.Bool()
 							default:

@@ -222,7 +222,7 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 	if params.includeZerosY {
 		for _, p := range r.Tx.FetchPeople() {
 			for o := range params.orgs {
-				if p.Orgs[o].PrivLevel >= model.PrivMember2 {
+				if p.Orgs[o].PrivLevel >= model.PrivMember {
 					key := attrepDataKey{pid: p.ID, org: o}
 					if data[key] == nil {
 						data[key] = make([]int, len(columns))
@@ -556,10 +556,10 @@ func renderAttrepJSON(r *util.Request, rows []attrepRow, columns []attrepColumn,
 }
 
 var orgNames = map[model.Org]string{
-	model.OrgAdmin2: "Admin",
-	model.OrgCERTD2: "CERT-D",
-	model.OrgCERTT2: "CERT-T",
+	model.OrgAdmin:  "Admin",
+	model.OrgCERTD:  "CERT-D",
+	model.OrgCERTT:  "CERT-T",
 	model.OrgListos: "Listos",
-	model.OrgSARES2: "SARES",
-	model.OrgSNAP2:  "SNAP",
+	model.OrgSARES:  "SARES",
+	model.OrgSNAP:   "SNAP",
 }

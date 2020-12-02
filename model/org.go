@@ -9,13 +9,13 @@ type Org uint8
 
 // Values for Org.
 const (
-	OrgNone2 Org = iota
-	OrgAdmin2
-	OrgCERTD2
-	OrgCERTT2
+	OrgNone Org = iota
+	OrgAdmin
+	OrgCERTD
+	OrgCERTT
 	OrgListos
-	OrgSARES2
-	OrgSNAP2
+	OrgSARES
+	OrgSNAP
 	numOrgs
 )
 
@@ -27,17 +27,17 @@ const NumOrgs = int(numOrgs)
 // display label.
 func (o Org) String() string {
 	switch o {
-	case OrgAdmin2:
+	case OrgAdmin:
 		return "admin"
-	case OrgCERTD2:
+	case OrgCERTD:
 		return "cert-d"
-	case OrgCERTT2:
+	case OrgCERTT:
 		return "cert-t"
 	case OrgListos:
 		return "listos"
-	case OrgSARES2:
+	case OrgSARES:
 		return "sares"
-	case OrgSNAP2:
+	case OrgSNAP:
 		return "snap"
 	default:
 		return ""
@@ -47,17 +47,17 @@ func (o Org) String() string {
 // Label returns the display label of the Org.
 func (o Org) Label() string {
 	switch o {
-	case OrgAdmin2:
+	case OrgAdmin:
 		return "SERV Leads"
-	case OrgCERTD2:
+	case OrgCERTD:
 		return "CERT Deployment Teams"
-	case OrgCERTT2:
+	case OrgCERTT:
 		return "CERT Training Committee"
 	case OrgListos:
 		return "Listos Team"
-	case OrgSARES2:
+	case OrgSARES:
 		return "SARES Members"
-	case OrgSNAP2:
+	case OrgSNAP:
 		return "SNAP Team"
 	default:
 		return ""
@@ -70,19 +70,19 @@ func (o Org) Label() string {
 func ParseOrg(s string) (Org, error) {
 	switch s {
 	case "admin":
-		return OrgAdmin2, nil
+		return OrgAdmin, nil
 	case "cert-d":
-		return OrgCERTD2, nil
+		return OrgCERTD, nil
 	case "cert-t":
-		return OrgCERTT2, nil
+		return OrgCERTT, nil
 	case "listos":
 		return OrgListos, nil
 	case "sares":
-		return OrgSARES2, nil
+		return OrgSARES, nil
 	case "snap":
-		return OrgSNAP2, nil
+		return OrgSNAP, nil
 	default:
-		return OrgNone2, errors.New("invalid org")
+		return OrgNone, errors.New("invalid org")
 	}
 }
 
@@ -92,18 +92,18 @@ func (o Org) Valid() bool {
 }
 
 // AllOrgs is the ordered list of Orgs, which is used for iteration.
-var AllOrgs = []Org{OrgAdmin2, OrgCERTD2, OrgCERTT2, OrgListos, OrgSARES2, OrgSNAP2}
+var AllOrgs = []Org{OrgAdmin, OrgCERTD, OrgCERTT, OrgListos, OrgSARES, OrgSNAP}
 
 // MembersCanViewContactInfo returns whether Members of the receiver Org can
 // view contact info for members of the Org.
-func (o Org) MembersCanViewContactInfo() bool { return o != OrgSARES2 }
+func (o Org) MembersCanViewContactInfo() bool { return o != OrgSARES }
 
 // DSWClass returns the DSW class for the receiver Org.
 func (o Org) DSWClass() DSWClass {
 	switch o {
-	case OrgSARES2:
+	case OrgSARES:
 		return DSWComm
-	case OrgCERTD2, OrgCERTT2:
+	case OrgCERTD, OrgCERTT:
 		return DSWCERT
 	default:
 		return 0

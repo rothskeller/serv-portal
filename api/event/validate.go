@@ -24,7 +24,7 @@ var yearRE = regexp.MustCompile(`^20\d\d$`)
 
 // ValidateEvent validates the details of an event.
 func ValidateEvent(tx *store.Tx, event *model.Event) error {
-	var seenRoles = map[model.Role2ID]bool{}
+	var seenRoles = map[model.RoleID]bool{}
 
 	if event.Name = strings.TrimSpace(event.Name); event.Name == "" {
 		return errors.New("missing name")

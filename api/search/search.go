@@ -40,7 +40,7 @@ func GetSearch(r *util.Request) error {
 			}
 			found := false
 			for _, o := range model.AllOrgs {
-				if tobj.Orgs[o].PrivLevel >= model.PrivMember2 && r.Person.Orgs[o].PrivLevel >= model.PrivMember2 {
+				if tobj.Orgs[o].PrivLevel >= model.PrivMember && r.Person.Orgs[o].PrivLevel >= model.PrivMember {
 					found = true
 					break
 				}
@@ -48,9 +48,9 @@ func GetSearch(r *util.Request) error {
 			if !found {
 				return true
 			}
-		case *model.Role2:
+		case *model.Role:
 			switch {
-			case r.Person.Orgs[tobj.Org].PrivLevel >= model.PrivMember2:
+			case r.Person.Orgs[tobj.Org].PrivLevel >= model.PrivMember:
 			case r.Person.HasPrivLevel(model.PrivLeader):
 				break
 			default:
@@ -134,7 +134,7 @@ func GetSearch(r *util.Request) error {
 			out.RawString(`,"informalName":`)
 			out.String(tobj.InformalName)
 			out.RawByte('}')
-		case *model.Role2:
+		case *model.Role:
 			out.RawString(`{"type":"role","id":`)
 			out.Int(int(tobj.ID))
 			out.RawString(`,"name":`)

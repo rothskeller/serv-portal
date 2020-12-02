@@ -109,7 +109,7 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						var rid model.Role2ID
+						var rid model.RoleID
 						if in.IsDelim('{') {
 							var seen bool
 							in.Delim('{')
@@ -123,7 +123,7 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 								}
 								switch key {
 								case "id":
-									rid = model.Role2ID(in.Int())
+									rid = model.RoleID(in.Int())
 									seen = true
 								default:
 									in.SkipRecursive()
@@ -135,7 +135,7 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 								in.AddError(errors.New("missing roles.id"))
 							}
 						} else {
-							rid = model.Role2ID(in.Int())
+							rid = model.RoleID(in.Int())
 						}
 						e.Roles = append(e.Roles, rid)
 					}

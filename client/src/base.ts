@@ -2,7 +2,6 @@ import EventOrgDot from './base/EventOrgDot.vue'
 import MessageBox from './base/MessageBox.vue'
 import Modal from './base/Modal.vue'
 import MonthSelect from './base/MonthSelect.vue'
-import PrivilegeMask from './base/PrivilegeMask.vue'
 import SButton from './base/SButton.vue'
 import SCheck from './base/SCheck.vue'
 import SCheckGroup from './base/SCheckGroup.vue'
@@ -29,7 +28,6 @@ export {
   MessageBox,
   Modal,
   MonthSelect,
-  PrivilegeMask,
   SButton,
   SCheck,
   SCheckGroup,
@@ -51,5 +49,4 @@ export {
   SSpinner,
   TabPage,
 }
-export type { Privileges } from './base/privileges'
 export type { TabDef } from './base/tabdef'

@@ -56,7 +56,7 @@ func UpdateAuthz(tx *store.Tx) {
 	}
 	// Add recursive indirect role implications based on current direct
 	// implications.
-	var seen = map[model.Role2ID]bool{}
+	var seen = map[model.RoleID]bool{}
 	for _, r := range tx.FetchRoles() {
 		addIndirectImplications(tx, r, seen)
 	}
@@ -73,7 +73,7 @@ func UpdateAuthz(tx *store.Tx) {
 	}
 	// Fill in org memberships of people, and people list of each role.
 	for _, p := range tx.FetchPeople() {
-		var roles = model.Roles{Roles: make([]*model.Role2, 0, len(p.Roles))}
+		var roles = model.Roles{Roles: make([]*model.Role, 0, len(p.Roles))}
 		for rid, direct := range p.Roles {
 			r := tx.FetchRole(rid)
 			r.People = append(r.People, p.ID)
@@ -95,10 +95,10 @@ func UpdateAuthz(tx *store.Tx) {
 		}
 		// Webmasters are automatically Admin Leaders.
 		if p.Roles[model.Webmaster] {
-			p.Orgs[model.OrgAdmin2].PrivLevel = model.PrivLeader
+			p.Orgs[model.OrgAdmin].PrivLevel = model.PrivLeader
 		}
 		// Admin Leaders are automatically leaders of every org.
-		if p.Orgs[model.OrgAdmin2].PrivLevel == model.PrivLeader {
+		if p.Orgs[model.OrgAdmin].PrivLevel == model.PrivLeader {
 			for _, o := range model.AllOrgs {
 				p.Orgs[o].PrivLevel = model.PrivLeader
 			}
@@ -144,7 +144,7 @@ func UpdateAuthz(tx *store.Tx) {
 
 // addIndirectImplications takes a role with only direct implications and
 // recursively fills in its indirect implications.
-func addIndirectImplications(tx *store.Tx, r *model.Role2, seen map[model.Role2ID]bool) {
+func addIndirectImplications(tx *store.Tx, r *model.Role, seen map[model.RoleID]bool) {
 	if seen[r.ID] {
 		return
 	}

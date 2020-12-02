@@ -53,7 +53,7 @@ func main() {
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		dumpPeople(tx)
 	case strings.HasPrefix("roles", os.Args[1]):
-		dumpRoles2(tx)
+		dumpRoles(tx)
 	case strings.HasPrefix("sessions", os.Args[1]):
 		dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
@@ -115,7 +115,7 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawString(`{"id":`)
 		out.Int(int(r))
 		out.RawString(`,"name":`)
-		out.String(role2Name(tx, r))
+		out.String(roleName(tx, r))
 		out.RawByte('}')
 	}
 	out.RawString(`],"attendance":[`)
@@ -350,12 +350,12 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
-	var roles = model.Roles{Roles: make([]*model.Role2, 0, len(p.Roles))}
+	var roles = model.Roles{Roles: make([]*model.Role, 0, len(p.Roles))}
 	for rid := range p.Roles {
 		roles.Roles = append(roles.Roles, tx.FetchRole(rid))
 	}
 	sort.Sort(roles)
-	out.RawString(`,"roles2":[`)
+	out.RawString(`,"roles":[`)
 	for i, r := range roles.Roles {
 		if i != 0 {
 			out.RawByte(',')
@@ -389,17 +389,17 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	out.RawString(`}}`)
 }
 
-func dumpRoles2(tx *store.Tx) {
+func dumpRoles(tx *store.Tx) {
 	for _, r := range tx.FetchRoles() {
 		var out jwriter.Writer
 		out.NoEscapeHTML = true
-		dumpRole2(tx, &out, r)
+		dumpRole(tx, &out, r)
 		out.DumpTo(os.Stdout)
 		os.Stdout.Write([]byte{'\n'})
 	}
 }
 
-func dumpRole2(tx *store.Tx, out *jwriter.Writer, r *model.Role2) {
+func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 	out.RawString(`{"id":`)
 	out.Int(int(r.ID))
 	out.RawString(`,"name":`)
@@ -592,7 +592,7 @@ func personName(tx *store.Tx, id model.PersonID) string {
 	}
 	return ""
 }
-func role2Name(tx *store.Tx, id model.Role2ID) string {
+func roleName(tx *store.Tx, id model.RoleID) string {
 	if v := tx.FetchRole(id); v != nil {
 		return v.Name
 	}

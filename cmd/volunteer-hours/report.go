@@ -15,12 +15,12 @@ import (
 )
 
 var orgToAssignment = map[model.Org]int{
-	model.OrgAdmin2: 1052,
-	model.OrgCERTD2: 1047,
-	model.OrgCERTT2: 1047,
+	model.OrgAdmin:  1052,
+	model.OrgCERTD:  1047,
+	model.OrgCERTT:  1047,
 	model.OrgListos: 1048,
-	model.OrgSARES2: 399,
-	model.OrgSNAP2:  373,
+	model.OrgSARES:  399,
+	model.OrgSNAP:   373,
 }
 var assnToName = map[int]string{
 	0:    "TOTAL", // as used in this program

@@ -290,7 +290,7 @@ func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {
 // IsAdminLeader returns whether the receiver person is a Leader in the Admin
 // org.
 func (p *Person) IsAdminLeader() bool {
-	return p.Orgs[OrgAdmin2].PrivLevel >= PrivLeader
+	return p.Orgs[OrgAdmin].PrivLevel >= PrivLeader
 }
 
 // A PrivLevel is a privilege level for membership in an Org.
@@ -303,30 +303,30 @@ const (
 	// PrivStudent indicates student-level membership in the Org, with
 	// essentially no privileges other than being on lists.
 	PrivStudent
-	// PrivMember2 indicates full membership in the Org.
-	PrivMember2
+	// PrivMember indicates full membership in the Org.
+	PrivMember
 	// PrivLeader indicates a leader of the Org.
 	PrivLeader
 )
 
 // AllPrivLevels is a list of all privilege levels.
-var AllPrivLevels = []PrivLevel{PrivStudent, PrivMember2, PrivLeader}
+var AllPrivLevels = []PrivLevel{PrivStudent, PrivMember, PrivLeader}
 
 // PrivLevelNames gives the display names of the privilege levels.
 var PrivLevelNames = map[PrivLevel]string{
 	PrivStudent: "student",
-	PrivMember2: "member",
+	PrivMember:  "member",
 	PrivLeader:  "leader",
 }
 
-// A Role2ID identifies a Role.
-type Role2ID int
+// A RoleID identifies a Role.
+type RoleID int
 
 // Webmaster is a role with special treatment.  It always has ID 1.
-const Webmaster Role2ID = 1
+const Webmaster RoleID = 1
 
 // DisabledUser is a role with special treatment.  It always has ID 2.
-const DisabledUser Role2ID = 2
+const DisabledUser RoleID = 2
 
 // A RoleToList is a bitmask indicating the relationship between a list and the
 // people holding a role.  The lower nibble contains the ListSubModel value and

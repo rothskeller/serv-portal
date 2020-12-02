@@ -265,7 +265,7 @@ func PostEvent(r *util.Request, idstr string) error {
 	}
 	event.Roles = event.Roles[:0]
 	for _, idstr := range r.Form["role"] {
-		var rid = model.Role2ID(util.ParseID(idstr))
+		var rid = model.RoleID(util.ParseID(idstr))
 		event.Roles = append(event.Roles, rid)
 	}
 	if err := ValidateEvent(r.Tx, event); err != nil {

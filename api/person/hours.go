@@ -81,7 +81,7 @@ func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, 
 		if !show && e.Type != model.EventHours && e.Date > today {
 			continue
 		}
-		if person.Orgs[e.Org].PrivLevel >= model.PrivMember2 {
+		if person.Orgs[e.Org].PrivLevel >= model.PrivMember {
 			show = true
 		}
 		if !show {

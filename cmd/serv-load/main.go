@@ -79,7 +79,7 @@ func main() {
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		loadPeople(tx, in)
 	case strings.HasPrefix("roles", os.Args[1]):
-		loadRoles2(tx, in)
+		loadRoles(tx, in)
 	// case strings.HasPrefix("sessions", os.Args[1]):
 	// 	dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
