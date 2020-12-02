@@ -41,7 +41,10 @@ func sendRequests(tx *store.Tx) {
 				continue
 			}
 			if people[pid] == nil && (len(pflags) == 0 || pflags[pid]) {
-				people[pid] = tx.FetchPerson(pid)
+				person := tx.FetchPerson(pid)
+				if !person.NoEmail && (person.Email != "" || person.Email2 != "") {
+					people[pid] = person
+				}
 			}
 		}
 	}
@@ -177,18 +180,14 @@ func sendReminders(tx *store.Tx) {
 			}
 		}
 	}
-	// Next, get all the people to whom we need to send reminders.
+	// Next, send to all the people who need reminders.
 	for _, p := range tx.FetchPeople() {
 		if len(pflags) != 0 && !pflags[p.ID] {
 			continue
 		}
-		if p.HoursReminder {
-			people[p.ID] = p
+		if p.HoursReminder && !p.NoEmail && (p.Email != "" || p.Email2 != "") {
+			sendRequest(p, mailer, events, eatt, true)
 		}
-	}
-	// Send an email to each of those people.
-	for _, p := range people {
-		sendRequest(p, mailer, events, eatt, true)
 	}
 }
 
