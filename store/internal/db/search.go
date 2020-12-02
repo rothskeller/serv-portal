@@ -2,8 +2,6 @@ package db
 
 import (
 	"database/sql"
-
-	"sunnyvaleserv.org/portal/model"
 )
 
 // Search executes a search and calls the supplied function for each match.
@@ -31,7 +29,7 @@ func (tx *Tx) Search(query string, handler func(string, int, string) bool) error
 }
 
 // RebuildSearchIndex rebuilds the entire search index.
-func (tx *Tx) RebuildSearchIndex(groups []*model.Group) {
+func (tx *Tx) RebuildSearchIndex() {
 	panicOnExecError(tx.tx.Exec(`DELETE FROM search`))
 	for _, tm := range tx.FetchTextMessages() {
 		tx.indexTextMessage(tm)

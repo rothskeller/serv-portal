@@ -37,8 +37,3 @@ type FolderAndDocument struct {
 	Folder   *model.Folder
 	Document *model.Document
 }
-
-// RebuildSearchIndex rebuilds the entire search index.
-func (tx *Tx) RebuildSearchIndex() {
-	tx.Tx.RebuildSearchIndex(tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()))
-}

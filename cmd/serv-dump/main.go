@@ -48,22 +48,18 @@ func main() {
 	switch {
 	case strings.HasPrefix("events", os.Args[1]):
 		dumpEvents(tx)
-	case strings.HasPrefix("groups", os.Args[1]):
-		dumpGroups(tx)
 	case strings.HasPrefix("lists", os.Args[1]):
 		dumpLists(tx)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		dumpPeople(tx)
 	case strings.HasPrefix("roles", os.Args[1]):
-		dumpRoles(tx)
+		dumpRoles2(tx)
 	case strings.HasPrefix("sessions", os.Args[1]):
 		dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
 		dumpTextMessages(tx)
 	case strings.HasPrefix("venues", os.Args[1]):
 		dumpVenues(tx)
-	case os.Args[1] == "roles2":
-		dumpRoles2(tx)
 	default:
 		usage()
 	}
@@ -145,16 +141,6 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.RawByte('}')
 	}
 	out.RawString(`]}`)
-}
-
-func dumpGroups(tx *store.Tx) {
-	for _, g := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {
-		var out jwriter.Writer
-		out.NoEscapeHTML = true
-		g.MarshalEasyJSON(&out)
-		out.DumpTo(os.Stdout)
-		os.Stdout.Write([]byte{'\n'})
-	}
 }
 
 func dumpLists(tx *store.Tx) {
@@ -285,8 +271,6 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 			out.String(n.Note)
 			out.RawString(`,"date":`)
 			out.String(n.Date)
-			out.RawString(`,"privilege":`)
-			out.String(model.PrivilegeNames[n.Privilege])
 			out.RawByte('}')
 		}
 		out.RawByte(']')
@@ -403,67 +387,6 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawByte('}')
 	}
 	out.RawString(`}}`)
-}
-
-func dumpRoles(tx *store.Tx) {
-	for _, r := range tx.Authorizer().FetchRoles(tx.Authorizer().AllRoles()) {
-		var out jwriter.Writer
-		out.NoEscapeHTML = true
-		dumpRole(tx, &out, r)
-		out.DumpTo(os.Stdout)
-		os.Stdout.Write([]byte{'\n'})
-	}
-}
-
-func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
-	out.RawString(`{"id":`)
-	out.Int(int(r.ID))
-	if r.Tag != "" {
-		out.RawString(`,"tag":`)
-		out.String(string(r.Tag))
-	}
-	out.RawString(`,"name":`)
-	out.String(r.Name)
-	if r.Individual {
-		out.RawString(`,"individual":`)
-		out.Bool(r.Individual)
-	}
-	if r.Detail {
-		out.RawString(`,"detail":`)
-		out.Bool(r.Detail)
-	}
-	out.RawString(`,"privileges":[`)
-	first := true
-	for _, g := range tx.Authorizer().FetchGroups(tx.Authorizer().AllGroups()) {
-		privs := tx.Authorizer().ActionsRG(r.ID, g.ID)
-		if privs == 0 {
-			continue
-		}
-		if first {
-			first = false
-		} else {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(g.ID))
-		out.RawString(`,"name":`)
-		out.String(g.Name)
-		out.RawString(`,"privileges":[`)
-		first2 := true
-		for _, p := range model.AllPrivileges {
-			if privs&p == 0 {
-				continue
-			}
-			if first2 {
-				first2 = false
-			} else {
-				out.RawByte(',')
-			}
-			out.String(model.PrivilegeNames[p])
-		}
-		out.RawString(`]}`)
-	}
-	out.RawString(`]}`)
 }
 
 func dumpRoles2(tx *store.Tx) {
@@ -657,12 +580,6 @@ func dumpVenues(tx *store.Tx) {
 	}
 }
 
-func groupName(tx *store.Tx, id model.GroupID) string {
-	if v := tx.Authorizer().FetchGroup(id); v != nil {
-		return v.Name
-	}
-	return ""
-}
 func listName(tx *store.Tx, id model.ListID) string {
 	if v := tx.FetchList(id); v != nil {
 		return v.Name
@@ -672,12 +589,6 @@ func listName(tx *store.Tx, id model.ListID) string {
 func personName(tx *store.Tx, id model.PersonID) string {
 	if v := tx.FetchPerson(id); v != nil {
 		return v.SortName
-	}
-	return ""
-}
-func roleName(tx *store.Tx, id model.RoleID) string {
-	if v := tx.Authorizer().FetchRole(id); v != nil {
-		return v.Name
 	}
 	return ""
 }

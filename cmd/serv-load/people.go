@@ -17,7 +17,6 @@ import (
 
 func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 	var err error
-	auth := tx.Authorizer()
 	var record = 1
 	for {
 		var p = new(model.Person)
@@ -25,7 +24,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 
 		in.Delim('{')
 		if in.Error() == io.EOF {
-			auth.Save()
 			authz.UpdateAuthz(tx)
 			return
 		}
@@ -134,8 +132,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 									pn.Note = in.String()
 								case "date":
 									pn.Date = in.String()
-								case "privilege":
-									pn.Privilege.UnmarshalEasyJSON(in)
 								default:
 									in.SkipRecursive()
 								}

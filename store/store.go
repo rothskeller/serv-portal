@@ -4,7 +4,6 @@ package store
 
 import (
 	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/store/internal/cache"
 	"sunnyvaleserv.org/portal/util/log"
 )
@@ -18,7 +17,6 @@ func Open(path string) {
 type Tx struct {
 	*cache.Tx
 	entry          *log.Entry
-	auth           *authz.Authorizer
 	originalLists  map[model.ListID]*model.List
 	originalPeople map[model.PersonID]*model.Person
 	originalRoles  map[model.Role2ID]*model.Role2
@@ -33,12 +31,4 @@ func Begin(entry *log.Entry) (tx *Tx) {
 		originalPeople: make(map[model.PersonID]*model.Person),
 		originalRoles:  make(map[model.Role2ID]*model.Role2),
 	}
-}
-
-// Authorizer returns an authorizer for the transaction.
-func (tx *Tx) Authorizer() *authz.Authorizer {
-	if tx.auth == nil {
-		tx.auth = authz.NewAuthorizer(tx.Tx, tx.entry)
-	}
-	return tx.auth
 }

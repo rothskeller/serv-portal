@@ -135,7 +135,6 @@ func PostPasswordResetToken(r *util.Request, token string) error {
 	person.PWResetToken = ""
 	r.Tx.UpdatePerson(person)
 	r.Person = person
-	r.Auth.SetMe(person)
 	util.CreateSession(r, false)
 	r.Tx.Commit()
 	return GetLogin(r)

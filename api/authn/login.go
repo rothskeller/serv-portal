@@ -81,7 +81,6 @@ func PostLogin(r *util.Request) error {
 	}
 	// The login is valid.  Record it and create a session.
 	r.Person = person
-	r.Auth.SetMe(person)
 	if person.BadLoginCount > 0 {
 		r.Tx.WillUpdatePerson(person)
 		person.BadLoginCount = 0

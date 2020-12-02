@@ -32,7 +32,6 @@ func GetPersonHours(r *util.Request, idstr string) error {
 			return util.NotFound
 		}
 		r.Person = person
-		r.Auth.SetMe(person)
 	}
 	if person != r.Person && !r.Person.IsAdminLeader() {
 		return util.Forbidden
@@ -124,7 +123,6 @@ func PostPersonHours(r *util.Request, idstr string) (err error) {
 			return util.NotFound
 		}
 		r.Person = person
-		r.Auth.SetMe(person)
 	}
 	if person != r.Person && !r.Person.IsAdminLeader() {
 		return util.Forbidden

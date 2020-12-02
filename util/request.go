@@ -9,7 +9,6 @@ import (
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
-	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/util/log"
 )
 
@@ -89,7 +88,6 @@ type Request struct {
 	Response
 	Session  *model.Session
 	Person   *model.Person
-	Auth     *authz.Authorizer
 	Path     string
 	Tx       *store.Tx
 	LogEntry *log.Entry

@@ -46,28 +46,6 @@ message Event {
   repeated int64 roles = 16 [(gogoproto.casttype) = "Role2ID"];
 }
 
-message Group {
-  int64          id       =  1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "GroupID"];
-  string         tag      =  2 [(gogoproto.casttype) = "GroupTag"];
-  string         name     =  3;
-  string         email    =  5;
-  repeated int64 no_email =  6 [(gogoproto.casttype) = "PersonID"];
-  repeated int64 no_text  =  7 [(gogoproto.casttype) = "PersonID"];
-  // Organization is the organization with which this group is affiliated.
-  // Members of this group will be asked for any additional hours they may have
-  // for this organization.
-  int32 organization = 9 [(gogoproto.casttype) = "Organization"];
-  // GetHours, when true, indicates that members of this group should receive
-  // monthly email reminders to record their volunteer hours.
-  bool get_hours = 10 [(gogoproto.jsontag) = "getHours"];
-  // DSWClass indicates which classification of DSW registration is required for
-  // members of this group.
-  bool dsw_required = 12 [(gogoproto.customname) = "DSWRequired", (gogoproto.jsontag) = "dswRequired,omitempty"];
-  // BackgroundCheckRequired indicates whether a background check is required
-  // for membership in the group.
-  bool background_check_required = 13 [(gogoproto.jsontag) = "backgroundCheckRequired"];
-}
-
 // List is a distribution list for messages to people.
 message List {
   // ID is the identifier of the List.
@@ -142,18 +120,8 @@ message Person {
 }
 
 message PersonNote {
-  string note      = 2;
-  string date      = 4;
-  int64  privilege = 5 [(gogoproto.casttype) = "Privilege"];
-}
-
-message Role {
-  int64  id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "RoleID"];
-  string tag          = 2 [(gogoproto.casttype) = "RoleTag"];
-  string name         = 3;
-  bool   individual   = 4;
-  bool   detail       = 5;
-  uint32 permissions  = 6 [(gogoproto.casttype) = "Permission"];
+  string note = 2;
+  string date = 4;
 }
 
 // A Role2 is a role that one or more people hold, describing their

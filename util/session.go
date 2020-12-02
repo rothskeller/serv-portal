@@ -44,7 +44,6 @@ func ValidateSession(r *Request) {
 		return
 	}
 	r.Person = r.Session.Person
-	r.Auth.SetMe(r.Session.Person)
 	newexp = time.Now().Add(sessionExpiration)
 	if newexp.After(r.Session.Expires) {
 		r.Session.Expires = newexp

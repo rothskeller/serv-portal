@@ -13,7 +13,6 @@ import (
 )
 
 func loadTextMessages(tx *store.Tx, in *jlexer.Lexer) {
-	auth := tx.Authorizer()
 	var record = 1
 	for {
 		var t = new(model.TextMessage)
@@ -21,7 +20,6 @@ func loadTextMessages(tx *store.Tx, in *jlexer.Lexer) {
 
 		in.Delim('{')
 		if in.Error() == io.EOF {
-			auth.Save()
 			return
 		}
 		for !in.IsDelim('}') {

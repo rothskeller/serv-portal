@@ -133,18 +133,6 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 		if !dateRE.MatchString(n.Date) {
 			return errors.New("invalid note date")
 		}
-		if n.Privilege != 0 {
-			found := false
-			for _, p := range model.AllPrivileges {
-				if p == n.Privilege {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return errors.New("invalid note privilege")
-			}
-		}
 	}
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")

@@ -34,10 +34,6 @@ func GetSearch(r *util.Request) error {
 			if !folder.CanViewFolder(r.Person, tobj) {
 				return true
 			}
-		case *model.Group:
-			if !r.Auth.CanAG(model.PrivViewMembers, tobj.ID) {
-				return true
-			}
 		case *model.Person:
 			if tobj == r.Person || r.Person.HasPrivLevel(model.PrivLeader) {
 				break

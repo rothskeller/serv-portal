@@ -21,7 +21,6 @@ import (
 	"sunnyvaleserv.org/portal/api/email"
 	"sunnyvaleserv.org/portal/api/event"
 	"sunnyvaleserv.org/portal/api/folder"
-	"sunnyvaleserv.org/portal/api/group"
 	"sunnyvaleserv.org/portal/api/list"
 	"sunnyvaleserv.org/portal/api/person"
 	"sunnyvaleserv.org/portal/api/report"
@@ -60,7 +59,6 @@ func txWrapper(r *util.Request) error {
 	defer func() {
 		r.Tx.Rollback()
 	}()
-	r.Auth = r.Tx.Authorizer()
 	util.ValidateSession(r)
 	return router(r)
 }
@@ -115,12 +113,6 @@ func router(r *util.Request) error {
 		return folder.PostFolder(r)
 	case r.Method == "DELETE" && c[1] == "folders":
 		return folder.DeleteFolder(r)
-	case r.Method == "GET" && c[1] == "groups" && c[2] == "":
-		return group.GetGroups(r)
-	case r.Method == "GET" && c[1] == "groups" && c[2] != "" && c[3] == "":
-		return group.GetGroup(r, c[2])
-	case r.Method == "POST" && c[1] == "groups" && c[2] != "" && c[3] == "":
-		return group.PostGroup(r, c[2])
 	case r.Method == "GET" && c[1] == "lists" && c[2] == "":
 		return list.GetLists(r)
 	case r.Method == "GET" && c[1] == "lists" && c[2] != "" && c[3] == "":
@@ -145,12 +137,6 @@ func router(r *util.Request) error {
 		return person.PostPersonRoles(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "attendance" && c[3] == "":
 		return report.GetAttendance(r)
-	case r.Method == "GET" && c[1] == "roles" && c[2] == "":
-		return role.GetRoles(r)
-	case r.Method == "GET" && c[1] == "roles" && c[2] != "" && c[3] == "":
-		return role.GetRole(r, c[2])
-	case r.Method == "POST" && c[1] == "roles" && c[2] != "" && c[3] == "":
-		return role.PostRole(r, c[2])
 	case r.Method == "GET" && c[1] == "roles2" && c[2] == "":
 		return role.GetRoles2(r)
 	case r.Method == "POST" && c[1] == "roles2" && c[2] == "":

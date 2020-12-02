@@ -31,12 +31,6 @@ func (fs FolderSort) Len() int           { return len(fs) }
 func (fs FolderSort) Less(i, j int) bool { return fs[i].Name < fs[j].Name }
 func (fs FolderSort) Swap(i, j int)      { fs[i], fs[j] = fs[j], fs[i] }
 
-type GroupSort []*Group
-
-func (gs GroupSort) Len() int           { return len(gs) }
-func (gs GroupSort) Less(i, j int) bool { return gs[i].Name < gs[j].Name }
-func (gs GroupSort) Swap(i, j int)      { gs[i], gs[j] = gs[j], gs[i] }
-
 func (ls Lists) Len() int { return len(ls.Lists) }
 func (ls Lists) Less(i, j int) bool {
 	if ls.Lists[i].Type != ls.Lists[j].Type {
@@ -71,12 +65,6 @@ func (ps PersonSort) Less(i, j int) bool {
 	return len(ps[i].SortName) < len(ps[j].SortName)
 }
 func (ps PersonSort) Swap(i, j int) { ps[i], ps[j] = ps[j], ps[i] }
-
-type RoleSort []*Role
-
-func (rs RoleSort) Len() int           { return len(rs) }
-func (rs RoleSort) Less(i, j int) bool { return rs[i].Name < rs[j].Name }
-func (rs RoleSort) Swap(i, j int)      { rs[i], rs[j] = rs[j], rs[i] }
 
 func (rs Roles) Len() int           { return len(rs.Roles) }
 func (rs Roles) Less(i, j int) bool { return rs.Roles[i].Priority < rs.Roles[j].Priority }

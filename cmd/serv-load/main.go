@@ -74,22 +74,18 @@ func main() {
 	// 	dumpEmailMessages(tx)
 	case strings.HasPrefix("events", os.Args[1]) && len(os.Args[1]) > 1:
 		loadEvents(tx, in)
-	case strings.HasPrefix("groups", os.Args[1]):
-		loadGroups(tx, in)
 	case strings.HasPrefix("lists", os.Args[1]):
 		loadLists(tx, in)
 	case strings.HasPrefix("person", os.Args[1]) || strings.HasPrefix("people", os.Args[1]):
 		loadPeople(tx, in)
 	case strings.HasPrefix("roles", os.Args[1]):
-		loadRoles(tx, in)
+		loadRoles2(tx, in)
 	// case strings.HasPrefix("sessions", os.Args[1]):
 	// 	dumpSessions(tx)
 	case strings.HasPrefix("text_messages", os.Args[1]) || os.Args[1] == "texts":
 		loadTextMessages(tx, in)
 	case strings.HasPrefix("venues", os.Args[1]):
 		loadVenues(tx, in)
-	case os.Args[1] == "roles2":
-		loadRoles2(tx, in)
 	default:
 		usage()
 	}

@@ -10,12 +10,8 @@ Tier 1:
   Timesheet-style attendance entry
   Combine person attendance history and hours entry
   Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
-  Refactor permissions and leads based on org rather than group.
 
 Tier 2:
-  Refactor groups / email lists for current needs
-  Better support for mail lists without visible grouping
-    Email lists that people can choose to sign up for
   More compact people list
 
 Unprioritized:
@@ -23,7 +19,6 @@ Unprioritized:
   Search engine covers document contents
   Skills and other person data
   Data export
-  Rearrange files and folders with drag-and-drop
   Place to request print runs for documents e.g. brochures
   Contacts download to phone etc.
   Complete the implementation of serv-load venues.  Better validation, allow updates.
