@@ -15,9 +15,6 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		}
 	}
 	tx.Tx.CreatePerson(p)
-	if tx.auth != nil {
-		tx.auth.AddPerson(p.ID)
-	}
 	tx.entry.Change("create person [%d]", p.ID)
 	tx.entry.Change("set person [%d] informalName to %q", p.ID, p.InformalName)
 	tx.entry.Change("set person [%d] formalName to %q", p.ID, p.FormalName)

@@ -37,7 +37,6 @@ type GetSMSGroup = {
 }
 type GetSMS = {
   messages: Array<GetSMSMessage>
-  groups: Array<GetSMSGroup>
 }
 
 export default defineComponent({

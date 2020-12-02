@@ -21,7 +21,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 	var record = 1
 	for {
 		var p = new(model.Person)
-		var roles []model.RoleID
 		var first = true
 
 		in.Delim('{')
@@ -155,38 +154,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.NoText = in.Bool()
 			case "unsubscribeToken":
 				p.UnsubscribeToken = in.String()
-			case "roles":
-				in.Delim('[')
-				for !in.IsDelim(']') {
-					if in.IsNull() {
-						in.Skip()
-					} else {
-						if in.IsDelim('{') {
-							in.Delim('{')
-							for !in.IsDelim('}') {
-								key := in.UnsafeString()
-								in.WantColon()
-								if in.IsNull() {
-									in.Skip()
-									in.WantComma()
-									continue
-								}
-								switch key {
-								case "id":
-									roles = append(roles, model.RoleID(in.Int()))
-								default:
-									in.SkipRecursive()
-								}
-								in.WantComma()
-							}
-							in.Delim('}')
-						} else {
-							roles = append(roles, model.RoleID(in.Int()))
-						}
-					}
-					in.WantComma()
-				}
-				in.Delim(']')
 			case "volgisticsID":
 				p.VolgisticsID = in.Int()
 			case "backgroundCheck":
@@ -304,7 +271,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, in.Error())
 			os.Exit(1)
 		}
-		if err := person.ValidatePerson(tx, p, roles); err != nil {
+		if err := person.ValidatePerson(tx, p); err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: record %d: %s\n", record, err)
 			os.Exit(1)
 		}
@@ -313,7 +280,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 		} else {
 			tx.UpdatePerson(p)
 		}
-		tx.Authorizer().SetPersonRoles(p.ID, roles)
 		record++
 	}
 }

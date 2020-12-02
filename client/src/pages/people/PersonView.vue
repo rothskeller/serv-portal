@@ -15,7 +15,7 @@ PersonView displays the information about a person, in non-editable form.
       v-text='`(formally ${person.formalName})`'
     )
   #person-view-roles
-    div(v-for='role in person.roles', v-text='role.name')
+    div(v-for='role in person.roles2', v-text='role')
   #person-view-emails(v-if='person.email')
     div: a(:href='`mailto:${person.email}`', v-text='person.email')
     div(v-if='person.email2')

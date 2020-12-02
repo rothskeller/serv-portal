@@ -7,7 +7,6 @@ import (
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
-	"sunnyvaleserv.org/portal/store/authz"
 	"sunnyvaleserv.org/portal/util"
 )
 
@@ -16,12 +15,7 @@ var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01
 
 // ValidatePerson validates a Person record, except for its Password field.  It
 // enforces all data consistency rules, but does not enforce privileges.
-func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) error {
-	var (
-		individualHeld map[model.RoleID]model.PersonID
-		people         []*model.Person
-		roleMap        map[model.RoleID]bool
-	)
+func ValidatePerson(tx *store.Tx, person *model.Person) error {
 	if person.InformalName = strings.TrimSpace(person.InformalName); person.InformalName == "" {
 		return errors.New("missing informalName")
 	}
@@ -104,8 +98,7 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 	if person.UnsubscribeToken == "" {
 		person.UnsubscribeToken = util.RandomToken()
 	}
-	people = tx.FetchPeople()
-	for _, p := range people {
+	for _, p := range tx.FetchPeople() {
 		if p.ID == person.ID {
 			continue
 		}
@@ -124,23 +117,6 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		if p.UnsubscribeToken == person.UnsubscribeToken {
 			return errors.New("duplicate unsubscribeToken")
 		}
-	}
-	individualHeld = cacheIndividuallyHeldRoles(tx.Authorizer(), person.ID)
-	roleMap = make(map[model.RoleID]bool)
-	for _, rid := range roles {
-		if tx.Authorizer().FetchRole(rid) == nil {
-			return errors.New("invalid role")
-		}
-		if roleMap[rid] {
-			return errors.New("redundant role")
-		}
-		if individualHeld[rid] != 0 {
-			return errors.New("individual role already held")
-		}
-		roleMap[rid] = true
-	}
-	if len(roles) == 0 {
-		return errors.New("person must have at least one role")
 	}
 	if person.BadLoginCount < 0 {
 		return errors.New("invalid badLoginCount")
@@ -187,14 +163,4 @@ func ValidatePerson(tx *store.Tx, person *model.Person, roles []model.RoleID) er
 		}
 	}
 	return nil
-}
-
-func cacheIndividuallyHeldRoles(auth *authz.Authorizer, except model.PersonID) (held map[model.RoleID]model.PersonID) {
-	held = auth.RolesIndividuallyHeld()
-	for rid, pid := range held {
-		if pid == except {
-			delete(held, rid)
-		}
-	}
-	return held
 }

@@ -4,8 +4,8 @@ PeopleList displays the list of people.
 
 <template lang="pug">
 #people-list
-  select#people-group(v-if='groups && groups.length > 1', v-model='group')
-    option(v-for='t in groups', :key='t.id', :value='t.id', v-text='t.name')
+  select#people-role(v-if='roles && roles.length > 1', v-model='role')
+    option(v-for='t in roles', :key='t.id', :value='t.id', v-text='t.name')
   #people-list-spinner(v-if='loading')
     SSpinner
   template(v-else)
@@ -82,13 +82,13 @@ export type GetPeoplePerson = {
   canEdit: boolean
   canHours: boolean
 }
-export type GetPeopleViewableGroup = {
+export type GetPeopleViewableRole = {
   id: number
   name: string
 }
 export type GetPeople = {
   people: Array<GetPeoplePerson>
-  viewableGroups: Array<GetPeopleViewableGroup>
+  viewableRoles: Array<GetPeopleViewableRole>
   canAdd: boolean
 }
 
@@ -98,31 +98,35 @@ export default defineComponent({
     const route = useRoute()
     setPage({ title: 'People' })
 
-    // The group being viewed.
-    const group = ref(
-      parseInt((route.query.group as string) || Cookies.get('serv-people-group') || '0')
+    // The role being viewed.
+    const role = ref(
+      parseInt((route.query.role as string) || Cookies.get('serv-people-role') || '0')
     )
-    const groups = ref([] as Array<GetPeopleViewableGroup>)
+    const roles = ref([] as Array<GetPeopleViewableRole>)
     const loading = ref(true)
     const people = ref([] as Array<GetPeoplePerson>)
     watch(
-      group,
+      role,
       async () => {
-        Cookies.set('serv-people-group', group.value.toString(), { expires: 3650 })
+        Cookies.set('serv-people-role', role.value.toString(), { expires: 3650 })
         loading.value = true
-        const data = (await axios.get<GetPeople>('/api/people', { params: { group: group.value } }))
+        const data = (await axios.get<GetPeople>('/api/people', { params: { role: role.value } }))
           .data
         people.value = data.people
-        if (data.viewableGroups.length > 1) {
-          data.viewableGroups.unshift({ id: 0, name: '(all)' })
-          groups.value = data.viewableGroups
+        people.value.forEach((p) => {
+          if (p.roles) p.roles.sort()
+        })
+        if (data.viewableRoles.length > 1) {
+          data.viewableRoles.sort((a, b) => a.name.localeCompare(b.name))
+          data.viewableRoles.unshift({ id: 0, name: '(all)' })
+          roles.value = data.viewableRoles
         }
         loading.value = false
       },
       { immediate: true }
     )
 
-    return { group, groups, loading, people }
+    return { role, roles, loading, people }
   },
 })
 </script>

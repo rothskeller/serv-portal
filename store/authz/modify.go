@@ -16,43 +16,6 @@ func (a *Authorizer) Save() {
 	a.tx.SaveAuthorizer(data)
 }
 
-// SetPersonRoles sets the list of roles held by a person.
-func (a *Authorizer) SetPersonRoles(person model.PersonID, roles []model.RoleID) {
-	var npr = make([]byte, a.bytesPerPerson)
-	for _, role := range roles {
-		if int(role) >= len(a.roles) || role < 1 {
-			panic("role out of range")
-		}
-		npr[int(role/8)] |= 1 << int(role%8)
-	}
-	for by := 0; by < a.bytesPerPerson; by++ {
-		for bit := 0; bit < 8; bit++ {
-			o := a.personRoles[int(person)*a.bytesPerPerson+by]&(1<<bit) != 0
-			n := npr[by]&(1<<bit) != 0
-			if o && !n {
-				a.entry.Change("remove person %q [%d] role %q [%d]", a.tx.FetchPerson(person).InformalName, person, a.roles[by*8+bit].Name, by*8+bit)
-			} else if n && !o {
-				a.entry.Change("add person %q [%d] role %q [%d]", a.tx.FetchPerson(person).InformalName, person, a.roles[by*8+bit].Name, by*8+bit)
-			}
-		}
-		a.personRoles[int(person)*a.bytesPerPerson+by] = npr[by]
-	}
-}
-
-// AddPerson adjusts the authorizer to account for a newly-added person.
-func (a *Authorizer) AddPerson(person model.PersonID) {
-	if int(person) < int(a.numPeople) {
-		for by := 0; by < a.bytesPerPerson; by++ {
-			a.personRoles[int(person)*a.bytesPerPerson+by] = 0
-		}
-		return
-	}
-	npr := make([]byte, a.bytesPerPerson*(int(person)+1))
-	copy(npr, a.personRoles)
-	a.personRoles = npr
-	a.numPeople = person + 1
-}
-
 // CreateGroup creates a new group.
 func (a *Authorizer) CreateGroup() *model.Group {
 	var id int

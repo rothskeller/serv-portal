@@ -13,28 +13,28 @@ import (
 // GetPeople handles GET /api/people requests.
 func GetPeople(r *util.Request) error {
 	var (
-		focus  *model.Group
-		people []*model.Person
-		out    jwriter.Writer
-		now    = time.Now()
+		focus *model.Role2
+		out   jwriter.Writer
+		now   = time.Now()
 	)
-	focus = r.Auth.FetchGroup(model.GroupID(util.ParseID(r.FormValue("group"))))
+	focus = r.Tx.FetchRole(model.Role2ID(util.ParseID(r.FormValue("role"))))
 	if _, ok := r.Form["search"]; ok {
 		return getPeopleSearch(r)
 	}
-	if focus != nil && !r.Auth.CanAG(model.PrivViewMembers, focus.ID) {
+	if focus != nil && r.Person.Orgs[focus.Org].PrivLevel < model.PrivMember2 {
 		focus = nil
-	}
-	if focus != nil {
-		people = r.Auth.FetchPeople(r.Auth.PeopleG(focus.ID))
-	} else {
-		people = r.Tx.FetchPeople()
 	}
 	out.RawString(`{"people":[`)
 	first := true
-	for _, p := range people {
-		if !r.Auth.CanAP(model.PrivViewMembers, p.ID) && p != r.Person {
+	for _, p := range r.Tx.FetchPeople() {
+		canView, canViewContactInfo := canViewPerson(r.Person, p)
+		if !canView {
 			continue
+		}
+		if focus != nil {
+			if _, ok := p.Roles[focus.ID]; !ok {
+				continue
+			}
 		}
 		if first {
 			first = false
@@ -49,7 +49,7 @@ func GetPeople(r *util.Request) error {
 		out.String(p.SortName)
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
-		if r.Auth.CanAP(model.PrivViewContactInfo, p.ID) || p == r.Person {
+		if canViewContactInfo {
 			out.RawString(`,"email":`)
 			out.String(p.Email)
 			out.RawString(`,"email2":`)
@@ -67,7 +67,7 @@ func GetPeople(r *util.Request) error {
 			out.RawString(`,"workPhone":`)
 			out.String(p.WorkPhone)
 		}
-		if r.Auth.May(model.PermViewClearances) {
+		if r.Person.HasPrivLevel(model.PrivLeader) {
 			var badges []string
 			if needVolgisticsID(r, p, focus) {
 				if p.VolgisticsID == 0 {
@@ -89,7 +89,7 @@ func GetPeople(r *util.Request) error {
 					}
 				}
 			}
-			if needBackgroundCheck(r, p, focus) {
+			if (focus == nil && p.HasPrivLevel(model.PrivMember2)) || (focus != nil && p.Orgs[focus.Org].PrivLevel >= model.PrivMember2) {
 				if p.BackgroundCheck == "" && r.Person.IsAdminLeader() {
 					// Setting this to admins only until we have accurate BG check data.
 					badges = append(badges, "No BG Check")
@@ -112,8 +112,8 @@ func GetPeople(r *util.Request) error {
 		}
 		out.RawString(`,"roles":[`)
 		first2 := true
-		for _, role := range r.Auth.FetchRoles(r.Auth.RolesP(p.ID)) {
-			if role.Detail {
+		for rid, direct := range p.Roles {
+			if !direct {
 				continue
 			}
 			if first2 {
@@ -121,26 +121,32 @@ func GetPeople(r *util.Request) error {
 			} else {
 				out.RawByte(',')
 			}
-			out.String(role.Name)
+			out.String(r.Tx.FetchRole(rid).Name)
 		}
 		out.RawString(`]}`)
 	}
-	out.RawString(`],"viewableGroups":[`)
+	out.RawString(`],"viewableRoles":[`)
 	first = true
-	for _, group := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivViewMembers)) {
+	for _, role := range r.Tx.FetchRoles() {
+		if r.Person.Orgs[role.Org].PrivLevel < model.PrivMember2 {
+			continue
+		}
+		if !role.ShowRoster {
+			continue
+		}
 		if first {
 			first = false
 		} else {
 			out.RawByte(',')
 		}
 		out.RawString(`{"id":`)
-		out.Int(int(group.ID))
+		out.Int(int(role.ID))
 		out.RawString(`,"name":`)
-		out.String(group.Name)
+		out.String(role.Name)
 		out.RawByte('}')
 	}
 	out.RawString(`],"canAdd":`)
-	out.Bool(r.Auth.CanA(model.PrivManageMembers))
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -155,8 +161,11 @@ func getPeopleSearch(r *util.Request) error {
 		count  int
 		search = strings.ToLower(strings.TrimSpace(r.FormValue("search")))
 	)
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
 	out.RawByte('[')
-	for _, p := range r.Auth.FetchPeople(r.Auth.PeopleA(model.PrivViewMembers)) {
+	for _, p := range r.Tx.FetchPeople() {
 		if !strings.Contains(strings.ToLower(p.SortName), search) &&
 			!strings.Contains(strings.ToLower(p.FormalName), search) &&
 			!strings.Contains(strings.ToLower(p.CallSign), search) {
@@ -180,4 +189,29 @@ func getPeopleSearch(r *util.Request) error {
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 	return nil
+}
+
+// canViewPerson returns whether the specified viewer is allowed to see the
+// specified viewee.  It returns two flags: one indicating whether the viewee
+// can be seen in the roster at all; the other indicating whether the viewee's
+// contact information can be seen.
+func canViewPerson(viewer, viewee *model.Person) (roster, contact bool) {
+	if viewer == viewee {
+		return true, true
+	}
+	for o, om := range viewer.Orgs {
+		if om.PrivLevel < model.PrivMember2 {
+			continue
+		}
+		if viewee.Orgs[o].PrivLevel == model.PrivNone {
+			continue
+		}
+		roster = true
+		if om.PrivLevel == model.PrivMember2 && !model.Org(o).MembersCanViewContactInfo() {
+			continue
+		}
+		contact = true
+		return
+	}
+	return
 }

@@ -5,8 +5,8 @@ PeopleMap displays people on a map.
 <template lang="pug">
 #people-map
   #people-map-title
-    select#people-map-group(v-if='groups && groups.length > 1', v-model='group')
-      option(v-for='t in groups', :key='t.id', :value='t.id', v-text='t.name')
+    select#people-map-role(v-if='roles && roles.length > 1', v-model='role')
+      option(v-for='t in roles', :key='t.id', :value='t.id', v-text='t.name')
     SCheck#people-map-home.people-map-option(v-model='home', label='Home')
     SCheck#people-map-work.people-map-option(v-model='work', label='Business Hours')
   #people-map-container
@@ -20,7 +20,7 @@ import Cookies from 'js-cookie'
 import axios from '../../plugins/axios'
 import { SCheck } from '../../base'
 import * as districts from './districts'
-import type { GetPeople, GetPeoplePerson, GetPeopleViewableGroup } from './PeopleList.vue'
+import type { GetPeople, GetPeoplePerson, GetPeopleViewableRole } from './PeopleList.vue'
 
 const mapScriptPromise = new Promise((resolve, reject) => {
   const script = document.createElement('script')
@@ -129,22 +129,23 @@ export default defineComponent({
       })
     }
 
-    // The group being viewed.
-    const group = ref(
-      parseInt((route.query.group as string) || Cookies.get('serv-people-group') || '0')
+    // The role being viewed.
+    const role = ref(
+      parseInt((route.query.role as string) || Cookies.get('serv-people-role') || '0')
     )
-    const groups = ref([] as Array<GetPeopleViewableGroup>)
+    const roles = ref([] as Array<GetPeopleViewableRole>)
     const people = ref([] as Array<GetPeoplePerson>)
     watch(
-      group,
+      role,
       async () => {
-        Cookies.set('serv-people-group', group.value.toString(), { expires: 3650 })
-        const data = (await axios.get<GetPeople>('/api/people', { params: { group: group.value } }))
+        Cookies.set('serv-people-role', role.value.toString(), { expires: 3650 })
+        const data = (await axios.get<GetPeople>('/api/people', { params: { role: role.value } }))
           .data
         people.value = data.people
-        if (data.viewableGroups.length > 1) {
-          data.viewableGroups.unshift({ id: 0, name: '(all)' })
-          groups.value = data.viewableGroups
+        if (data.viewableRoles.length > 1) {
+          data.viewableRoles.sort((a, b) => a.name.localeCompare(b.name))
+          data.viewableRoles.unshift({ id: 0, name: '(all)' })
+          roles.value = data.viewableRoles
         }
         resetMarkers()
       },
@@ -156,7 +157,7 @@ export default defineComponent({
     const work = ref(false)
     watch([home, work], resetMarkers)
 
-    return { group, groups, home, map, people, work }
+    return { home, map, people, role, roles, work }
   },
 })
 </script>
@@ -175,7 +176,7 @@ export default defineComponent({
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin: 0 0.75rem 0.75rem;
 }
 .people-map-option {
   margin-left: 0.75rem;

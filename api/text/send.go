@@ -23,9 +23,6 @@ func GetSMSNew(r *util.Request) error {
 	var (
 		out jwriter.Writer
 	)
-	if !r.Auth.CanA(model.PrivSendTextMessages) {
-		return util.Forbidden
-	}
 	out.RawString(`{"lists":[`)
 	first := true
 	for _, l := range r.Tx.FetchLists() {
@@ -45,6 +42,9 @@ func GetSMSNew(r *util.Request) error {
 		out.RawString(`,"name":`)
 		out.String(l.Name)
 		out.RawByte('}')
+	}
+	if first {
+		return util.Forbidden
 	}
 	out.RawString(`]}`)
 	r.Tx.Commit()
@@ -70,9 +70,6 @@ func PostSMS(r *util.Request) error {
 		params     = url.Values{}
 		recipients = map[model.PersonID]string{}
 	)
-	if !r.Auth.CanA(model.PrivSendTextMessages) {
-		return util.Forbidden
-	}
 	message.Sender = r.Person.ID
 	if message.Message = r.FormValue("message"); message.Message == "" {
 		return errors.New("missing message")
@@ -81,15 +78,19 @@ func PostSMS(r *util.Request) error {
 		return errors.New("no lists selected")
 	}
 	for _, l := range r.Form["list"] {
-		if list := r.Tx.FetchList(model.ListID(util.ParseID(l))); list != nil && list.Type == model.ListSMS && list.People[r.Person.ID]&model.ListSender != 0 {
+		if list := r.Tx.FetchList(model.ListID(util.ParseID(l))); list == nil {
+			return errors.New("nonexistent list")
+		} else if list.Type != model.ListSMS {
+			return errors.New("invalid list")
+		} else if list.People[r.Person.ID]&model.ListSender == 0 {
+			return errors.New("forbidden list")
+		} else {
 			message.Lists = append(message.Lists, list.ID)
 			for pid, lps := range list.People {
 				if lps&model.ListSubscribed != 0 {
 					recipients[pid] = ""
 				}
 			}
-		} else {
-			return errors.New("invalid list")
 		}
 	}
 	for pid := range recipients {

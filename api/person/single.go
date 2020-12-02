@@ -26,12 +26,10 @@ func GetPerson(r *util.Request, idstr string) error {
 		out            jwriter.Writer
 		attendmap      map[model.EventID]model.AttendanceInfo
 		attended       []*model.Event
-		individualHeld map[model.RoleID]model.PersonID
-		roles          = map[model.RoleID]bool{}
 		wantEdit       = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
-		if !r.Auth.CanA(model.PrivManageMembers) {
+		if !r.Person.HasPrivLevel(model.PrivLeader) {
 			return util.Forbidden
 		}
 		person = new(model.Person)
@@ -41,11 +39,12 @@ func GetPerson(r *util.Request, idstr string) error {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
-		if !r.Auth.CanAP(model.PrivViewMembers, person.ID) && person != r.Person {
+		var canView bool
+		if canView, canViewContact = canViewPerson(r.Person, person); !canView {
 			return util.Forbidden
 		}
 		canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
-		canViewContact = canEditDetails || r.Auth.CanAP(model.PrivViewContactInfo, person.ID)
+		canViewContact = canEditDetails || canViewContact
 	}
 	out.RawString(`{"person":{"id":`)
 	out.Int(int(person.ID))
@@ -75,40 +74,8 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"workPhone":`)
 		out.String(person.WorkPhone)
 	}
-	for _, r := range r.Auth.RolesP(person.ID) {
-		roles[r] = true
-	}
-	individualHeld = cacheIndividuallyHeldRoles(r.Auth, person.ID)
-	out.RawString(`,"roles":[`)
-	first := true
-	for _, role := range r.Auth.FetchRoles(r.Auth.AllRoles()) {
-		var canAssign = r.Auth.CanAR(model.PrivManageMembers, role.ID)
-		canEditRoles = canEditRoles || canAssign
-		if individualHeld[role.ID] != 0 {
-			canAssign = false
-		}
-		if !roles[role.ID] && (!canAssign || !wantEdit) {
-			continue
-		}
-		if first {
-			first = false
-		} else {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(role.ID))
-		out.RawString(`,"name":`)
-		out.String(role.Name)
-		if wantEdit {
-			out.RawString(`,"canAssign":`)
-			out.Bool(canAssign)
-			out.RawString(`,"held":`)
-			out.Bool(roles[role.ID])
-		}
-		out.RawByte('}')
-	}
-	out.RawString(`],"roles2":[`)
-	first = true
+	out.RawString(`,"roles2":[`)
+	var first = true
 	for _, role := range r.Tx.FetchRoles() {
 		if !person.Roles[role.ID] || role.Title == "" {
 			continue
@@ -144,7 +111,7 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte(']')
 		}
 	}
-	if r.Auth.May(model.PermViewClearances) {
+	if r.Person.HasPrivLevel(model.PrivLeader) {
 		out.RawString(`,"identification":[`)
 		first = true
 		for _, t := range model.AllIdentTypes {
@@ -161,7 +128,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawByte(']')
 	}
 	if wantEdit {
-		if r.Auth.May(model.PermEditClearances) {
+		if r.Person.IsAdminLeader() {
 			out.RawString(`,"volgistics":`)
 			out.Int(person.VolgisticsID)
 			out.RawString(`,"dsw":{`)
@@ -181,7 +148,7 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.String(person.BackgroundCheck)
 		}
 	} else {
-		if r.Auth.May(model.PermViewClearances) {
+		if r.Person.HasPrivLevel(model.PrivLeader) {
 			if person.VolgisticsID != 0 {
 				out.RawString(`,"volgistics":`)
 				out.Int(person.VolgisticsID)
@@ -199,7 +166,7 @@ func GetPerson(r *util.Request, idstr string) error {
 				out.RawString(`,"volgistics":false`)
 			}
 		}
-		if r.Person == person || r.Auth.May(model.PermViewClearances) {
+		if r.Person == person || r.Person.HasPrivLevel(model.PrivLeader) {
 			out.RawString(`,"dsw":{`)
 			var first = true
 			for _, c := range model.AllDSWClasses {
@@ -230,7 +197,7 @@ func GetPerson(r *util.Request, idstr string) error {
 			out.RawByte('}')
 			switch person.BackgroundCheck {
 			case "":
-				if needBackgroundCheck(r, person, nil) && r.Person.IsAdminLeader() {
+				if person.HasPrivLevel(model.PrivMember2) && r.Person.IsAdminLeader() {
 					// Setting this to admins only until we have accurate BG check data.
 					out.RawString(`,"backgroundCheck":false`)
 				}
@@ -276,10 +243,10 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"notes":[`)
 		first := true
 		for _, n := range person.Notes {
-			if n.Privilege == 0 && !r.Person.IsAdminLeader() {
-				continue
-			}
-			if n.Privilege != 0 && !r.Auth.CanAP(n.Privilege, person.ID) {
+			// Need to redo how notes are privileged.  A few had
+			// a "contact" privilege and should be more visible than
+			// this.  TODO
+			if !r.Person.IsAdminLeader() {
 				continue
 			}
 			if first {
@@ -312,7 +279,7 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.RawString(`,"canEditDetails":`)
 		out.Bool(canEditDetails)
 		out.RawString(`,"canEditClearances":`)
-		out.Bool(r.Auth.May(model.PermEditClearances))
+		out.Bool(r.Person.IsAdminLeader())
 		out.RawString(`,"allowBadPassword":`)
 		out.Bool(r.Person.Roles[model.Webmaster])
 		out.RawString(`,"identTypes":[`)
@@ -344,89 +311,59 @@ func GetPerson(r *util.Request, idstr string) error {
 // PostPerson handles POST /api/people/$id requests (where $id may be "NEW").
 func PostPerson(r *util.Request, idstr string) error {
 	var (
-		person         *model.Person
-		canEditDetails bool
-		roles          []model.RoleID
-		err            error
+		person *model.Person
+		err    error
 	)
 	if idstr == "NEW" {
-		if !r.Auth.CanA(model.PrivManageMembers) {
+		if !r.Person.HasPrivLevel(model.PrivLeader) {
 			return util.Forbidden
 		}
 		person = new(model.Person)
 		person.UnsubscribeToken = util.RandomToken()
-		canEditDetails = true
 	} else {
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return util.NotFound
 		}
+		if r.Person != person && !r.Person.HasPrivLevel(model.PrivLeader) {
+			return util.Forbidden
+		}
 		r.Tx.WillUpdatePerson(person)
-		canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
 	}
-	if !canEditDetails && !r.Auth.CanA(model.PrivManageMembers) {
-		return util.Forbidden
-	}
-	// Remove all roles that the user is allowed to change; keep the ones
-	// that they aren't.
-	roles = r.Auth.RolesP(person.ID)
-	j := 0
-	for _, role := range roles {
-		if !r.Auth.CanAR(model.PrivManageMembers, role) {
-			roles[j] = role
-			j++
+	person.InformalName = r.FormValue("informalName")
+	person.FormalName = r.FormValue("formalName")
+	person.SortName = r.FormValue("sortName")
+	person.CallSign = r.FormValue("callSign")
+	person.Email = r.FormValue("email")
+	person.Email2 = r.FormValue("email2")
+	person.CellPhone = r.FormValue("cellPhone")
+	person.HomePhone = r.FormValue("homePhone")
+	person.WorkPhone = r.FormValue("workPhone")
+	person.HomeAddress.Address = r.FormValue("homeAddress")
+	if l := r.FormValue("homeAddressLatitude"); l != "" {
+		if person.HomeAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid latitude")
 		}
 	}
-	roles = roles[:j]
-	// Add roles that the user requested.
-	r.ParseMultipartForm(1048576)
-	for _, ridstr := range r.Form["role"] {
-		if role := r.Auth.FetchRole(model.RoleID(util.ParseID(ridstr))); role != nil && r.Auth.CanAR(model.PrivManageMembers, role.ID) {
-			roles = append(roles, role.ID)
-		} else {
-			return errors.New("bad role")
+	if l := r.FormValue("homeAddressLongitude"); l != "" {
+		if person.HomeAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid longitude")
 		}
 	}
-	// If there are no resulting roles, add the disabled role.
-	if len(roles) == 0 {
-		roles = append(roles, r.Auth.FetchRoleByTag(model.RoleDisabled).ID)
+	person.MailAddress.Address = r.FormValue("mailAddress")
+	person.MailAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("mailAddressSameAsHome"))
+	person.WorkAddress.Address = r.FormValue("workAddress")
+	if l := r.FormValue("workAddressLatitude"); l != "" {
+		if person.WorkAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid latitude")
+		}
 	}
-	if canEditDetails {
-		person.InformalName = r.FormValue("informalName")
-		person.FormalName = r.FormValue("formalName")
-		person.SortName = r.FormValue("sortName")
-		person.CallSign = r.FormValue("callSign")
-		person.Email = r.FormValue("email")
-		person.Email2 = r.FormValue("email2")
-		person.CellPhone = r.FormValue("cellPhone")
-		person.HomePhone = r.FormValue("homePhone")
-		person.WorkPhone = r.FormValue("workPhone")
-		person.HomeAddress.Address = r.FormValue("homeAddress")
-		if l := r.FormValue("homeAddressLatitude"); l != "" {
-			if person.HomeAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
-				return errors.New("invalid latitude")
-			}
+	if l := r.FormValue("workAddressLongitude"); l != "" {
+		if person.WorkAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid longitude")
 		}
-		if l := r.FormValue("homeAddressLongitude"); l != "" {
-			if person.HomeAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
-				return errors.New("invalid longitude")
-			}
-		}
-		person.MailAddress.Address = r.FormValue("mailAddress")
-		person.MailAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("mailAddressSameAsHome"))
-		person.WorkAddress.Address = r.FormValue("workAddress")
-		if l := r.FormValue("workAddressLatitude"); l != "" {
-			if person.WorkAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
-				return errors.New("invalid latitude")
-			}
-		}
-		if l := r.FormValue("workAddressLongitude"); l != "" {
-			if person.WorkAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
-				return errors.New("invalid longitude")
-			}
-		}
-		person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
 	}
-	if r.Auth.May(model.PermEditClearances) {
+	person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
+	if r.Person.IsAdminLeader() {
 		person.VolgisticsID, _ = strconv.Atoi(r.FormValue("volgistics"))
 		if person.DSWRegistrations == nil {
 			person.DSWRegistrations = make(map[model.DSWClass]time.Time)
@@ -452,7 +389,7 @@ func PostPerson(r *util.Request, idstr string) error {
 			return errors.New("invalid identification type")
 		}
 	}
-	if err = ValidatePerson(r.Tx, person, roles); err != nil {
+	if err = ValidatePerson(r.Tx, person); err != nil {
 		if estr := err.Error(); strings.HasPrefix(estr, "duplicate ") {
 			// These need to be sent back to the client as 200
 			// responses with error details.
@@ -464,13 +401,15 @@ func PostPerson(r *util.Request, idstr string) error {
 	}
 	// We do password after validation so that it can use the other
 	// fields as password hints.
-	if password := r.FormValue("password"); password != "" && canEditDetails {
-		if !r.Person.Roles[model.Webmaster] {
+	if password := r.FormValue("password"); password != "" {
+		if r.Person == person {
 			if oldPassword := r.FormValue("oldPassword"); !authn.CheckPassword(person, oldPassword) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"wrongOldPassword":true}`))
 				return nil
 			}
+		}
+		if !r.Person.Roles[model.Webmaster] {
 			if !authn.StrongPassword(person, password) {
 				r.Header().Set("Content-Type", "application/json; charset=utf-8")
 				r.Write([]byte(`{"weakPassword":true}`))
@@ -484,48 +423,27 @@ func PostPerson(r *util.Request, idstr string) error {
 	} else {
 		r.Tx.UpdatePerson(person)
 	}
-	r.Auth.SetPersonRoles(person.ID, roles)
-	r.Auth.Save()
 	r.Tx.Commit()
 	return nil
 }
 
 // needVolgisticsID returns whether the person is in a group from which
 // volunteer hours are requested.
-func needVolgisticsID(r *util.Request, p *model.Person, g *model.Group) bool {
-	if g != nil {
-		return g.GetHours
+func needVolgisticsID(r *util.Request, p *model.Person, role *model.Role2) bool {
+	if role != nil {
+		return p.Orgs[role.Org].PrivLevel >= model.PrivMember2
 	}
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if g.GetHours {
-			return true
-		}
-	}
-	return false
+	return p.HasPrivLevel(model.PrivMember2)
 }
 
 // needDSW returns whether the person is in a group that requires DSW clearance
 // for the specified class.
-func needDSW(r *util.Request, p *model.Person, c model.DSWClass, g *model.Group) bool {
-	if g != nil {
-		return model.OrganizationToDSWClass[g.Organization] == c
+func needDSW(r *util.Request, p *model.Person, c model.DSWClass, role *model.Role2) bool {
+	if role != nil {
+		return role.Org.DSWClass() == c
 	}
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if model.OrganizationToDSWClass[g.Organization] == c {
-			return true
-		}
-	}
-	return false
-}
-
-// needBackgroundCheck returns whether the person is in a group that requires a
-// background check.
-func needBackgroundCheck(r *util.Request, p *model.Person, g *model.Group) bool {
-	if g != nil {
-		return g.BackgroundCheckRequired
-	}
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsP(p.ID)) {
-		if g.BackgroundCheckRequired {
+	for o, om := range p.Orgs {
+		if om.PrivLevel >= model.PrivMember2 && model.Org(o).DSWClass() == c {
 			return true
 		}
 	}
@@ -769,7 +687,7 @@ func PostPersonRoles(r *util.Request, idstr string) error {
 		}
 		person.Roles[role.ID] = true
 	}
-	if err := ValidatePerson(r.Tx, person, r.Auth.RolesP(person.ID)); err != nil {
+	if err := ValidatePerson(r.Tx, person); err != nil {
 		return err
 	}
 	r.Tx.UpdatePerson(person)

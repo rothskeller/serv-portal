@@ -6,38 +6,37 @@ PersonEdit displays the editor page for a person.
 #person-edit-spinner(v-if='!person')
   SSpinner
 SForm(v-else, :submitLabel='submitLabel', @submit='onSubmit')
-  template(v-if='canEditDetails')
-    .form-item.person-edit-block-head Identification
-    SFInput#person-informalName(
-      label='Name',
-      autofocus,
-      trim,
-      v-model='person.informalName',
-      :errorFn='informalNameError',
-      help='What you like to be called, e.g. “Joe Banks”'
-    )
-    SFInput#person-formalName(
-      label='Formal name',
-      trim,
-      v-model='person.formalName',
-      :errorFn='formalNameError',
-      help='For formal documents, e.g. “Joseph A. Banks, Jr.”'
-    )
-    SFInput#person-sortName(
-      label='Sort name',
-      trim,
-      v-model='person.sortName',
-      :errorFn='sortNameError',
-      help='For appearance in sorted lists, e.g. “Banks, Joe”'
-    )
-    SFInput#person-callSign(
-      label='Call sign',
-      trim,
-      v-model='person.callSign',
-      :errorFn='callSignError',
-      help='FCC amateur radio license',
-      style='text-transform:uppercase'
-    )
+  .form-item.person-edit-block-head Identification
+  SFInput#person-informalName(
+    label='Name',
+    autofocus,
+    trim,
+    v-model='person.informalName',
+    :errorFn='informalNameError',
+    help='What you like to be called, e.g. “Joe Banks”'
+  )
+  SFInput#person-formalName(
+    label='Formal name',
+    trim,
+    v-model='person.formalName',
+    :errorFn='formalNameError',
+    help='For formal documents, e.g. “Joseph A. Banks, Jr.”'
+  )
+  SFInput#person-sortName(
+    label='Sort name',
+    trim,
+    v-model='person.sortName',
+    :errorFn='sortNameError',
+    help='For appearance in sorted lists, e.g. “Banks, Joe”'
+  )
+  SFInput#person-callSign(
+    label='Call sign',
+    trim,
+    v-model='person.callSign',
+    :errorFn='callSignError',
+    help='FCC amateur radio license',
+    style='text-transform: uppercase'
+  )
   template(v-if='canEditClearances')
     .form-item.person-edit-block-head Volunteer Status
     SFInput#person-volgistics(
@@ -59,89 +58,72 @@ SForm(v-else, :submitLabel='submitLabel', @submit='onSubmit')
       v-model='person.backgroundCheck',
       :errorFn='backgroundError',
       help='Date when background check cleared, or “TRUE” if clearance confirmed but date unknown',
-      style='text-transform:uppercase'
+      style='text-transform: uppercase'
     )
     SFCheckGroup#person-identification(
       label='IDs Issued',
       v-model='identification',
       :options='identTypes'
     )
-  template(v-if='canEditDetails')
-    .form-item.person-edit-block-head Change Password
-    SFInput#person-oldPassword(
-      v-if='!allowBadPassword',
-      type='password',
-      label='Old Password',
-      v-model='oldPassword',
-      :errorFn='oldPasswordError'
-    )
-    SFPassword#person-password(
-      label='New Password',
-      v-model='password',
-      :allowBadPassword='allowBadPassword',
-      :passwordHints='myPasswordHints'
-    )
-    .form-item.person-edit-block-head Contact Information
-    SFInput#person-email(
-      label='Email',
-      help='This is the email address you log in with.',
-      trim,
-      v-model='person.email',
-      :errorFn='emailError',
-      style='text-transform:lowercase'
-    )
-    SFInput#person-email2(
-      label='Alt. Email',
-      trim,
-      v-model='person.email2',
-      :errorFn='email2Error',
-      style='text-transform:lowercase'
-    )
-    SFInput#person-cellPhone(
-      label='Cell Phone',
-      trim,
-      v-model='person.cellPhone',
-      :errorFn='cellPhoneError'
-    )
-    SFInput#person-homePhone(
-      label='Home Phone',
-      trim,
-      v-model='person.homePhone',
-      :errorFn='homePhoneError'
-    )
-    SFInput#person-workPhone(
-      label='Work Phone',
-      trim,
-      v-model='person.workPhone',
-      :errorFn='workPhoneError'
-    )
-    PersonEditAddress(type='Home', v-model='person.homeAddress')
-    PersonEditAddress(
-      type='Work',
-      v-model='person.workAddress',
-      :hasHome='!!person.homeAddress.address'
-    )
-    PersonEditAddress(
-      type='Mail',
-      v-model='person.mailAddress',
-      :hasHome='!!person.homeAddress.address'
-    )
-    .form-item.person-edit-block-head Roles
-  SFCheckGroup#person-roles(
-    v-if='canEditRoles',
-    label='Roles',
-    v-model='roles',
-    :options='person.roles',
-    valueKey='id',
-    labelKey='name',
-    enabledKey='canAssign',
-    :errorFn='rolesError'
+  .form-item.person-edit-block-head Change Password
+  SFInput#person-oldPassword(
+    v-if='!allowBadPassword',
+    type='password',
+    label='Old Password',
+    v-model='oldPassword',
+    :errorFn='oldPasswordError'
   )
-  template(v-else)
-    .form-item-label Roles
-    .form-item-input
-      template(v-for='role in person.roles')
-        div(v-if='role.held', v-text='role.name')
+  SFPassword#person-password(
+    label='New Password',
+    v-model='password',
+    :allowBadPassword='allowBadPassword',
+    :passwordHints='myPasswordHints'
+  )
+  .form-item.person-edit-block-head Contact Information
+  SFInput#person-email(
+    label='Email',
+    help='This is the email address you log in with.',
+    trim,
+    v-model='person.email',
+    :errorFn='emailError',
+    style='text-transform: lowercase'
+  )
+  SFInput#person-email2(
+    label='Alt. Email',
+    trim,
+    v-model='person.email2',
+    :errorFn='email2Error',
+    style='text-transform: lowercase'
+  )
+  SFInput#person-cellPhone(
+    label='Cell Phone',
+    trim,
+    v-model='person.cellPhone',
+    :errorFn='cellPhoneError'
+  )
+  SFInput#person-homePhone(
+    label='Home Phone',
+    trim,
+    v-model='person.homePhone',
+    :errorFn='homePhoneError'
+  )
+  SFInput#person-workPhone(
+    label='Work Phone',
+    trim,
+    v-model='person.workPhone',
+    :errorFn='workPhoneError'
+  )
+  PersonEditAddress(type='Home', v-model='person.homeAddress')
+  PersonEditAddress(
+    type='Work',
+    v-model='person.workAddress',
+    :hasHome='!!person.homeAddress.address'
+  )
+  PersonEditAddress(
+    type='Mail',
+    v-model='person.mailAddress',
+    :hasHome='!!person.homeAddress.address'
+  )
 </template>
 
 <script lang="ts">
@@ -159,28 +141,18 @@ interface GetPersonEditRole extends GetPersonRole {
   held: boolean
 }
 interface GetPersonEditPerson extends GetPersonPersonBase {
-  roles: Array<GetPersonEditRole>
   volgistics?: number
   dsw?: Record<string, string>
   backgroundCheck?: string
   identification?: Array<string>
 }
-interface GetPersonEditBase {
+interface GetPersonEdit {
   person: GetPersonEditPerson
-  canEditRoles: boolean
-  canEditDetails: boolean
   canEditClearances: boolean
   allowBadPassword: boolean
   identTypes: Array<string>
+  passwordHints: Array<string>
 }
-interface GetPersonEditNED extends GetPersonEditBase {
-  canEditDetails: false
-}
-interface GetPersonEditED extends GetPersonEditBase {
-  canEditDetails: true
-  passwordHints?: Array<string>
-}
-type GetPersonEdit = GetPersonEditNED | GetPersonEditED
 
 type PostPersonEdit = {
   duplicateCallSign?: boolean
@@ -210,24 +182,18 @@ export default defineComponent({
     const newPerson = route.params.id === 'NEW'
     const allowBadPassword = ref(false)
     const canEditClearances = ref(false)
-    const canEditDetails = ref(false)
-    const canEditRoles = ref(false)
     let passwordHints: Array<string>
     const person = ref(null as null | GetPersonEditPerson)
     const volgistics = ref('')
-    const roles = ref(new Set() as Set<number>)
     const identification = ref(new Set() as Set<string>)
     const identTypes = ref([] as any)
     axios.get<GetPersonEdit>(`/api/people/${route.params.id}?edit=1`).then((resp) => {
       allowBadPassword.value = resp.data.allowBadPassword
       canEditClearances.value = resp.data.canEditClearances
-      canEditDetails.value = resp.data.canEditDetails
-      canEditRoles.value = resp.data.canEditRoles
-      if (resp.data.canEditDetails) passwordHints = resp.data.passwordHints || []
+      passwordHints = resp.data.passwordHints || []
       if (resp.data.person.backgroundCheck === 'true') resp.data.person.backgroundCheck = 'TRUE'
       person.value = resp.data.person
       volgistics.value = resp.data.person.volgistics ? resp.data.person.volgistics.toString() : ''
-      roles.value = new Set(resp.data.person.roles.filter((r) => r.held).map((r) => r.id))
       identification.value = new Set(resp.data.person.identification || [])
       if (resp.data.identTypes) {
         identTypes.value = resp.data.identTypes.map((t) => ({ label: t, value: t }))
@@ -362,11 +328,6 @@ export default defineComponent({
         return 'A valid phone number must have 10 digits.'
       return ''
     }
-    function rolesError(lostFocus: boolean, submitted: boolean) {
-      if (!submitted || !newPerson) return ''
-      if (roles.value.size === 0) return 'At least one role must be selected.'
-      return ''
-    }
 
     // When the informal name is changed, we may update the formal and/or
     // sort name.
@@ -397,41 +358,39 @@ export default defineComponent({
     async function onSubmit() {
       if (!person.value) return // squelch TypeScript warnings
       const body = new FormData()
-      if (canEditDetails.value) {
-        body.append('informalName', person.value.informalName)
-        body.append('formalName', person.value.formalName)
-        body.append('sortName', person.value.sortName)
-        body.append('callSign', person.value.callSign.toUpperCase())
-        body.append('email', (person.value.email || person.value.email2 || '').toLowerCase())
-        body.append('email2', person.value.email ? (person.value.email2 || '').toLowerCase() : '')
-        body.append('cellPhone', person.value.cellPhone || '')
-        body.append('homePhone', person.value.homePhone || '')
-        body.append('workPhone', person.value.workPhone || '')
-        if (oldPassword.value) body.append('oldPassword', oldPassword.value)
-        if (password.value) body.append('password', password.value)
-        if (person.value.homeAddress?.address) {
-          body.append('homeAddress', person.value.homeAddress.address)
-          body.append('homeAddressLatitude', (person.value.homeAddress.latitude || 0).toString())
-          body.append('homeAddressLongitude', (person.value.homeAddress.longitude || 0).toString())
-        }
-        if (person.value.workAddress?.address) {
-          body.append('workAddress', person.value.workAddress.address)
-          body.append('workAddressLatitude', (person.value.workAddress.latitude || 0).toString())
-          body.append('workAddressLongitude', (person.value.workAddress.longitude || 0).toString())
-        } else {
-          body.append(
-            'workAddressSameAsHome',
-            (person.value.workAddress?.sameAsHome || false).toString()
-          )
-        }
-        if (person.value.mailAddress?.address) {
-          body.append('mailAddress', person.value.mailAddress.address)
-        } else {
-          body.append(
-            'mailAddressSameAsHome',
-            (person.value.mailAddress?.sameAsHome || false).toString()
-          )
-        }
+      body.append('informalName', person.value.informalName)
+      body.append('formalName', person.value.formalName)
+      body.append('sortName', person.value.sortName)
+      body.append('callSign', person.value.callSign.toUpperCase())
+      body.append('email', (person.value.email || person.value.email2 || '').toLowerCase())
+      body.append('email2', person.value.email ? (person.value.email2 || '').toLowerCase() : '')
+      body.append('cellPhone', person.value.cellPhone || '')
+      body.append('homePhone', person.value.homePhone || '')
+      body.append('workPhone', person.value.workPhone || '')
+      if (oldPassword.value) body.append('oldPassword', oldPassword.value)
+      if (password.value) body.append('password', password.value)
+      if (person.value.homeAddress?.address) {
+        body.append('homeAddress', person.value.homeAddress.address)
+        body.append('homeAddressLatitude', (person.value.homeAddress.latitude || 0).toString())
+        body.append('homeAddressLongitude', (person.value.homeAddress.longitude || 0).toString())
+      }
+      if (person.value.workAddress?.address) {
+        body.append('workAddress', person.value.workAddress.address)
+        body.append('workAddressLatitude', (person.value.workAddress.latitude || 0).toString())
+        body.append('workAddressLongitude', (person.value.workAddress.longitude || 0).toString())
+      } else {
+        body.append(
+          'workAddressSameAsHome',
+          (person.value.workAddress?.sameAsHome || false).toString()
+        )
+      }
+      if (person.value.mailAddress?.address) {
+        body.append('mailAddress', person.value.mailAddress.address)
+      } else {
+        body.append(
+          'mailAddressSameAsHome',
+          (person.value.mailAddress?.sameAsHome || false).toString()
+        )
       }
       if (canEditClearances.value) {
         body.append('volgistics', volgistics.value)
@@ -442,13 +401,6 @@ export default defineComponent({
         identification.value.forEach((t) => {
           body.append('identification', t)
         })
-      }
-      if (canEditRoles.value) {
-        person.value.roles
-          .filter((role) => role.canAssign && roles.value.has(role.id))
-          .forEach((role) => {
-            body.append('role', role.id.toString())
-          })
       }
       const resp = (await axios.post<PostPersonEdit>(`/api/people/${route.params.id}`, body)).data
       if (resp) {
@@ -468,8 +420,6 @@ export default defineComponent({
       backgroundError,
       callSignError,
       canEditClearances,
-      canEditDetails,
-      canEditRoles,
       cellPhoneError,
       emailError,
       email2Error,
@@ -484,8 +434,6 @@ export default defineComponent({
       password,
       person,
       onSubmit,
-      roles,
-      rolesError,
       sortNameError,
       submitLabel,
       volgistics,

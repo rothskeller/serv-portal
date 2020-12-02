@@ -48,22 +48,6 @@ func GetSMS(r *util.Request) error {
 		out.String(m.Message)
 		out.RawByte('}')
 	}
-	out.RawString(`],"groups":[`)
-	first = true
-	for _, g := range r.Auth.FetchGroups(r.Auth.GroupsA(model.PrivSendTextMessages)) {
-		if r.Auth.CanAG(model.PrivSendTextMessages, g.ID) {
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.RawString(`{"id":`)
-			out.Int(int(g.ID))
-			out.RawString(`,"name":`)
-			out.String(g.Name)
-			out.RawByte('}')
-		}
-	}
 	out.RawString(`]}`)
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")

@@ -299,29 +299,6 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 	}
 	out.RawString(`,"unsubscribeToken":`)
 	out.String(p.UnsubscribeToken)
-	out.RawString(`,"roles":[`)
-	for i, r := range tx.Authorizer().FetchRoles(tx.Authorizer().RolesP(p.ID)) {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(r.ID))
-		out.RawString(`,"name":`)
-		out.String(r.Name)
-		out.RawByte('}')
-	}
-	out.RawString(`],"groups":[`) // not read by serv-load, but useful for filtering
-	for i, g := range tx.Authorizer().FetchGroups(tx.Authorizer().GroupsP(p.ID)) {
-		if i != 0 {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(g.ID))
-		out.RawString(`,"name":`)
-		out.String(g.Name)
-		out.RawByte('}')
-	}
-	out.RawByte(']')
 	if p.VolgisticsID != 0 {
 		out.RawString(`,"volgisticsID":`)
 		out.Int(p.VolgisticsID)
