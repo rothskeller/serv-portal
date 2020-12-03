@@ -192,10 +192,12 @@ const router = createRouter({
     {
       path: '/unsubscribe/:token/:email?',
       component: () => import('./pages/Unsubscribe.vue'),
+      meta: { public: true },
     },
     {
       path: '/volunteer-hours/:id',
       component: () => import('./pages/people/PersonHours.vue'),
+      meta: { public: true },
     },
     {
       path: '/:catchAll(.*)',
