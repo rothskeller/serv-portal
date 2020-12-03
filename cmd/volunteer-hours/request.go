@@ -159,7 +159,6 @@ func sendReminders(tx *store.Tx) {
 		mstr   string
 		events []*model.Event
 		eatt   = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
-		people = make(map[model.PersonID]*model.Person)
 		mailer *sendmail.Mailer
 		err    error
 	)
