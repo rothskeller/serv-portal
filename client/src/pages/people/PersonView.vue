@@ -84,7 +84,7 @@ PersonView displays the information about a person, in non-editable form.
     div(v-if='person.backgroundCheck === true') Background check cleared.
     div(v-else-if='person.backgroundCheck === false') Background check: <span style="color:red">not completed.</span>
     div(v-else-if='person.backgroundCheck') Background check cleared on {{ person.backgroundCheck }}.
-    div(v-if='person.identification.length') IDs issued: {{ person.identification.join(', ') }}
+    div(v-if='person.identification && person.identification.length') IDs issued: {{ person.identification.join(', ') }}
   #person-view-attended(v-if='person.attended')
     div Events attended:
     .person-view-attended(v-for='e in person.attended')
