@@ -153,8 +153,8 @@ export default defineComponent({
       },
       {
         label: 'Profile',
-        to: `/people/${me.value?.id}/edit`,
-        active: route.path.startsWith(`/people/${me.value?.id}/`),
+        to: `/people/${me.value?.id}`,
+        active: route.path == `/people/${me.value?.id}`,
         show: !!me.value?.id,
       },
       {

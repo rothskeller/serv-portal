@@ -12,7 +12,7 @@ import { defineComponent, inject, Ref, computed, ref, watchEffect } from 'vue'
 import { LoginData } from '../plugins/login'
 import { useRoute } from 'vue-router'
 import { TabPage, TabDef } from '../base'
-import type { GetPersonPersonBase } from './people/PersonView.vue'
+import type { GetPerson } from './people/PersonView.vue'
 
 export default defineComponent({
   components: { TabPage },
@@ -20,8 +20,8 @@ export default defineComponent({
     const me = inject<Ref<LoginData>>('me')!
     const route = useRoute()
 
-    const person = ref(null as null | GetPersonPersonBase)
-    function onLoadPerson(ev: GetPersonPersonBase) {
+    const person = ref(null as null | GetPerson)
+    function onLoadPerson(ev: GetPerson) {
       person.value = ev
     }
     watchEffect(() => {
@@ -37,11 +37,6 @@ export default defineComponent({
         tabs.push({ to: '/people/NEW/edit', label: 'Add Person' })
       if (route.params.id && route.params.id !== 'NEW')
         tabs.push({ to: `/people/${route.params.id}`, label: 'Details' })
-      if (person.value && person.value.canEdit)
-        tabs.push({
-          to: `/people/${route.params.id}/edit`,
-          label: route.params.id === 'NEW' ? 'Add Person' : 'Edit',
-        })
       if (person.value && person.value.canHours)
         tabs.push({ to: `/people/${route.params.id}/hours`, label: 'Hours' })
       return tabs

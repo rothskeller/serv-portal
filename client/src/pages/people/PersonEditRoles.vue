@@ -110,10 +110,12 @@ export default defineComponent({
     const orgRoleOptions = ref([] as Array<RoleOption>)
     const orgRoles = ref(new Set<number>())
     watch(org, () => {
+      if (!orgs.value.length) return
       const roles = orgs.value.find((o) => o.org === org.value)!.roles
       orgRoles.value = new Set(roles.filter((r) => r.held).map((r) => r.id))
     })
     watch([orgRoles, org], (n, o) => {
+      if (!orgs.value.length) return
       // To avoid an infinite loop, we need to make sure the two sets' contents
       // are actually different.
       let different = n[1] != o[1]

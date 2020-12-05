@@ -27,7 +27,7 @@ Unprioritized:
   Start event list scrolled to "today".
   Search engine efficiency — encode type and ids in rowid
   Reuse google map instance on return to people map page.
-
+  Add a Reset Password button for leads to use, sends a new random pwd by email
 
 
 New Person / Service Tab

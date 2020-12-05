@@ -2,6 +2,7 @@ import EventOrgDot from './base/EventOrgDot.vue'
 import MessageBox from './base/MessageBox.vue'
 import Modal from './base/Modal.vue'
 import MonthSelect from './base/MonthSelect.vue'
+import OrgBadge from './base/OrgBadge.vue'
 import SButton from './base/SButton.vue'
 import SCheck from './base/SCheck.vue'
 import SCheckGroup from './base/SCheckGroup.vue'
@@ -28,6 +29,7 @@ export {
   MessageBox,
   Modal,
   MonthSelect,
+  OrgBadge,
   SButton,
   SCheck,
   SCheckGroup,

@@ -13,6 +13,12 @@ import (
 var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$`)
 
+var errDuplicateCallSign = errors.New("duplicate callSign")
+var errDuplicateCellPhone = errors.New("duplicate cellPhone")
+var errDuplicateEmail = errors.New("duplicate email")
+var errDuplicateSortName = errors.New("duplicate sortName")
+var errDuplicateVolgisticsID = errors.New("duplicate volgisticsID")
+
 // ValidatePerson validates a Person record, except for its Password field.  It
 // enforces all data consistency rules, but does not enforce privileges.
 func ValidatePerson(tx *store.Tx, person *model.Person) error {
@@ -103,16 +109,19 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 			continue
 		}
 		if strings.EqualFold(p.SortName, person.SortName) {
-			return errors.New("duplicate sortName")
+			return errDuplicateSortName
 		}
 		if p.Email != "" && p.Email == person.Email {
-			return errors.New("duplicate email")
+			return errDuplicateEmail
 		}
 		if p.CallSign != "" && p.CallSign == person.CallSign {
-			return errors.New("duplicate callSign")
+			return errDuplicateCallSign
 		}
 		if p.CellPhone != "" && p.CellPhone == person.CellPhone {
-			return errors.New("duplicate cellPhone")
+			return errDuplicateCellPhone
+		}
+		if p.VolgisticsID != 0 && p.VolgisticsID == person.VolgisticsID {
+			return errDuplicateVolgisticsID
 		}
 		if p.UnsubscribeToken == person.UnsubscribeToken {
 			return errors.New("duplicate unsubscribeToken")

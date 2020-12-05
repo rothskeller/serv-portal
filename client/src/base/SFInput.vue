@@ -20,7 +20,16 @@ input.form-item-input.form-control(
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, watch, PropType, watchEffect } from 'vue'
+import {
+  defineComponent,
+  ref,
+  toRefs,
+  watch,
+  PropType,
+  watchEffect,
+  getCurrentInstance,
+  Prop,
+} from 'vue'
 import provideValidation, { ErrorFunction } from './sfvalidate'
 
 export type { ErrorFunction }
@@ -33,6 +42,7 @@ export default defineComponent({
     modelValue: { type: String, required: true },
     trim: { type: Boolean, default: false },
     errorFn: Function as PropType<ErrorFunction>,
+    restrictFn: Function as PropType<(s: string) => string>,
   },
   setup(props, { emit }) {
     // Reference to the input field, so we can pass focus() calls to it.
@@ -70,8 +80,14 @@ export default defineComponent({
     }
 
     // Watch for local changes and send them to the parent.
+    const inst = getCurrentInstance()
     function onInput({ target: { value } }: { target: HTMLInputElement }) {
-      input.value = value
+      if (props.restrictFn) {
+        input.value = props.restrictFn(value)
+        if (input.value !== value) inst?.update()
+      } else {
+        input.value = value
+      }
       emit('update:modelValue', input.value)
     }
 

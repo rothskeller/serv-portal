@@ -7,6 +7,7 @@ input fields, for cross check, and a meter for password quality.
 label.form-item-label.sfpassword-label(:id='id + "_label"', :for='id', v-text='label')
 .form-item-input
   input.form-control.sfpassword-input(
+    ref='input1Ref',
     :id='id',
     :class='{ "form-control-invalid": error }',
     type='password',
@@ -107,7 +108,13 @@ export default defineComponent({
       emit('update:modelValue', input1.value)
     })
 
-    return { input1, input2, score, meterColor, error, success }
+    // Pass on focus requests to first input field.
+    const input1Ref = ref(null as any)
+    function focus() {
+      input1Ref.value.focus()
+    }
+
+    return { focus, input1, input1Ref, input2, score, meterColor, error, success }
   },
 })
 </script>

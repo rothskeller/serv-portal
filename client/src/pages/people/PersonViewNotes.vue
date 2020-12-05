@@ -1,0 +1,58 @@
+<!--
+PersonViewNotes displays the notes on a person's record.
+-->
+
+<template lang="pug">
+PersonViewSection(
+  v-if='person.notes.length || person.canEditRoles',
+  title='Notes',
+  :editable='person.canEdit',
+  @edit='onEditNotes'
+)
+  #person-view-notes
+    .person-view-note(v-for='note in person.notes')
+      .person-view-note-date(v-text='note.date')
+      .person-view-note-text(v-text='note.note')
+    div(v-if='!person.notes.length') No notes on file.
+</template>
+
+<script lang="ts">
+import { computed, defineComponent, PropType, ref } from 'vue'
+import { GetPerson } from './PersonView.vue'
+import PersonViewSection from './PersonViewSection.vue'
+
+export default defineComponent({
+  components: { PersonViewSection },
+  props: {
+    person: { type: Object as PropType<GetPerson>, required: true },
+  },
+  emits: ['reload'],
+  setup(props, { emit }) {
+    function onEditNotes() {}
+    return {
+      onEditNotes,
+    }
+  },
+})
+</script>
+
+<style lang="postcss">
+#person-view-notes {
+  margin-top: 0.75rem;
+}
+.person-view-note {
+  line-height: 1.2;
+  margin-left: 2rem;
+  text-indent: -2rem;
+}
+.person-view-note-date {
+  display: inline;
+  margin-right: 0.75rem;
+  color: #666;
+  font-variant: tabular-nums;
+}
+.person-view-note-text {
+  display: inline;
+  margin-left: 0.5rem;
+}
+</style>

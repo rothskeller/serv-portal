@@ -125,16 +125,30 @@ func router(r *util.Request) error {
 		return person.GetPeople(r)
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "":
 		return person.GetPerson(r, c[2])
-	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "":
-		return person.PostPerson(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "contact" && c[4] == "":
+		return person.GetPersonContact(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "contact" && c[4] == "":
+		return person.PostPersonContact(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "lists" && c[4] == "":
 		return person.GetPersonLists(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "lists" && c[4] == "":
 		return person.PostPersonLists(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "names" && c[4] == "":
+		return person.GetPersonNames(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "names" && c[4] == "":
+		return person.PostPersonNames(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "password" && c[4] == "":
+		return person.GetPersonPassword(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "password" && c[4] == "":
+		return person.PostPersonPassword(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "roles" && c[4] == "":
 		return person.GetPersonRoles(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "roles" && c[4] == "":
 		return person.PostPersonRoles(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "status" && c[4] == "":
+		return person.GetPersonStatus(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "status" && c[4] == "":
+		return person.PostPersonStatus(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "attendance" && c[3] == "":
 		return report.GetAttendance(r)
 	case r.Method == "GET" && c[1] == "roles" && c[2] == "":

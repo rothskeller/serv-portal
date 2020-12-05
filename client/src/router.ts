@@ -131,10 +131,6 @@ const router = createRouter({
           component: () => import('./pages/people/PersonView.vue'),
         },
         {
-          path: ':id/edit',
-          component: () => import('./pages/people/PersonEdit.vue'),
-        },
-        {
           path: ':id/hours',
           component: () => import('./pages/people/PersonHours.vue'),
         },
