@@ -5,7 +5,7 @@ FilesDocument displays a single document in the files hierarchy.
 <template lang="pug">
 .files-doc(
   :style='indentStyle',
-  draggable='folder.canEdit',
+  :draggable='folder.canEdit',
   @dragstart='onDragStart',
   @dragend='onDragEnd',
   @mouseover='onMouseOver',
