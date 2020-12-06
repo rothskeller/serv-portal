@@ -271,7 +271,7 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 			out.String(n.Note)
 			out.RawString(`,"date":`)
 			out.String(n.Date)
-			out.RawString(`,"visiblity":`)
+			out.RawString(`,"visibility":`)
 			out.String(n.Visibility.String())
 			out.RawByte('}')
 		}
