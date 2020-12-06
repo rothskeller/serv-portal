@@ -170,11 +170,23 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"notes":[`)
 	first = true
 	for _, n := range person.Notes {
-		// Need to redo how notes are privileged.  A few had
-		// a "contact" privilege and should be more visible than
-		// this.  TODO
-		if !r.Person.IsAdminLeader() {
-			continue
+		switch n.Visibility {
+		case model.NoteVisibleToWebmaster:
+			if !r.Person.Roles[model.Webmaster] {
+				continue
+			}
+		case model.NoteVisibleToAdmins:
+			if !r.Person.IsAdminLeader() {
+				continue
+			}
+		case model.NoteVisibleToLeaders:
+			if !r.Person.HasPrivLevel(model.PrivLeader) {
+				continue
+			}
+		case model.NoteVisibleWithContact:
+			if !canViewContact {
+				continue
+			}
 		}
 		if first {
 			first = false
@@ -514,6 +526,105 @@ func PostPersonNames(r *util.Request, idstr string) error {
 	case errDuplicateCallSign:
 		return util.SendConflict(r, "callSign")
 	default:
+		return err
+	}
+	r.Tx.UpdatePerson(person)
+	r.Tx.Commit()
+	return nil
+}
+
+// GetPersonNotes handles GET /api/people/$id/notes requests.
+func GetPersonNotes(r *util.Request, idstr string) error {
+	var (
+		person *model.Person
+		out    jwriter.Writer
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	out.RawString(`{"notes":[`)
+	first := true
+	for _, n := range person.Notes {
+		if (n.Visibility == model.NoteVisibleToWebmaster && !r.Person.Roles[model.Webmaster]) ||
+			(n.Visibility == model.NoteVisibleToAdmins && !r.Person.IsAdminLeader()) {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.RawString(`{"date":`)
+		out.String(n.Date)
+		out.RawString(`,"note":`)
+		out.String(n.Note)
+		out.RawString(`,"visibility":`)
+		out.String(n.Visibility.String())
+		out.RawByte('}')
+	}
+	out.RawString(`],"visibilities":[`)
+	first = true
+	for _, v := range model.AllNoteVisibilities {
+		if (v == model.NoteVisibleToWebmaster && !r.Person.Roles[model.Webmaster]) ||
+			(v == model.NoteVisibleToAdmins && !r.Person.IsAdminLeader()) {
+			continue
+		}
+		if first {
+			first = false
+		} else {
+			out.RawByte(',')
+		}
+		out.String(v.String())
+	}
+	out.RawString(`]}`)
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+// PostPersonNotes handles POST /api/people/$id/notes requests.
+func PostPersonNotes(r *util.Request, idstr string) error {
+	var (
+		person *model.Person
+		err    error
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	r.Tx.WillUpdatePerson(person)
+	// Remove all of the notes that they can edit.
+	j := 0
+	for _, n := range person.Notes {
+		if (n.Visibility == model.NoteVisibleToWebmaster && !r.Person.Roles[model.Webmaster]) ||
+			(n.Visibility == model.NoteVisibleToAdmins && !r.Person.IsAdminLeader()) {
+			person.Notes[j] = n
+			j++
+		}
+	}
+	person.Notes = person.Notes[:j]
+	// Now add in the notes that they provided.
+	r.ParseMultipartForm(1048576)
+	for i, n := range r.Form["note"] {
+		if len(r.Form["date"]) <= i || len(r.Form["visibility"]) <= i {
+			return errors.New("not enough dates/visibilities for supplied notes")
+		}
+		note := &model.PersonNote{
+			Date: r.Form["date"][i],
+			Note: n,
+		}
+		if note.Visibility, err = model.ParseNoteVisibility(r.Form["visibility"][i]); err != nil {
+			return err
+		}
+		person.Notes = append(person.Notes, note)
+	}
+	if err = ValidatePerson(r.Tx, person); err != nil {
 		return err
 	}
 	r.Tx.UpdatePerson(person)

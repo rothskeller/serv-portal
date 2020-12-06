@@ -14,22 +14,28 @@ PersonViewSection(
       .person-view-note-date(v-text='note.date')
       .person-view-note-text(v-text='note.note')
     div(v-if='!person.notes.length') No notes on file.
+  PersonEditNotes(v-if='person.canEdit', ref='editNotesModal', :pid='person.id')
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue'
 import { GetPerson } from './PersonView.vue'
+import PersonEditNotes from './PersonEditNotes.vue'
 import PersonViewSection from './PersonViewSection.vue'
 
 export default defineComponent({
-  components: { PersonViewSection },
+  components: { PersonEditNotes, PersonViewSection },
   props: {
     person: { type: Object as PropType<GetPerson>, required: true },
   },
   emits: ['reload'],
   setup(props, { emit }) {
-    function onEditNotes() {}
+    const editNotesModal = ref(null as any)
+    async function onEditNotes() {
+      if (await editNotesModal.value.show()) emit('reload')
+    }
     return {
+      editNotesModal,
       onEditNotes,
     }
   },

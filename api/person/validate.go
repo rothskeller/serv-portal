@@ -3,6 +3,7 @@ package person
 import (
 	"errors"
 	"regexp"
+	"sort"
 	"strings"
 
 	"sunnyvaleserv.org/portal/model"
@@ -142,7 +143,11 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 		if !dateRE.MatchString(n.Date) {
 			return errors.New("invalid note date")
 		}
+		if !n.Visibility.Valid() {
+			return errors.New("invalid note visibility")
+		}
 	}
+	sort.Sort(model.NoteSort(person.Notes))
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}

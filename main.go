@@ -137,6 +137,10 @@ func router(r *util.Request) error {
 		return person.GetPersonNames(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "names" && c[4] == "":
 		return person.PostPersonNames(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "notes" && c[4] == "":
+		return person.GetPersonNotes(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "notes" && c[4] == "":
+		return person.PostPersonNotes(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "password" && c[4] == "":
 		return person.GetPersonPassword(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "password" && c[4] == "":

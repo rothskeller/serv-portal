@@ -66,6 +66,17 @@ func (ps PersonSort) Less(i, j int) bool {
 }
 func (ps PersonSort) Swap(i, j int) { ps[i], ps[j] = ps[j], ps[i] }
 
+type NoteSort []*PersonNote
+
+func (ns NoteSort) Len() int { return len(ns) }
+func (ns NoteSort) Less(i, j int) bool {
+	if ns[i].Date != ns[j].Date {
+		return ns[j].Date < ns[i].Date
+	}
+	return ns[i].Note < ns[j].Note
+}
+func (ns NoteSort) Swap(i, j int) { ns[i], ns[j] = ns[j], ns[i] }
+
 func (rs Roles) Len() int           { return len(rs.Roles) }
 func (rs Roles) Less(i, j int) bool { return rs.Roles[i].Priority < rs.Roles[j].Priority }
 func (rs Roles) Swap(i, j int)      { rs.Roles[i], rs.Roles[j] = rs.Roles[j], rs.Roles[i] }
