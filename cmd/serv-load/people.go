@@ -132,6 +132,9 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 									pn.Note = in.String()
 								case "date":
 									pn.Date = in.String()
+								case "visibility":
+									pn.Visibility, err = model.ParseNoteVisibility(in.String())
+									in.AddError(err)
 								default:
 									in.SkipRecursive()
 								}

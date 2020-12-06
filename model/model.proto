@@ -122,6 +122,7 @@ message Person {
 message PersonNote {
   string note = 2;
   string date = 4;
+  int64 visibility = 5 [(gogoproto.casttype) = "NoteVisibility"];
 }
 
 // A Role is a role that one or more people hold, describing their

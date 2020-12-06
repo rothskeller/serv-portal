@@ -72,7 +72,7 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		tx.entry.Change("set person [%d] password", p.ID)
 	}
 	for _, n := range p.Notes {
-		tx.entry.Change("add person [%d] note %q at %s", p.ID, n.Note, n.Date)
+		tx.entry.Change("add person [%d] note %q at %s visibility %s", p.ID, n.Note, n.Date, n.Visibility)
 	}
 	tx.entry.Change("set person [%d] unsubscribeToken to %s", p.ID, p.UnsubscribeToken)
 	if p.VolgisticsID != 0 {
@@ -223,7 +223,7 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 NOTES1:
 	for _, on := range op.Notes {
 		for _, n := range p.Notes {
-			if n.Date == on.Date && n.Note == on.Note {
+			if n.Date == on.Date && n.Note == on.Note && n.Visibility == on.Visibility {
 				continue NOTES1
 			}
 		}
@@ -232,11 +232,11 @@ NOTES1:
 NOTES2:
 	for _, n := range p.Notes {
 		for _, on := range op.Notes {
-			if n.Date == on.Date && n.Note == on.Note {
+			if n.Date == on.Date && n.Note == on.Note && n.Visibility == on.Visibility {
 				continue NOTES2
 			}
 		}
-		tx.entry.Change("add person %q [%d] note %q at %s", p.InformalName, p.ID, n.Note, n.Date)
+		tx.entry.Change("add person %q [%d] note %q at %s visibility %s", p.InformalName, p.ID, n.Note, n.Date, n.Visibility)
 	}
 	if p.UnsubscribeToken != op.UnsubscribeToken {
 		tx.entry.Change("change person %q [%d] unsubscribeToken to %s", p.InformalName, p.ID, p.UnsubscribeToken)
