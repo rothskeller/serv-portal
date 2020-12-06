@@ -95,6 +95,7 @@ export interface GetPerson {
   notes: Array<GetPersonNote>
   canEdit: boolean
   canEditRoles: boolean
+  canEditNotes: boolean
   canEditLists: boolean
   canChangePassword: boolean
   canHours: boolean

@@ -203,6 +203,8 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.Bool(canEditDetails)
 	out.RawString(`,"canEditRoles":`)
 	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.ID != model.AdminPersonID)
+	out.RawString(`,"canEditNotes":`)
+	out.Bool(r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canEditLists":`)
 	out.Bool(person == r.Person || r.Person.Roles[model.Webmaster])
 	out.RawString(`,"canChangePassword":`)

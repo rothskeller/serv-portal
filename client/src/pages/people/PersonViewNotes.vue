@@ -4,9 +4,9 @@ PersonViewNotes displays the notes on a person's record.
 
 <template lang="pug">
 PersonViewSection(
-  v-if='person.notes.length || person.canEditRoles',
+  v-if='person.notes.length || person.canEditNotes',
   title='Notes',
-  :editable='person.canEdit',
+  :editable='person.canEditNotes',
   @edit='onEditNotes'
 )
   #person-view-notes
