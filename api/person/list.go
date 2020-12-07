@@ -196,7 +196,7 @@ func getPeopleSearch(r *util.Request) error {
 // can be seen in the roster at all; the other indicating whether the viewee's
 // contact information can be seen.
 func canViewPerson(viewer, viewee *model.Person) (roster, contact bool) {
-	if viewer == viewee {
+	if viewer == viewee || viewer.HasPrivLevel(model.PrivLeader) {
 		return true, true
 	}
 	for o, om := range viewer.Orgs {

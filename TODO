@@ -4,9 +4,7 @@ Tier 1:
     Shift signups
     Generate sign-in sheet for event
   Schedule Zoom meetings through API
-  Refactor person/view edit
   More BG check information
-  Edit person notes
   Timesheet-style attendance entry
   Combine person attendance history and hours entry
   Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
