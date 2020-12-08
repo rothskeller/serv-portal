@@ -207,7 +207,7 @@ func canViewPerson(viewer, viewee *model.Person) (roster, contact bool) {
 			continue
 		}
 		roster = true
-		if om.PrivLevel == model.PrivMember && !model.Org(o).MembersCanViewContactInfo() {
+		if om.PrivLevel == model.PrivMember && viewee.Orgs[o].PrivLevel < model.PrivLeader && !model.Org(o).MembersCanViewContactInfo() {
 			continue
 		}
 		contact = true
