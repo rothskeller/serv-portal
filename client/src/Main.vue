@@ -124,7 +124,8 @@ export default defineComponent({
       {
         label: 'People',
         to: '/people',
-        active: page.menuItem === 'people' && !route.path.startsWith(`/people/${me.value?.id}/`),
+        //@ts-ignore: me.value is known to be set
+        active: page.menuItem === 'people' && !route.path.startsWith(`/people/${me.value.id}/`),
         show: me.value?.canViewRosters,
       },
       {

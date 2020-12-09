@@ -84,7 +84,7 @@ export default defineComponent({
     function onInput({ target: { value } }: { target: HTMLInputElement }) {
       if (props.restrictFn) {
         input.value = props.restrictFn(value)
-        if (input.value !== value) inst?.update()
+        if (input.value !== value && inst) inst.update()
       } else {
         input.value = value
       }
