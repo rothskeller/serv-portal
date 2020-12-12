@@ -1,8 +1,8 @@
 <!--
-SRadioGroup is a group of radio buttons in an SForm.  The v-model value is the
-value of the selected button.  The options prop contains an array listing the
-radio buttons.  Each option is an object with a value property and a label
-property, and possibly an enabled or disabled flag.
+SRadioGroup is a group of radio buttons.  The v-model value is the value of the
+selected button.  The options prop contains an array listing the radio buttons.
+Each option is either a plain value, or an object with a value property and a
+label property, and possibly an enabled or disabled flag.
 -->
 
 <template lang="pug">
@@ -10,16 +10,16 @@ div(v-for='(o, i) in options', :class='classes')
   input.sradiogroup-radio-input(
     :id='`${id}-${i}`',
     type='radio',
-    :value='o[valueKey]',
+    :value='optionValue(o)',
     :checked='isChecked(o)',
     :disabled='isDisabled(o)',
     @change='onChange($event, o)'
   )
-  label.sradiogroup-radio-label(:for='`${id}-${i}`', v-text='o[labelKey]')
+  label.sradiogroup-radio-label(:for='`${id}-${i}`', v-text='optionLabel(o)')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs, watchEffect, PropType, computed } from 'vue'
+import { defineComponent, ref, watch, computed } from 'vue'
 
 export default defineComponent({
   props: {
@@ -32,26 +32,34 @@ export default defineComponent({
     modelValue: { type: String, required: true },
     inline: { type: Boolean, default: false },
   },
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     // Use the incoming modelValue as the initial value for selected, and update
     // selected whenever the parent changes the modelValue prop.
-    const { modelValue } = toRefs(props)
-    const selected = ref('')
+    const selected = ref(props.modelValue)
     watch(
-      modelValue,
+      () => props.modelValue,
       () => {
-        selected.value = modelValue.value
-      },
-      { immediate: true }
+        selected.value = props.modelValue
+      }
     )
+
+    // Return the value and label for an option.
+    function optionValue(option: any) {
+      return typeof option === 'object' ? option[props.valueKey] : option
+    }
+    function optionLabel(option: any) {
+      return typeof option === 'object' ? option[props.labelKey] : option.toString()
+    }
 
     // Return whether a particular option is checked.
     function isChecked(option: any) {
-      return selected.value === option[props.valueKey]
+      return selected.value === optionValue(option)
     }
 
     // Return whether a particular option is disabled.
     function isDisabled(option: any) {
+      if (typeof option !== 'object') return false
       if (props.enabledKey) return !option[props.enabledKey]
       if (props.disabledKey) return !!option[props.disabledKey]
       return false
@@ -59,14 +67,15 @@ export default defineComponent({
 
     // When a button state changes, update our local copy and notify owner.
     function onChange({ target: { checked: nc } }: { target: HTMLInputElement }, option: any) {
-      if (nc) selected.value = option[props.valueKey]
+      if (nc) selected.value = optionValue(option)
       else selected.value = ''
       emit('update:modelValue', selected.value)
     }
 
+    // Layout class, stacked or inline.
     const classes = computed(() => (props.inline ? 'sradiogroup-hradio' : 'sradiogroup-vradio'))
 
-    return { classes, isChecked, isDisabled, onChange }
+    return { classes, isChecked, isDisabled, onChange, optionLabel, optionValue }
   },
 })
 </script>
@@ -143,11 +152,5 @@ export default defineComponent({
 }
 .sradiogroup-radio-input:checked ~ .sradiogroup-radio-label:after {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23fff'/%3E%3C/svg%3E");
-}
-.sradiogroup-invalid .sradiogroup-radio-label:before {
-  border-color: #dc3545;
-}
-.form-l .sradiogroup-helpbox {
-  display: block;
 }
 </style>

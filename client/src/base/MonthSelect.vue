@@ -101,7 +101,8 @@ export default defineComponent({
   flex: auto;
   display: flex;
   justify-content: center;
-  & .sselect {
+  & #monsel-month,
+  & #monsel-year {
     width: calc(50% - 80px);
     height: 40px;
     @media (min-width: 576px) {

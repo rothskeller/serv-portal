@@ -1,35 +1,38 @@
 <!--
 SFRadioGroup is a group of radio buttons in an SForm.  The v-model value is the
 value of the selected button.  The options prop contains an array listing the
-radio buttons.  Each option is an object with a value property and a label
-property, and possibly an enabled or disabled flag.
+radio buttons.  Each option is either a plain value, an object with a value
+property and a label property, and possibly an enabled or disabled flag.
 -->
 
 <template lang="pug">
 label.form-item-label(v-text='label')
 .form-item-input
-  div(v-for='(o, i) in options', :class='classes')
-    input.sfradiogroup-radio-input(
-      :id='`${id}-${i}`',
-      type='radio',
-      :value='o[valueKey]',
-      :checked='isChecked(o)',
-      :disabled='isDisabled(o)',
-      @change='onChange($event, o)'
-    )
-    label.sfradiogroup-radio-label(:for='`${id}-${i}`', v-text='o[labelKey]')
+  SRadioGroup(
+    :id='id',
+    :options='options',
+    :valueKey='valueKey',
+    :labelKey='labelKey',
+    :enabledKey='enabledKey',
+    :disabledKey='disabledKey',
+    :inline='inline',
+    :class='classes',
+    v-model='selected'
+  )
 .form-item-help.sfradiogroup-helpbox
   .form-item-error-text(v-if='error', v-text='error')
   .form-item-help-text(v-if='help', v-text='help')
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, toRefs, watchEffect, PropType, computed } from 'vue'
+import { defineComponent, ref, watch, watchEffect, PropType, computed } from 'vue'
 import provideValidation, { ErrorFunction } from './sfvalidate'
+import SRadioGroup from './SRadioGroup.vue'
 
 export type { ErrorFunction }
 
 export default defineComponent({
+  components: { SRadioGroup },
   props: {
     id: { type: String, required: true },
     label: String,
@@ -43,17 +46,16 @@ export default defineComponent({
     inline: { type: Boolean, default: false },
     errorFn: Function as PropType<ErrorFunction>,
   },
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     // Use the incoming modelValue as the initial value for selected, and update
     // selected whenever the parent changes the modelValue prop.
-    const { modelValue } = toRefs(props)
-    const selected = ref('')
+    const selected = ref(props.modelValue)
     watch(
-      modelValue,
+      () => props.modelValue,
       () => {
-        selected.value = modelValue.value
-      },
-      { immediate: true }
+        selected.value = props.modelValue
+      }
     )
 
     // Set up for form control validation.
@@ -64,110 +66,21 @@ export default defineComponent({
         error.value = props.errorFn!(lostFocus.value, submitted.value)
       })
 
-    // Return whether a particular option is checked.
-    function isChecked(option: any) {
-      return selected.value === option[props.valueKey]
-    }
-
-    // Return whether a particular option is disabled.
-    function isDisabled(option: any) {
-      if (props.enabledKey) return !option[props.enabledKey]
-      if (props.disabledKey) return !!option[props.disabledKey]
-      return false
-    }
-
     // When a button state changes, update our local copy and notify owner.
-    function onChange({ target: { checked: nc } }: { target: HTMLInputElement }, option: any) {
-      if (nc) selected.value = option[props.valueKey]
-      else selected.value = ''
+    watch(selected, () => {
       emit('update:modelValue', selected.value)
-    }
+    })
 
-    // Display classes.
-    const classes = computed(() => [
-      props.inline ? 'sfradiogroup-hradio' : 'sfradiogroup-vradio',
-      error.value ? 'sfradiogroup-invalid' : null,
-    ])
+    // Display an error border if needed.
+    const classes = computed(() => [error.value ? 'sfradiogroup-invalid' : null])
 
-    return { classes, error, isChecked, isDisabled, onChange }
+    return { classes, error, selected }
   },
 })
 </script>
 
 <style lang="postcss">
-.sfradiogroup-vradio {
-  position: relative;
-  display: block;
-  min-height: 1.5rem;
-  padding-left: 1.5rem;
-}
-.sfradiogroup-hradio {
-  position: relative;
-  display: inline-block;
-  min-height: 1.5rem;
-  padding-left: 1.5rem;
-  margin-right: 1rem;
-}
-.sfradiogroup-radio-input {
-  position: absolute;
-  left: 0;
-  z-index: -1;
-  width: 1rem;
-  height: 1.25rem;
-  opacity: 0;
-  padding: 0;
-}
-.sfradiogroup-radio-label {
-  display: inline-block;
-  position: relative;
-  margin-bottom: 0;
-  vertical-align: top;
-  &:before {
-    pointer-events: none;
-    background-color: #fff;
-    border: 1px solid #adb5bd;
-    position: absolute;
-    top: 0.25rem;
-    left: -1.5rem;
-    display: block;
-    width: 1rem;
-    height: 1rem;
-    content: '';
-    border-radius: 50%;
-    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
-      box-shadow 0.15s ease-in-out;
-  }
-  &:after {
-    position: absolute;
-    top: 0.25rem;
-    left: -1.5rem;
-    display: block;
-    width: 1rem;
-    height: 1rem;
-    content: '';
-    background: no-repeat 50%/50% 50%;
-  }
-}
-.sfradiogroup-radio-input:not(:disabled):active ~ .sfradiogroup-radio-label:before {
-  color: #fff;
-  background-color: #b3d7ff;
-  border-color: #b3d7ff;
-}
-.sfradiogroup-radio-input:focus:not(:checked) ~ .sfradiogroup-radio-label:before {
-  border-color: #80bdff;
-}
-.sfradiogroup-radio-input:focus ~ .sfradiogroup-radio-label:before {
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-.sfradiogroup-radio-input:checked ~ .sfradiogroup-radio-label:before {
-  color: #fff;
-  border-color: #007bff;
-  background-color: #007bff;
-}
-.sfradiogroup-radio-input:checked ~ .sfradiogroup-radio-label:after {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23fff'/%3E%3C/svg%3E");
-}
-.sfradiogroup-invalid .sfradiogroup-radio-label:before {
+.sfradiogroup-invalid .sradiogroup-radio-label:before {
   border-color: #dc3545;
 }
 .form-l .sfradiogroup-helpbox {
