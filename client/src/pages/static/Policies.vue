@@ -99,7 +99,7 @@ Policies displays a page with information about the site policies.
 <script lang="ts">
 import { defineComponent } from 'vue'
 import setPage from '../../plugins/page'
-import SButton from '../../base/SButton.vue'
+import { SButton } from '../../base'
 
 export default defineComponent({
   components: { SButton },

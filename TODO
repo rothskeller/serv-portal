@@ -7,7 +7,6 @@ Tier 1:
   More BG check information
   Timesheet-style attendance entry
   Combine person attendance history and hours entry
-  Remove redundancy between SCheck and SFCheck, SSelect and SFSelect, etc.
 
 Tier 2:
   More compact people list

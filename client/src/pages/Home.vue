@@ -46,7 +46,7 @@ Home page, shown when no other page is selected.
 import { defineComponent, inject, Ref } from 'vue'
 import { LoginData } from '../plugins/login'
 import setPage from '../plugins/page'
-import SIcon from '../base/SIcon.vue'
+import { SIcon } from '../base'
 
 export default defineComponent({
   components: { SIcon },

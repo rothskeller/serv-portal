@@ -90,7 +90,7 @@ shown at / when the user is not logged in.
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import SButton from '../base/SButton.vue'
+import { SButton } from '../base'
 import setPage from '../plugins/page'
 
 export default defineComponent({

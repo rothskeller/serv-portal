@@ -5,7 +5,7 @@ EventEdit is the event editing page.  (It also handles creation of new events.)
 <template lang="pug">
 #event-edit-spinner(v-if='!event')
   SSpinner
-SForm(v-else, @submit='onSubmit', submitLabel='Save Event', @cancel='() => {}')
+SForm(v-else, @submit='onSubmit', submitLabel='Save Event')
   SFInput#event-name(
     label='Event name',
     autofocus,

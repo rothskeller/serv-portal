@@ -39,7 +39,7 @@ import { PageData } from './plugins/page'
 import provideSize from './plugins/size'
 import { touch } from './plugins/touch'
 import { useRoute, useRouter, RouterView } from 'vue-router'
-import SIcon from './base/SIcon.vue'
+import { SIcon } from './base'
 
 const Content = defineComponent({
   props: {

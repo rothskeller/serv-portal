@@ -6,7 +6,7 @@ Search displays the search page.
 #search
   form#search-form(@submit.prevent='onSubmit')
     #search-query-row
-      SInput#search-query(ref='queryRef', v-model='query')
+      SInput#search-query(autofocus, v-model='query')
       SButton(type='submit', variant='primary') Search
   #search-error(v-if='error', v-text='error')
   #search-results
@@ -107,11 +107,6 @@ export default defineComponent({
       onSubmit()
     }
 
-    const queryRef = ref(null as any)
-    onMounted(() => {
-      queryRef.value.focus()
-    })
-
     const documents = ref([] as Array<GetSearchResultDoc>)
     const events = ref([] as Array<GetSearchResultEvent>)
     const folders = ref([] as Array<GetSearchResultFolder>)
@@ -159,7 +154,6 @@ export default defineComponent({
       onSubmit,
       people,
       query,
-      queryRef,
       resultPath,
       roles,
       submitted,

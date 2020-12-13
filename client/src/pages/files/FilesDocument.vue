@@ -19,7 +19,7 @@ FilesDocument displays a single document in the files hierarchy.
 
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue'
-import SIcon from '../../base/SIcon.vue'
+import { SIcon } from '../../base'
 import type { GetFolderDocument, GetFolderFolder } from '../Files.vue'
 import FilesEditFile from './FilesEditFile.vue'
 import FilesEditLink from './FilesEditLink.vue'

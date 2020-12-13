@@ -22,7 +22,7 @@ TextsList displays the list of previously sent text messages.
 import { defineComponent, ref } from 'vue'
 import axios from '../../plugins/axios'
 import setPage from '../../plugins/page'
-import SSpinner from '../../base/SSpinner.vue'
+import { SSpinner } from '../../base'
 
 type GetSMSMessage = {
   id: number

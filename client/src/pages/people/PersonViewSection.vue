@@ -13,7 +13,7 @@ PersonViewSection is the framework for one section on the PersonView page.
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import SButton from '../../base/SButton.vue'
+import { SButton } from '../../base'
 
 export default defineComponent({
   components: { SButton },

@@ -56,7 +56,7 @@ EmailLists displays a page with information about our email lists.
 <script lang="ts">
 import { defineComponent } from 'vue'
 import setPage from '../../plugins/page'
-import SButton from '../../base/SButton.vue'
+import { SButton } from '../../base'
 
 export default defineComponent({
   components: { SButton },

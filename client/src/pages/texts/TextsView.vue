@@ -38,7 +38,7 @@ deliveries and replies.
 import { defineComponent, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '../../plugins/axios'
-import SSpinner from '../../base/SSpinner.vue'
+import { SSpinner } from '../../base'
 import setPage from '../../plugins/page'
 
 type GetSMS1Response = {

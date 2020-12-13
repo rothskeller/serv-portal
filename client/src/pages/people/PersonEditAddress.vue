@@ -37,9 +37,9 @@ label.form-item-label(:class='`person-address-label-${type}`', v-text='label')
 </template>
 
 <script lang="ts">
-import { defineComponent, nextTick, PropType, ref, toRefs, watch } from 'vue'
+import { defineComponent, inject, nextTick, PropType, ref, toRefs, watch } from 'vue'
 import SmartyStreetsSDK from 'smartystreets-javascript-sdk'
-import provideValidation from '../../base/sfvalidate'
+import { useLostFocus } from '../../base/form/item'
 import type { GetPersonAddress } from './PersonView.vue'
 
 const SmartyStreetsCore = SmartyStreetsSDK.core
@@ -105,7 +105,14 @@ export default defineComponent({
 
     // Set up for form control and address validation.
     const error = ref('')
-    const { submitted } = provideValidation(`person-address-${props.type}`, error)
+    const setValidity = inject<(id: string, isValid: boolean) => void>('setValidity')
+    watch(
+      error,
+      () => {
+        setValidity?.(`person-address-${props.type}`, !error.value)
+      }
+    )
+    const { submitted } = useLostFocus()
     async function validate() {
       if (!line1.value && !line2.value) {
         emit('update:modelValue', {
@@ -147,7 +154,7 @@ export default defineComponent({
         error.value = "We couldn't locate this address.  Please provide a valid address."
       }
     }
-    watch(submitted, validate)
+    watch(submitted!, validate)
     function onBlur(evt: FocusEvent) {
       if (evt.relatedTarget === line1input.value || evt.relatedTarget === line2input.value) return // focus is still in one of the two inputs
       validate()
