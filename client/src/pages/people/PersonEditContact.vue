@@ -16,10 +16,10 @@ Modal(ref='modal')
     SSpinner(v-if='loading')
     template(v-else)
       SFInput#person-email(
-        ref='emailRef',
         label='Email',
         help='This is the email address you log in with.',
         trim,
+        autofocus,
         v-model='person.email',
         :errorFn='emailError',
         style='text-transform: lowercase'
@@ -100,13 +100,9 @@ export default defineComponent({
       loading.value = true
       person.value = (await axios.get<GetPersonContact>(`/api/people/${props.pid}/contact`)).data
       loading.value = false
-      nextTick(() => {
-        emailRef.value.focus()
-      })
     }
 
     // Field validations.
-    const emailRef = ref(null as any)
     const duplicateEmail = ref('')
     function emailError(lostFocus: boolean) {
       if (!lostFocus || !person.value?.email) return ''
@@ -200,7 +196,6 @@ export default defineComponent({
     }
 
     return {
-      emailRef,
       loading,
       modal,
       onCancel,

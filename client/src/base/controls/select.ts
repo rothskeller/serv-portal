@@ -12,6 +12,8 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { attrs, emit }) {
+    // We don't use the standard propagateModel utility here because we want to
+    // validate the value.
     const input = ref(props.modelValue)
     if (!props.options.find((o) => input.value === optionValue(o))) {
       if (props.modelValue)

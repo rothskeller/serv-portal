@@ -16,9 +16,9 @@ Modal(ref='modal')
     SSpinner(v-if='loading')
     template(v-else)
       SFInput#person-informalName(
-        ref='nameRef',
         label='Name',
         trim,
+        autofocus,
         v-model='person.informalName',
         :errorFn='informalNameError',
         help='What you like to be called, e.g. “Joe Banks”'
@@ -79,13 +79,9 @@ export default defineComponent({
       loading.value = true
       person.value = (await axios.get<GetPersonNames>(`/api/people/${props.pid}/names`)).data
       loading.value = false
-      nextTick(() => {
-        nameRef.value.focus()
-      })
     }
 
     // Field validation.
-    const nameRef = ref(null as any)
     const duplicateCallSign = ref('')
     const duplicateSortName = ref('')
     function informalNameError(lostFocus: boolean) {
@@ -164,7 +160,6 @@ export default defineComponent({
       informalNameError,
       loading,
       modal,
-      nameRef,
       onCancel,
       onSubmit,
       person,

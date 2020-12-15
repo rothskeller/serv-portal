@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "jsx": "preserve",
         "target": "esnext",
         "module": "esnext",
         "strict": true,
@@ -12,9 +13,10 @@
     },
     "include": [
         "client/src/**/*.ts",
+        "client/src/**/*.tsx",
         "client/src/**/*.vue"
     ],
     "exclude": [
         "node_modules"
-    ],
+    ]
 }

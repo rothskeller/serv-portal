@@ -1,6 +1,7 @@
 // Radio buttons and check boxes.
 
-import { defineComponent, h, ref, watch } from "vue"
+import { defineComponent, h, ref, watch } from 'vue'
+import { propagateModel } from '../util'
 import './controls.css'
 
 function defineRC(radio: boolean) {
@@ -14,32 +15,35 @@ function defineRC(radio: boolean) {
     },
     emits: ['update:modelValue'],
     setup(props, { emit }) {
-      const value = ref(props.modelValue)
-      watch(() => props.modelValue, () => { value.value = props.modelValue })
-      watch(value, () => { emit(`update:modelValue`, value.value) })
-      return () => h('div', {
-        class: [
-          'rc',
-          props.inline ? 'rc-inline' : 'rc-stacked',
-          radio ? 'radio' : 'check',
-        ],
-      }, [
-        h('input', {
-          id: props.id,
-          class: 'rc-input',
-          type: radio ? 'radio' : 'checkbox',
-          checked: value.value,
-          disabled: props.disabled,
-          onChange: (evt: Event) => {
-            value.value = (evt.target as HTMLInputElement).checked
+      const value = propagateModel(props, emit)
+      return () =>
+        h(
+          'div',
+          {
+            class: ['rc', props.inline ? 'rc-inline' : 'rc-stacked', radio ? 'radio' : 'check'],
           },
-        }),
-        h('label', {
-          class: 'rc-label',
-          for: props.id,
-        }, props.label)
-      ])
-    }
+          [
+            h('input', {
+              id: props.id,
+              class: 'rc-input',
+              type: radio ? 'radio' : 'checkbox',
+              checked: value.value,
+              disabled: props.disabled,
+              onChange: (evt: Event) => {
+                value.value = (evt.target as HTMLInputElement).checked
+              },
+            }),
+            h(
+              'label',
+              {
+                class: 'rc-label',
+                for: props.id,
+              },
+              props.label
+            ),
+          ]
+        )
+    },
   })
 }
 

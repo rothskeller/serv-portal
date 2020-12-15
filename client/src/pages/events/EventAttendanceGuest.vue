@@ -6,7 +6,7 @@ EventAttendanceGuest
 Modal(ref='modal', v-slot='{ close }')
   #event-attendance-guest-title Add Guest
   form#event-attendance-guest(@submit.prevent='onSubmit')
-    SInput#event-attendance-guest-input(ref='input', placeholder='Guest Name', v-model='search')
+    SInput#event-attendance-guest-input(placeholder='Guest Name', autofocus, v-model='search')
     select(size='10', v-model='guest')
       option(v-for='o in options', :value='o.id', v-text='o.sortName')
     #event-attendance-guest-buttons
@@ -28,13 +28,7 @@ export default defineComponent({
   components: { Modal, SButton, SInput },
   setup(props, { emit }) {
     const modal = ref(null as any)
-    const input = ref(null as any)
     function show() {
-      function focus() {
-        if (input.value) input.value.focus()
-        else nextTick(focus)
-      }
-      focus()
       return modal.value.show()
     }
 
@@ -60,7 +54,7 @@ export default defineComponent({
       modal.value.close(options.value.find((g) => g.id === guest.value))
     }
 
-    return { guest, input, modal, onSubmit, options, search, show }
+    return { guest, modal, onSubmit, options, search, show }
   },
 })
 </script>

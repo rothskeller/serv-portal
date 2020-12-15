@@ -16,9 +16,9 @@ Modal(ref='modal')
     SSpinner(v-if='loading')
     template(v-else)
       SFInput#files-editl-name(
-        ref='nameRef',
         label='Name',
         trim,
+        autofocus,
         v-model='link.name',
         :errorFn='nameError'
       )
@@ -45,11 +45,6 @@ export default defineComponent({
       folderURL.value = folder
       link.value = { name: '', url: '' }
       loading.value = false
-      nextTick(() => {
-        nextTick(() => {
-          nameRef.value.focus()
-        })
-      })
       return modal.value.show()
     }
     function showEdit(folder: string, ln: string) {
@@ -70,13 +65,9 @@ export default defineComponent({
         )
       ).data
       loading.value = false
-      nextTick(() => {
-        nameRef.value.focus()
-      })
     }
 
     // The name field.
-    const nameRef = ref(null as any)
     const duplicateName = ref('')
     function nameError(lostFocus: boolean): string {
       if (!lostFocus) return ''
@@ -129,7 +120,6 @@ export default defineComponent({
       loading,
       modal,
       nameError,
-      nameRef,
       onCancel,
       onSubmit,
       showAdd,

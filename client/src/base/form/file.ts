@@ -1,7 +1,7 @@
 // Validated form file upload control.
 
 import { defineComponent, h, PropType, ref, watchEffect } from 'vue'
-import SInput from '../controls/input'
+import { SInput } from '../controls/text'
 import FormItem, { ErrorFunction, useLostFocus } from './item'
 
 export default defineComponent({

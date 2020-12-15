@@ -16,9 +16,9 @@ Modal(ref='modal')
     SSpinner(v-if='loading')
     template(v-else)
       SFInput#person-volgistics(
-        ref='volgisticsRef',
         label='Volgistics ID',
         v-model='volgistics',
+        autofocus,
         :errorFn='volgisticsError',
         :restrictFn='digitsOnly'
       )
@@ -120,13 +120,9 @@ export default defineComponent({
         person.value.identification.filter((id) => id.held).map((id) => id.type)
       )
       loading.value = false
-      nextTick(() => {
-        volgisticsRef.value.focus()
-      })
     }
 
     // Field validation.
-    const volgisticsRef = ref(null as any)
     function volgisticsError(lostFocus: boolean) {
       if (!lostFocus || !volgistics.value) return ''
       if (parseInt(volgistics.value) < 1) return 'This is not a valid Volgistics ID number.'
@@ -192,7 +188,6 @@ export default defineComponent({
       submitting,
       volgistics,
       volgisticsError,
-      volgisticsRef,
     }
   },
 })

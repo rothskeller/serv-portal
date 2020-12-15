@@ -16,9 +16,9 @@ Modal(ref='modal')
     SSpinner(v-if='!visibilities.length')
     template(v-else)
       SFInput#files-editf-name(
-        ref='nameRef',
         label='Name',
         trim,
+        autofocus,
         v-model='folder.name',
         :errorFn='nameError'
       )
@@ -79,13 +79,9 @@ export default defineComponent({
         value: v,
         label: fmtVis[v],
       }))
-      nextTick(() => {
-        nameRef.value.focus()
-      })
     }
 
     // The name field.
-    const nameRef = ref(null as any)
     const duplicateName = ref('')
     function nameError(lostFocus: boolean): string {
       if (!lostFocus) return ''
@@ -123,7 +119,6 @@ export default defineComponent({
       folder,
       modal,
       nameError,
-      nameRef,
       onCancel,
       onSubmit,
       showAdd,

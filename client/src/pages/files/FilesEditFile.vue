@@ -14,9 +14,9 @@ Modal(ref='modal')
     @cancel='onCancel'
   )
     SFInput#files-editf-name(
-      ref='nameRef',
       label='Name',
       trim,
+      autofocus,
       v-model='newName',
       :errorFn='nameError'
     )
@@ -39,17 +39,10 @@ export default defineComponent({
     function show(folder: string, fn: string) {
       folderURL = folder
       oldName = newName.value = fn
-      console.log('newName', fn)
-      nextTick(() => {
-        nextTick(() => {
-          nameRef.value.focus()
-        })
-      })
       return modal.value.show()
     }
 
     // The name field.
-    const nameRef = ref(null as any)
     const duplicateName = ref('')
     function nameError(lostFocus: boolean): string {
       if (!lostFocus) return ''
@@ -99,7 +92,6 @@ export default defineComponent({
       file,
       modal,
       nameError,
-      nameRef,
       newName,
       onCancel,
       onSubmit,

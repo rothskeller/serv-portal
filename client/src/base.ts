@@ -1,21 +1,18 @@
 // Input controls:
 import SButton from './base/controls/SButton.vue'
 import { SCheck } from './base/controls/rc'
-import SCheckGroup from './base/controls/cgroup'
-import SInput from './base/controls/input'
-import SRadioGroup from './base/controls/rgroup'
+import { SCheckGroup, SRadioGroup } from './base/controls/rcgroup'
+import { SInput, STextArea } from './base/controls/text'
 import SSelect from './base/controls/select'
 
 // Validated form controls:
 import SForm from './base/form/form'
 import SFCheck from './base/form/check'
-import SFCheckGroup from './base/form/cgroup'
+import { SFCheckGroup, SFRadioGroup } from './base/form/rcgroup'
 import SFFile from './base/form/file'
-import SFInput from './base/form/input'
+import { SFInput, SFTextArea } from './base/form/text'
 import SFPassword from './base/form/SFPassword.vue'
-import SFRadioGroup from './base/form/rgroup'
-import SFSelect from './base/form/select'
-import SFTextArea from './base/form/textarea'
+import SFSelect from './base/form/SFSelect.vue'
 import SFTimeRange from './base/form/SFTimeRange.vue'
 
 // GUI Widgets:
@@ -56,6 +53,7 @@ export {
   SRadioGroup,
   SSelect,
   SSpinner,
+  STextArea,
   TabPage,
 }
 export type { TabDef } from './base/tabdef'
