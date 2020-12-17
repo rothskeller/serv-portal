@@ -21,7 +21,7 @@ MonthSelect is a control allowing convenient selection and browsing of months.
 import { defineComponent, ref, watch, watchEffect } from 'vue'
 import moment from 'moment-mini'
 import SIcon from './SIcon.vue'
-import SSelect from '../controls/select'
+import SSelect from '../controls/SSelect'
 
 const monthOptions = [
   { value: 1, label: 'January' },

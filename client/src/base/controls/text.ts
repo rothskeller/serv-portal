@@ -4,8 +4,9 @@ import { defineComponent, getCurrentInstance, h, onMounted, PropType, ref, watch
 import { propagateModel } from '../util'
 import './controls.css'
 
-function defineTextInput(tag: string) {
+function defineTextInput(name: string, tag: string) {
   return defineComponent({
+    name,
     props: {
       modelValue: { type: String, required: true },
       trim: { type: Boolean, default: false },
@@ -60,7 +61,7 @@ function defineTextInput(tag: string) {
   })
 }
 
-const SInput = defineTextInput('input')
-const STextArea = defineTextInput('textarea')
+const SInput = defineTextInput('SInput', 'input')
+const STextArea = defineTextInput('STextArea', 'textarea')
 
 export { SInput, STextArea }

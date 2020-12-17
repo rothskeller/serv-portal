@@ -20,8 +20,8 @@ FormItem(:id='id', xclass='oneline', :label='label', :help='help', :error='error
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { propagateModel } from '../util'
-import SSelect from '../controls/select'
-import FormItem, { ErrorFunction, useLostFocus } from './item'
+import SSelect from '../controls/SSelect'
+import FormItem, { ErrorFunction, useLostFocus } from './FormItem'
 
 export default defineComponent({
   components: { FormItem, SSelect },

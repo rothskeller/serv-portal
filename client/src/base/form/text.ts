@@ -2,10 +2,11 @@
 
 import { defineComponent, h, PropType, ref, watchEffect } from 'vue'
 import { SInput, STextArea } from '../controls/text'
-import FormItem, { ErrorFunction, useLostFocus } from './item'
+import FormItem, { ErrorFunction, useLostFocus } from './FormItem'
 
-function defineTextInput(control: typeof SInput, xclass: string) {
+function defineTextInput(name: string, control: typeof SInput, xclass: string) {
   return defineComponent({
+    name,
     props: {
       id: { type: String, required: true },
       label: String,
@@ -66,7 +67,7 @@ function defineTextInput(control: typeof SInput, xclass: string) {
   })
 }
 
-const SFInput = defineTextInput(SInput, 'oneline')
-const SFTextArea = defineTextInput(STextArea, 'textarea')
+const SFInput = defineTextInput('SFInput', SInput, 'oneline')
+const SFTextArea = defineTextInput('SFTextArea', STextArea, 'textarea')
 
 export { SFInput, SFTextArea }

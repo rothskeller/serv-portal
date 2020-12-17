@@ -1,15 +1,15 @@
 // Input controls:
-import SButton from './base/controls/SButton.vue'
+import SButton from './base/controls/SButton'
 import { SCheck } from './base/controls/rc'
 import { SCheckGroup, SRadioGroup } from './base/controls/rcgroup'
 import { SInput, STextArea } from './base/controls/text'
-import SSelect from './base/controls/select'
+import SSelect from './base/controls/SSelect'
 
 // Validated form controls:
-import SForm from './base/form/form'
-import SFCheck from './base/form/check'
+import SForm from './base/form/SForm'
+import SFCheck from './base/form/SFCheck'
 import { SFCheckGroup, SFRadioGroup } from './base/form/rcgroup'
-import SFFile from './base/form/file'
+import SFFile from './base/form/SFFile'
 import { SFInput, SFTextArea } from './base/form/text'
 import SFPassword from './base/form/SFPassword.vue'
 import SFSelect from './base/form/SFSelect.vue'
@@ -21,7 +21,7 @@ import MonthSelect from './base/widget/MonthSelect.vue'
 import OrgBadge from './base/widget/OrgBadge.vue'
 import SIcon from './base/widget/SIcon.vue'
 import SProgress from './base/widget/SProgress.vue'
-import SSpinner from './base/widget/SSpinner.vue'
+import SSpinner from './base/widget/SSpinner'
 
 // Other stuff:
 import MessageBox from './base/MessageBox.vue'

@@ -5,12 +5,14 @@ import { propagateModel } from '../util'
 import { SCheck, SRadio } from './rc'
 
 function defineRCGroup(
+  name: string,
   control: typeof SCheck,
   modelType: any,
   isChecked: (selected: any, option: any) => boolean,
   apply: (selected: Ref<any>, option: any, checked: boolean) => void
 ) {
   return defineComponent({
+    name,
     props: {
       id: { type: String, required: true },
       options: { type: Array, required: true },
@@ -54,6 +56,7 @@ function defineRCGroup(
 }
 
 const SCheckGroup = defineRCGroup(
+  'SCheckGroup',
   SCheck,
   Set,
   (selected: Set<unknown>, option: unknown) => selected.has(option),
@@ -63,6 +66,7 @@ const SCheckGroup = defineRCGroup(
   }
 )
 const SRadioGroup = defineRCGroup(
+  'SRadioGroup',
   SRadio,
   String,
   (selected: string, option: string) => selected === option,

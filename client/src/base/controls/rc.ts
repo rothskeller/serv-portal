@@ -4,8 +4,9 @@ import { defineComponent, h, ref, watch } from 'vue'
 import { propagateModel } from '../util'
 import './controls.css'
 
-function defineRC(radio: boolean) {
+function defineRC(name: string, radio: boolean) {
   return defineComponent({
+    name,
     props: {
       id: { type: String, required: true },
       label: String,
@@ -47,7 +48,7 @@ function defineRC(radio: boolean) {
   })
 }
 
-const SRadio = defineRC(true)
-const SCheck = defineRC(false)
+const SRadio = defineRC('SRadio', true)
+const SCheck = defineRC('SCheck', false)
 
 export { SRadio, SCheck }

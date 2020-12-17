@@ -25,7 +25,7 @@ Modal(ref='modal', v-slot='{ close }')
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import Modal from './Modal.vue'
-import SForm from './form/form'
+import SForm from './form/SForm'
 
 export default defineComponent({
   components: { Modal, SForm },

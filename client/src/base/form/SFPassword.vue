@@ -36,7 +36,7 @@ import {
   watchEffect,
   inject,
 } from 'vue'
-import { useLostFocus } from './item'
+import { useLostFocus } from './FormItem'
 import type { ZXCVBNResult } from 'zxcvbn'
 
 export default defineComponent({
