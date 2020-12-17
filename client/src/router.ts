@@ -15,11 +15,9 @@ const router = createRouter({
       component: () => import('./pages/Public.vue'),
       meta: { public: true },
       beforeEnter: (to, from, next) => {
-        if (me.value)
-          next({ path: '/home' })
-        else
-          next()
-      }
+        if (me.value) next({ path: '/home' })
+        else next()
+      },
     },
     {
       path: '/admin',
@@ -27,7 +25,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/admin/roles'
+          redirect: '/admin/roles',
         },
         {
           path: 'lists',
@@ -80,7 +78,11 @@ const router = createRouter({
           path: ':id/attendance',
           component: () => import('./pages/events/EventAttendance.vue'),
         },
-      ]
+        {
+          path: ':id/timesheet',
+          component: () => import('./pages/events/EventTimesheet'),
+        },
+      ],
     },
     {
       path: '/files/:path(.*)?',
@@ -116,7 +118,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/people/list'
+          redirect: '/people/list',
         },
         {
           path: 'list',
@@ -134,7 +136,7 @@ const router = createRouter({
           path: ':id/hours',
           component: () => import('./pages/people/PersonHours.vue'),
         },
-      ]
+      ],
     },
     {
       path: '/policies',
@@ -147,7 +149,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/reports/attendance'
+          redirect: '/reports/attendance',
         },
         {
           path: 'attendance',
@@ -182,8 +184,8 @@ const router = createRouter({
         {
           path: ':id',
           component: () => import('./pages/texts/TextsView.vue'),
-        }
-      ]
+        },
+      ],
     },
     {
       path: '/unsubscribe/:token/:email?',
@@ -200,7 +202,7 @@ const router = createRouter({
       component: () => import('./pages/NotFound.vue'),
       meta: { public: true },
     },
-  ]
+  ],
 })
 router.beforeEach((to, from, next) => {
   if (me.value || to.meta.public) next()

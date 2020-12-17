@@ -42,7 +42,9 @@ export default defineComponent({
           to: `/events/${route.params.id}/edit`,
           label: route.params.id === 'NEW' ? 'Add Event' : 'Edit',
         })
-      if (event.value && event.value.canAttendance)
+      if (route.path === `/events/${route.params.id}/timesheet`)
+        tabs.push({ to: `/events/${route.params.id}/timesheet`, label: 'Timesheet' })
+      else if (event.value && event.value.canAttendance)
         tabs.push({ to: `/events/${route.params.id}/attendance`, label: 'Attendance' })
       return tabs
     })

@@ -22,6 +22,7 @@ form#event-attendance(v-else, @submit.prevent='onSave')
     SButton(type='submit', variant='primary') Save Attendance
     SButton#event-attend-cancel(@click='onCancel') Cancel
     SButton(@click='onAddGuest') Add Guest
+    SButton(@click='onTimesheetView') Timesheet View
   EventAttendanceGuest(ref='guestDialog')
 </template>
 
@@ -141,6 +142,14 @@ export default defineComponent({
       router.go(-1)
     }
     async function onSave() {
+      await save()
+      router.push(`/events/${route.params.id}`)
+    }
+    async function onTimesheetView() {
+      await save()
+      router.replace(`/events/${route.params.id}/timesheet`)
+    }
+    async function save() {
       const body = new FormData()
       people.value!.forEach((p) => {
         if (p.attended) {
@@ -150,7 +159,6 @@ export default defineComponent({
         }
       })
       await axios.post(`/api/events/${route.params.id}/attendance`, body)
-      router.push(`/events/${route.params.id}`)
     }
 
     return {
@@ -159,6 +167,7 @@ export default defineComponent({
       onAddGuest,
       onCancel,
       onSave,
+      onTimesheetView,
       onTogglePerson,
       people,
       setHoursS,

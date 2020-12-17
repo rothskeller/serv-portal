@@ -39,7 +39,7 @@ label.form-item-label(:class='`person-address-label-${type}`', v-text='label')
 <script lang="ts">
 import { defineComponent, inject, nextTick, PropType, ref, toRefs, watch } from 'vue'
 import SmartyStreetsSDK from 'smartystreets-javascript-sdk'
-import { useLostFocus } from '../../base/form/item'
+import { useLostFocus } from '../../base/form/FormItem'
 import type { GetPersonAddress } from './PersonView.vue'
 
 const SmartyStreetsCore = SmartyStreetsSDK.core
@@ -165,8 +165,8 @@ export default defineComponent({
       props.type === 'Home'
         ? 'Home Address'
         : props.type === 'Work'
-        ? 'Business Hours Address'
-        : 'Mailing Address'
+          ? 'Business Hours Address'
+          : 'Mailing Address'
 
     return { error, label, line1, line1input, line2, line2input, onFocusLine2, onBlur, sameAsHome }
   },

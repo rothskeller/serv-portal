@@ -1,0 +1,51 @@
+#event-timesheet {
+  margin: 1.5rem 0.75rem;
+}
+#event-timesheet-grid {
+  display: grid;
+  grid: auto-flow / max-content min-content min-content min-content 1fr;
+  align-items: center;
+  column-gap: 0.5rem;
+}
+#event-timesheet-submit {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 0 -0.5rem;
+  & .sbtn {
+    margin-left: 0.5rem;
+  }
+  @media print {
+    display: none;
+  }
+}
+#event-timesheet-cancel {
+  margin-right: 2rem;
+}
+
+.event-timesheet-type {
+  font-size: 0.75rem;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+  min-width: 4rem;
+  min-height: 1.25rem;
+  line-height: 1;
+  text-align: center;
+}
+.event-timesheet-type-:hover {
+  border: 1px solid #888;
+}
+.event-timesheet-type-Volunteer {
+  background-color: #4363d8;
+}
+.event-timesheet-type-Student {
+  background-color: #3cb44b;
+}
+.event-timesheet-type-Audit {
+  background-color: #a9a9a9;
+}
+.event-timesheet-type-Absent {
+  background-color: #800000;
+}
