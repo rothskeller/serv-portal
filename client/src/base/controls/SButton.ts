@@ -18,15 +18,16 @@ const SButton = defineComponent({
         // @ts-ignore - it can't handle the polymorphism of the first argument
         props.to ? RouterLink : 'button',
         {
+          ...attrs,
           class: [
             'sbtn',
             `sbtn-${props.variant}`,
             { 'sbtn-disabled': props.disabled, 'sbtn-small': props.small },
+            attrs.class,
           ],
           to: props.to,
           type: props.to ? null : props.type,
           disabled: props.disabled,
-          ...attrs,
         },
         slots.default?.()
       )

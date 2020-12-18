@@ -1,4 +1,5 @@
 // Input controls:
+import MonthSelect from './base/controls/MonthSelect'
 import SButton from './base/controls/SButton'
 import { SCheck } from './base/controls/rc'
 import { SCheckGroup, SRadioGroup } from './base/controls/rcgroup'
@@ -17,7 +18,6 @@ import SFTimeRange from './base/form/SFTimeRange.vue'
 
 // GUI Widgets:
 import EventOrgDot from './base/widget/EventOrgDot.vue'
-import MonthSelect from './base/widget/MonthSelect.vue'
 import OrgBadge from './base/widget/OrgBadge.vue'
 import SIcon from './base/widget/SIcon.vue'
 import SProgress from './base/widget/SProgress.vue'

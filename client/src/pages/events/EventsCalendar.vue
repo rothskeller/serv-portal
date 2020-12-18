@@ -68,7 +68,6 @@ export default defineComponent({
     const month = ref(moment())
     const monthfmt = ref(month.value.format('YYYY-MM'))
     watch(monthfmt, () => {
-      console.log('monthfmt', monthfmt.value)
       month.value = moment(monthfmt.value, 'YYYY-MM')
       newMonth()
     })
@@ -121,7 +120,10 @@ export default defineComponent({
     // that this user prefers the calendar view.
     onMounted(() => {
       const monthCookie = Cookies.get('serv-events-month')
-      if (monthCookie) month.value = moment(monthCookie, 'YYYY-MM')
+      if (monthCookie) {
+        monthfmt.value = monthCookie
+        month.value = moment(monthCookie, 'YYYY-MM')
+      }
       newMonth()
       Cookies.set('serv-events-page', 'calendar', { expires: 3650 })
     })
@@ -171,7 +173,9 @@ export default defineComponent({
 }
 #events-calendar-heading {
   display: flex;
+  justify-content: center;
   grid-area: 1 / 1 / 2 / 8;
+  margin-bottom: 0.5rem;
 }
 .events-calendar-weekday {
   margin-top: 0.5rem;
