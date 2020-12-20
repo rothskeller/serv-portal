@@ -104,12 +104,16 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 		}
 	}
 	for _, bc := range p.BGChecks {
+		var uncertain string
+		if bc.TypeUncertain {
+			uncertain = " (?)"
+		}
 		if bc.Date != "" {
-			tx.entry.Change("add person [%d] bgCheck %s on %s", p.ID, bc.Type.MaskString(), bc.Date)
+			tx.entry.Change("add person [%d] bgCheck %s%s on %s", p.ID, bc.Type.MaskString(), uncertain, bc.Date)
 		} else if bc.Assumed {
-			tx.entry.Change("add person [%d] bgCheck %s assumed", p.ID, bc.Type.MaskString())
+			tx.entry.Change("add person [%d] bgCheck %s%s assumed", p.ID, bc.Type.MaskString(), uncertain)
 		} else {
-			tx.entry.Change("add person [%d] bgCheck %s", p.ID, bc.Type.MaskString())
+			tx.entry.Change("add person [%d] bgCheck %s%s", p.ID, bc.Type.MaskString(), uncertain)
 		}
 	}
 }
@@ -368,12 +372,16 @@ NOTES2:
 			}
 		}
 		if !found {
+			var uncertain string
+			if c.TypeUncertain {
+				uncertain = " (?)"
+			}
 			if c.Date != "" {
-				tx.entry.Change("add person [%d] bgCheck %s on %s", p.ID, c.Type.MaskString(), c.Date)
+				tx.entry.Change("add person [%d] bgCheck %s%s on %s", p.ID, c.Type.MaskString(), uncertain, c.Date)
 			} else if c.Assumed {
-				tx.entry.Change("add person [%d] bgCheck %s assumed", p.ID, c.Type.MaskString())
+				tx.entry.Change("add person [%d] bgCheck %s%s assumed", p.ID, c.Type.MaskString(), uncertain)
 			} else {
-				tx.entry.Change("add person [%d] bgCheck %s", p.ID, c.Type.MaskString())
+				tx.entry.Change("add person [%d] bgCheck %s%s", p.ID, c.Type.MaskString(), uncertain)
 			}
 		}
 	}
@@ -386,12 +394,13 @@ NOTES2:
 			}
 		}
 		if !found {
+			var uncertain string
 			if oc.Date != "" {
-				tx.entry.Change("remove person [%d] bgCheck %s on %s", p.ID, oc.Type.MaskString(), oc.Date)
+				tx.entry.Change("remove person [%d] bgCheck %s%s on %s", p.ID, oc.Type.MaskString(), uncertain, oc.Date)
 			} else if oc.Assumed {
-				tx.entry.Change("remove person [%d] bgCheck %s assumed", p.ID, oc.Type.MaskString())
+				tx.entry.Change("remove person [%d] bgCheck %s%s assumed", p.ID, oc.Type.MaskString(), uncertain)
 			} else {
-				tx.entry.Change("remove person [%d] bgCheck %s", p.ID, oc.Type.MaskString())
+				tx.entry.Change("remove person [%d] bgCheck %s%s", p.ID, oc.Type.MaskString(), uncertain)
 			}
 		}
 	}

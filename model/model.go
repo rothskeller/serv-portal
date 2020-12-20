@@ -18,7 +18,7 @@ type ApprovalID int
 
 // Equal compares two background check records for equality.
 func (bc *BackgroundCheck) Equal(o *BackgroundCheck) bool {
-	return bc.Date == o.Date && bc.Type == o.Type && bc.Assumed == o.Assumed
+	return bc.Date == o.Date && bc.Type == o.Type && bc.Assumed == o.Assumed && bc.TypeUncertain == o.TypeUncertain
 }
 
 // A CSRFToken is a random string used to verify that submitted forms came from

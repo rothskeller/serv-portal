@@ -110,7 +110,7 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 			return errors.New("invalid bgCheckType")
 		}
 		if bc.Date != "" {
-			if !dateRE.MatchString(bc.Date) {
+			if !dateRE.MatchString(bc.Date) || bc.Assumed {
 				return errors.New("invalid bgCheckDate")
 			}
 		}
