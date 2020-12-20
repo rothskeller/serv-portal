@@ -134,7 +134,12 @@ const router = createRouter({
         },
         {
           path: ':id/hours',
-          component: () => import('./pages/people/PersonHours.vue'),
+          redirect: (r) => `/people/${r.params.id}/activity/current`,
+        },
+        {
+          path: ':id/activity/:month',
+          component: () => import('./pages/people/PersonActivity'),
+          meta: { public: true },
         },
       ],
     },
@@ -194,7 +199,7 @@ const router = createRouter({
     },
     {
       path: '/volunteer-hours/:id',
-      component: () => import('./pages/people/PersonHours.vue'),
+      redirect: (r) => `/people/${r.params.id}/activity/current`,
       meta: { public: true },
     },
     {

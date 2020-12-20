@@ -1,0 +1,77 @@
+#person-activity {
+  margin: 1.5rem 0.75rem;
+}
+#person-activity-month {
+  max-width: 18rem;
+}
+#person-activity-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid: auto-flow / minmax(auto, max-content) max-content;
+  column-gap: 0.5rem;
+  align-items: center;
+  &.person-activity-editable {
+    row-gap: 0.5rem;
+  }
+  &.person-activity-with-types {
+    grid: auto-flow / minmax(auto, max-content) max-content max-content;
+  }
+}
+.person-activity-label {
+  margin-left: 1rem;
+  text-indent: -1rem;
+}
+input.person-activity-hours {
+  max-width: 5rem;
+}
+.person-activity-dsw {
+  color: #888;
+}
+#person-activity-dsw-note {
+  color: #888;
+  margin-right: 1rem;
+}
+#person-activity-total-dsw {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap-reverse;
+}
+#person-activity-total-label {
+  font-weight: bold;
+  text-align: right;
+}
+#person-activity-total {
+  font-weight: bold;
+  align-self: flex-start;
+}
+#person-activity-buttons {
+  margin-top: 1rem;
+  & .sbtn {
+    margin-right: 0.5rem;
+  }
+}
+#person-activity-guide {
+  margin-top: 1.5rem;
+  max-width: 800px;
+  tr:nth-child(1) {
+    background-color: #5b9bd5;
+    td {
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+  }
+  tr:nth-child(2) {
+    font-weight: bold;
+  }
+  tr:nth-child(even) {
+    background-color: #deeaf6;
+  }
+  td {
+    padding: 0.25rem;
+    width: 50%;
+    border: 1px solid #eee;
+    vertical-align: top;
+    line-height: 1.2;
+  }
+}

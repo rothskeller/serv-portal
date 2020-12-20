@@ -5,7 +5,6 @@ Tier 1:
     Generate sign-in sheet for event
   Schedule Zoom meetings through API
   More BG check information
-  Combine person attendance history and hours entry
 
 Tier 2:
   More compact people list
@@ -24,61 +23,3 @@ Unprioritized:
   Search engine efficiency — encode type and ids in rowid
   Reuse google map instance on return to people map page.
   Add a Reset Password button for leads to use, sends a new random pwd by email
-
-
-New Person / Service Tab
-
-Target person can reach through Profile or through email link with token.
-Others can reach through People module.
-
-Target person:
-    Prior to volgistics dump:
-        View attendance, edit hours.
-    After volgistics dump:
-        View only.
-Organization leader:
-    Prior to volgistics dump:
-        For that organization:
-            Actual events:
-                Edit attendance and hours
-            "Other Hours"
-                View if non-zero
-        For other organizations:
-            Not shown
-    After volgistics dump:
-        For that organization:
-            Events with attendance or non-zero hours:
-                View only
-            Events with no attendance and no hours:
-                Not shown
-        For other organizations:
-            Not shown
-Webmaster:
-    View and edit anything
-
-Under no circumstances do events (or months) in the future show to anyone.
-
-Generally speaking, whether things are editable depends on the month and the
-person, i.e., is constant for everything returned in the API request.  The
-exception is that org leaders can't edit "other hours".  That can be handled as
-a readonly flag on the event in the response.  The event type is needed in the
-response as well so that webmaster doesn't change the attendance type of an
-other hours request.
-
-{
-    "name": "...",
-    "noVolunteerID": true,
-    "month": "2006-01",
-    "canEditHours": true,
-    "events": [
-        {
-            "id": 1,
-            "date": "2020-10-10",
-            "name": "XXX",
-            "attendanceType": "XXX",
-            "attendanceTypes": ["XXX"],
-            "minutes": 60,
-            "readonly": true
-        }
-    ]
-}

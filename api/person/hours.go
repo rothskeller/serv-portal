@@ -1,7 +1,9 @@
 package person
 
 import (
-	"errors"
+	"fmt"
+	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -12,12 +14,18 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetPersonHours handles GET /api/people/$id/hours requests.
-func GetPersonHours(r *util.Request, idstr string) error {
+// Regular expression for a valid month string.
+var monthRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])$`)
+
+// GPPersonHoursMonth handles GET and POST /api/people/$id/hours/$month
+// requests.
+func GPPersonHoursMonth(r *util.Request, idstr, month string) error {
 	var (
-		person *model.Person
-		out    jwriter.Writer
-		now    = time.Now()
+		person        *model.Person
+		out           jwriter.Writer
+		today         string
+		editableMonth bool
+		first         = true
 	)
 	// idstr could be the ID of a person, when used in a regular session, or
 	// it could be the HoursToken of a person, when used outside a session.
@@ -33,143 +41,166 @@ func GetPersonHours(r *util.Request, idstr string) error {
 		}
 		r.Person = person
 	}
-	if person != r.Person && !r.Person.IsAdminLeader() {
+	if r.Person == nil || (person != r.Person && !r.Person.HasPrivLevel(model.PrivLeader)) {
 		return util.Forbidden
 	}
-	if person.VolgisticsID == 0 {
-		r.Header().Set("Content-Type", "application/json; charset=utf-8")
-		r.Write([]byte(`false`))
-		return nil
+	if !monthRE.MatchString(month) {
+		return util.NotFound
 	}
+	today, editableMonth = isEditableMonth(month)
 	if person == r.Person && person.HoursReminder {
 		r.Tx.WillUpdatePerson(person)
 		person.HoursReminder = false
 		r.Tx.UpdatePerson(person)
 	}
-	out.RawString(`{"name":`)
-	out.String(person.InformalName)
-	out.RawString(`,"months":[`)
-	if now.Day() <= 10 {
-		getPersonHours(r, &out, person, time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local))
-		out.RawByte(',')
+	if r.Method == http.MethodGet {
+		out.RawString(`{"id":`)
+		out.Int(int(person.ID))
+		out.RawString(`,"name":`)
+		out.String(person.InformalName)
+		if person.VolgisticsID == 0 {
+			out.RawString(`,"needsVolgistics":true`)
+		}
+		out.RawString(`,"events":[`)
 	}
-	getPersonHours(r, &out, person, now)
-	out.RawString(`]}`)
-	r.Tx.Commit()
-	r.Header().Set("Content-Type", "application/json; charset=utf-8")
-	out.DumpTo(r)
-	return nil
-}
-func getPersonHours(r *util.Request, out *jwriter.Writer, person *model.Person, month time.Time) {
-	var (
-		mstr  = month.Format("2006-01")
-		first = true
-		today = time.Now().Format("2006-01-02")
-	)
-	out.RawString(`{"month":`)
-	out.String(month.Format("January 2006"))
-	out.RawString(`,"events":[`)
 	// Since we're just doing a <= comparison on strings, it doesn't matter
 	// how many days there are in the month.
-	for _, e := range r.Tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		// Show this event if the person belongs to the relevant org or
-		// if they have hours already recorded for it.
+	for _, e := range r.Tx.FetchEvents(month+"-01", month+"-31") {
 		var (
-			amap = r.Tx.FetchAttendanceByEvent(e)
-			show = amap[person.ID].Minutes != 0
+			amap                          = r.Tx.FetchAttendanceByEvent(e)
+			attend                        = amap[person.ID]
+			canView, canViewType, canEdit = hoursPermissions(r.Person, person, e, today, editableMonth, attend.Minutes != 0)
 		)
-		if !show && e.Type != model.EventHours && e.Date > today {
+		if !canView {
 			continue
 		}
-		if person.Orgs[e.Org].PrivLevel >= model.PrivMember {
-			show = true
-		}
-		if !show {
-			continue
-		}
-		if first {
-			first = false
-		} else {
-			out.RawByte(',')
-		}
-		out.RawString(`{"id":`)
-		out.Int(int(e.ID))
-		out.RawString(`,"date":`)
-		out.String(e.Date)
-		out.RawString(`,"name":`)
-		out.String(e.Name)
-		out.RawString(`,"minutes":`)
-		out.Uint16(amap[person.ID].Minutes)
-		if e.Type == model.EventHours {
-			out.RawString(`,"placeholder":true`)
-		}
-		out.RawByte('}')
-	}
-	out.RawString(`]}`)
-}
-
-// PostPersonHours handles POST /api/people/$id/hours requests.
-func PostPersonHours(r *util.Request, idstr string) (err error) {
-	var (
-		person *model.Person
-		now    = time.Now()
-	)
-	if len(idstr) <= 5 {
-		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-			return util.NotFound
-		}
-	} else {
-		if person = r.Tx.FetchPersonByHoursToken(idstr); person == nil {
-			return util.NotFound
-		}
-		r.Person = person
-	}
-	if person != r.Person && !r.Person.IsAdminLeader() {
-		return util.Forbidden
-	}
-	if person.VolgisticsID == 0 {
-		return errors.New("can't report hours for person not registered as volunteer")
-	}
-	r.ParseMultipartForm(1048576)
-	for k, v := range r.Form {
-		var (
-			eid     int
-			event   *model.Event
-			minutes int
-		)
-		if !strings.HasPrefix(k, "e") {
-			continue
-		}
-		if eid, err = strconv.Atoi(k[1:]); err != nil || eid < 1 {
-			continue
-		}
-		if event = r.Tx.FetchEvent(model.EventID(eid)); event == nil {
-			return errors.New("nonexistent event")
-		}
-		if now.Day() <= 10 {
-			if event.Date < time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02") {
-				return errors.New("event is too old")
+		switch r.Method {
+		case http.MethodGet:
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
 			}
-		} else {
-			if event.Date < now.Format("2006-01")+"-01" {
-				return errors.New("event is too old")
+			out.RawString(`{"id":`)
+			out.Int(int(e.ID))
+			out.RawString(`,"date":`)
+			out.String(e.Date)
+			out.RawString(`,"name":`)
+			out.String(e.Name)
+			out.RawString(`,"minutes":`)
+			out.Uint16(attend.Minutes)
+			out.RawString(`,"type":`)
+			out.String(attend.Type.String())
+			if e.Type == model.EventHours {
+				out.RawString(`,"placeholder":true`)
+			}
+			if canViewType {
+				out.RawString(`,"canViewType":true`)
+			}
+			if canEdit {
+				out.RawString(`,"canEdit":true`)
+			}
+			if e.RenewsDSW && attend.Type == model.AttendAsVolunteer && attend.Minutes > 0 {
+				out.RawString(`,"renewsDSW":true`)
+			}
+			out.RawByte('}')
+		case http.MethodPost:
+			var (
+				value   string
+				parts   []string
+				minutes int
+				err     error
+			)
+			if !canEdit {
+				continue
+			}
+			if value = r.FormValue(fmt.Sprintf("e%d", e.ID)); value == "" {
+				return fmt.Errorf("missing e%d", e.ID)
+			}
+			parts = strings.Split(value, ":")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid e%d", e.ID)
+			}
+			if minutes, err = strconv.Atoi(parts[0]); err != nil || minutes < 0 {
+				return fmt.Errorf("invalid e%d", e.ID)
+			}
+			if canViewType {
+				if attend.Type, err = model.ParseAttendanceType(parts[1]); err != nil {
+					return fmt.Errorf("invalid e%d", e.ID)
+				}
+			} else if attend.Minutes == 0 {
+				attend.Type = model.AttendAsAbsent
+			}
+			if minutes == 0 && attend.Minutes != 0 {
+				delete(amap, person.ID)
+				r.Tx.SaveEventAttendance(e, amap)
+			} else if minutes != 0 {
+				attend.Minutes = uint16(minutes)
+				amap[person.ID] = attend
+				r.Tx.SaveEventAttendance(e, amap)
 			}
 		}
-		if minutes, err = strconv.Atoi(v[0]); err != nil || minutes < 0 {
-			return errors.New("invalid minutes")
-		}
-		emap := r.Tx.FetchAttendanceByEvent(event)
-		if att, ok := emap[person.ID]; ok {
-			att.Minutes = uint16(minutes)
-			emap[person.ID] = att
-		} else {
-			emap[person.ID] = model.AttendanceInfo{Type: model.AttendAsAbsent, Minutes: uint16(minutes)}
-		}
-		if minutes == 0 {
-			delete(emap, person.ID)
-		}
-		r.Tx.SaveEventAttendance(event, emap)
 	}
 	r.Tx.Commit()
+	if r.Method == http.MethodGet {
+		out.RawString(`]}`)
+		r.Header().Set("Content-Type", "application/json; charset=utf-8")
+		out.DumpTo(r)
+	}
 	return nil
+}
+
+// isEditableMonth returns whether attendance for events in the month are
+// editable.  A month's event attendance is editable from the start of that
+// month through the 10th of the following month.
+func isEditableMonth(month string) (today string, editableMonth bool) {
+	var now = time.Now()
+	today = now.Format("2006-01-02")
+	if month > today[:7] {
+		return today, false
+	}
+	if now.Day() > 10 && month < today[:7] {
+		return today, false
+	}
+	lastMonth := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.Local).Format("2006-01")
+	return today, month >= lastMonth
+}
+
+// hoursPermissions returns the permissions the current caller has for viewing
+// or editing the target person's attendance at the specified event.  today and
+// editableMonth are memoized data returned from isEditableMonth, above.
+// hasHours indicates whether the target person already has recorded hours for
+// the event.
+func hoursPermissions(caller, target *model.Person, event *model.Event, today string, editableMonth, hasHours bool) (canView, canViewType, canEdit bool) {
+	// We need to know whether attendance at the event itself is editable.
+	eventAttendanceEditable := editableMonth
+	if eventAttendanceEditable && event.Date > today && event.Type != model.EventHours {
+		eventAttendanceEditable = false
+	}
+	callerIsLeader := caller.Orgs[event.Org].PrivLevel >= model.PrivLeader
+	// The type can be edited only if the caller is an event org leader,
+	// attendance for the event itself is editable, and the event is not a
+	// placeholder.
+	if eventAttendanceEditable && callerIsLeader && event.Type != model.EventHours {
+		return true, true, true
+	}
+	// The hours can be edited if the caller is the target person, the
+	// caller attended the event or is a member of the event org, and the
+	// attendance for the event itself is editable.
+	if eventAttendanceEditable && caller == target &&
+		(hasHours || target.Orgs[event.Org].PrivLevel >= model.PrivMember) {
+		return true, false, true
+	}
+	// The event can be seen, with the attendance type, if it has hours
+	// recorded and the caller is an event org leader.
+	if hasHours && callerIsLeader {
+		return true, true, false
+	}
+	// The event can be seen, without the attendance type, if it has hours
+	// recorded and the caller is the target person.
+	if hasHours && caller == target {
+		return true, false, false
+	}
+	// Otherwise, no permissions.
+	return false, false, false
 }

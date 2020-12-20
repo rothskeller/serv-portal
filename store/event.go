@@ -122,7 +122,7 @@ func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]mode
 	for pid, ai := range attend {
 		oai := oattend[pid]
 		if ai.Minutes != oai.Minutes || ai.Type != oai.Type {
-			tx.entry.Change("set event %s %q [%d] person %q [%d] attendance to %s %d min", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid, model.AttendanceTypeNames[ai.Type], ai.Minutes)
+			tx.entry.Change("set event %s %q [%d] person %q [%d] attendance to %s %d min", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid, ai.Type, ai.Minutes)
 		}
 	}
 	for pid := range oattend {

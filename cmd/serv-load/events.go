@@ -163,12 +163,8 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 							case "person":
 								pid = model.PersonID(in.Int())
 							case "type":
-								atype := in.String()
-								for at, atname := range model.AttendanceTypeNames {
-									if atype == atname {
-										ai.Type = at
-									}
-								}
+								ai.Type, err = model.ParseAttendanceType(in.String())
+								in.AddError(err)
 							case "minutes":
 								ai.Minutes = in.Uint16()
 							default:

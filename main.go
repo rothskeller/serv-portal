@@ -83,10 +83,10 @@ func router(r *util.Request) error {
 		return authn.GetPasswordResetToken(r, c[2])
 	case r.Method == "POST" && c[1] == "password-reset" && c[2] != "" && c[3] == "":
 		return authn.PostPasswordResetToken(r, c[2])
-	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
-		return person.GetPersonHours(r, c[2])
-	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] == "":
-		return person.PostPersonHours(r, c[2])
+	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] != "" && c[5] == "":
+		return person.GPPersonHoursMonth(r, c[2], c[4])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "hours" && c[4] != "" && c[5] == "":
+		return person.GPPersonHoursMonth(r, c[2], c[4])
 	case r.Method == "POST" && c[1] == "unsubscribe" && c[2] != "" && c[3] != "" && c[4] == "":
 		return email.PostUnsubscribeList(r, c[2], c[3])
 	case r.Person == nil:

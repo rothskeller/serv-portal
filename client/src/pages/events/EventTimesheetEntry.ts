@@ -2,8 +2,7 @@
 
 import moment from 'moment-mini'
 import { defineComponent, Fragment, h, PropType, ref, VNode, watch, watchEffect } from 'vue'
-import { SInput, SSelect } from '../../base'
-import EventTimesheetType from './EventTimesheetType'
+import { AttendanceType, SInput, SSelect } from '../../base'
 import type { TimesheetEntry } from './EventTimesheet'
 
 function fmtMinutes(m: number): string {
@@ -73,7 +72,7 @@ const EventTimesheetEntry = defineComponent({
     return () =>
       h(Fragment, [
         h('div', { class: 'event-timesheet-name' }, props.entry.sortName),
-        h(EventTimesheetType, {
+        h(AttendanceType, {
           value: props.entry.type,
           allowEmpty: !props.entry.minutes,
           onUpdate: (v: string) => (props.entry.type = v),

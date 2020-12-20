@@ -25,23 +25,15 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	for i, idstr := range r.Form["person"] {
 		var ai model.AttendanceInfo
 		var typestr string
+		var err error
 		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 			return errors.New("invalid person")
 		}
 		if len(r.Form["type"]) > i {
 			typestr = r.Form["type"][i]
 		}
-		switch typestr {
-		case model.AttendanceTypeNames[model.AttendAsVolunteer]:
-			ai.Type = model.AttendAsVolunteer
-		case model.AttendanceTypeNames[model.AttendAsStudent]:
-			ai.Type = model.AttendAsStudent
-		case model.AttendanceTypeNames[model.AttendAsAuditor]:
-			ai.Type = model.AttendAsAuditor
-		case model.AttendanceTypeNames[model.AttendAsAbsent]:
-			ai.Type = model.AttendAsAbsent
-		default:
-			return errors.New("invalid type")
+		if ai.Type, err = model.ParseAttendanceType(typestr); err != nil {
+			return err
 		}
 		if len(r.Form["minutes"]) > i {
 			if min, err := strconv.Atoi(r.Form["minutes"][i]); err == nil && min >= 0 && min <= 1440 {

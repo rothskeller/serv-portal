@@ -135,7 +135,7 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.String(personName(tx, pid))
 		out.RawString(`,"type":`)
 		var ai = eattend[pid]
-		out.String(model.AttendanceTypeNames[ai.Type])
+		out.String(ai.Type.String())
 		out.RawString(`,"minutes":`)
 		out.Uint16(ai.Minutes)
 		out.RawByte('}')

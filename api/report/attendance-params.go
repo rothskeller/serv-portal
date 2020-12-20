@@ -99,7 +99,7 @@ func readAttrepParameters(r *util.Request) (params attrepParameters) {
 	// Attendance types.
 	params.attendanceTypes = make(map[model.AttendanceType]bool)
 	for _, atidstr := range strings.Split(r.FormValue("attendanceTypes"), ",") {
-		if at := model.AttendanceType(util.ParseID(atidstr)); model.AttendanceTypeNames[at] != "" {
+		if at := model.AttendanceType(util.ParseID(atidstr)); at.Valid() {
 			params.attendanceTypes[at] = true
 		}
 	}
@@ -241,7 +241,7 @@ func attrepRenderParams(out *jwriter.Writer, params attrepParameters) {
 		out.RawString(`{"id":`)
 		out.Int(int(at))
 		out.RawString(`,"label":`)
-		out.String(model.AttendanceTypeNames[at])
+		out.String(at.String())
 		out.RawByte('}')
 	}
 	out.RawString(`]}`)

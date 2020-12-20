@@ -1,4 +1,5 @@
 // Input controls:
+import AttendanceType from './base/controls/AttendanceType'
 import MonthSelect from './base/controls/MonthSelect'
 import SButton from './base/controls/SButton'
 import { SCheck } from './base/controls/rc'
@@ -29,6 +30,7 @@ import Modal from './base/Modal.vue'
 import TabPage from './base/TabPage.vue'
 
 export {
+  AttendanceType,
   EventOrgDot,
   MessageBox,
   Modal,

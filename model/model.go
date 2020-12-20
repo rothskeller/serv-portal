@@ -16,40 +16,6 @@ import (
 // An ApprovalID identifies an item waiting for approval.
 type ApprovalID int
 
-// An AttendanceInfo structure gives information about a person's attendance at
-// an event, and volunteer hours for the event.
-type AttendanceInfo struct {
-	Type    AttendanceType
-	Minutes uint16
-}
-
-// An AttendanceType indicates the role that a person played in attending an
-// event (though it's carefully not called "role" to avoid confusion with
-// authorization roles).
-type AttendanceType uint8
-
-// Values for AttendanceType.
-const (
-	AttendAsVolunteer AttendanceType = iota
-	AttendAsStudent
-	AttendAsAuditor
-	// AttendAsAbsent the attendance type used in an AttendanceInfo record
-	// when a person has reported hours for the event, but wasn't actually
-	// recorded as being in attendance.
-	AttendAsAbsent
-)
-
-// AllAttendanceTypes lists all defined attendance types.
-var AllAttendanceTypes = []AttendanceType{AttendAsVolunteer, AttendAsStudent, AttendAsAuditor, AttendAsAbsent}
-
-// AttendanceTypeNames gives the names for the attendance types.
-var AttendanceTypeNames = map[AttendanceType]string{
-	AttendAsVolunteer: "Volunteer",
-	AttendAsStudent:   "Student",
-	AttendAsAuditor:   "Audit",
-	AttendAsAbsent:    "Absent",
-}
-
 // A CSRFToken is a random string used to verify that submitted forms came from
 // our own site and not from a forgery.
 type CSRFToken string

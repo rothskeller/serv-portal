@@ -221,3 +221,32 @@
   min-width: 40px;
   margin: 4px;
 }
+
+/* Styles for AttendanceType */
+.attendance-type {
+  font-size: 0.75rem;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+  min-width: 4rem;
+  min-height: 1.25rem;
+  line-height: 1;
+  text-align: center;
+}
+.attendance-type-:hover {
+  border: 1px solid #888;
+}
+.attendance-type-Volunteer {
+  background-color: #4363d8;
+}
+.attendance-type-Student {
+  background-color: #3cb44b;
+}
+.attendance-type-Audit {
+  background-color: #a9a9a9;
+}
+.attendance-type-Absent {
+  background-color: #800000;
+}

@@ -175,7 +175,7 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.String(p.SortName)
 			if att {
 				out.RawString(`,"attended":{"type":`)
-				out.String(model.AttendanceTypeNames[ai.Type])
+				out.String(ai.Type.String())
 				out.RawString(`,"minutes":`)
 				out.Uint16(ai.Minutes)
 				out.RawByte('}')

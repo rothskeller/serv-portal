@@ -31,14 +31,16 @@ export default defineComponent({
     // List of tabs on the page.
     const tabs = computed(() => {
       const tabs = [] as Array<TabDef>
-      tabs.push({ to: '/people/list', label: 'List' })
-      tabs.push({ to: '/people/map', label: 'Map' })
-      if (!route.params.id && me.value.canAddPeople)
+      if (me.value)
+        tabs.push({ to: '/people/list', label: 'List' })
+      if (me.value)
+        tabs.push({ to: '/people/map', label: 'Map' })
+      if (me.value && !route.params.id && me.value.canAddPeople)
         tabs.push({ to: '/people/NEW/edit', label: 'Add Person' })
-      if (route.params.id && route.params.id !== 'NEW')
+      if (me.value && route.params.id && route.params.id !== 'NEW')
         tabs.push({ to: `/people/${route.params.id}`, label: 'Details' })
       if (person.value && person.value.canHours)
-        tabs.push({ to: `/people/${route.params.id}/hours`, label: 'Hours' })
+        tabs.push({ to: `/people/${route.params.id}/activity/current`, label: 'Activity' })
       return tabs
     })
 
