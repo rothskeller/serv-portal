@@ -29,8 +29,10 @@ message BackgroundCheck {
   string date = 1;
   // Type is a bitmask of the type(s) of background check performed.
   int64 type = 2 [(gogoproto.casttype) = "BGCheckType"];
-  // Assumed is true if the background check is assumed rather than
-  // substantiated by records.
+  // Assumed is true if the background check is assumed rather than fully
+  // substantiated by records.  If there is no Date, the background check is
+  // assumed to have occurred, but there's no record of it.  If there is a Date,
+  // the background check is known to have occurred but its type is uncertain.
   bool assumed = 3;
 }
 
