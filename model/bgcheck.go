@@ -5,62 +5,6 @@ import (
 	strings "strings"
 )
 
-// A BGCheckStatus indicates the status of a person's background check.
-type BGCheckStatus uint8
-
-// Values for BGCheckStatus.
-const (
-	// BGCheckNone means the person has not passed a background check.
-	BGCheckNone BGCheckStatus = iota
-	// BGCheckAssumed means that we assume the person had a background
-	// check, but we have no record of it.
-	BGCheckAssumed
-	// BGCheckRecorded means that the person's background check is recorded.
-	BGCheckRecorded
-)
-
-// String returns the string form of a BGCheckStatus value, as used in APIs.
-func (v BGCheckStatus) String() string {
-	switch v {
-	case BGCheckAssumed:
-		return "assumed"
-	case BGCheckRecorded:
-		return "recorded"
-	default:
-		return ""
-	}
-}
-
-// ParseBGCheckStatus translates the string form of a BGCheckStatus (as returned
-// by String(), above) into a BGCheckStatus value.  It returns an error if the
-// string is not recognized.
-func ParseBGCheckStatus(s string) (BGCheckStatus, error) {
-	switch s {
-	case "":
-		return BGCheckNone, nil
-	case "assumed":
-		return BGCheckAssumed, nil
-	case "recorded":
-		return BGCheckRecorded, nil
-	default:
-		return BGCheckStatus(0), errors.New("invalid bgCheckStatus")
-	}
-}
-
-// Valid returns whether a BGCheckStatus value is valid.
-func (v BGCheckStatus) Valid() bool {
-	switch v {
-	case BGCheckNone, BGCheckAssumed, BGCheckRecorded:
-		return true
-	default:
-		return false
-	}
-}
-
-// AllBGCheckStatuses is the ordered list of BGCheckStatus values, which is
-// used for iteration.
-var AllBGCheckStatuses = []BGCheckStatus{BGCheckNone, BGCheckAssumed, BGCheckRecorded}
-
 // A BGCheckType is a bitmask of types of background check that a person has
 // had.
 type BGCheckType uint8

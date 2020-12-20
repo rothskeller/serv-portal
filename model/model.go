@@ -16,6 +16,11 @@ import (
 // An ApprovalID identifies an item waiting for approval.
 type ApprovalID int
 
+// Equal compares two background check records for equality.
+func (bc *BackgroundCheck) Equal(o *BackgroundCheck) bool {
+	return bc.Date == o.Date && bc.Type == o.Type && bc.Assumed == o.Assumed
+}
+
 // A CSRFToken is a random string used to verify that submitted forms came from
 // our own site and not from a forgery.
 type CSRFToken string

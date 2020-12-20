@@ -1,5 +1,16 @@
 package model
 
+type BGCheckSort []*BackgroundCheck
+
+func (bs BGCheckSort) Len() int { return len(bs) }
+func (bs BGCheckSort) Less(i, j int) bool {
+	if bs[i].Date != bs[j].Date {
+		return bs[i].Date < bs[j].Date
+	}
+	return bs[i].Type < bs[j].Type
+}
+func (bs BGCheckSort) Swap(i, j int) { bs[i], bs[j] = bs[j], bs[i] }
+
 type EventSort []*Event
 
 func (es EventSort) Len() int { return len(es) }

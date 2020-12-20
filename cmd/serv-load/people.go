@@ -157,25 +157,51 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.VolgisticsID = in.Int()
 			case "backgroundCheck":
 				p.BackgroundCheck = in.String()
-			case "bgCheckStatus":
-				p.BGCheckStatus, err = model.ParseBGCheckStatus(in.String())
-				in.AddError(err)
-			case "bgCheckType":
+			case "bgChecks":
 				in.Delim('[')
 				for !in.IsDelim(']') {
 					if in.IsNull() {
 						in.Skip()
 					} else {
-						var t model.BGCheckType
-						t, err = model.ParseBGCheckType(in.String())
-						in.AddError(err)
-						p.BGCheckType |= t
+						var bc model.BackgroundCheck
+						in.Delim('{')
+						for !in.IsDelim('}') {
+							key := in.UnsafeString()
+							in.WantColon()
+							if in.IsNull() {
+								in.Skip()
+								in.WantComma()
+								continue
+							}
+							switch key {
+							case "type":
+								in.Delim('[')
+								for !in.IsDelim(']') {
+									if in.IsNull() {
+										in.Skip()
+									} else {
+										var t model.BGCheckType
+										t, err = model.ParseBGCheckType(in.String())
+										in.AddError(err)
+										bc.Type |= t
+									}
+									in.WantComma()
+								}
+								in.Delim(']')
+							case "date":
+								bc.Date = in.String()
+							case "assumed":
+								bc.Assumed = in.Bool()
+							default:
+								in.SkipRecursive()
+							}
+							in.WantComma()
+						}
+						in.Delim('}')
 					}
 					in.WantComma()
 				}
 				in.Delim(']')
-			case "bgCheckDate":
-				p.BGCheckDate = in.String()
 			case "hoursToken":
 				p.HoursToken = in.String()
 			case "hoursReminder":

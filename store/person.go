@@ -103,14 +103,14 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 			tx.entry.Change("add person [%d] role %q [%d]", p.ID, tx.FetchRole(r).Name, r)
 		}
 	}
-	if p.BGCheckStatus != model.BGCheckNone {
-		tx.entry.Change("set person [%d] bgCheckStatus to %s", p.ID, p.BGCheckStatus)
-	}
-	if p.BGCheckType != 0 {
-		tx.entry.Change("set person [%d] bgCheckType to %s", p.BGCheckType.MaskString())
-	}
-	if p.BGCheckDate != "" {
-		tx.entry.Change("set person [%d] bgCheckDate to %s", p.ID, p.BGCheckDate)
+	for _, bc := range p.BGChecks {
+		if bc.Date != "" {
+			tx.entry.Change("add person [%d] bgCheck %s on %s", p.ID, bc.Type.MaskString(), bc.Date)
+		} else if bc.Assumed {
+			tx.entry.Change("add person [%d] bgCheck %s assumed", p.ID, bc.Type.MaskString())
+		} else {
+			tx.entry.Change("add person [%d] bgCheck %s", p.ID, bc.Type.MaskString())
+		}
 	}
 }
 
@@ -359,25 +359,40 @@ NOTES2:
 			tx.entry.Change("remove person %q [%d] role %q [%d]", p.InformalName, p.ID, tx.FetchRole(or).Name, or)
 		}
 	}
-	if p.BGCheckStatus != op.BGCheckStatus {
-		if p.BGCheckStatus != model.BGCheckNone {
-			tx.entry.Change("set person %q [%d] bgCheckStatus to %s", p.InformalName, p.ID, p.BGCheckStatus)
-		} else {
-			tx.entry.Change("clear person %q [%d] bgCheckStatus", p.InformalName, p.ID)
+	for _, c := range p.BGChecks {
+		var found = false
+		for _, oc := range op.BGChecks {
+			if c.Equal(oc) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			if c.Date != "" {
+				tx.entry.Change("add person [%d] bgCheck %s on %s", p.ID, c.Type.MaskString(), c.Date)
+			} else if c.Assumed {
+				tx.entry.Change("add person [%d] bgCheck %s assumed", p.ID, c.Type.MaskString())
+			} else {
+				tx.entry.Change("add person [%d] bgCheck %s", p.ID, c.Type.MaskString())
+			}
 		}
 	}
-	if p.BGCheckType != op.BGCheckType {
-		if p.BGCheckType != 0 {
-			tx.entry.Change("set person %q [%d] bgCheckType to %s", p.InformalName, p.ID, p.BGCheckType.MaskString())
-		} else {
-			tx.entry.Change("clear person %q [%d] bgCheckType", p.InformalName, p.ID)
+	for _, oc := range op.BGChecks {
+		var found = false
+		for _, c := range p.BGChecks {
+			if oc.Equal(c) {
+				found = true
+				break
+			}
 		}
-	}
-	if p.BGCheckDate != op.BGCheckDate {
-		if p.BGCheckDate != "" {
-			tx.entry.Change("set person %q [%d] bgCheckDate to %s", p.InformalName, p.ID, p.BGCheckDate)
-		} else {
-			tx.entry.Change("clear person %q [%d] bgCheckDate", p.InformalName, p.ID)
+		if !found {
+			if oc.Date != "" {
+				tx.entry.Change("remove person [%d] bgCheck %s on %s", p.ID, oc.Type.MaskString(), oc.Date)
+			} else if oc.Assumed {
+				tx.entry.Change("remove person [%d] bgCheck %s assumed", p.ID, oc.Type.MaskString())
+			} else {
+				tx.entry.Change("remove person [%d] bgCheck %s", p.ID, oc.Type.MaskString())
+			}
 		}
 	}
 	tx.Tx.UpdatePerson(p)

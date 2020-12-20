@@ -21,6 +21,19 @@ message Address {
   uint32 fire_district = 5 [(gogoproto.casttype) = "int", (gogoproto.jsontag) = "fireDistrict"];
 }
 
+// A BackgroundCheck is the record of a (presumed or actual) background check of
+// a person.
+message BackgroundCheck {
+  // Date is the date on which the background check was cleared.  It will be
+  // empty if the date is not known.
+  string date = 1;
+  // Type is a bitmask of the type(s) of background check performed.
+  int64 type = 2 [(gogoproto.casttype) = "BGCheckType"];
+  // Assumed is true if the background check is assumed rather than
+  // substantiated by records.
+  bool assumed = 3;
+}
+
 message Event {
   int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
   string         name         = 2;
@@ -117,14 +130,8 @@ message Person {
   // Orgs is an array, indexed by Org, of descriptions of the person's
   // membership (or lack thereof) in that Org.
   repeated OrgMembership orgs = 40 [(gogoproto.nullable) = false];
-  // BGCheckStatus is the status of the person's background check.
-  int64 bg_check_status = 41 [(gogoproto.customname) = "BGCheckStatus", (gogoproto.casttype) = "BGCheckStatus"];
-  // BGCheckType is a bitmask of the types of background check the person has
-  // received (or is assumed to have received).
-  int64 bg_check_type = 42 [(gogoproto.customname) = "BGCheckType", (gogoproto.casttype) = "BGCheckType"];
-  // BGCheckDate is the YYYY-MM-DD date when the person cleared the background
-  // check identified by BGCheckType.  It is empty if the date is not known.
-  string bg_check_date = 43 [(gogoproto.customname) = "BGCheckDate"];
+  // BGChecks is the list of background checks the person has cleared.
+  repeated BackgroundCheck bg_checks = 41 [(gogoproto.customname) = "BGChecks"];
 }
 
 message PersonNote {

@@ -293,29 +293,36 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"backgroundCheck":`)
 		out.String(p.BackgroundCheck)
 	}
-	if p.BGCheckStatus != model.BGCheckNone {
-		out.RawString(`,"bgCheckStatus":`)
-		out.String(p.BGCheckStatus.String())
-	}
-	if p.BGCheckType != 0 {
-		out.RawString(`,"bgCheckType":[`)
-		var first = true
-		for _, t := range model.AllBGCheckTypes {
-			if p.BGCheckType&t == 0 {
-				continue
-			}
-			if first {
-				first = false
-			} else {
+	if len(p.BGChecks) != 0 {
+		out.RawString(`,"bgChecks":[`)
+		for i, bc := range p.BGChecks {
+			if i != 0 {
 				out.RawByte(',')
 			}
-			out.String(t.String())
+			out.RawString(`{"type":[`)
+			var first = true
+			for _, t := range model.AllBGCheckTypes {
+				if bc.Type&t == 0 {
+					continue
+				}
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(t.String())
+			}
+			out.RawByte(']')
+			if bc.Date != "" {
+				out.RawString(`,"date":`)
+				out.String(bc.Date)
+			}
+			if bc.Assumed {
+				out.RawString(`,"assumed":true`)
+			}
+			out.RawByte('}')
 		}
 		out.RawByte(']')
-	}
-	if p.BGCheckDate != "" {
-		out.RawString(`,"bgCheckDate":`)
-		out.String(p.BGCheckDate)
 	}
 	if p.HoursToken != "" {
 		out.RawString(`,"hoursToken":`)
