@@ -1334,6 +1334,12 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel8(in *jlexer.Lexer, out *P
 				}
 				in.Delim(']')
 			}
+		case "bg_check_status":
+			out.BGCheckStatus = BGCheckStatus(in.Uint8())
+		case "bg_check_type":
+			out.BGCheckType = BGCheckType(in.Uint8())
+		case "bg_check_date":
+			out.BGCheckDate = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1578,6 +1584,21 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel8(out *jwriter.Writer, in 
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.BGCheckStatus != 0 {
+		const prefix string = ",\"bg_check_status\":"
+		out.RawString(prefix)
+		out.Uint8(uint8(in.BGCheckStatus))
+	}
+	if in.BGCheckType != 0 {
+		const prefix string = ",\"bg_check_type\":"
+		out.RawString(prefix)
+		out.Uint8(uint8(in.BGCheckType))
+	}
+	if in.BGCheckDate != "" {
+		const prefix string = ",\"bg_check_date\":"
+		out.RawString(prefix)
+		out.String(string(in.BGCheckDate))
 	}
 	out.RawByte('}')
 }

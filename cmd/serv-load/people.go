@@ -157,6 +157,25 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.VolgisticsID = in.Int()
 			case "backgroundCheck":
 				p.BackgroundCheck = in.String()
+			case "bgCheckStatus":
+				p.BGCheckStatus, err = model.ParseBGCheckStatus(in.String())
+				in.AddError(err)
+			case "bgCheckType":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						var t model.BGCheckType
+						t, err = model.ParseBGCheckType(in.String())
+						in.AddError(err)
+						p.BGCheckType |= t
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
+			case "bgCheckDate":
+				p.BGCheckDate = in.String()
 			case "hoursToken":
 				p.HoursToken = in.String()
 			case "hoursReminder":

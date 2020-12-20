@@ -105,6 +105,18 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 	if person.UnsubscribeToken == "" {
 		person.UnsubscribeToken = util.RandomToken()
 	}
+	if !person.BGCheckStatus.Valid() {
+		return errors.New("invalid bgCheckStatus")
+	}
+	if !person.BGCheckType.Valid(true) ||
+		((person.BGCheckStatus == model.BGCheckNone) != (person.BGCheckType == 0)) {
+		return errors.New("invalid bgCheckType")
+	}
+	if person.BGCheckDate != "" {
+		if !dateRE.MatchString(person.BGCheckDate) || person.BGCheckStatus != model.BGCheckRecorded {
+			return errors.New("invalid bgCheckDate")
+		}
+	}
 	for _, p := range tx.FetchPeople() {
 		if p.ID == person.ID {
 			continue

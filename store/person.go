@@ -103,6 +103,15 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 			tx.entry.Change("add person [%d] role %q [%d]", p.ID, tx.FetchRole(r).Name, r)
 		}
 	}
+	if p.BGCheckStatus != model.BGCheckNone {
+		tx.entry.Change("set person [%d] bgCheckStatus to %s", p.ID, p.BGCheckStatus)
+	}
+	if p.BGCheckType != 0 {
+		tx.entry.Change("set person [%d] bgCheckType to %s", p.BGCheckType.MaskString())
+	}
+	if p.BGCheckDate != "" {
+		tx.entry.Change("set person [%d] bgCheckDate to %s", p.ID, p.BGCheckDate)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -348,6 +357,27 @@ NOTES2:
 		}
 		if !found {
 			tx.entry.Change("remove person %q [%d] role %q [%d]", p.InformalName, p.ID, tx.FetchRole(or).Name, or)
+		}
+	}
+	if p.BGCheckStatus != op.BGCheckStatus {
+		if p.BGCheckStatus != model.BGCheckNone {
+			tx.entry.Change("set person %q [%d] bgCheckStatus to %s", p.InformalName, p.ID, p.BGCheckStatus)
+		} else {
+			tx.entry.Change("clear person %q [%d] bgCheckStatus", p.InformalName, p.ID)
+		}
+	}
+	if p.BGCheckType != op.BGCheckType {
+		if p.BGCheckType != 0 {
+			tx.entry.Change("set person %q [%d] bgCheckType to %s", p.InformalName, p.ID, p.BGCheckType.MaskString())
+		} else {
+			tx.entry.Change("clear person %q [%d] bgCheckType", p.InformalName, p.ID)
+		}
+	}
+	if p.BGCheckDate != op.BGCheckDate {
+		if p.BGCheckDate != "" {
+			tx.entry.Change("set person %q [%d] bgCheckDate to %s", p.InformalName, p.ID, p.BGCheckDate)
+		} else {
+			tx.entry.Change("clear person %q [%d] bgCheckDate", p.InformalName, p.ID)
 		}
 	}
 	tx.Tx.UpdatePerson(p)

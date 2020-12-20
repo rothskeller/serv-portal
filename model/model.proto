@@ -117,6 +117,14 @@ message Person {
   // Orgs is an array, indexed by Org, of descriptions of the person's
   // membership (or lack thereof) in that Org.
   repeated OrgMembership orgs = 40 [(gogoproto.nullable) = false];
+  // BGCheckStatus is the status of the person's background check.
+  int64 bg_check_status = 41 [(gogoproto.customname) = "BGCheckStatus", (gogoproto.casttype) = "BGCheckStatus"];
+  // BGCheckType is a bitmask of the types of background check the person has
+  // received (or is assumed to have received).
+  int64 bg_check_type = 42 [(gogoproto.customname) = "BGCheckType", (gogoproto.casttype) = "BGCheckType"];
+  // BGCheckDate is the YYYY-MM-DD date when the person cleared the background
+  // check identified by BGCheckType.  It is empty if the date is not known.
+  string bg_check_date = 43 [(gogoproto.customname) = "BGCheckDate"];
 }
 
 message PersonNote {
