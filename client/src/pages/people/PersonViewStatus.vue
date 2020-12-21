@@ -44,7 +44,19 @@ PersonViewSection(
     template(v-else-if='person.status.dswComm.needed')
       div DSW SARES
       div(style='color: red') Not registered
-    template(v-if='me.webmaster')
+    template(v-if='person.status.backgroundCheck.admin')
+      div Background Checks
+      #person-view-status-checks
+        div(
+          v-for='c in person.status.backgroundCheck.checks',
+          :class='{ "person-view-status-assumed": c.assumed }'
+        )
+          span.person-view-status-date(v-if='c.date', v-text='`${c.date} `')
+          span(v-text='c.type.join("+")')
+          span(v-if='c.assumed', v-text='` (assumed)`')
+          span(v-else-if='!c.date', v-text='` (date unknown)`')
+        div(v-if='missingBGCheck', style='color: red') Missing required {{ missingBGCheck }} check
+    template(v-else)
       template(v-if='person.status.backgroundCheck.cleared === "true"')
         div Background check
         div Cleared
@@ -83,10 +95,19 @@ export default defineComponent({
         !props.person.status.dswCERT.needed &&
         !props.person.status.dswComm.registered &&
         !props.person.status.dswComm.needed &&
-        (!me.value.webmaster ||
-          (!props.person.status.backgroundCheck.cleared &&
-            !props.person.status.backgroundCheck.needed)) &&
+        (props.person.status.backgroundCheck.admin
+          ? (!props.person.status.backgroundCheck.needed && !props.person.status.backgroundCheck.checks.length)
+          : (!props.person.status.backgroundCheck.cleared && !props.person.status.backgroundCheck.needed)) &&
         !props.person.status.identification.length
+    )
+    const missingBGCheck = computed(() =>
+      props.person.status &&
+        props.person.status.backgroundCheck.admin &&
+        props.person.status.backgroundCheck.needed &&
+        !props.person.status.backgroundCheck.checks.find(
+          c => c.type.indexOf(props.person.status!.backgroundCheck.needed as string) >= 0
+        )
+        ? props.person.status.backgroundCheck.needed : false
     )
     const editStatusModal = ref(null as any)
     async function onEditStatus() {
@@ -97,6 +118,7 @@ export default defineComponent({
       editStatusModal,
       onEditStatus,
       me,
+      missingBGCheck,
       nothingElseToShow,
     }
   },
@@ -139,5 +161,11 @@ export default defineComponent({
       content: '';
     }
   }
+}
+.person-view-status-date {
+  font-variant-numeric: tabular-nums;
+}
+.person-view-status-assumed {
+  color: #ff6600;
 }
 </style>

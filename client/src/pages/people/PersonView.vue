@@ -48,6 +48,20 @@ interface GetPersonNote {
   date: string
   note: string
 }
+interface GetPersonBGCheckAdmin {
+  admin: true
+  needed: string
+  checks: Array<{
+    type: Array<string>
+    date?: string
+    assumed: boolean
+  }>
+}
+interface GetPersonBGCheckNonAdmin {
+  admin: false
+  needed: boolean
+  cleared?: string
+}
 interface GetPersonStatus {
   canEdit?: true
   level: string
@@ -67,10 +81,7 @@ interface GetPersonStatus {
     expires?: string
     expired?: true
   }
-  backgroundCheck: {
-    needed: boolean
-    cleared?: string
-  }
+  backgroundCheck: GetPersonBGCheckAdmin | GetPersonBGCheckNonAdmin
   identification: Array<string>
 }
 export interface GetPerson {

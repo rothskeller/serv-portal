@@ -141,16 +141,63 @@ func GetPerson(r *util.Request, idstr string) error {
 			}
 			out.RawByte('}')
 		}
-		out.RawString(`,"backgroundCheck":{"needed":`)
-		out.Bool(person.HasPrivLevel(model.PrivMember))
-		switch person.BackgroundCheck {
-		case "":
-			break
-		case "true":
-			out.RawString(`,"cleared":true`)
-		default:
-			out.RawString(`,"cleared":`)
-			out.String(person.BackgroundCheck)
+		out.RawString(`,"backgroundCheck":`)
+		var bgCheckNeeded model.BGCheckType
+		if person.HasPrivLevel(model.PrivMember) {
+			bgCheckNeeded = model.BGCheckFBI
+		}
+		if person.Identification&model.IDCardKey != 0 {
+			bgCheckNeeded = model.BGCheckPHS
+		}
+		if r.Person.IsAdminLeader() {
+			out.RawString(`{"admin":true,"needed":`)
+			out.String(bgCheckNeeded.String())
+			out.RawString(`,"checks":[`)
+			for i, bc := range person.BGChecks {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				out.RawString(`{"type":[`)
+				first := true
+				for _, t := range model.AllBGCheckTypes {
+					if bc.Type&t == 0 {
+						continue
+					}
+					if first {
+						first = false
+					} else {
+						out.RawByte(',')
+					}
+					out.String(t.String())
+				}
+				out.RawByte(']')
+				if bc.Date != "" {
+					out.RawString(`,"date":`)
+					out.String(bc.Date)
+				}
+				if bc.Assumed {
+					out.RawString(`,"assumed":true`)
+				}
+				out.RawByte('}')
+			}
+			out.RawByte(']')
+		} else {
+			out.RawString(`{"needed":`)
+			out.Bool(bgCheckNeeded != 0)
+			hasNeeded := false
+			hasNeededDate := ""
+			for _, bc := range person.BGChecks {
+				if bc.Type&bgCheckNeeded != 0 {
+					hasNeeded = true
+					hasNeededDate = bc.Date
+				}
+			}
+			if hasNeededDate != "" {
+				out.RawString(`,"cleared":`)
+				out.String(hasNeededDate)
+			} else if hasNeeded {
+				out.RawString(`,"cleared":"true"`)
+			}
 		}
 		first := true
 		out.RawString(`},"identification":[`)
