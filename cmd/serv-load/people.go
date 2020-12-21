@@ -198,6 +198,7 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 							in.WantComma()
 						}
 						in.Delim('}')
+						p.BGChecks = append(p.BGChecks, &bc)
 					}
 					in.WantComma()
 				}
