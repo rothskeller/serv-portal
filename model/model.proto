@@ -32,8 +32,6 @@ message BackgroundCheck {
   // Assumed is true if the background check is assumed rather than
   // substantiated by records.
   bool assumed = 3;
-  // TypeUncertain is true if the type indicated in Type is not certain.
-  bool type_uncertain = 4;
 }
 
 message Event {

@@ -320,9 +320,6 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 			if bc.Assumed {
 				out.RawString(`,"assumed":true`)
 			}
-			if bc.TypeUncertain {
-				out.RawString(`,"typeUncertain":true`)
-			}
 			out.RawByte('}')
 		}
 		out.RawByte(']')

@@ -2231,8 +2231,6 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel13(in *jlexer.Lexer, out *
 			out.Type = BGCheckType(in.Uint8())
 		case "assumed":
 			out.Assumed = bool(in.Bool())
-		case "type_uncertain":
-			out.TypeUncertain = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -2272,16 +2270,6 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel13(out *jwriter.Writer, in
 			out.RawString(prefix)
 		}
 		out.Bool(bool(in.Assumed))
-	}
-	if in.TypeUncertain {
-		const prefix string = ",\"type_uncertain\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Bool(bool(in.TypeUncertain))
 	}
 	out.RawByte('}')
 }

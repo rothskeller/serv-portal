@@ -192,8 +192,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 								bc.Date = in.String()
 							case "assumed":
 								bc.Assumed = in.Bool()
-							case "typeUncertain":
-								bc.TypeUncertain = in.Bool()
 							default:
 								in.SkipRecursive()
 							}
