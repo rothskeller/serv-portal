@@ -155,6 +155,8 @@ func router(r *util.Request) error {
 		return person.PostPersonStatus(r, c[2])
 	case r.Method == "GET" && c[1] == "reports" && c[2] == "attendance" && c[3] == "":
 		return report.GetAttendance(r)
+	case r.Method == "GET" && c[1] == "reports" && c[2] == "clearance" && c[3] == "":
+		return report.GetClearance(r)
 	case r.Method == "GET" && c[1] == "roles" && c[2] == "":
 		return role.GetRoles(r)
 	case r.Method == "POST" && c[1] == "roles" && c[2] == "":

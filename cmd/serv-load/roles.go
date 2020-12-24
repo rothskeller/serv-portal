@@ -65,16 +65,8 @@ func loadRoles(tx *store.Tx, in *jlexer.Lexer) {
 				r.Org, err = model.ParseOrg(in.String())
 				in.AddError(err)
 			case "privLevel":
-				str := in.String()
-				for v, s := range model.PrivLevelNames {
-					if s == str {
-						r.PrivLevel = v
-						break
-					}
-				}
-				if r.PrivLevel == model.PrivNone {
-					in.AddError(errors.New("invalid privLevel"))
-				}
+				r.PrivLevel, err = model.ParsePrivLevel(in.String())
+				in.AddError(err)
 			case "showRoster":
 				r.ShowRoster = in.Bool()
 			case "implicitOnly":

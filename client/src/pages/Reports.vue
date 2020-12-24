@@ -21,6 +21,7 @@ export default defineComponent({
     const tabs = computed(() => {
       const tabs = [] as Array<TabDef>
       if (me.value.canViewReports) tabs.push({ to: '/reports/attendance', label: 'Attendance' })
+      if (me.value.canViewReports) tabs.push({ to: '/reports/clearance', label: 'Clearance' })
       return tabs
     })
 

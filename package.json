@@ -20,6 +20,7 @@
     "@types/zxcvbn": "^4.4.0",
     "@vue/compiler-sfc": "^3.0.0-rc.1",
     "autoprefixer": "^9.8.6",
+    "postcss-extend-rule": "^3.0.0",
     "postcss-nested": "^4.2.3",
     "pug": "^3.0.0",
     "pug-plain-loader": "^1.0.0",

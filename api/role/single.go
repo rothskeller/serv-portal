@@ -40,7 +40,7 @@ func GetRole(r *util.Request, idstr string) error {
 	out.RawString(`,"org":`)
 	out.String(role.Org.String())
 	out.RawString(`,"privLevel":`)
-	out.String(model.PrivLevelNames[role.PrivLevel])
+	out.String(role.PrivLevel.String())
 	out.RawString(`,"showRoster":`)
 	out.Bool(role.ShowRoster)
 	out.RawString(`,"implicitOnly":`)
@@ -134,16 +134,8 @@ func PostRole(r *util.Request, idstr string) error {
 		return err
 	}
 	if str := r.FormValue("privLevel"); str != "" {
-		var found = false
-		for v, s := range model.PrivLevelNames {
-			if s == str {
-				role.PrivLevel = v
-				found = true
-				break
-			}
-		}
-		if !found {
-			return errors.New("invalid privLevel")
+		if role.PrivLevel, err = model.ParsePrivLevel(str); err != nil {
+			return err
 		}
 	}
 	role.ShowRoster, _ = strconv.ParseBool(r.FormValue("showRoster"))

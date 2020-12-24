@@ -6,40 +6,55 @@ import { clearLoginData } from './login'
 let csrf = ''
 
 // Function called by login when we received a CSRF token from the server.
-export function setAxiosCSRF(to: string) { csrf = to }
+export function setAxiosCSRF(to: string) {
+  csrf = to
+}
 
 // Create and configure an axios instance.
 const _axios = axios.create({})
 _axios.interceptors.request.use(
-    config => {
-        if (!config.headers) config.headers = {}
-        if (config.method === 'get' || config.method === 'GET') {
-            config.headers['Cache-Control'] = 'no-cache'
-            config.headers['Pragma'] = 'no-cache'
-        } else if (csrf) {
-            config.headers['X-CSRF-Token'] = csrf
-        }
-        return config
-    },
-    error => Promise.reject(error)
+  (config) => {
+    if (!config.headers) config.headers = {}
+    if (config.method === 'get' || config.method === 'GET') {
+      config.headers['Cache-Control'] = 'no-cache'
+      config.headers['Pragma'] = 'no-cache'
+    } else if (csrf) {
+      config.headers['X-CSRF-Token'] = csrf
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
 )
 _axios.interceptors.response.use(
-    response => response,
-    error => {
-        if (
-            error.response &&
-            error.response.status === 401 &&
-            router &&
-            router.currentRoute.value &&
-            !router.currentRoute.value.matched.some(record => record.meta.public)
-        ) {
-            clearLoginData()
-            console.log(error.response && error.response.status, router && router.currentRoute, error.request)
-            router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
-        }
-        return Promise.reject(error)
+  (response) => response,
+  (error) => {
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      router &&
+      router.currentRoute.value &&
+      !router.currentRoute.value.matched.some((record) => record.meta.public)
+    ) {
+      clearLoginData()
+      console.log(
+        error.response && error.response.status,
+        router && router.currentRoute,
+        error.request
+      )
+      router.replace({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
     }
+    return Promise.reject(error)
+  }
 )
+_axios.defaults.transformResponse = [
+  // Axios default transform ignores JSON conversion errors.  We shouldn't.
+  // On the other hand, we don't want to throw errors if the data aren't
+  // supposed to be JSON in the first place.
+  (data, headers) =>
+    headers['content-type'] && headers['content-type'].includes('application/json')
+      ? JSON.parse(data)
+      : data,
+]
 export default _axios
 
 export type { AxiosResponse }

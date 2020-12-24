@@ -160,6 +160,10 @@ const router = createRouter({
           path: 'attendance',
           component: () => import('./pages/reports/Attendance.vue'),
         },
+        {
+          path: 'clearance',
+          component: () => import('./pages/reports/Clearance'),
+        },
       ],
     },
     {

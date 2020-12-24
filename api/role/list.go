@@ -32,7 +32,7 @@ func GetRoles(r *util.Request) error {
 		}
 		if role.PrivLevel != model.PrivNone {
 			out.RawString(`,"privLevel":`)
-			out.String(model.PrivLevelNames[role.PrivLevel])
+			out.String(role.PrivLevel.String())
 		}
 		if role.ImplicitOnly {
 			out.RawString(`,"implicitOnly":true`)

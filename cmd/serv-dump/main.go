@@ -414,7 +414,7 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.String(org.String())
 		out.RawString(`:{"privLevel":`)
-		out.String(model.PrivLevelNames[p.Orgs[org].PrivLevel])
+		out.String(p.Orgs[org].PrivLevel.String())
 		out.RawString(`,"title":`)
 		out.String(p.Orgs[org].Title)
 		out.RawByte('}')
@@ -445,7 +445,7 @@ func dumpRole(tx *store.Tx, out *jwriter.Writer, r *model.Role) {
 	out.String(r.Org.String())
 	if r.PrivLevel != model.PrivNone {
 		out.RawString(`,"privLevel":`)
-		out.String(model.PrivLevelNames[r.PrivLevel])
+		out.String(r.PrivLevel.String())
 	}
 	if r.ShowRoster {
 		out.RawString(`,"showRoster":true`)

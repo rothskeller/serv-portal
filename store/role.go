@@ -14,7 +14,7 @@ func (tx *Tx) CreateRole(role *model.Role) {
 	}
 	tx.entry.Change("set role [%d] org to %s", role.ID, role.Org.String())
 	if role.PrivLevel != model.PrivNone {
-		tx.entry.Change("set role [%d] privLevel to %s", role.ID, model.PrivLevelNames[role.PrivLevel])
+		tx.entry.Change("set role [%d] privLevel to %s", role.ID, role.PrivLevel)
 	}
 	if role.ShowRoster {
 		tx.entry.Change("set role [%d] showRoster", role.ID)
@@ -75,7 +75,7 @@ func (tx *Tx) UpdateRole(r *model.Role) {
 	}
 	if r.PrivLevel != or.PrivLevel {
 		if r.PrivLevel != model.PrivNone {
-			tx.entry.Change("set role [%d] privLevel to %s", r.ID, model.PrivLevelNames[r.PrivLevel])
+			tx.entry.Change("set role [%d] privLevel to %s", r.ID, r.PrivLevel)
 		} else {
 			tx.entry.Change("clear role [%d] privLevel", r.ID)
 		}

@@ -160,18 +160,22 @@ const (
 	IDSERVShirt
 	// IDCERTShirt is a green long-sleeved tee shirt identifying the person
 	// as a member of a CERT deployment team.
-	IDCERTShirt
+	IDCERTShirtLS
+	// IDCERTShirt is a green short-sleeved tee shirt identifying the person
+	// as a member of a CERT deployment team.
+	IDCERTShirtSS
 )
 
 // AllIdentTypes is the list of all identification types.
-var AllIdentTypes = []IdentType{IDPhoto, IDCardKey, IDSERVShirt, IDCERTShirt}
+var AllIdentTypes = []IdentType{IDPhoto, IDCardKey, IDSERVShirt, IDCERTShirtLS, IDCERTShirtSS}
 
 // IdentTypeNames gives the names for each identification type.
 var IdentTypeNames = map[IdentType]string{
-	IDPhoto:     "photo ID",
-	IDCardKey:   "access card",
-	IDSERVShirt: "tan SERV shirt",
-	IDCERTShirt: "green CERT shirt",
+	IDPhoto:       "photo ID",
+	IDCardKey:     "access card",
+	IDSERVShirt:   "tan SERV shirt",
+	IDCERTShirtLS: "green CERT shirt (LS)",
+	IDCERTShirtSS: "green CERT shirt (SS)",
 }
 
 // A ListID identifies a List.
@@ -262,32 +266,6 @@ func (p *Person) HasPrivLevel(privLevel PrivLevel) bool {
 // org.
 func (p *Person) IsAdminLeader() bool {
 	return p.Orgs[OrgAdmin].PrivLevel >= PrivLeader
-}
-
-// A PrivLevel is a privilege level for membership in an Org.
-type PrivLevel uint8
-
-// Values for PrivLevel.
-const (
-	// PrivNone indicates no membership in the Org.
-	PrivNone PrivLevel = iota
-	// PrivStudent indicates student-level membership in the Org, with
-	// essentially no privileges other than being on lists.
-	PrivStudent
-	// PrivMember indicates full membership in the Org.
-	PrivMember
-	// PrivLeader indicates a leader of the Org.
-	PrivLeader
-)
-
-// AllPrivLevels is a list of all privilege levels.
-var AllPrivLevels = []PrivLevel{PrivStudent, PrivMember, PrivLeader}
-
-// PrivLevelNames gives the display names of the privilege levels.
-var PrivLevelNames = map[PrivLevel]string{
-	PrivStudent: "student",
-	PrivMember:  "member",
-	PrivLeader:  "leader",
 }
 
 // A RoleID identifies a Role.

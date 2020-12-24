@@ -22,7 +22,7 @@ func ValidateRole(tx *store.Tx, role *model.Role) error {
 	if !role.Org.Valid() {
 		return errors.New("invalid org")
 	}
-	if _, ok := model.PrivLevelNames[role.PrivLevel]; !ok && role.PrivLevel != model.PrivNone {
+	if !role.PrivLevel.Valid() && role.PrivLevel != model.PrivNone {
 		return errors.New("invalid privLevel")
 	}
 	if role.PrivLevel != model.PrivNone && role.Org == model.OrgNone {

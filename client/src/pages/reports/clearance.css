@@ -1,0 +1,175 @@
+#clearrep {
+  margin: 1.5rem 0.75rem;
+}
+#clearrep-params {
+  display: grid;
+  grid: auto / max-content max-content;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+#clearrep-tbody {
+  display: grid;
+  grid: auto / repeat(6, max-content);
+  column-gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+#clearrep-thead {
+  display: flex;
+}
+.clearrep-thead {
+  font-weight: bold;
+}
+.clearrep-boxes {
+  display: grid;
+  grid: auto / auto-flow;
+  align-items: center;
+  column-gap: 2px;
+}
+%box-placeholder {
+  width: calc(1rem + 2px);
+}
+%box-real {
+  @extend %box-placeholder;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+}
+.clearrep-org-placeholder,
+.clearrep-volgistics,
+.clearrep-dswCERT,
+.clearrep-dswComm,
+.clearrep-bgCheck,
+.clearrep-bgCheckDOJ-,
+.clearrep-bgCheckDOJ-recorded,
+.clearrep-bgCheckDOJ-assumed,
+.clearrep-bgCheckFBI-,
+.clearrep-bgCheckFBI-recorded,
+.clearrep-bgCheckFBI-assumed,
+.clearrep-bgCheckPHS-,
+.clearrep-bgCheckPHS-recorded,
+.clearrep-bgCheckPHS-assumed,
+.clearrep-idPhoto,
+.clearrep-cardKey,
+.clearrep-certShirtLS,
+.clearrep-certShirtSS,
+.clearrep-servShirt {
+  @extend %box-placeholder;
+}
+.clearrep-org-admin-leader,
+.clearrep-volgistics:not(:empty) {
+  @extend %box-real;
+  border-color: #888;
+  background-color: #888;
+}
+.clearrep-org-cert-t-student,
+.clearrep-org-listos-student {
+  border-radius: 0.25rem;
+  color: transparent;
+  background-color: #888;
+  border: 2px solid #888;
+  width: 8px;
+  height: 8px;
+  margin: calc(0.5rem - 3px);
+}
+.clearrep-org-admin-member {
+  @extend %box-real;
+  color: #888;
+  border-color: 1px solid #888;
+}
+.clearrep-org-cert-d-member {
+  @extend %box-real;
+  color: #060;
+  border-color: 1px solid #060;
+}
+.clearrep-org-cert-t-member {
+  @extend %box-real;
+  color: #060;
+  border-color: #060;
+}
+.clearrep-org-listos-member {
+  @extend %box-real;
+  color: #ff6600;
+  border-color: #ff6600;
+}
+.clearrep-org-sares-member {
+  @extend %box-real;
+  color: #fc0;
+  border-color: #fc0;
+}
+.clearrep-org-snap-member {
+  @extend %box-real;
+  color: #0000ff;
+  border-color: #0000ff;
+}
+.clearrep-org-cert-d-leader,
+.clearrep-dswCERT:not(:empty),
+.clearrep-certShirtLS:not(:empty) {
+  @extend %box-real;
+  border-color: #060;
+  background-color: #060;
+}
+.clearrep-org-cert-t-leader {
+  @extend %box-real;
+  background-color: #060;
+  border-color: #060;
+}
+.clearrep-org-listos-leader {
+  @extend %box-real;
+  background-color: #ff6600;
+  border-color: #ff6600;
+}
+.clearrep-org-sares-leader,
+.clearrep-dswComm:not(:empty) {
+  @extend %box-real;
+  border-color: #fc0;
+  background-color: #fc0;
+}
+.clearrep-org-snap-leader {
+  @extend %box-real;
+  background-color: #0000ff;
+  border-color: #0000ff;
+}
+.clearrep-bgCheck:not(:empty),
+.clearrep-bgCheckDOJ-recorded,
+.clearrep-bgCheckFBI-recorded,
+.clearrep-bgCheckPHS-recorded {
+  @extend %box-real;
+  border-color: #0c0;
+  background-color: #0c0;
+}
+.clearrep-bgCheckDOJ-assumed,
+.clearrep-bgCheckFBI-assumed,
+.clearrep-bgCheckPHS-assumed {
+  @extend %box-real;
+  border-color: #0c0;
+  color: #0c0;
+}
+.clearrep-idPhoto:not(:empty) {
+  @extend %box-real;
+  border-color: #00f;
+  background-color: #00f;
+}
+.clearrep-cardKey:not(:empty) {
+  @extend %box-real;
+  border-color: #f0f;
+  background-color: #f0f;
+}
+.clearrep-certShirtSS:not(:empty) {
+  @extend %box-real;
+  border-color: #060;
+  background-image: linear-gradient(to bottom, #060, #cfc);
+}
+.clearrep-servShirt:not(:empty) {
+  @extend %box-real;
+  border-color: #c93;
+  background-color: #c93;
+}
+#clearrep-buttons {
+  margin-top: 1.5rem;
+}
