@@ -162,9 +162,6 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}
-	if person.BackgroundCheck != "" && person.BackgroundCheck != "true" && !dateRE.MatchString(person.BackgroundCheck) {
-		return errors.New("invalid backgroundCheck")
-	}
 	for rid, direct := range person.Roles {
 		if !direct {
 			continue

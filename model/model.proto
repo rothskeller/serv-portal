@@ -109,7 +109,6 @@ message Person {
   bool                      no_text           = 29;
   string                    unsubscribe_token = 30;
   int64                     volgistics_id     = 32 [(gogoproto.customname) = "VolgisticsID", (gogoproto.casttype) = "int"];
-  string                    background_check  = 33;
   string                    hours_token       = 34;
   bool                      hours_reminder    = 35;
   // DSWRegistrations is a map from a DSWClass to the date on the person's most

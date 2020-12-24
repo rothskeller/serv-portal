@@ -20,6 +20,13 @@ export type GetPersonHoursEvent = {
   renewsDSW: boolean
 }
 
+// Part of the return type for GET /api/person/${id}/status.
+export type GetPersonStatusBGCheck = {
+  date: string
+  types: Array<string>
+  assumed: boolean
+}
+
 // Utility function, here for convenience:
 export function fmtMinutes(m: number): string {
   if (!m) return ''

@@ -155,8 +155,6 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.UnsubscribeToken = in.String()
 			case "volgisticsID":
 				p.VolgisticsID = in.Int()
-			case "backgroundCheck":
-				p.BackgroundCheck = in.String()
 			case "bgChecks":
 				in.Delim('[')
 				for !in.IsDelim(']') {

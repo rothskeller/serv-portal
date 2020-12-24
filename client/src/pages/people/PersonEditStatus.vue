@@ -26,7 +26,7 @@ Modal(ref='modal')
         :id='`person-dsw-cert`',
         type='date',
         :label='`DSW CERT`',
-        v-model='person.dswCERT.registered',
+        v-model='person.dswCERT',
         :errorFn='dswCERTError',
         :help='`Date when CERT DSW registration form was signed.`'
       )
@@ -34,52 +34,38 @@ Modal(ref='modal')
         :id='`person-dsw-comm`',
         type='date',
         :label='`DSW Communications`',
-        v-model='person.dswComm.registered',
+        v-model='person.dswComm',
         :errorFn='dswCommError',
         :help='`Date when Communications DSW registration form was signed.`'
-      )
-      SFInput#person-background(
-        label='BG Check',
-        trim,
-        v-model='person.backgroundCheck.cleared',
-        :errorFn='backgroundError',
-        help='Date when background check cleared, or “TRUE” if clearance confirmed but date unknown',
-        style='text-transform: uppercase'
       )
       SFCheckGroup#person-identification(
         label='IDs Issued',
         v-model='identification',
         :options='identTypes'
       )
+      PersonEditBGChecks(
+        ref='bgChecksRef',
+        :checks='person.bgChecks',
+        :types='person.bgCheckTypes'
+      )
+    template(#extraButtons)
+      SButton(variant='primary', @click.prevent='onAddBGCheck') Add
 </template>
 
 <script lang="ts">
 import { defineComponent, nextTick, ref, watch } from 'vue'
 import axios from '../../plugins/axios'
-import { Modal, SForm, SFCheckGroup, SFInput, SSpinner } from '../../base'
+import { Modal, SButton, SForm, SFCheckGroup, SFInput, SSpinner } from '../../base'
+import type { GetPersonStatusBGCheck } from './api'
+import PersonEditBGChecks from './PersonEditBGChecks'
 
 interface GetPersonStatus {
   id: number
-  volgistics: {
-    needed: boolean
-    id: number
-  }
-  dswCERT: {
-    needed: boolean
-    registered?: string
-    expires?: string
-    expired?: true
-  }
-  dswComm: {
-    needed: boolean
-    registered?: string
-    expires?: string
-    expired?: true
-  }
-  backgroundCheck: {
-    needed: boolean
-    cleared?: string
-  }
+  volgistics: number
+  dswCERT: string
+  dswComm: string
+  bgChecks: Array<GetPersonStatusBGCheck>
+  bgCheckTypes: Array<string>
   identification: Array<{
     type: string
     held: boolean
@@ -91,7 +77,7 @@ function digitsOnly(s: string): string {
 }
 
 export default defineComponent({
-  components: { Modal, SForm, SFCheckGroup, SFInput, SSpinner },
+  components: { Modal, PersonEditBGChecks, SButton, SForm, SFCheckGroup, SFInput, SSpinner },
   props: {
     pid: { type: Number, required: true },
   },
@@ -129,39 +115,38 @@ export default defineComponent({
       return ''
     }
     function dswCERTError(lostFocus: boolean) {
-      if (!lostFocus || !person.value.dswCERT.registered) return ''
-      if (!person.value.dswCERT.registered.match(/^20\d\d-\d\d-\d\d$/))
+      if (!lostFocus || !person.value.dswCERT) return ''
+      if (!person.value.dswCERT.match(/^20\d\d-\d\d-\d\d$/))
         return 'This is not a valid YYYY-MM-DD date.'
       return ''
     }
     function dswCommError(lostFocus: boolean) {
-      if (!lostFocus || !person.value.dswComm.registered) return ''
-      if (!person.value.dswComm.registered.match(/^20\d\d-\d\d-\d\d$/))
+      if (!lostFocus || !person.value.dswComm) return ''
+      if (!person.value.dswComm.match(/^20\d\d-\d\d-\d\d$/))
         return 'This is not a valid YYYY-MM-DD date.'
       return ''
     }
-    function backgroundError(lostFocus: boolean) {
-      if (
-        !lostFocus ||
-        !person.value?.backgroundCheck.cleared ||
-        person.value?.backgroundCheck.cleared.toUpperCase() === 'TRUE'
-      )
-        return ''
-      if (!person.value.backgroundCheck.cleared.match(/^20\d\d-\d\d-\d\d$/))
-        return 'This is not a valid YYYY-MM-DD date.'
-      return ''
+
+    // Background Checks.
+    const bgChecksRef = ref(null as any)
+    function onAddBGCheck() {
+      console.log('onAddBGCheck called')
+      bgChecksRef.value?.startAdd()
     }
 
     // Save and close.
     const submitting = ref(false)
     async function onSubmit() {
+      bgChecksRef.value?.prepareForSave()
       var body = new FormData()
       body.append('volgistics', volgistics.value)
-      body.append('backgroundCheck', (person.value.backgroundCheck.cleared || '').toLowerCase())
-      body.append('dswCERT', person.value.dswCERT.registered || '')
-      body.append('dswComm', person.value.dswComm.registered || '')
+      body.append('dswCERT', person.value.dswCERT || '')
+      body.append('dswComm', person.value.dswComm || '')
       identification.value.forEach((t) => {
         body.append('identification', t)
+      })
+      person.value.bgChecks.forEach(bc => {
+        body.append('bgCheck', `${bc.date}:${bc.types.join(',')}:${bc.assumed}`)
       })
       submitting.value = true
       await axios.post(`/api/people/${props.pid}/status`, body)
@@ -173,7 +158,7 @@ export default defineComponent({
     }
 
     return {
-      backgroundError,
+      bgChecksRef,
       digitsOnly,
       dswCERTError,
       dswCommError,
@@ -181,6 +166,7 @@ export default defineComponent({
       identTypes,
       loading,
       modal,
+      onAddBGCheck,
       onCancel,
       onSubmit,
       person,
@@ -194,4 +180,14 @@ export default defineComponent({
 </script>
 
 <style lang="postcss">
+#person-edbg-header {
+  margin: 0 0.75rem;
+  border-top: 1px solid #ccc;
+  padding-top: 0.25rem;
+}
+#person-edbg-help {
+  margin: 0 0.75rem;
+  color: #6c757d;
+  font-size: 80%;
+}
 </style>

@@ -3,6 +3,7 @@ package person
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -13,32 +14,23 @@ import (
 	"sunnyvaleserv.org/portal/util"
 )
 
-// GetPerson handles GET /api/people/$id requests (where $id may be "NEW").
+// GetPerson handles GET /api/people/$id requests.
 func GetPerson(r *util.Request, idstr string) error {
 	var (
 		person         *model.Person
-		canEditDetails bool
+		canView        bool
 		canViewContact bool
+		canEditDetails bool
 		out            jwriter.Writer
 	)
-	if idstr == "NEW" {
-		if !r.Person.HasPrivLevel(model.PrivLeader) {
-			return util.Forbidden
-		}
-		person = new(model.Person)
-		canEditDetails = true
-		canViewContact = true
-	} else {
-		if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
-			return util.NotFound
-		}
-		var canView bool
-		if canView, canViewContact = canViewPerson(r.Person, person); !canView {
-			return util.Forbidden
-		}
-		canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
-		canViewContact = canEditDetails || canViewContact
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
 	}
+	if canView, canViewContact = canViewPerson(r.Person, person); !canView {
+		return util.Forbidden
+	}
+	canEditDetails = r.Person == person || r.Person.HasPrivLevel(model.PrivLeader)
+	canViewContact = canEditDetails || canViewContact
 	out.RawString(`{"id":`)
 	out.Int(int(person.ID))
 	out.RawString(`,"informalName":`)
@@ -897,33 +889,45 @@ func GetPersonStatus(r *util.Request, idstr string) error {
 	for _, c := range model.AllDSWClasses {
 		out.RawString(`,"dsw`)
 		out.RawString(model.DSWClassNames[c][:4])
-		out.RawString(`":{"needed":`)
-		out.Bool(needDSW(r, person, c, nil))
+		out.RawString(`":`)
 		if person.DSWRegistrations != nil && !person.DSWRegistrations[c].IsZero() {
-			out.RawString(`,"registered":`)
 			out.String(person.DSWRegistrations[c].Format("2006-01-02"))
-			out.RawString(`,"expires":`)
-			out.String(person.DSWUntil[c].Format("2006-01-02"))
-			if person.DSWUntil[c].Before(time.Now()) {
-				out.RawString(`,"expired":true`)
-			}
 		} else {
-			out.RawString(`,"registered":""`)
+			out.RawString(`""`)
 		}
+	}
+	out.RawString(`,"bgChecks":[`)
+	for i, bc := range person.BGChecks {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"date":`)
+		out.String(bc.Date)
+		var first = true
+		out.RawString(`,"types":[`)
+		for _, t := range model.AllBGCheckTypes {
+			if bc.Type&t == 0 {
+				continue
+			}
+			if first {
+				first = false
+			} else {
+				out.RawByte(',')
+			}
+			out.String(t.String())
+		}
+		out.RawString(`],"assumed":`)
+		out.Bool(bc.Assumed)
 		out.RawByte('}')
 	}
-	out.RawString(`,"backgroundCheck":{"needed":`)
-	out.Bool(person.HasPrivLevel(model.PrivMember))
-	switch person.BackgroundCheck {
-	case "":
-		out.RawString(`,"cleared":""`)
-	case "true":
-		out.RawString(`,"cleared":true`)
-	default:
-		out.RawString(`,"cleared":`)
-		out.String(person.BackgroundCheck)
+	out.RawString(`],"bgCheckTypes":[`)
+	for i, t := range model.AllBGCheckTypes {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.String(t.String())
 	}
-	out.RawString(`},"identification":[`)
+	out.RawString(`],"identification":[`)
 	for i, t := range model.AllIdentTypes {
 		if i != 0 {
 			out.RawByte(',')
@@ -966,7 +970,27 @@ func PostPersonStatus(r *util.Request, idstr string) error {
 			return errors.New("invalid DSW date")
 		}
 	}
-	person.BackgroundCheck = r.FormValue("backgroundCheck")
+	person.BGChecks = person.BGChecks[:0]
+	for _, bcstr := range r.Form["bgCheck"] {
+		var split []string
+		var bc model.BackgroundCheck
+		if split = strings.Split(bcstr, ":"); len(split) != 3 {
+			return errors.New("invalid bgCheck")
+		}
+		bc.Date = split[0]
+		if bc.Assumed, err = strconv.ParseBool(split[2]); err != nil {
+			return errors.New("invalid bgCheck.assumed")
+		}
+		split = strings.Split(split[1], ",")
+		for _, s := range split {
+			var t model.BGCheckType
+			if t, err = model.ParseBGCheckType(s); err != nil {
+				return errors.New("invalid bgCheck.type")
+			}
+			bc.Type |= t
+		}
+		person.BGChecks = append(person.BGChecks, &bc)
+	}
 	person.Identification = 0
 IDENTS:
 	for _, n := range r.Form["identification"] {

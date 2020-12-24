@@ -39,15 +39,17 @@ function defineRCG(name: string, modelType: any, Group: typeof SCheckGroup) {
             help: props.help,
             error: error.value,
           },
-          h(Group, {
-            id: props.id,
-            options: props.options,
-            valueKey: props.valueKey,
-            labelKey: props.labelKey,
-            disabledKey: props.disabledKey,
-            modelValue: props.modelValue,
-            'onUpdate:modelValue': (v: any) => emit('update:modelValue', v),
-          })
+          () =>
+            h(Group, {
+              id: props.id,
+              options: props.options,
+              valueKey: props.valueKey,
+              labelKey: props.labelKey,
+              disabledKey: props.disabledKey,
+              modelValue: props.modelValue,
+              inline: props.inline,
+              'onUpdate:modelValue': (v: any) => emit('update:modelValue', v),
+            })
         )
     },
   })
