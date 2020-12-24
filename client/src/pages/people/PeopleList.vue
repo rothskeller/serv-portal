@@ -19,11 +19,6 @@ PeopleList displays the list of people.
             :to='`/people/${p.id}`',
             v-text='p.callSign ? `${p.sortName} (${p.callSign})` : p.sortName'
           )
-          .people-badge(
-            v-for='b in p.badges',
-            :class='b.startsWith("No") ? "people-badge-no" : "people-badge-yes"',
-            v-text='b'
-          )
         .people-contact
           div(v-if='p.email')
             a(:href='`mailto:${p.email}`', v-text='p.email')
@@ -76,7 +71,6 @@ export type GetPeoplePerson = {
   cellPhone?: string
   homePhone?: string
   workPhone?: string
-  badges?: Array<string>
   roles?: Array<string>
   // temp
   canEdit: boolean
@@ -173,21 +167,6 @@ export default defineComponent({
     text-overflow: clip;
     white-space: normal;
   }
-}
-.people-badge {
-  display: inline-block;
-  margin-left: 1.5rem;
-  padding: 0 0.25rem;
-  border-radius: 4px;
-  color: white;
-  text-indent: 0;
-  font-size: 0.75rem;
-}
-.people-badge-no {
-  background-color: red;
-}
-.people-badge-yes {
-  background-color: green;
 }
 .people-contact {
   margin-left: 6rem;

@@ -2,7 +2,6 @@ package person
 
 import (
 	"strings"
-	"time"
 
 	"github.com/mailru/easyjson/jwriter"
 
@@ -15,12 +14,11 @@ func GetPeople(r *util.Request) error {
 	var (
 		focus *model.Role
 		out   jwriter.Writer
-		now   = time.Now()
 	)
-	focus = r.Tx.FetchRole(model.RoleID(util.ParseID(r.FormValue("role"))))
 	if _, ok := r.Form["search"]; ok {
 		return getPeopleSearch(r)
 	}
+	focus = r.Tx.FetchRole(model.RoleID(util.ParseID(r.FormValue("role"))))
 	if focus != nil && r.Person.Orgs[focus.Org].PrivLevel < model.PrivMember {
 		focus = nil
 	}
@@ -66,49 +64,6 @@ func GetPeople(r *util.Request) error {
 			out.String(p.HomePhone)
 			out.RawString(`,"workPhone":`)
 			out.String(p.WorkPhone)
-		}
-		if r.Person.HasPrivLevel(model.PrivLeader) {
-			var badges []string
-			if needVolgisticsID(r, p, focus) {
-				if p.VolgisticsID == 0 {
-					badges = append(badges, "Not Volunteer")
-				}
-			} else {
-				if p.VolgisticsID != 0 {
-					badges = append(badges, "Volunteer")
-				}
-			}
-			for _, c := range model.AllDSWClasses {
-				if needDSW(r, p, c, focus) {
-					if p.DSWUntil == nil || p.DSWUntil[c].Before(now) {
-						badges = append(badges, "No DSW "+model.DSWClassNames[c][:4])
-					}
-				} else {
-					if p.DSWUntil != nil && !p.DSWUntil[c].Before(now) {
-						badges = append(badges, "DSW "+model.DSWClassNames[c][:4])
-					}
-				}
-			}
-			if (focus == nil && p.HasPrivLevel(model.PrivMember)) || (focus != nil && p.Orgs[focus.Org].PrivLevel >= model.PrivMember) {
-				if p.BackgroundCheck == "" && r.Person.IsAdminLeader() {
-					// Setting this to admins only until we have accurate BG check data.
-					badges = append(badges, "No BG Check")
-				}
-			} else {
-				if p.BackgroundCheck != "" {
-					badges = append(badges, "BG Check")
-				}
-			}
-			if len(badges) != 0 {
-				out.RawString(`,"badges":[`)
-				for i, b := range badges {
-					if i != 0 {
-						out.RawByte(',')
-					}
-					out.String(b)
-				}
-				out.RawByte(']')
-			}
 		}
 		out.RawString(`,"roles":[`)
 		first2 := true
