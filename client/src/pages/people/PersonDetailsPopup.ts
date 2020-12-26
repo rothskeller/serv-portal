@@ -13,7 +13,7 @@ const PersonDetailsPopup = defineComponent({
   setup(props) {
     return () =>
       h('div', { id: 'person-details' }, [
-        h('div', { id: 'person-details-name' }, props.person.sortName),
+        h('div', { id: 'person-details-name' }, props.person.informalName),
         h(
           'div',
           { id: 'person-details-roles' },

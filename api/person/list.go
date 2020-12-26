@@ -42,6 +42,8 @@ func GetPeople(r *util.Request) error {
 		}
 		out.RawString(`{"id":`)
 		out.Int(int(p.ID))
+		out.RawString(`,"informalName":`)
+		out.String(p.InformalName)
 		out.RawString(`,"sortName":`)
 		out.String(p.SortName)
 		out.RawString(`,"callSign":`)

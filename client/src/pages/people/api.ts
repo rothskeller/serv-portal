@@ -8,6 +8,7 @@ export type GetPeople = {
 
 export type GetPeoplePerson = {
   id: number
+  informalName: string
   sortName: string
   callSign: string
   email: string
