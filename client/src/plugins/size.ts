@@ -4,11 +4,13 @@
 // container whose setup() function called this method.  The property value is
 // a reactive object with 'w' and 'h' elements, each measured in rem.  In
 // browsers that do not support ResizeObserver, 'w' and 'h' will be zero.
-import { provide, reactive, onMounted, getCurrentInstance, onBeforeUnmount } from "vue"
+import { provide, reactive, onMounted, getCurrentInstance, onBeforeUnmount } from 'vue'
 
 export type Size = {
   w: number
   h: number
+  pw: number
+  ph: number
 }
 
 const observing: Map<Element, Size> = new Map()
@@ -16,7 +18,7 @@ const rem = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
 let ro: ResizeObserver
 try {
-  ro = new ResizeObserver(entries => {
+  ro = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const size = observing.get(entry.target)
       if (size) {
@@ -24,6 +26,8 @@ try {
         if (Array.isArray(bb)) bb = bb[0]
         size.w = bb.inlineSize / rem
         size.h = bb.blockSize / rem
+        size.pw = bb.inlineSize
+        size.ph = bb.blockSize
       }
     }
   })
@@ -42,21 +46,21 @@ function unobserve(el: Element, size: Size) {
 
 // reactive and contains 'w' and 'h' values, both numbers in pixels.
 export default () => {
-  const size = reactive({ w: 0, h: 0 })
+  const size = reactive({ w: 0, h: 0, pw: 0, ph: 0 })
   provide('containerSize', size)
   if (!ro) return size
   onMounted(() => {
     const instance = getCurrentInstance()
-    if (!instance) throw (new Error('no current instance in onMounted'))
-    if (!instance.vnode) throw (new Error('no vnode in onMounted'))
-    if (!instance.vnode.el) throw (new Error('no vnode.el in onMounted'))
+    if (!instance) throw new Error('no current instance in onMounted')
+    if (!instance.vnode) throw new Error('no vnode in onMounted')
+    if (!instance.vnode.el) throw new Error('no vnode.el in onMounted')
     observe(instance.vnode.el as Element, size)
   })
   onBeforeUnmount(() => {
     const instance = getCurrentInstance()
-    if (!instance) throw (new Error('no current instance in onMounted'))
-    if (!instance.vnode) throw (new Error('no vnode in onMounted'))
-    if (!instance.vnode.el) throw (new Error('no vnode.el in onMounted'))
+    if (!instance) throw new Error('no current instance in onMounted')
+    if (!instance.vnode) throw new Error('no vnode in onMounted')
+    if (!instance.vnode.el) throw new Error('no vnode.el in onMounted')
     unobserve(instance.vnode.el as Element, size)
   })
   return size
@@ -70,12 +74,9 @@ declare class ResizeObserver {
   unobserve: (target: Element) => void
 }
 interface ResizeObserverObserveOptions {
-  box?: "content-box" | "border-box"
+  box?: 'content-box' | 'border-box'
 }
-type ResizeObserverCallback = (
-  entries: ResizeObserverEntry[],
-  observer: ResizeObserver,
-) => void
+type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
 interface ResizeObserverEntry {
   // The spec says that it returns an array, but apparently some browsers
   // return a single object.  We'll handle both.

@@ -5,9 +5,6 @@ Tier 1:
     Generate sign-in sheet for event
   Schedule Zoom meetings through API
 
-Tier 2:
-  More compact people list
-
 Unprioritized:
   Add warning on attendance entry if already submitted to Volgistics
   Support adding new person
@@ -24,3 +21,17 @@ Unprioritized:
   Search engine efficiency — encode type and ids in rowid
   Reuse google map instance on return to people map page.
   Add a Reset Password button for leads to use, sends a new random pwd by email
+
+People List:
+  - Want name in all cases.  Usually sorted by it.
+  - Want phone number and primary email address, or alternatively buttons that
+    launch mailer and phone apps.
+  - Want the roles, or at least the primary role, that qualify them for
+    inclusion in the list.  However, it may be desirable to omit the basic
+    membership role of an org.
+  - For SARES only, want the call sign, and we should be able to sort by call
+    sign suffix.
+Wide presentation:
+  - Call, name, role(s), email(s), phone(s)
+Narrow:
+  - Call, name with role underneath, email button, phone button

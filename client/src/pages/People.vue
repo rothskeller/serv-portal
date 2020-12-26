@@ -35,8 +35,10 @@ export default defineComponent({
         tabs.push({ to: '/people/list', label: 'List' })
       if (me.value)
         tabs.push({ to: '/people/map', label: 'Map' })
+      /* not implemented:
       if (me.value && !route.params.id && me.value.canAddPeople)
         tabs.push({ to: '/people/NEW/edit', label: 'Add Person' })
+      */
       if (me.value && route.params.id && route.params.id !== 'NEW')
         tabs.push({ to: `/people/${route.params.id}`, label: 'Details' })
       if (person.value && person.value.canHours)

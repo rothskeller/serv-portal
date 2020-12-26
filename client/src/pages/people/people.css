@@ -1,3 +1,185 @@
+#people {
+  margin: 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+#people-controls {
+  display: grid;
+  grid: auto / auto auto;
+  column-gap: 1rem;
+  align-items: stretch;
+}
+/* The people list has several layout variations:
+ *   - Call signs can be omitted, shown in a single column, or shown in two
+ *     columns to align the suffixes.
+ *   - Roles can be shown in a separate column (mouse) or in the same column as
+ *     the name (touch).
+ *   - Email address and phone number will be shown only if there's room.
+ * For convenience in styling, we use the same number of grid columns in all
+ * cases, and just leave some of them empty (or set their contents to display:
+ * none).  So the columns of the grid are:
+ *   - Call sign prefix (or full call sign, or empty)
+ *   - Call sign suffix (or empty)
+ *   - Name (and possibly role)
+ *   - Role (or empty)
+ *   - Email address (or empty)
+ *   - Phone number (or empty)
+ *   - Info box trigger button
+ */
+#people-grid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid: auto-flow auto / repeat(6, max-content) auto;
+  align-self: stretch;
+  .touch & {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    border-top: 1px solid #ccc;
+    grid: auto-flow 48px / repeat(6, max-content) auto;
+  }
+  &.people-grid-measure {
+    align-self: flex-start;
+    visibility: hidden;
+    grid: auto-flow auto / repeat(6, max-content) min-content;
+    min-width: 0;
+  }
+}
+.people-callSign-prefix {
+  text-align: right;
+  .touch &:not(:empty) {
+    border-bottom: 1px solid #ccc;
+    padding-left: 0.75rem;
+  }
+}
+.people-callSign-suffix:not(:empty) {
+  padding-right: 1rem;
+  .touch & {
+    border-bottom: 1px solid #ccc;
+  }
+}
+.touch .people-callSign-prefix:empty + .people-callSign-suffix:not(:empty) {
+  padding-left: 0.75rem;
+}
+.touch .people-nameRoles {
+  border-bottom: 1px solid #ccc;
+}
+.touch .people-callSign-suffix:empty + .people-nameRoles {
+  padding-left: 0.75rem;
+}
+.people-roles-n {
+  display: none;
+  .touch & {
+    display: block;
+    font-style: italic;
+    color: #888;
+    padding-left: 1.5rem;
+    line-height: 1.2;
+  }
+}
+.people-roles {
+  font-style: italic;
+  color: #888;
+  &:not(:empty) {
+    margin-left: 1rem;
+  }
+  .touch & {
+    width: 0;
+    margin-left: 0;
+    overflow: hidden;
+  }
+}
+.people-email {
+  &:not(:empty) {
+    padding-left: 1rem;
+  }
+  .touch & {
+    border-bottom: 1px solid #ccc;
+  }
+  .people-compact & {
+    width: 0;
+    padding-left: 0;
+    overflow: hidden;
+  }
+}
+.people-phone {
+  font-variant-numeric: tabular-nums;
+  &:not(:empty) {
+    padding-left: 1rem;
+  }
+  .touch & {
+    border-bottom: 1px solid #ccc;
+  }
+  .people-compact & {
+    width: 0;
+    padding-left: 0;
+    overflow: hidden;
+  }
+}
+.people-details {
+  color: #007bff;
+  cursor: pointer;
+  position: relative;
+  .mouse & {
+    width: 1rem;
+    line-height: 1;
+    margin-top: 3px; /* empirical */
+    margin-left: 1rem;
+  }
+  .touch & {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    justify-content: flex-end;
+    padding-right: 1rem;
+    & svg {
+      width: 24px;
+    }
+  }
+}
+
+#person-details {
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 0;
+  background-color: #eee;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  color: #212529;
+  display: grid;
+  grid: auto / auto auto auto;
+  column-gap: 1rem;
+  align-items: center;
+  line-height: 1.2;
+  z-index: 1;
+  .touch & {
+    right: calc(48px + 0.5rem);
+  }
+}
+#person-details-name {
+  font-weight: bold;
+  grid-column: 1 / 4;
+}
+#person-details-roles {
+  grid-column: 1 / 4;
+}
+.person-details-spacer {
+  grid-column: 1 / 4;
+  height: 1rem;
+}
+.person-details-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .mouse & {
+    width: 1rem;
+  }
+  .touch & {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 #person-activity {
   margin: 1.5rem 0.75rem;
 }

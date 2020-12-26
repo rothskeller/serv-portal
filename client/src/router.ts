@@ -122,7 +122,7 @@ const router = createRouter({
         },
         {
           path: 'list',
-          component: () => import('./pages/people/PeopleList.vue'),
+          component: () => import('./pages/people/PeopleList'),
         },
         {
           path: 'map',

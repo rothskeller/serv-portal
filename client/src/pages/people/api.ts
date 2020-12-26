@@ -1,3 +1,29 @@
+// Return type from GET /api/people.
+export type GetPeople = {
+  people: Array<GetPeoplePerson>
+  viewableRoles: Array<GetPeopleViewableRole>
+  canAdd: boolean
+  showCallSign: boolean
+}
+
+export type GetPeoplePerson = {
+  id: number
+  sortName: string
+  callSign: string
+  email: string
+  email2: string
+  cellPhone: string
+  homePhone: string
+  workPhone: string
+  priority: number
+  roles: Array<string>
+}
+
+export type GetPeopleViewableRole = {
+  id: number
+  name: string
+}
+
 // Return type from GET /api/people/${id}/hours/${month}.
 export type GetPersonHours = {
   id: number
