@@ -14,16 +14,37 @@ PersonView displays the information about a person, in non-editable form.
     PersonViewStatus(:person='person', @reload='onReload')
     PersonViewNotes(:person='person', @reload='onReload')
     PersonViewSubscriptions(:person='person', @reload='onReload')
-    PersonViewSection(v-if='person.canChangePassword', title='Password', :editable='false')
-      SButton#person-view-chpw(variant='primary', small, @click='onChangePassword') Change Password
+    PersonViewSection(
+      v-if='person.canChangePassword || person.canResetPassword',
+      title='Password',
+      :editable='false'
+    )
+      #person-view-chpw
+        SButton(
+          v-if='person.canChangePassword',
+          variant='primary',
+          small,
+          @click='onChangePassword'
+        ) Change Password
+        SButton(v-if='person.canResetPassword', variant='primary', small, @click='onResetPassword') Reset Password
   PersonEditPassword(v-if='person.canChangePassword', ref='changePasswordModal', :pid='person.id')
+  MessageBox(
+    ref='resetPasswordModal',
+    title='Reset Password',
+    variant='warning',
+    okLabel='Reset Password'
+  )
+    | This will replace {{ person.informalName }}’s current password with a new,
+    | randomly generated one, and send it to them by email. You should do this
+    | only if they have explicitly asked you to. Are you sure you want to reset
+    | {{ person.informalName }}’s password?
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '../../plugins/axios'
-import { SButton, SSpinner } from '../../base'
+import { MessageBox, SButton, SSpinner } from '../../base'
 import PersonEditPassword from './PersonEditPassword.vue'
 import PersonViewContact from './PersonViewContact.vue'
 import PersonViewNames from './PersonViewNames.vue'
@@ -109,6 +130,7 @@ export interface GetPerson {
   canEditNotes: boolean
   canEditLists: boolean
   canChangePassword: boolean
+  canResetPassword: boolean
   canHours: boolean
   noEmail: boolean
   noText: boolean
@@ -116,6 +138,7 @@ export interface GetPerson {
 
 export default defineComponent({
   components: {
+    MessageBox,
     PersonEditPassword,
     PersonViewContact,
     PersonViewNames,
@@ -144,11 +167,18 @@ export default defineComponent({
     function onChangePassword() {
       changePasswordModal.value.show()
     }
+    const resetPasswordModal = ref(null as any)
+    function onResetPassword() {
+      if (!resetPasswordModal.value.show()) return
+      axios.post(`/api/people/${route.params.id}/pwreset`)
+    }
     return {
       changePasswordModal,
       onChangePassword,
+      onResetPassword,
       onReload,
       person,
+      resetPasswordModal,
     }
   },
 })
@@ -179,6 +209,9 @@ export default defineComponent({
   }
 }
 #person-view-chpw {
+  display: grid;
+  grid: auto / auto auto;
+  column-gap: 0.5rem;
   margin-top: 0.75rem;
 }
 </style>

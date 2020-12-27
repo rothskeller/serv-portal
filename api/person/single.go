@@ -1,7 +1,9 @@
 package person
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +14,7 @@ import (
 	"sunnyvaleserv.org/portal/api/authz"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
 // GetPerson handles GET /api/people/$id requests.
@@ -247,7 +250,9 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"canEditLists":`)
 	out.Bool(person == r.Person || r.Person.Roles[model.Webmaster])
 	out.RawString(`,"canChangePassword":`)
-	out.Bool(person == r.Person || r.Person.Roles[model.Webmaster])
+	out.Bool(person.Email != "" && (person == r.Person || r.Person.Roles[model.Webmaster]))
+	out.RawString(`,"canResetPassword":`)
+	out.Bool(person.Email != "" && r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canHours":`)
 	out.Bool(person.ID == r.Person.ID || r.Person.IsAdminLeader())
 	out.RawString(`,"noEmail":`)
@@ -745,6 +750,55 @@ func PostPersonPassword(r *util.Request, idstr string) error {
 	}
 	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
+	return nil
+}
+
+// PostPersonPWReset handles POST /api/people/${id}/pwreset requests, by giving
+// the target person a new, randomly generated password and sending it to them
+// by email.
+func PostPersonPWReset(r *util.Request, idstr string) error {
+	var (
+		person   *model.Person
+		password string
+		emails   []string
+		body     bytes.Buffer
+	)
+	if !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if person.ID == model.AdminPersonID {
+		return util.Forbidden
+	}
+	if person.Email == "" {
+		return errors.New("can't reset password for person without email")
+	}
+	r.Tx.WillUpdatePerson(person)
+	password = authn.RandomPassword()
+	authn.SetPassword(r, person, password)
+	r.Tx.UpdatePerson(person)
+	r.Tx.Commit()
+	emails = append(emails, person.Email)
+	if person.Email2 != "" {
+		emails = append(emails, person.Email2)
+	}
+	fmt.Fprintf(&body, `Hello, %s,
+
+%s has reset the password for your account on SunnyvaleSERV.org.  Your new login information is:
+
+    Email:    %s
+    Password: %s
+
+You can change this password by logging into SunnyvaleSERV.org and clicking the "Change Password" button on your Profile page.  If you have any questions, just reply to this email.
+
+Regards,
+SunnyvaleSERV.org
+`, person.InformalName, r.Person.InformalName, person.Email, password)
+	if err := sendmail.SendMessage("admin@sunnyvaleserv.org", emails, body.Bytes()); err != nil {
+		panic(err)
+	}
 	return nil
 }
 

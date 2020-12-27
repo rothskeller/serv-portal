@@ -145,6 +145,8 @@ func router(r *util.Request) error {
 		return person.GetPersonPassword(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "password" && c[4] == "":
 		return person.PostPersonPassword(r, c[2])
+	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "pwreset" && c[4] == "":
+		return person.PostPersonPWReset(r, c[2])
 	case r.Method == "GET" && c[1] == "people" && c[2] != "" && c[3] == "roles" && c[4] == "":
 		return person.GetPersonRoles(r, c[2])
 	case r.Method == "POST" && c[1] == "people" && c[2] != "" && c[3] == "roles" && c[4] == "":
