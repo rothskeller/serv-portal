@@ -44,7 +44,7 @@ export default defineComponent({
         })
       if (route.path === `/events/${route.params.id}/timesheet`)
         tabs.push({ to: `/events/${route.params.id}/timesheet`, label: 'Timesheet' })
-      else if (event.value && event.value.canAttendance)
+      else if (event.value && event.value.canViewAttendance)
         tabs.push({ to: `/events/${route.params.id}/attendance`, label: 'Attendance' })
       return tabs
     })

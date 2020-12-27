@@ -52,7 +52,8 @@ export type GetEventEvent = {
   type: string
   roles: Array<number>
   canEdit: boolean
-  canAttendance: boolean
+  canViewAttendance: boolean
+  canEditAttendance: boolean
   canEditDSWFlags: boolean
 }
 type GetEvent = {

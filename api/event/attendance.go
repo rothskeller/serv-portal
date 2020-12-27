@@ -3,6 +3,7 @@ package event
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
@@ -19,6 +20,9 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 		return util.NotFound
 	}
 	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
+		return util.Forbidden
+	}
+	if attendanceFinalized(event.Date) {
 		return util.Forbidden
 	}
 	r.ParseMultipartForm(1048576)
@@ -49,4 +53,15 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	r.Tx.SaveEventAttendance(event, attend)
 	r.Tx.Commit()
 	return nil
+}
+
+// attendanceFinalized returns true if the attendance for the event has been
+// finalized (i.e., the hours for it have been submitted to Volgistics).  This
+// becomes true at midnight on the start of the 11th of the month after the
+// event.
+func attendanceFinalized(date string) bool {
+	var event, threshold time.Time
+	event, _ = time.ParseInLocation("2006-01-02", date, time.Local)
+	threshold = time.Date(event.Year(), event.Month()+1, 11, 0, 0, 0, 0, time.Local)
+	return threshold.Before(time.Now())
 }

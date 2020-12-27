@@ -6,7 +6,7 @@ EventAttendance shows and allows changes to the attendance for an event.
 #event-attendance-spinner(v-if='!event')
   SSpinner
 form#event-attendance(v-else, @submit.prevent='onSave')
-  #event-attend-settings
+  #event-attend-settings(v-if='event.canEditAttendance')
     label(for='event-attend-type') Set attendance for:
     SSelect#event-attend-type(:options='typeOptions', v-model='setType')
     label(for='event-attend-hours') Hours:
@@ -18,12 +18,12 @@ form#event-attendance(v-else, @submit.prevent='onSave')
       :person='p',
       @toggle='onTogglePerson(p)'
     )
-  #event-attend-submit
+  #event-attend-submit(v-if='event.canEditAttendance')
     SButton(type='submit', variant='primary') Save Attendance
     SButton#event-attend-cancel(@click='onCancel') Cancel
     SButton(@click='onAddGuest') Add Guest
     SButton(@click='onTimesheetView') Timesheet View
-  EventAttendanceGuest(ref='guestDialog')
+  EventAttendanceGuest(v-if='event.canEditAttendance', ref='guestDialog')
 </template>
 
 <script lang="ts">
@@ -112,6 +112,7 @@ export default defineComponent({
 
     // Toggling the state of a person.
     function onTogglePerson(person: GetEventPerson) {
+      if (!event.value?.canEditAttendance) return
       if (person.attended && person.attended.type === setType.value) person.attended = false
       else if (person.attended) person.attended.type = setType.value
       else person.attended = { type: setType.value, minutes: 60 * setHours.value }

@@ -14,12 +14,13 @@ import (
 // GetEvent handles GET /api/events/$id requests (where $id may be "NEW").
 func GetEvent(r *util.Request, idstr string) error {
 	var (
-		event          *model.Event
-		canEdit        bool
-		canAttendance  bool
-		out            jwriter.Writer
-		wantAttendance = r.FormValue("attendance") != ""
-		wantEdit       = r.FormValue("edit") != ""
+		event             *model.Event
+		canEdit           bool
+		canViewAttendance bool
+		canEditAttendance bool
+		out               jwriter.Writer
+		wantAttendance    = r.FormValue("attendance") != ""
+		wantEdit          = r.FormValue("edit") != ""
 	)
 	if idstr == "NEW" {
 		if !r.Person.HasPrivLevel(model.PrivLeader) {
@@ -33,7 +34,10 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		if r.Person.Orgs[event.Org].PrivLevel >= model.PrivLeader {
 			canEdit = true
-			canAttendance = true
+			canViewAttendance = true
+			if !attendanceFinalized(event.Date) {
+				canEditAttendance = true
+			}
 		}
 	}
 	out.RawString(`{"event":{"id":`)
@@ -82,8 +86,10 @@ func GetEvent(r *util.Request, idstr string) error {
 	}
 	out.RawString(`],"canEdit":`)
 	out.Bool(canEdit)
-	out.RawString(`,"canAttendance":`)
-	out.Bool(canAttendance)
+	out.RawString(`,"canViewAttendance":`)
+	out.Bool(canViewAttendance)
+	out.RawString(`,"canEditAttendance":`)
+	out.Bool(canEditAttendance)
 	out.RawString(`,"canEditDSWFlags":`)
 	out.Bool(r.Person.IsAdminLeader())
 	out.RawByte('}')
@@ -146,7 +152,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		}
 		out.RawByte(']')
 	}
-	if canAttendance && wantAttendance {
+	if canViewAttendance && wantAttendance {
 		var (
 			attended = r.Tx.FetchAttendanceByEvent(event)
 			first    = true
