@@ -788,8 +788,7 @@ func PostPersonPWReset(r *util.Request, idstr string) error {
 		emails = append(emails, person.Email2)
 		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
 	}
-	fmt.Fprintf(crlf, `
-From: %s
+	fmt.Fprintf(crlf, `From: %s
 Subject: SunnyvaleSERV.org Password Reset
 Content-Type: text/plain; charset=utf8
 
