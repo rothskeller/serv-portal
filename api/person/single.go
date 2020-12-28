@@ -253,7 +253,7 @@ func GetPerson(r *util.Request, idstr string) error {
 	out.RawString(`,"canChangePassword":`)
 	out.Bool(person.Email != "" && (person == r.Person || r.Person.Roles[model.Webmaster]))
 	out.RawString(`,"canResetPassword":`)
-	out.Bool(person.Email != "" && r.Person.HasPrivLevel(model.PrivLeader))
+	out.Bool(person.Email != "" && person != r.Person && r.Person.HasPrivLevel(model.PrivLeader))
 	out.RawString(`,"canHours":`)
 	out.Bool(person.ID == r.Person.ID || r.Person.IsAdminLeader())
 	out.RawString(`,"noEmail":`)
