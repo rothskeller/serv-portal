@@ -14,6 +14,7 @@ import (
 	"sunnyvaleserv.org/portal/api/authz"
 	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
@@ -762,6 +763,7 @@ func PostPersonPWReset(r *util.Request, idstr string) error {
 		password string
 		emails   []string
 		body     bytes.Buffer
+		crlf     = sendmail.NewCRLFWriter(&body)
 	)
 	if !r.Person.HasPrivLevel(model.PrivLeader) {
 		return util.Forbidden
@@ -781,22 +783,29 @@ func PostPersonPWReset(r *util.Request, idstr string) error {
 	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
 	emails = append(emails, person.Email)
+	fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email)
 	if person.Email2 != "" {
 		emails = append(emails, person.Email2)
+		fmt.Fprintf(crlf, "To: %s <%s>\n", person.InformalName, person.Email2)
 	}
-	fmt.Fprintf(&body, `Hello, %s,
+	fmt.Fprintf(crlf, `
+From: %s
+Subject: SunnyvaleSERV.org Password Reset
+Content-Type: text/plain; charset=utf8
+
+Hello, %s,
 
 %s has reset the password for your account on SunnyvaleSERV.org.  Your new login information is:
 
     Email:    %s
     Password: %s
 
-You can change this password by logging into SunnyvaleSERV.org and clicking the "Change Password" button on your Profile page.  If you have any questions, just reply to this email.
+You can change this password by logging into SunnyvaleSERV.org and clicking the “Change Password” button on your Profile page.  If you have any questions, just reply to this email.
 
 Regards,
 SunnyvaleSERV.org
-`, person.InformalName, r.Person.InformalName, person.Email, password)
-	if err := sendmail.SendMessage("admin@sunnyvaleserv.org", emails, body.Bytes()); err != nil {
+`, config.Get("fromEmail"), person.InformalName, r.Person.InformalName, person.Email, password)
+	if err := sendmail.SendMessage(config.Get("fromAddr"), emails, body.Bytes()); err != nil {
 		panic(err)
 	}
 	return nil
