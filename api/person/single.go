@@ -799,6 +799,8 @@ Hello, %s,
     Email:    %s
     Password: %s
 
+This password is three words chosen randomly from a dictionary — a method that generally produces a very secure and often memorable password.  If the resulting phrase has any meaning, it’s unintentional coincidence.
+
 You can change this password by logging into SunnyvaleSERV.org and clicking the “Change Password” button on your Profile page.  If you have any questions, just reply to this email.
 
 Regards,
