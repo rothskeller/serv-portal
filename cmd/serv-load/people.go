@@ -19,7 +19,10 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 	var err error
 	var record = 1
 	for {
-		var p = new(model.Person)
+		var p = &model.Person{
+			Roles: make(map[model.RoleID]bool),
+			Orgs:  make([]model.OrgMembership, model.NumOrgs),
+		}
 		var first = true
 
 		in.Delim('{')
