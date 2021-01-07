@@ -171,6 +171,7 @@ export default defineComponent({
       if (!event.value.type) types.value.unshift('(select type)')
       orgs.value = resp.data.orgs.map((o) => ({ value: o, label: orgNames[o] }))
       if (!event.value.org) orgs.value.unshift({ value: '', label: '(select organization)' })
+      roles.value = new Set(event.value.roles)
       if (route.params.id === 'NEW') setPage({ title: 'New Event' })
       else
         setPage({
@@ -286,12 +287,7 @@ export default defineComponent({
 
     // Invited roles.
     const filteredRoles = computed(() => allRoles.value.filter((f) => f.org === event.value!.org))
-    const roles = computed({
-      get: () => new Set(event.value!.roles),
-      set: (roles) => {
-        event.value!.roles = Array.from(roles.values()) as [number]
-      },
-    })
+    const roles = ref<Set<number>>()
 
     async function onSubmit() {
       if (!event.value) return
@@ -312,7 +308,7 @@ export default defineComponent({
       body.append('renewsDSW', event.value.renewsDSW.toString())
       body.append('coveredByDSW', event.value.coveredByDSW.toString())
       body.append('details', event.value.details)
-      event.value.roles.forEach((r) => {
+      roles.value!.forEach((r) => {
         body.append('role', r.toString())
       })
       const resp: PostEvent = (await axios.post(`/api/events/${route.params.id}`, body)).data
