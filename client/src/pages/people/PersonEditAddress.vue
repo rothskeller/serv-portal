@@ -45,7 +45,7 @@ import type { GetPersonAddress } from './PersonView.vue'
 const SmartyStreetsCore = SmartyStreetsSDK.core
 const Lookup = SmartyStreetsSDK.usStreet.Lookup
 // @ts-ignore: doesn't recognize import.meta.env
-const credentials = new SmartyStreetsCore.SharedCredentials(import.meta.env.VITE_SMARTYSTREETS_KEY)
+const credentials = new SmartyStreetsCore.SharedCredentials('1674975535561744')
 const client = SmartyStreetsCore.buildClient.usStreet(credentials)
 
 export default defineComponent({
