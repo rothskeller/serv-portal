@@ -53,12 +53,17 @@ func GetPeople(r *util.Request) error {
 			out.String(p.Email)
 			out.RawString(`,"email2":`)
 			out.String(p.Email2)
+			out.RawString(`,"homeAddress":`)
+			p.HomeAddress.MarshalEasyJSON(&out)
+			out.RawString(`,"workAddress":`)
+			p.WorkAddress.MarshalEasyJSON(&out)
 			out.RawString(`,"cellPhone":`)
 			out.String(p.CellPhone)
 			out.RawString(`,"homePhone":`)
 			out.String(p.HomePhone)
 			out.RawString(`,"workPhone":`)
 			out.String(p.WorkPhone)
+
 		}
 		var roles, minPrio = rolesToShow(r, p, focus)
 		out.RawString(`,"priority":`)
