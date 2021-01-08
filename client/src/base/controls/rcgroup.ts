@@ -63,6 +63,7 @@ const SCheckGroup = defineRCGroup(
   (selected: Ref<Set<unknown>>, option: unknown, checked: boolean) => {
     if (checked) selected.value.add(option)
     else selected.value.delete(option)
+    selected.value = new Set(selected.value) // to force reactivity
   }
 )
 const SRadioGroup = defineRCGroup(
