@@ -37,6 +37,7 @@ func GetAttendance(r *util.Request) error {
 		data    map[attrepDataKey][]int
 		columns []attrepColumn
 		rows    []attrepRow
+		pcount  int
 	)
 	params = readAttrepParameters(r)
 	if len(params.allowedOrgs) == 0 {
@@ -49,7 +50,7 @@ func GetAttendance(r *util.Request) error {
 	} else {
 		columns = makeAttrepEventColumns(events, data, params)
 	}
-	rows = makeAttrepRows(r, columns, data, params)
+	rows, pcount = makeAttrepRows(r, columns, data, params)
 	if !params.collapseX && len(params.orgs) > 1 {
 		columns = mergeAttrepHours(rows, columns)
 	}
@@ -57,7 +58,7 @@ func GetAttendance(r *util.Request) error {
 	if params.renderCSV {
 		renderAttrepCSV(r, rows, columns, params)
 	} else {
-		renderAttrepJSON(r, rows, columns, params)
+		renderAttrepJSON(r, rows, columns, params, pcount)
 	}
 	return nil
 }
@@ -213,7 +214,7 @@ func addTotalColumn(columns []attrepColumn, data map[attrepDataKey][]int) []attr
 	return append(columns, attrepColumn{ctype: "t", label: "TOTAL"})
 }
 
-func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepDataKey][]int, params attrepParameters) (rows []attrepRow) {
+func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepDataKey][]int, params attrepParameters) (rows []attrepRow, pcount int) {
 	var pnames = make(map[model.PersonID]string)
 
 	// First, handle includeZeros.  If it's true, we need to add all of the
@@ -356,6 +357,7 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 			}
 		}
 	}
+	pcount = len(rows)
 	// Add a total row.
 	if len(rows) > 1 {
 		var totals = make([]int, len(columns))
@@ -396,6 +398,7 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 			} else {
 				row.label1 = ""
 				lastRType = row.rtype
+				pcount--
 			}
 			addValues(totals, row.data)
 			count++
@@ -411,7 +414,10 @@ func makeAttrepRows(r *util.Request, columns []attrepColumn, data map[attrepData
 		}
 		rows = nr
 	}
-	return rows
+	if params.groupByOrg {
+		pcount = 0
+	}
+	return rows, pcount
 }
 
 func addValues(to, from []int) {
@@ -489,7 +495,7 @@ func renderAttrepCSV(r *util.Request, rows []attrepRow, columns []attrepColumn, 
 	out.Flush()
 }
 
-func renderAttrepJSON(r *util.Request, rows []attrepRow, columns []attrepColumn, params attrepParameters) {
+func renderAttrepJSON(r *util.Request, rows []attrepRow, columns []attrepColumn, params attrepParameters, pcount int) {
 	var out jwriter.Writer
 
 	out.RawByte('{')
@@ -550,7 +556,12 @@ func renderAttrepJSON(r *util.Request, rows []attrepRow, columns []attrepColumn,
 		}
 		out.RawByte(']')
 	}
-	out.RawString(`]}`)
+	out.RawByte(']')
+	if pcount > 0 {
+		out.RawString(`,"personCount":`)
+		out.Int(pcount)
+	}
+	out.RawByte('}')
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
 	out.DumpTo(r)
 }
