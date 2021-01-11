@@ -57,6 +57,7 @@ const Clearance = defineComponent({
       return h('div', { id: 'clearrep' }, [
         renderParameters(report.value.parameters),
         renderTable(report.value.rows, Array.from(allOrgs.keys()).sort(), hasBGCDetail),
+        renderCount(report.value.rows.length),
         renderCSVButton(report.value),
       ])
     }
@@ -264,6 +265,15 @@ function renderIdentCells(r: GetClearanceRow) {
       r.servShirt ? 'S' : ''
     ),
   ])
+}
+
+function renderCount(count: number) {
+  if (!count) return null
+  return h(
+    'div',
+    { id: 'clearrep-count' },
+    count > 1 ? `${count} people listed` : '1 person listed'
+  )
 }
 
 function renderCSVButton(report: GetClearance) {

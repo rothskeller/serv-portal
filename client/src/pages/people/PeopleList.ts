@@ -175,19 +175,28 @@ function renderPeople(
   router: Router,
   details: Ref<null | GetPeoplePerson>
 ) {
-  return h(
-    //@ts-ignore doesn't like the ref
-    'div',
-    {
-      id: 'people-grid',
-      class: {
-        'people-compact': compact,
-        'people-grid-measure': measure,
+  return [
+    h(
+      //@ts-ignore doesn't like the ref
+      'div',
+      {
+        id: 'people-grid',
+        class: {
+          'people-compact': compact,
+          'people-grid-measure': measure,
+        },
+        ref: setGridRef,
       },
-      ref: setGridRef,
-    },
-    people.map((p) => renderPerson(p, showCallSign, touch, router, details))
-  )
+      people.map((p) => renderPerson(p, showCallSign, touch, router, details))
+    ),
+    people.length
+      ? h(
+          'div',
+          { id: 'people-count' },
+          people.length === 1 ? '1 person listed' : `${people.length} people listed`
+        )
+      : null,
+  ]
 }
 
 function renderPerson(

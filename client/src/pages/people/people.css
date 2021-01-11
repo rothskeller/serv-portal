@@ -136,6 +136,9 @@
     }
   }
 }
+#people-count {
+  margin-top: 1.5rem;
+}
 
 #person-details {
   position: absolute;

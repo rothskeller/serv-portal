@@ -60,6 +60,7 @@ Attendance displays the attendance report.
             .attrep-vertical(v-if='c', v-text='c')
         template(v-else)
           td(v-for='(c, ci) in cells[ri]', :class='`attrep-col-${columns[ci]}`', v-text='c')
+  #attrep-count(v-if='count', v-text='count > 1 ? `${count} people listed` : "1 person listed"')
 </template>
 
 <script lang="ts">
@@ -142,6 +143,7 @@ export default defineComponent({
     const orgs = ref(new Set<number>())
     const eventTypes = ref(new Set<number>())
     const attendanceTypes = ref(new Set<number>())
+    const count = ref(0)
     watchEffect(async () => {
       const report = (
         await axios.get<AttendanceReport>('/api/reports/attendance', { params: route.query })
@@ -154,6 +156,15 @@ export default defineComponent({
       orgs.value = new Set(report.parameters.orgs)
       eventTypes.value = new Set(report.parameters.eventTypes)
       attendanceTypes.value = new Set(report.parameters.attendanceTypes)
+      switch (report.parameters.rows) {
+        case 'p':
+          count.value = report.cells.length
+          break
+        case 'po':
+          count.value = report.cells.filter(row => row[0]).length
+          break
+        default: count.value = 0
+      }
     })
 
     // Watch for changes to the parameters.
@@ -187,6 +198,7 @@ export default defineComponent({
       cellOptions,
       columns,
       columnOptions,
+      count,
       eventTypes,
       options,
       orgs,
