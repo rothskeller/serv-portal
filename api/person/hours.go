@@ -184,7 +184,7 @@ func hoursPermissions(caller, target *model.Person, event *model.Event, today st
 	// The type can be edited only if the caller is an event org leader,
 	// attendance for the event itself is editable, and the event is not a
 	// placeholder.
-	if eventAttendanceEditable && callerIsLeader && event.Type != model.EventHours {
+	if eventAttendanceEditable && callerIsLeader && (event.Type != model.EventHours || caller.Roles[model.Webmaster]) {
 		return true, true, true
 	}
 	// The hours can be edited if the caller is the target person, the
