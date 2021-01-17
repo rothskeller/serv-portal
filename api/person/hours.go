@@ -48,6 +48,9 @@ func GPPersonHoursMonth(r *util.Request, idstr, month string) error {
 		return util.NotFound
 	}
 	today, editableMonth = isEditableMonth(month)
+	if r.Person.Roles[model.Webmaster] {
+		editableMonth = true
+	}
 	if person == r.Person && person.HoursReminder {
 		r.Tx.WillUpdatePerson(person)
 		person.HoursReminder = false
