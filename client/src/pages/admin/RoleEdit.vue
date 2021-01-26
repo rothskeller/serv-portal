@@ -272,7 +272,7 @@ export default defineComponent({
         list.subModel = ''
         list.sender = false
       }
-      list = role.value.lists.find((l) => l.id === editingList.value.list)!
+      list = role.value.lists.find((l) => l.id === parseInt(editingList.value.list as unknown as string))!
       list.subModel = editingList.value.subModel
       list.sender = editingList.value.sender
     }
