@@ -44,6 +44,9 @@ func canEditVO(person *model.Person, vis model.FolderVisibility, org model.Org) 
 	case model.FolderVisibleToSERV:
 		return person.HasPrivLevel(model.PrivLeader)
 	default:
+		if org == model.OrgAdmin {
+			return person.Orgs[org].PrivLevel >= model.PrivMember
+		}
 		return person.Orgs[org].PrivLevel >= model.PrivLeader
 	}
 }
