@@ -56,7 +56,7 @@ const PersonActivity = defineComponent({
         body.append(`e${e.id}`, `${e.minutes}:${e.type}`)
       })
       await axios.post(`/api/people/${route.params.id}/hours/${route.params.month}`, body)
-      if (me.value) router.push(`/people/${route.params.id}`)
+      if (me.value) router.push(`/people/${me.value.id}`)
       else saved.value = true
     }
     function render() {
