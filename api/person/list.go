@@ -16,6 +16,7 @@ func GetPeople(r *util.Request) error {
 		focus *model.Role
 		out   jwriter.Writer
 	)
+	r.ParseMultipartForm(1048576)
 	if _, ok := r.Form["search"]; ok {
 		return getPeopleSearch(r)
 	}
