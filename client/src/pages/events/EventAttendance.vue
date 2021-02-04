@@ -46,6 +46,7 @@ type GetEventPersonAttendance = {
 export type GetEventPerson = {
   id: number
   sortName: string
+  callSign: string
   attended: false | GetEventPersonAttendance
 }
 type GetEventAttendance = {
@@ -130,6 +131,7 @@ export default defineComponent({
         people.value!.push({
           id: guest.id,
           sortName: guest.sortName,
+          callSign: '',
           attended: { type: setType.value, minutes: 60 * setHours.value },
         })
         people.value!.sort((a, b) =>

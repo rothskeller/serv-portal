@@ -6,7 +6,7 @@ page for an event.
 <template lang="pug">
 .event-attend-person(@click='onClick')
   span.event-attend-person-hours(:class='hoursClass', v-text='hoursLabel')
-  span(v-text='person.sortName')
+  span(v-text='fmtName(person)')
 </template>
 
 <script lang="ts">
@@ -31,10 +31,14 @@ export default defineComponent({
       if (props.person.attended.minutes % 60 !== 0) label += '½'
       return label
     })
+    function fmtName(person: GetEventPerson) {
+      if (person.callSign) return `${person.sortName} ${person.callSign}`
+      return person.sortName
+    }
     function onClick() {
       emit('toggle')
     }
-    return { hoursClass, hoursLabel, onClick }
+    return { fmtName, hoursClass, hoursLabel, onClick }
   },
 })
 </script>

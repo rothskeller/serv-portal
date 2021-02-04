@@ -179,6 +179,8 @@ func GetEvent(r *util.Request, idstr string) error {
 			out.Int(int(p.ID))
 			out.RawString(`,"sortName":`)
 			out.String(p.SortName)
+			out.RawString(`,"callSign":`)
+			out.String(p.CallSign)
 			if att {
 				out.RawString(`,"attended":{"type":`)
 				out.String(ai.Type.String())
