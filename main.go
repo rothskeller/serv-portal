@@ -73,6 +73,10 @@ func router(r *util.Request) error {
 	switch {
 	case r.Method == "GET" && c[0] == "dl":
 		return folder.GetDocument(r)
+	case r.Method == "GET" && c[1] == "events" && c[2] == "signups" && c[3] != "" && c[4] == "":
+		return event.GetEventSignups(r, c[3])
+	case r.Method == "POST" && c[1] == "events" && c[2] == "signups" && c[3] != "" && c[4] == "":
+		return event.PostEventSignups(r, c[3])
 	case r.Method == "GET" && c[1] == "folders":
 		return folder.GetFolder(r)
 	case r.Method == "POST" && c[1] == "login" && c[2] == "":
@@ -103,6 +107,10 @@ func router(r *util.Request) error {
 		return folder.DeleteDocument(r)
 	case r.Method == "GET" && c[1] == "events" && c[2] == "":
 		return event.GetEvents(r)
+	case r.Method == "GET" && c[1] == "events" && c[2] == "signups" && c[3] == "":
+		return event.GetEventSignups(r, "")
+	case r.Method == "POST" && c[1] == "events" && c[2] == "signups" && c[3] == "":
+		return event.PostEventSignups(r, "")
 	case r.Method == "GET" && c[1] == "events" && c[2] != "" && c[3] == "":
 		return event.GetEvent(r, c[2])
 	case r.Method == "POST" && c[1] == "events" && c[2] != "" && c[3] == "":

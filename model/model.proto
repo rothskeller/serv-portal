@@ -55,8 +55,14 @@ message Event {
   // the ones who can manage this event.
   int64 org = 15 [(gogoproto.casttype) = "Org"];
   // Roles are the roles "invited" to the event.  They control which people are
-  // displayed on the attendance page for the event.
+  // displayed on the attendance page for the event.  They also control who can
+  // claim open assignment shifts.
   repeated int64 roles = 16 [(gogoproto.casttype) = "RoleID"];
+  // Shifts are the shifts for this event that people can sign up for.
+  repeated Shift shifts = 17;
+  // SignupText is the descriptive text for signing up for shifts for this
+  // event.  It is HTML and can have embedded tags.
+  string signup_text = 18;
 }
 
 // List is a distribution list for messages to people.
@@ -107,10 +113,14 @@ message Person {
   repeated PersonNote       notes             = 27;
   bool                      no_email          = 28;
   bool                      no_text           = 29;
-  string                    unsubscribe_token = 30;
-  int64                     volgistics_id     = 32 [(gogoproto.customname) = "VolgisticsID", (gogoproto.casttype) = "int"];
-  string                    hours_token       = 34;
-  bool                      hours_reminder    = 35;
+  // UnsubscribeToken is the token sent to this person in email that allows them
+  // to do limited activities without logging in.  Unsubscribing from lists is
+  // one such activity, for which this field was named, but it's now used for
+  // signing up for assignments as well.
+  string unsubscribe_token = 30;
+  int64  volgistics_id     = 32 [(gogoproto.customname) = "VolgisticsID", (gogoproto.casttype) = "int"];
+  string hours_token       = 34;
+  bool   hours_reminder    = 35;
   // DSWRegistrations is a map from a DSWClass to the date on the person's most
   // recent valid DSW registration with that classification.  The registration
   // may or may not still be current.
@@ -183,6 +193,34 @@ message Role {
 
 message Roles {
   repeated Role roles = 1;
+}
+
+// A Shift identifies a time period for an Assignment, a range of people who can
+// sign up for that shift, and the set of people who have signed up for that
+// shift.
+message Shift {
+  // Start is the start time of the shift, in HH:MM format.
+  string start = 1;
+  // End is the end time of the shift, in HH:MM format.
+  string end = 2;
+  // Task is an optional task name, used to distinguish this shift from other
+  // shifts at the same time based on what task will be performed.
+  string task = 3;
+  // Min is the number of slots that need to be filled for this shift.
+  int32 min = 4 [(gogoproto.casttype) = "int"];
+  // Max is the maxinum number of people who can sign up for this shift; zero
+  // means unlimited.
+  int32 max = 5 [(gogoproto.casttype) = "int"];
+  // SignedUp is the list of people who have signed up for this shift, ordered
+  // by sortName.
+  repeated int64 signed_up = 6 [(gogoproto.casttype) = "PersonID"];
+  // Declined is the list of people wha have declined this shift, ordered by
+  // sortName.
+  repeated int64 declined = 7 [(gogoproto.casttype) = "PersonID"];
+  // NewOpen is a flag indicating that the shift has been newly opened: either
+  // just created, or went from full to non-full.  The flag is cleared when
+  // email announcements about its being newly open have been sent.
+  bool new_open = 8;
 }
 
 message TextMessage {

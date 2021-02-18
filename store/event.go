@@ -38,6 +38,18 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 		}
 		tx.entry.Change("set event [%d] roles to %s", e.ID, strings.Join(rstr, ", "))
 	}
+	for _, s := range e.Shifts {
+		tx.entry.Change("add event [%d] shift %s-%s task %q min %d max %d newOpen %v", e.ID, s.Start, s.End, s.Task, s.NewOpen)
+		for _, p := range s.SignedUp {
+			tx.entry.Change("add event [%d] shift %s-%s task %q signedUp person %q [%d]", e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
+		}
+		for _, p := range s.Declined {
+			tx.entry.Change("add event [%d] shift %s-%s task %q declined person %q [%d]", e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
+		}
+	}
+	if e.SignupText != "" {
+		tx.entry.Change("set event [%d] signupText to %q", e.ID, e.SignupText)
+	}
 }
 
 // UpdateEvent updates an existing event in the database.
@@ -106,6 +118,92 @@ ROLES2:
 			}
 		}
 		tx.entry.Change("add event %s %q [%d] role %q [%d]", e.Date, e.Name, e.ID, tx.FetchRole(r).Name, r)
+	}
+	if oe.SignupText != e.SignupText {
+		if e.SignupText != "" {
+			tx.entry.Change("set event %s %q [%d] signupText to %q", e.Date, e.Name, e.ID, e.SignupText)
+		} else {
+			tx.entry.Change("clear event %s %q [%d] signupText", e.Date, e.Name, e.ID)
+		}
+	}
+SHIFT1:
+	for _, os := range oe.Shifts {
+		for _, s := range e.Shifts {
+			if os.Start == s.Start && os.Task == s.Task {
+				tx.updateShift(e, s, os)
+				continue SHIFT1
+			}
+		}
+		tx.entry.Change("remove event %s %q [%d] shift %s-%s task %q", e.Date, e.Name, e.ID, os.Start, os.End, os.Task)
+	}
+SHIFT2:
+	for _, s := range e.Shifts {
+		for _, os := range oe.Shifts {
+			if os.Start == s.Start && os.Task == s.Task {
+				continue SHIFT2
+			}
+		}
+		tx.entry.Change("add event %s %q [%d] shift %s-%s task %q min %d max %d newOpen %v", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Min, s.Max, s.NewOpen)
+		for _, p := range s.SignedUp {
+			tx.entry.Change("add event %s %q [%d] shift %s-%s task %q signedUp person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
+		}
+		for _, p := range s.Declined {
+			tx.entry.Change("add event %s %q [%d] shift %s-%s task %q declined person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
+		}
+	}
+}
+func (tx *Tx) updateShift(e *model.Event, s, os *model.Shift) {
+	if s.End != os.End {
+		tx.entry.Change("set event %s %q [%d] assignment %q shift at %s task %q end to %s", e.Date, e.Name, e.ID, s.Start, s.Task, s.End)
+	}
+	if s.Min != os.Min {
+		tx.entry.Change("set event %s %q [%d] shift %s-%s task %q min to %d", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Min)
+	}
+	if s.Max != os.Max {
+		tx.entry.Change("set event %s %q [%d] shift %s-%s task %q max to %d", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Max)
+	}
+	if s.NewOpen != os.NewOpen {
+		if s.NewOpen {
+			tx.entry.Change("set event %s %q [%d] shift %s-%s task %q newOpen", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
+		} else {
+			tx.entry.Change("clear event %s %q [%d] shift %s-%s task %q newOpen", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
+		}
+	}
+SIGNED1:
+	for _, op := range os.SignedUp {
+		for _, p := range s.SignedUp {
+			if op == p {
+				continue SIGNED1
+			}
+		}
+		tx.entry.Change("remove event %s %q [%d] shift %s-%s task %q signedUp person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(op).InformalName, op)
+	}
+SIGNED2:
+	for _, p := range s.SignedUp {
+		for _, op := range os.SignedUp {
+			if op == p {
+				continue SIGNED2
+			}
+		}
+		tx.entry.Change("add event %s %q [%d] shift %s-%s task %q signedUp person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
+	}
+DECLINE1:
+	for _, op := range os.Declined {
+		for _, p := range s.Declined {
+			if op == p {
+				continue DECLINE1
+			}
+		}
+		tx.entry.Change("remove event %s %q [%d] shift %s-%s task %q declined person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(op).InformalName, op)
+	}
+DECLINE2:
+	for _, p := range s.Declined {
+		for _, op := range os.Declined {
+			if op == p {
+				continue DECLINE2
+			}
+		}
+		tx.entry.Change("add event %s %q [%d] shift %s-%s task %q declined person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
 	}
 }
 

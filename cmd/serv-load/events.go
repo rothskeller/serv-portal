@@ -142,6 +142,126 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 					in.WantComma()
 				}
 				in.Delim(']')
+			case "signupText":
+				e.SignupText = in.String()
+			case "shifts":
+				in.Delim('[')
+				for !in.IsDelim(']') {
+					if in.IsNull() {
+						in.Skip()
+					} else {
+						var s model.Shift
+						in.Delim('{')
+						for !in.IsDelim('}') {
+							key := in.UnsafeString()
+							in.WantColon()
+							if in.IsNull() {
+								in.Skip()
+								in.WantComma()
+								continue
+							}
+							switch key {
+							case "start":
+								s.Start = in.String()
+							case "end":
+								s.End = in.String()
+							case "task":
+								s.Task = in.String()
+							case "min":
+								s.Min = in.Int()
+							case "max":
+								s.Max = in.Int()
+							case "newOpen":
+								s.NewOpen = in.Bool()
+							case "signedUp":
+								in.Delim('[')
+								for !in.IsDelim(']') {
+									if in.IsNull() {
+										in.Skip()
+									} else {
+										var pid model.PersonID
+										if in.IsDelim('{') {
+											var seen bool
+											in.Delim('{')
+											for !in.IsDelim('}') {
+												key := in.UnsafeString()
+												in.WantColon()
+												if in.IsNull() {
+													in.Skip()
+													in.WantComma()
+													continue
+												}
+												switch key {
+												case "id":
+													pid = model.PersonID(in.Int())
+													seen = true
+												default:
+													in.SkipRecursive()
+												}
+												in.WantComma()
+											}
+											in.Delim('}')
+											if !seen {
+												in.AddError(errors.New("missing assignments.shifts.signedUp.id"))
+											}
+										} else {
+											pid = model.PersonID(in.Int())
+										}
+										s.SignedUp = append(s.SignedUp, pid)
+									}
+									in.WantComma()
+								}
+								in.Delim(']')
+							case "declined":
+								in.Delim('[')
+								for !in.IsDelim(']') {
+									if in.IsNull() {
+										in.Skip()
+									} else {
+										var pid model.PersonID
+										if in.IsDelim('{') {
+											var seen bool
+											in.Delim('{')
+											for !in.IsDelim('}') {
+												key := in.UnsafeString()
+												in.WantColon()
+												if in.IsNull() {
+													in.Skip()
+													in.WantComma()
+													continue
+												}
+												switch key {
+												case "id":
+													pid = model.PersonID(in.Int())
+													seen = true
+												default:
+													in.SkipRecursive()
+												}
+												in.WantComma()
+											}
+											in.Delim('}')
+											if !seen {
+												in.AddError(errors.New("missing assignments.shifts.declined.id"))
+											}
+										} else {
+											pid = model.PersonID(in.Int())
+										}
+										s.Declined = append(s.Declined, pid)
+									}
+									in.WantComma()
+								}
+								in.Delim(']')
+							default:
+								in.SkipRecursive()
+							}
+							in.WantComma()
+						}
+						in.Delim('}')
+						e.Shifts = append(e.Shifts, &s)
+					}
+					in.WantComma()
+				}
+				in.Delim(']')
 			case "attendance":
 				in.Delim('[')
 				for !in.IsDelim(']') {

@@ -33,6 +33,7 @@ export default defineComponent({
       const tabs = [] as Array<TabDef>
       tabs.push({ to: '/events/calendar', label: 'Calendar' })
       tabs.push({ to: '/events/list', label: 'List' })
+      tabs.push({ to: '/events/signups', label: 'Signups' })
       if (!route.params.id && me.value.canAddEvents)
         tabs.push({ to: '/events/NEW/edit', label: 'Add Event' })
       if (route.params.id && route.params.id !== 'NEW')

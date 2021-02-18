@@ -67,6 +67,14 @@ const router = createRouter({
           component: () => import('./pages/events/EventsList.vue'),
         },
         {
+          path: 'signups',
+          component: () => import('./pages/events/EventSignups'),
+        },
+        {
+          path: 'signups/:id',
+          component: () => import('./pages/events/EventSignups'),
+        },
+        {
           path: ':id',
           component: () => import('./pages/events/EventView.vue'),
         },

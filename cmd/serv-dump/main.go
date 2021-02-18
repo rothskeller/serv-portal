@@ -118,7 +118,58 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.String(roleName(tx, r))
 		out.RawByte('}')
 	}
-	out.RawString(`],"attendance":[`)
+	out.RawString(`],"shifts":[`)
+	for i, s := range e.Shifts {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"start":`)
+		out.String(s.Start)
+		out.RawString(`,"end":`)
+		out.String(s.End)
+		out.RawString(`,"task":`)
+		out.String(s.Task)
+		out.RawString(`,"min":`)
+		out.Int(s.Min)
+		out.RawString(`,"max":`)
+		out.Int(s.Max)
+		if s.NewOpen {
+			out.RawString(`,"newOpen":true`)
+		}
+		out.RawString(`,"signedUp":[`)
+		for i, p := range s.SignedUp {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"id":`)
+			out.Int(int(p))
+			out.RawString(`,"informalName":`)
+			out.String(personName(tx, p))
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+		if len(s.Declined) != 0 {
+			out.RawString(`,"declined":[`)
+			for i, p := range s.Declined {
+				if i != 0 {
+					out.RawByte(',')
+				}
+				out.RawString(`{"id":`)
+				out.Int(int(p))
+				out.RawString(`,"informalName":`)
+				out.String(personName(tx, p))
+				out.RawByte('}')
+			}
+			out.RawByte(']')
+		}
+		out.RawByte('}')
+	}
+	out.RawByte(']')
+	if e.SignupText != "" {
+		out.RawString(`,"signupText":`)
+		out.String(e.SignupText)
+	}
+	out.RawString(`,"attendance":[`)
 	var eattend = tx.FetchAttendanceByEvent(e)
 	var pids = make([]model.PersonID, 0, len(eattend))
 	for p := range eattend {
