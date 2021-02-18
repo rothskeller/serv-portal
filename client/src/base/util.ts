@@ -24,8 +24,8 @@ export function propagateModel<T>(
 // form when it is non-empty so that the form knows its contents aren't valid.
 export function propagateError(id: string, error: WatchSource<string>) {
   const setValidity = inject<(id: string, isValid: boolean) => void>('setValidity')
-  watch(error, () => {
-    setValidity?.(id, !error)
+  watch(error, (n) => {
+    setValidity?.(id, !n)
   })
 }
 
