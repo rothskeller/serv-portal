@@ -53,11 +53,16 @@
 #events-signup {
   margin: 1.5rem 0.75rem;
 }
+.events-signup-date {
+  color: #888;
+}
 .events-signup-event {
   font-size: 1.25rem;
 }
 .events-signup-text {
   margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
 }
 .events-signup-shifts {
   display: grid;
@@ -86,6 +91,12 @@
 }
 .events-signup-status {
   line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+.events-signup-list {
+  grid-column: 1 / 3;
+  margin-left: 3rem;
 }
 #events-signup-buttons {
   display: flex;

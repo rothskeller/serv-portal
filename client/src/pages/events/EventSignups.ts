@@ -1,16 +1,21 @@
 // EventSignups displays the event signups page.
 
-import { defineComponent, h, ref, VNode } from 'vue'
+import moment from 'moment-mini'
+import { defineComponent, h, inject, Ref, ref, VNode } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import axios from '../../plugins/axios'
 import { SButton, SCheck, SIcon, SSpinner } from '../../base'
 import './events.css'
-import { useRoute } from 'vue-router'
+import setPage from '../../plugins/page'
+import { LoginData } from '../../plugins/login'
 
 type GetEventSignups = {
   id: number
+  sortName: string
   events: Array<GetEventSignupsEvent>
   // added locally
   saved: boolean
+  loggedIn: boolean
 }
 type GetEventSignupsEvent = {
   id: number
@@ -28,9 +33,14 @@ type GetEventSignupsShift = {
   min: number
   max: number
   count: number
+  list: Array<{
+    id: number
+    sortName: string
+  }>
   signedUp: boolean
   // added locally
   baseCount: number
+  expanded: boolean
 }
 
 const EventSignups = defineComponent({
@@ -38,6 +48,8 @@ const EventSignups = defineComponent({
   setup() {
     const route = useRoute()
     const data = ref<GetEventSignups>()
+    const me = inject<Ref<LoginData>>('me')!
+    setPage({ title: 'Event Signups' })
 
     // Load the data on startup.
     loadData()
@@ -47,10 +59,12 @@ const EventSignups = defineComponent({
           `/api/events/signups${route.params.id ? `/${route.params.id}` : ''}`
         )
       ).data
+      data.value.loggedIn = !!me.value
       data.value.events.forEach((e) => {
         if (!e.shifts.find((s) => s.signedUp)) e.declined = true
         e.shifts.forEach((s) => {
           s.baseCount = s.signedUp ? s.count - 1 : s.count
+          s.expanded = false
         })
       })
     }
@@ -102,7 +116,12 @@ function renderEvent(d: GetEventSignups, e: GetEventSignupsEvent) {
     })
   }
   return [
-    h('div', { class: 'events-signup-event' }, `${e.date} ${e.name}`),
+    h(
+      'div',
+      { class: 'events-signup-date' },
+      moment(e.date, 'YYYY-MM-DD').format('dddd, MMMM D, YYYY')
+    ),
+    h('div', { class: 'events-signup-event' }, e.name),
     e.signupText ? h('div', { class: 'events-signup-text', innerHTML: e.signupText }) : null,
     h('div', { class: 'events-signup-shifts' }, [
       e.shifts.map((s) => renderShift(d, e, s)),
@@ -141,10 +160,14 @@ function renderShift(d: GetEventSignups, e: GetEventSignupsEvent, s: GetEventSig
       'onUpdate:modelValue': onUpdate,
     }),
     renderStatus(e, s),
+    s.expanded ? renderList(d, e, s) : null,
   ]
 }
 
 function renderStatus(e: GetEventSignupsEvent, s: GetEventSignupsShift) {
+  function onClick() {
+    s.expanded = !s.expanded
+  }
   const count = s.signedUp ? s.baseCount + 1 : s.baseCount
   // If the count and the min are both 10 or less, we can use silhouettes.
   if (count <= 10 && s.min <= 10) {
@@ -160,12 +183,39 @@ function renderStatus(e: GetEventSignupsEvent, s: GetEventSignupsShift) {
     else if (s.max !== 0)
       silhouettes.push(h('span', { class: 'events-signup-max' }, `(${s.max} allowed)`))
     else silhouettes.push(h('span', { class: 'events-signup-max' }, '(no maximum)'))
-    return h('div', { class: 'events-signup-status' }, silhouettes)
+    return h('div', { class: 'events-signup-status', onClick }, silhouettes)
   }
 
   // If the silhouettes won't fit, use text.
   if (count >= s.min)
-    if (s.max > 0) return h('div', `${count} signed up, ${s.max} allowed`)
-    else return h('div', `${count} signed up (no maximum)`)
-  return h('div', `${count} signed up, need ${s.min}`)
+    if (s.max > 0)
+      return h(
+        'div',
+        { class: 'events-signup-status', onClick },
+        `${count} signed up, ${s.max} allowed`
+      )
+    else
+      return h('div', { class: 'events-signup-status', onClick }, `${count} signed up (no maximum)`)
+  return h('div', { class: 'events-signup-status', onClick }, `${count} signed up, need ${s.min}`)
+}
+
+function renderList(d: GetEventSignups, e: GetEventSignupsEvent, s: GetEventSignupsShift) {
+  return h('div', { class: 'events-signup-list' }, [
+    s.list.map((p) =>
+      h(
+        'div',
+        d.loggedIn
+          ? h(RouterLink, { to: `/api/person/${p.id}` }, p.sortName)
+          : h('span', p.sortName)
+      )
+    ),
+    s.signedUp
+      ? h(
+          'div',
+          d.loggedIn
+            ? h(RouterLink, { to: `/api/person/${d.id}` }, d.sortName)
+            : h('span', d.sortName)
+        )
+      : null,
+  ])
 }

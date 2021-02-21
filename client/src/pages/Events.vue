@@ -3,8 +3,9 @@ Events displays the list of events.
 -->
 
 <template lang="pug">
-TabPage(:tabs='tabs')
+TabPage(v-if='me', :tabs='tabs')
   router-view(:onLoadEvent='onLoadEvent')
+router-view(v-else)
 </template>
 
 <script lang="ts">
@@ -50,7 +51,7 @@ export default defineComponent({
       return tabs
     })
 
-    return { tabs, onLoadEvent }
+    return { me, tabs, onLoadEvent }
   },
 })
 </script>

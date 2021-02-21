@@ -73,6 +73,7 @@ const router = createRouter({
         {
           path: 'signups/:id',
           component: () => import('./pages/events/EventSignups'),
+          meta: { public: true },
         },
         {
           path: ':id',

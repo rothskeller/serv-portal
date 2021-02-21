@@ -30,6 +30,8 @@ func GetEventSignups(r *util.Request, idstr string) error {
 	}
 	out.RawString(`{"id":`)
 	out.Int(int(person.ID))
+	out.RawString(`,"sortName":`)
+	out.String(person.SortName)
 	out.RawString(`,"events":[`)
 	for _, e := range r.Tx.FetchEvents(time.Now().Format("2006-01-02"), "2099-12-31") {
 		if len(e.Shifts) == 0 {
@@ -63,6 +65,7 @@ func GetEventSignups(r *util.Request, idstr string) error {
 		out.RawString(`,"shifts":[`)
 		for i, s := range e.Shifts {
 			var signedUp bool
+			var first = true
 			if i != 0 {
 				out.RawByte(',')
 			}
@@ -78,13 +81,25 @@ func GetEventSignups(r *util.Request, idstr string) error {
 			out.Int(s.Max)
 			out.RawString(`,"count":`)
 			out.Int(len(s.SignedUp))
-			out.RawString(`,"signedUp":`)
+			out.RawString(`,"list":[`)
 			for _, p := range s.SignedUp {
 				if p == person.ID {
 					signedUp = true
 					break
+				} else {
+					if first {
+						first = false
+					} else {
+						out.RawByte(',')
+					}
+					out.RawString(`{"id":`)
+					out.Int(int(p))
+					out.RawString(`,"sortName":`)
+					out.String(r.Tx.FetchPerson(p).SortName)
+					out.RawByte('}')
 				}
 			}
+			out.RawString(`],"signedUp":`)
 			out.Bool(signedUp)
 			out.RawByte('}')
 		}
