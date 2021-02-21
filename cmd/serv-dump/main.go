@@ -133,8 +133,8 @@ func dumpEvent(tx *store.Tx, out *jwriter.Writer, e *model.Event) {
 		out.Int(s.Min)
 		out.RawString(`,"max":`)
 		out.Int(s.Max)
-		if s.NewOpen {
-			out.RawString(`,"newOpen":true`)
+		if s.Announce {
+			out.RawString(`,"announce":true`)
 		}
 		out.RawString(`,"signedUp":[`)
 		for i, p := range s.SignedUp {

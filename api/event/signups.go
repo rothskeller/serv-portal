@@ -136,7 +136,6 @@ func PostEventSignups(r *util.Request, idstr string) error {
 			signedUp bool
 			declined bool
 			found    bool
-			opened   bool
 		)
 		if len(values) != 1 {
 			return errors.New("duplicate form parameter")
@@ -180,9 +179,6 @@ func PostEventSignups(r *util.Request, idstr string) error {
 		if shift == nil {
 			return errors.New("event has no such shift")
 		}
-		if shift.Max > 0 && len(shift.SignedUp) >= shift.Max && !signedUp {
-			opened = true // tentatively
-		}
 		found = false
 		for i, p := range shift.SignedUp {
 			if p == person.ID {
@@ -195,9 +191,6 @@ func PostEventSignups(r *util.Request, idstr string) error {
 		}
 		if !found && signedUp {
 			shift.SignedUp = append(shift.SignedUp, person.ID)
-		}
-		if opened && len(shift.SignedUp) < shift.Max {
-			shift.NewOpen = true
 		}
 		found = false
 		for i, p := range shift.Declined {

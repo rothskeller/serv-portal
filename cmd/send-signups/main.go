@@ -52,7 +52,10 @@ func main() {
 		}
 		var touched = false
 		for _, s := range e.Shifts {
-			if !s.NewOpen {
+			if !s.Announce {
+				continue
+			}
+			if s.Max != 0 && len(s.SignedUp) >= s.Max {
 				continue
 			}
 			for _, p := range people {
@@ -63,7 +66,6 @@ func main() {
 					toSend[p][e] = true
 				}
 			}
-			s.NewOpen = false
 			touched = true
 		}
 		if touched {

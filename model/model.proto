@@ -217,10 +217,9 @@ message Shift {
   // Declined is the list of people wha have declined this shift, ordered by
   // sortName.
   repeated int64 declined = 7 [(gogoproto.casttype) = "PersonID"];
-  // NewOpen is a flag indicating that the shift has been newly opened: either
-  // just created, or went from full to non-full.  The flag is cleared when
-  // email announcements about its being newly open have been sent.
-  bool new_open = 8;
+  // Announce is a flag indicating that this shift (if open) should be included
+  // in email announcements of open shifts.
+  bool announce = 8;
 }
 
 message TextMessage {

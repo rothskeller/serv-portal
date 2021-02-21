@@ -738,8 +738,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel5(in *jlexer.Lexer, out *S
 				}
 				in.Delim(']')
 			}
-		case "new_open":
-			out.NewOpen = bool(in.Bool())
+		case "announce":
+			out.Announce = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -838,15 +838,15 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel5(out *jwriter.Writer, in 
 			out.RawByte(']')
 		}
 	}
-	if in.NewOpen {
-		const prefix string = ",\"new_open\":"
+	if in.Announce {
+		const prefix string = ",\"announce\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.Bool(bool(in.NewOpen))
+		out.Bool(bool(in.Announce))
 	}
 	out.RawByte('}')
 }

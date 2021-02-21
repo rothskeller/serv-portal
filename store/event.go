@@ -39,7 +39,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 		tx.entry.Change("set event [%d] roles to %s", e.ID, strings.Join(rstr, ", "))
 	}
 	for _, s := range e.Shifts {
-		tx.entry.Change("add event [%d] shift %s-%s task %q min %d max %d newOpen %v", e.ID, s.Start, s.End, s.Task, s.NewOpen)
+		tx.entry.Change("add event [%d] shift %s-%s task %q min %d max %d announce %v", e.ID, s.Start, s.End, s.Task, s.Announce)
 		for _, p := range s.SignedUp {
 			tx.entry.Change("add event [%d] shift %s-%s task %q signedUp person %q [%d]", e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
 		}
@@ -143,7 +143,7 @@ SHIFT2:
 				continue SHIFT2
 			}
 		}
-		tx.entry.Change("add event %s %q [%d] shift %s-%s task %q min %d max %d newOpen %v", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Min, s.Max, s.NewOpen)
+		tx.entry.Change("add event %s %q [%d] shift %s-%s task %q min %d max %d announce %v", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Min, s.Max, s.Announce)
 		for _, p := range s.SignedUp {
 			tx.entry.Change("add event %s %q [%d] shift %s-%s task %q signedUp person %q [%d]", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
 		}
@@ -162,11 +162,11 @@ func (tx *Tx) updateShift(e *model.Event, s, os *model.Shift) {
 	if s.Max != os.Max {
 		tx.entry.Change("set event %s %q [%d] shift %s-%s task %q max to %d", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Max)
 	}
-	if s.NewOpen != os.NewOpen {
-		if s.NewOpen {
-			tx.entry.Change("set event %s %q [%d] shift %s-%s task %q newOpen", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
+	if s.Announce != os.Announce {
+		if s.Announce {
+			tx.entry.Change("set event %s %q [%d] shift %s-%s task %q announce", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
 		} else {
-			tx.entry.Change("clear event %s %q [%d] shift %s-%s task %q newOpen", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
+			tx.entry.Change("clear event %s %q [%d] shift %s-%s task %q announce", e.Date, e.Name, e.ID, s.Start, s.End, s.Task)
 		}
 	}
 SIGNED1:

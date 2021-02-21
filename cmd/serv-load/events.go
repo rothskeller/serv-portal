@@ -171,8 +171,8 @@ func loadEvents(tx *store.Tx, in *jlexer.Lexer) {
 								s.Min = in.Int()
 							case "max":
 								s.Max = in.Int()
-							case "newOpen":
-								s.NewOpen = in.Bool()
+							case "announce":
+								s.Announce = in.Bool()
 							case "signedUp":
 								in.Delim('[')
 								for !in.IsDelim(']') {
