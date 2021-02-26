@@ -32,7 +32,7 @@ shown at / when the user is not logged in.
           | Email <a href="mailto:listos@sunnyvaleserv.org">Listos@SunnyvaleSERV.org</a>
     #public-folder-spanish.public-folder
       .public-folder-name Preparación para desastres
-      img.public-folder-logo(src='./public/spanish-logo.png')
+      img.public-folder-logo(src='./public/listos-logo.png')
       .public-folder-body.
         Las clases de preparación para desastres de <b>Listos
         California,</b> impartidas por voluntarios de SERV, enseñan cómo
