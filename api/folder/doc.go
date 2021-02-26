@@ -57,8 +57,23 @@ func postNewFiles(r *util.Request, folder *model.Folder) (err error) {
 	children = r.Tx.FetchSubFolders(folder)
 	docs = r.Tx.FetchDocuments(folder)
 	for _, f := range r.MultipartForm.File["file"] {
-		if f.Filename == "" || f.Filename[0] == '.' || strings.ContainsAny(f.Filename, ":/") {
-			return errors.New("invalid filename")
+		if f.Filename == "" {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not be empty.", f.Filename)
+		}
+		if f.Filename[0] == ' ' {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not start with a space.", f.Filename)
+		}
+		if f.Filename[0] == '.' {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not start with a dot.", f.Filename)
+		}
+		if f.Filename[len(f.Filename)-1] == ' ' {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not end with a space.", f.Filename)
+		}
+		if f.Filename[len(f.Filename)-1] == '.' {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not end with a dot.", f.Filename)
+		}
+		if strings.IndexAny(f.Filename, "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f<>:\"/\\|?*") >= 0 {
+			return util.SendConflict(r, "The filename “%s” is not valid.  The filename must not contain < > : \" / \\ | ? * characters or unprintable characters.", f.Filename)
 		}
 		url := nameToURL(f.Filename)
 		for _, child := range children {

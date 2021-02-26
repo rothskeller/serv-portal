@@ -40,13 +40,8 @@ export default defineComponent({
       if (!files.value || !files.value.length) return 'Select the file(s) to be added.'
       for (let i = 0; i < files.value.length; i++) {
         const file = files.value.item(i)!
-        if (
-          !file.name ||
-          file.name[0] === '.' ||
-          file.name.includes(':') ||
-          file.name.includes('/')
-        )
-          return `“${file.name}” is not a legal file name.`
+        const fnerr = validFilename(file.name)
+        if (fnerr) return `“${file.name}” is not a legal file name.  ${fnerr}`
       }
       if (filesConflict.value) return filesConflict.value
       return ''
@@ -89,6 +84,17 @@ export default defineComponent({
     return { files, filesError, modal, onCancel, onSubmit, progress, show, submitting }
   },
 })
+
+function validFilename(fn: string): string {
+  if (fn === '') return 'The filename must not be empty.'
+  if (fn[0] === ' ') return 'The filename must not start with a space.'
+  if (fn[0] === '.') return 'The filename must not start with a dot.'
+  if (fn[fn.length - 1] === '.') return 'The filename must not end with a dot.'
+  if (fn[fn.length - 1] === ' ') return 'The filename must not end with a space.'
+  if (fn.match(/[\x00-\x1F\x7F<>:"/\\|?*]/))
+    return 'The filename must not contain < > : " / \\ | ? * characters or unprintable characters.'
+  return ''
+}
 </script>
 
 <style lang="postcss">
