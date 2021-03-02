@@ -42,7 +42,10 @@ const PersonActivityEvent = defineComponent({
               type: 'number',
               min: '0',
               step: '0.5',
-              'onUpdate:modelValue': (v: string) => (props.event.minutes = parseFloat(v) * 60.0),
+              'onUpdate:modelValue': (v: string) => {
+                props.event.minutes = parseFloat(v) * 60.0
+                if (isNaN(props.event.minutes)) props.event.minutes = 0
+              },
             })
           : h('div', { class: 'person-activity-hours' }, [
               fmtMinutes(props.event.minutes),
