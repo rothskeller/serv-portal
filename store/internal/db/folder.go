@@ -17,7 +17,8 @@ package db
 // of the file are the link URL (with a trailing newline).  Links have mode
 // 0600; the mode is how they are distinguished from files.
 //
-// File and link names cannot start with a dot or contain colons or slashes.
+// File and link names cannot start or end with a dot or a space, or contain any
+// of a variety of characters that are unsafe on either Unix or Windows.
 //
 // The code in this module will not allow silent overwriting of files via
 // rename.  It is up to higher level code to remove files prior to attempting to

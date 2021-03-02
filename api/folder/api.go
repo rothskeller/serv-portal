@@ -129,7 +129,7 @@ func DeleteDocument(r *util.Request) (err error) {
 	var (
 		folder *model.Folder
 		doc    *model.Document
-		path   = r.Path[13:] // length of "/api/document"ng
+		path   = r.Path[13:] // length of "/api/document"
 	)
 	if folder, doc = r.Tx.FetchDocument(path); folder == nil {
 		return util.NotFound
