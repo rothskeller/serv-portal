@@ -188,10 +188,11 @@ func hoursPermissions(caller, target *model.Person, event *model.Event, today st
 		return true, true, true
 	}
 	// The hours can be edited if the caller is the target person, the
-	// caller attended the event or is a member of the event org, and the
-	// attendance for the event itself is editable.
+	// attendance for the event itself is editable, and either the caller
+	// attended the event, the caller is a member of the event org, or the
+	// event is a placeholder for an open org.
 	if eventAttendanceEditable && caller == target &&
-		(hasHours || target.Orgs[event.Org].PrivLevel >= model.PrivMember) {
+		(hasHours || target.Orgs[event.Org].PrivLevel >= model.PrivMember || isOpenPlaceholder(event)) {
 		return true, false, true
 	}
 	// The event can be seen, with the attendance type, if it has hours
@@ -206,4 +207,13 @@ func hoursPermissions(caller, target *model.Person, event *model.Event, today st
 	}
 	// Otherwise, no permissions.
 	return false, false, false
+}
+
+// isOpenPlaceholder returns whether the event is a placeholder (i.e., "Other
+// XXX Hours") for an org that anyone can report hours for, whether they belong
+// to it or not.
+func isOpenPlaceholder(event *model.Event) bool {
+	// Admin and CERT-D are the only ones that you have to belong to in
+	// order to report hours.
+	return event.Type == model.EventHours && event.Org != model.OrgAdmin && event.Org != model.OrgCERTD
 }
