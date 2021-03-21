@@ -213,7 +213,7 @@ func hoursPermissions(caller, target *model.Person, event *model.Event, today st
 // XXX Hours") for an org that anyone can report hours for, whether they belong
 // to it or not.
 func isOpenPlaceholder(event *model.Event) bool {
-	// Admin and CERT-D are the only ones that you have to belong to in
-	// order to report hours.
-	return event.Type == model.EventHours && event.Org != model.OrgAdmin && event.Org != model.OrgCERTD
+	// Admin is the only one that you have to belong to in order to report
+	// hours.
+	return event.Type == model.EventHours && event.Org != model.OrgAdmin
 }
