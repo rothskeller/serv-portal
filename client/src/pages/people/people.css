@@ -260,3 +260,7 @@ input.person-activity-hours {
     line-height: 1.2;
   }
 }
+#person-activity-unregistered {
+  margin: 1.5rem 0.75rem;
+  max-width: 600px;
+}
