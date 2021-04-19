@@ -32,6 +32,9 @@ var kflag = flag.Bool("k", false, "keep existing HoursTokens")
 var pflags = peopleList{}
 
 func main() {
+	var (
+		loginID string
+	)
 	mflag = monthArg(time.Now().AddDate(0, -1, 0))
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
@@ -62,6 +65,7 @@ func main() {
      "remind" means to send an email reminder for submitting hours
      "submit" means to submit hours to Volgistics
      "report" means to email a summary report
+     "status" means to update volunteer status in Volgistics
 `)
 		os.Exit(2)
 	}
@@ -77,9 +81,17 @@ func main() {
 		case "remind":
 			sendReminders(tx)
 		case "submit":
-			submitHours(tx)
+			if loginID == "" {
+				loginID = logInToVolgistics()
+			}
+			submitHours(tx, loginID)
 		case "report":
 			reportHours(tx)
+		case "status":
+			if loginID == "" {
+				loginID = logInToVolgistics()
+			}
+			markActive(tx, loginID)
 		default:
 			fmt.Fprintf(os.Stderr, "ERROR: invalid operation %q\n", op)
 			flag.Usage()
