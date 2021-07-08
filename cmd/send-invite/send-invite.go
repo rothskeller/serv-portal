@@ -78,7 +78,7 @@ func main() {
 	tx.UpdatePerson(person)
 	tx.Commit()
 	body = sendmail.NewCRLFWriter(&buf)
-	fmt.Fprintf(body, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
+	fmt.Fprintf(body, `From: SunnyvaleSERV.org <cert@sunnyvale.ca.gov>
 To: %s
 Date: %s
 Subject: Welcome to SunnyvaleSERV.org!

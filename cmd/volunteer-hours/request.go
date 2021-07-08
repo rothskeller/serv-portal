@@ -107,7 +107,7 @@ func notifyNotInVolgistics(person *model.Person, mailer *sendmail.Mailer) {
 		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{person.Email2}
 	}
-	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
+	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <cert@sunnyvale.ca.gov>
 Subject: SERV Volunteer Hours for %s
 Content-Type: multipart/alternative; boundary="BOUNDARY"
 MIME-Version: 1.0
@@ -134,7 +134,7 @@ Content-Transfer-Encoding: quoted-printable
 
 --BOUNDARY--
 `)
-	if err := mailer.SendMessage("serv@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
+	if err := mailer.SendMessage("cert@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: can't send email to %s: %s\n", person.InformalName, err)
 	}
 }
@@ -232,7 +232,7 @@ func sendRequest(
 	}
 	data.Total = fmt.Sprintf("%.1f Hours", total/60)
 	crlf = sendmail.NewCRLFWriter(&buf)
-	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
+	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <cert@sunnyvale.ca.gov>
 Content-Type: multipart/alternative; boundary="BOUNDARY"
 MIME-Version: 1.0
 Subject: %sSERV Volunteer Hours for %s
@@ -278,7 +278,7 @@ Content-Transfer-Encoding: quoted-printable
 
 --BOUNDARY--
 `)
-	if err := mailer.SendMessage("serv@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
+	if err := mailer.SendMessage("cert@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: can't send email to %s: %s\n", person.InformalName, err)
 	}
 }

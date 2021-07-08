@@ -162,7 +162,7 @@ func sendEmail(mailer *sendmail.Mailer, p *model.Person, emap map[*model.Event]b
 		fmt.Fprintf(crlf, "To: %s\n", &ma)
 		toaddrs = []string{p.Email2}
 	}
-	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <serv@sunnyvale.ca.gov>
+	fmt.Fprintf(crlf, `From: SunnyvaleSERV.org <cert@sunnyvale.ca.gov>
 Subject: SERV Volunteer Shifts Available
 Content-Type: multipart/alternative; boundary="BOUNDARY"
 MIME-Version: 1.0
@@ -189,7 +189,7 @@ Content-Transfer-Encoding: quoted-printable
 
 --BOUNDARY--
 `)
-	if err := mailer.SendMessage("serv@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
+	if err := mailer.SendMessage("cert@sunnyvale.ca.gov", toaddrs, buf.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: can't send email to %s: %s\n", p.InformalName, err)
 	}
 }
