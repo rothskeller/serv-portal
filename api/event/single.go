@@ -35,7 +35,7 @@ func GetEvent(r *util.Request, idstr string) error {
 		if r.Person.Orgs[event.Org].PrivLevel >= model.PrivLeader {
 			canEdit = true
 			canViewAttendance = true
-			if !attendanceFinalized(event.Date) {
+			if !attendanceFinalized(event.Date) || r.Person.Roles[model.Webmaster] {
 				canEditAttendance = true
 			}
 		}

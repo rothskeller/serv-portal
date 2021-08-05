@@ -22,7 +22,7 @@ func PostEventAttendance(r *util.Request, idstr string) error {
 	if r.Person.Orgs[event.Org].PrivLevel < model.PrivLeader {
 		return util.Forbidden
 	}
-	if attendanceFinalized(event.Date) {
+	if attendanceFinalized(event.Date) && !r.Person.Roles[model.Webmaster] {
 		return util.Forbidden
 	}
 	r.ParseMultipartForm(1048576)
