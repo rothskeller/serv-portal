@@ -284,7 +284,7 @@ func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonI
 		extendTo := time.Date(edate.Year()+1, edate.Month(), edate.Day(), 0, 0, 0, 0, time.Local)
 		eatt := tx.FetchAttendanceByEvent(e)
 		for pid, ai := range eatt {
-			if ai.Minutes == 0 || ai.Type == model.AttendAsAbsent {
+			if ai.Type == model.AttendAsAbsent {
 				continue
 			}
 			if _, ok := people[pid]; !ok {
