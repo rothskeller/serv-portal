@@ -77,6 +77,17 @@ func sendRequests(tx *store.Tx) {
 		}
 		sendRequest(p, mailer, events, eatt, false)
 	}
+	// Clear the HoursReminder flag on any other people.
+	if !*kflag {
+		for _, p := range tx.FetchPeople() {
+			if people[p.ID] != nil || !p.HoursReminder {
+				continue
+			}
+			tx.WillUpdatePerson(p)
+			p.HoursReminder = false
+			tx.UpdatePerson(p)
+		}
+	}
 }
 
 func notifyNotInVolgistics(person *model.Person, mailer *sendmail.Mailer) {
