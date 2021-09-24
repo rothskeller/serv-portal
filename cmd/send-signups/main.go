@@ -1,5 +1,9 @@
 // send-signups sends emails to people to let them know of new shifts available
 // that they can sign up for.
+//
+// For debugging, a person ID can be specified as a command line argument.  If
+// so, only that person will receive an email, and the email will include even
+// unannounced shifts.
 package main
 
 import (
@@ -11,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"sort"
+	"strconv"
 	ttemplate "text/template"
 	"time"
 
@@ -52,7 +57,7 @@ func main() {
 		}
 		var touched = false
 		for _, s := range e.Shifts {
-			if !s.Announce {
+			if !s.Announce && len(os.Args) == 1 {
 				continue
 			}
 			if s.Max != 0 && len(s.SignedUp) >= s.Max {
@@ -90,6 +95,11 @@ func shouldSend(tx *store.Tx, e *model.Event, s *model.Shift, p *model.Person) b
 
 	// People with email disabled, or no address, are obvious no-sends.
 	if p.NoEmail || (p.Email == "" && p.Email2 == "") {
+		return false
+	}
+	// If a person ID was specified on the command line, and this is not
+	// that person, don't send.
+	if len(os.Args) > 1 && strconv.Itoa(int(p.ID)) != os.Args[1] {
 		return false
 	}
 	// Event org leaders always get notice.
