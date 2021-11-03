@@ -176,7 +176,7 @@ func isEditableMonth(month string) (today string, editableMonth bool) {
 // the event.
 func hoursPermissions(caller, target *model.Person, event *model.Event, today string, editableMonth, hasHours bool) (canView, canViewType, canEdit bool) {
 	// We need to know whether attendance at the event itself is editable.
-	eventAttendanceEditable := editableMonth
+	eventAttendanceEditable := editableMonth && event.Type != model.EventSocial
 	if eventAttendanceEditable && event.Date > today && event.Type != model.EventHours {
 		eventAttendanceEditable = false
 	}
