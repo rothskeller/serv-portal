@@ -97,6 +97,9 @@ func reportHours(tx *store.Tx) {
 			report.Events = append(report.Events, ei)
 		}
 	}
+	for _, p := range people {
+		p.Total = (p.Total + 59) / 60
+	}
 	for assn := range report.ByGroup {
 		report.ByGroup[assn] = (report.ByGroup[assn] + 59) / 60
 	}
@@ -108,9 +111,6 @@ func reportHours(tx *store.Tx) {
 	})
 	if len(report.Leaders) > 10 {
 		report.Leaders = report.Leaders[:10]
-	}
-	for _, pi := range report.Leaders {
-		pi.Total = (pi.Total + 59) / 60
 	}
 	for _, pi := range people {
 		if pi.VolgisticsID == 0 {
