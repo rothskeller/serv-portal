@@ -260,9 +260,9 @@ func allowedOrgs(r *util.Request) (orgs map[model.Org]bool) {
 }
 
 // dateRanges generates the set of date ranges supported by the reports.
-func dateRanges() []attrepDateRange {
+func dateRanges() (ranges []attrepDateRange) {
 	var now = time.Now()
-	return []attrepDateRange{
+	ranges = []attrepDateRange{
 		{
 			tag:      "tm",
 			label:    "this month",
@@ -300,4 +300,36 @@ func dateRanges() []attrepDateRange {
 			dateTo:   time.Date(now.Year()-1, 12, 31, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
 		},
 	}
+	if now.Month() >= time.July {
+		ranges = append(ranges, []attrepDateRange{
+			{
+				tag:      "tf",
+				label:    "this fiscal year",
+				dateFrom: time.Date(now.Year(), 7, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+				dateTo:   time.Date(now.Year()+1, 6, 30, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			},
+			{
+				tag:      "lf",
+				label:    "last fiscal year",
+				dateFrom: time.Date(now.Year()-1, 7, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+				dateTo:   time.Date(now.Year(), 6, 30, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			},
+		}...)
+	} else {
+		ranges = append(ranges, []attrepDateRange{
+			{
+				tag:      "tf",
+				label:    "this fiscal year",
+				dateFrom: time.Date(now.Year()-1, 7, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+				dateTo:   time.Date(now.Year(), 6, 30, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			},
+			{
+				tag:      "lf",
+				label:    "last fiscal year",
+				dateFrom: time.Date(now.Year()-2, 7, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+				dateTo:   time.Date(now.Year()-1, 6, 30, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			},
+		}...)
+	}
+	return ranges
 }
