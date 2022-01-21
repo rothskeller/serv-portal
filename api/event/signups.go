@@ -85,7 +85,7 @@ func GetEventSignups(r *util.Request, idstr string) error {
 			for _, p := range s.SignedUp {
 				if p == person.ID {
 					signedUp = true
-					break
+					continue
 				} else {
 					if first {
 						first = false
