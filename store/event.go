@@ -3,7 +3,6 @@ package store
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"sunnyvaleserv.org/portal/model"
 )
@@ -89,7 +88,6 @@ func (tx *Tx) UpdateEvent(e *model.Event) {
 		} else {
 			tx.entry.Change("clear event %s %q [%d] renewsDSW", e.Date, e.Name, e.ID)
 		}
-		tx.recalculateDSWUntil(e.Org.DSWClass(), tx.Tx.FetchAttendanceByEvent(e), nil, nil)
 	}
 	if e.CoveredByDSW != oe.CoveredByDSW {
 		if e.CoveredByDSW {
@@ -226,78 +224,6 @@ func (tx *Tx) SaveEventAttendance(e *model.Event, attend map[model.PersonID]mode
 	for pid := range oattend {
 		if _, ok := attend[pid]; !ok {
 			tx.entry.Change("remove event %s %q [%d] person %q [%d] attendance", e.Date, e.Name, e.ID, tx.FetchPerson(pid).InformalName, pid)
-		}
-	}
-	tx.recalculateDSWUntil(e.Org.DSWClass(), attend, oattend, nil)
-}
-
-// recalculateDSWUntil recalculates the DSWUntil values, for the specified DSW
-// classification, for all people listed in either of the two provided maps or
-// the single provided pointer.
-func (tx *Tx) recalculateDSWUntil(class model.DSWClass, a1, a2 map[model.PersonID]model.AttendanceInfo, one *model.Person) {
-	var (
-		oldest time.Time
-		people = make(map[model.PersonID]*model.Person)
-	)
-	if a1 != nil {
-		for p := range a1 {
-			people[p] = nil
-		}
-	}
-	if a2 != nil {
-		for p := range a2 {
-			people[p] = nil
-		}
-	}
-	if one != nil {
-		people[one.ID] = one
-	}
-	for pid := range people {
-		if people[pid] == nil {
-			people[pid] = tx.FetchPerson(pid)
-			tx.WillUpdatePerson(people[pid])
-		}
-		if people[pid].DSWRegistrations == nil || people[pid].DSWRegistrations[class].IsZero() {
-			if people[pid].DSWUntil != nil && !people[pid].DSWUntil[class].IsZero() {
-				delete(people[pid].DSWUntil, class)
-				tx.UpdatePerson(people[pid])
-			}
-			delete(people, pid)
-			continue
-		}
-		if people[pid].DSWUntil == nil {
-			people[pid].DSWUntil = make(map[model.DSWClass]time.Time)
-		}
-		people[pid].DSWUntil[class] = people[pid].DSWRegistrations[class].AddDate(1, 0, 0)
-		if oldest.IsZero() || people[pid].DSWRegistrations[class].Before(oldest) {
-			oldest = people[pid].DSWRegistrations[class]
-		}
-	}
-	if oldest.IsZero() || len(people) == 0 {
-		return
-	}
-	for _, e := range tx.FetchEvents(oldest.Format("2006-01-02"), time.Now().Format("2006-01-02")) {
-		if !e.RenewsDSW || e.Org.DSWClass() != class {
-			continue
-		}
-		edate, _ := time.ParseInLocation("2006-01-02", e.Date, time.Local)
-		extendTo := time.Date(edate.Year()+1, edate.Month(), edate.Day(), 0, 0, 0, 0, time.Local)
-		eatt := tx.FetchAttendanceByEvent(e)
-		for pid, ai := range eatt {
-			if ai.Type == model.AttendAsAbsent {
-				continue
-			}
-			if _, ok := people[pid]; !ok {
-				continue
-			}
-			if !people[pid].DSWUntil[class].Before(edate) && people[pid].DSWUntil[class].Before(extendTo) {
-				people[pid].DSWUntil[class] = extendTo
-			}
-		}
-	}
-	for _, p := range people {
-		if p != one {
-			tx.UpdatePerson(p)
 		}
 	}
 }

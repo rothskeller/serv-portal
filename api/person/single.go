@@ -129,10 +129,12 @@ func GetPerson(r *util.Request, idstr string) error {
 			if person.DSWRegistrations != nil && !person.DSWRegistrations[c].IsZero() {
 				out.RawString(`,"registered":`)
 				out.String(person.DSWRegistrations[c].Format("2006-01-02"))
-				out.RawString(`,"expires":`)
-				out.String(person.DSWUntil[c].Format("2006-01-02"))
-				if person.DSWUntil[c].Before(time.Now()) {
-					out.RawString(`,"expired":true`)
+				if person.DSWUntil != nil && !person.DSWUntil[c].IsZero() {
+					out.RawString(`,"expires":`)
+					out.String(person.DSWUntil[c].Format("2006-01-02"))
+					if person.DSWUntil[c].Before(time.Now()) {
+						out.RawString(`,"expired":true`)
+					}
 				}
 			}
 			out.RawByte('}')

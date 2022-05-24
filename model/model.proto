@@ -126,9 +126,9 @@ message Person {
   // may or may not still be current.
   map<int32,google.protobuf.Timestamp> dsw_registrations = 36 [(gogoproto.customname) = "DSWRegistrations", (gogoproto.castkey) = "DSWClass", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
   // DSWUntil is a map from a DSWClass to the date on which the person's DSW
-  // registration in that classification expired or will expire.  This is cached
-  // derivable data, recalculated whenever attendance is recorded for this
-  // person.
+  // registration in that classification expired.  If someone has an entry in
+  // DSWRegistrations for a particular DSWClass and no corresponding entry in
+  // DSWUntil, that means their registration is current.
   map<int32,google.protobuf.Timestamp> dsw_until = 37 [(gogoproto.customname) = "DSWUntil", (gogoproto.castkey) = "DSWClass", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
   // Identification is a bitmask of the types of identification that have been
   // issued to this person (and should be retrieved if they leave).

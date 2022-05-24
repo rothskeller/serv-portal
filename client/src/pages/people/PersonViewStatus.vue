@@ -26,10 +26,14 @@ PersonViewSection(
       div DSW CERT
       template(v-if='person.status.dswCERT.expired')
         div(:style='{ color: person.status.dswCERT.needed ? "red" : null }') Expired on {{ person.status.dswCERT.expires }}
-      template(v-else-if='person.status.level == "admin"')
+      template(v-else-if='person.status.level == "admin" && person.status.dswCERT.expires')
         div Registered {{ person.status.dswCERT.registered }}, expires&nbsp;{{ person.status.dswCERT.expires.replace(/-/g, "\u2011") }}
-      template(v-else)
+      template(v-else-if='person.status.level == "admin"')
+        div Registered {{ person.status.dswCERT.registered }}
+      template(v-else-if='person.status.dswCERT.expires')
         div Expires on {{ person.status.dswCERT.expires }}
+      template(v-else)
+        div Registered
     template(v-else-if='person.status.dswCERT.needed')
       div DSW CERT
       div(style='color: red') Not registered
@@ -37,10 +41,14 @@ PersonViewSection(
       div DSW SARES
       template(v-if='person.status.dswComm.expired')
         div(:style='{ color: person.status.dswComm.needed ? "red" : null }') Expired on {{ person.status.dswComm.expires }}
-      template(v-else-if='person.status.level == "admin"')
+      template(v-else-if='person.status.level == "admin" && person.status.dswComm.expires')
         div Registered {{ person.status.dswComm.registered }}, expires&nbsp;{{ person.status.dswComm.expires.replace(/-/g, "\u2011") }}
-      template(v-else)
+      template(v-else-if='person.status.level == "admin"')
+        div Registered {{ person.status.dswComm.registered }}
+      template(v-else-if='person.status.dswComm.expires')
         div Expires on {{ person.status.dswComm.expires }}
+      template(v-else)
+        div Registered
     template(v-else-if='person.status.dswComm.needed')
       div DSW SARES
       div(style='color: red') Not registered

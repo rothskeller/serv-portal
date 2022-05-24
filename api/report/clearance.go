@@ -63,11 +63,17 @@ func getClearanceData(r *util.Request, params clearanceParameters) (data []*clea
 			continue
 		}
 		var row = clearanceRow{
-			id:             p.ID,
-			sortName:       p.SortName,
-			volgistics:     p.VolgisticsID != 0,
-			dswCERT:        p.DSWUntil != nil && p.DSWUntil[model.DSWCERT].After(now),
-			dswComm:        p.DSWUntil != nil && p.DSWUntil[model.DSWComm].After(now),
+			id:         p.ID,
+			sortName:   p.SortName,
+			volgistics: p.VolgisticsID != 0,
+			dswCERT: p.DSWRegistrations != nil &&
+				!p.DSWRegistrations[model.DSWCERT].IsZero() &&
+				!p.DSWRegistrations[model.DSWCERT].After(now) &&
+				(p.DSWUntil == nil || p.DSWUntil[model.DSWCERT].Before(now)),
+			dswComm: p.DSWRegistrations != nil &&
+				!p.DSWRegistrations[model.DSWComm].IsZero() &&
+				!p.DSWRegistrations[model.DSWComm].After(now) &&
+				(p.DSWUntil == nil || p.DSWUntil[model.DSWComm].Before(now)),
 			identification: p.Identification,
 		}
 		// In calculating the orgs and privLevels to display, we don't

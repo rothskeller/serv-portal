@@ -9,11 +9,6 @@ import (
 
 // CreatePerson creates a new person in the database.
 func (tx *Tx) CreatePerson(p *model.Person) {
-	if p.DSWRegistrations != nil {
-		for c := range p.DSWRegistrations {
-			tx.recalculateDSWUntil(c, nil, nil, p)
-		}
-	}
 	tx.Tx.CreatePerson(p)
 	tx.entry.Change("create person [%d]", p.ID)
 	tx.entry.Change("set person [%d] informalName to %q", p.ID, p.InformalName)
@@ -279,14 +274,12 @@ NOTES2:
 				} else {
 					tx.entry.Change("set person %q [%d] dswRegistrations[%s] to %s", p.InformalName, p.ID, model.DSWClassNames[c], nr.Format("2006-01-02"))
 				}
-				tx.recalculateDSWUntil(c, nil, nil, p)
 			}
 		}
 		for c := range om {
 			if _, ok := nm[c]; !ok {
 				tx.entry.Change("clear person %q [%d] dswRegistrations[%s]", p.InformalName, p.ID, model.DSWClassNames[c])
 			}
-			tx.recalculateDSWUntil(c, nil, nil, p)
 		}
 	}
 	{
