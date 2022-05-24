@@ -69,8 +69,6 @@ func GetEvent(r *util.Request, idstr string) error {
 	}
 	out.RawString(`,"details":`)
 	out.String(event.Details)
-	out.RawString(`,"renewsDSW":`)
-	out.Bool(event.RenewsDSW)
 	out.RawString(`,"coveredByDSW":`)
 	out.Bool(event.CoveredByDSW)
 	out.RawString(`,"org":`)
@@ -252,7 +250,6 @@ func PostEvent(r *util.Request, idstr string) error {
 	}
 	event.Details = r.FormValue("details")
 	if r.Person.IsAdminLeader() {
-		event.RenewsDSW = r.FormValue("renewsDSW") == "true"
 		event.CoveredByDSW = r.FormValue("coveredByDSW") == "true"
 	}
 	if event.Org, err = model.ParseOrg(r.FormValue("org")); err != nil {

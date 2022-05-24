@@ -271,17 +271,14 @@ export default defineComponent({
     const flags = computed({
       get: () => {
         const flags = new Set()
-        if (event.value!.renewsDSW) flags.add('renewsDSW')
         if (event.value!.coveredByDSW) flags.add('coveredByDSW')
         return flags
       },
       set: (flags) => {
-        event.value!.renewsDSW = flags.has('renewsDSW')
         event.value!.coveredByDSW = flags.has('coveredByDSW')
       },
     })
     const flagOptions = [
-      { value: 'renewsDSW', label: 'Attendance renews DSW registration' },
       { value: 'coveredByDSW', label: 'Event is covered by DSW insurance' },
     ]
 
@@ -305,7 +302,6 @@ export default defineComponent({
         body.append('venueCity', event.value.venue.city!)
         body.append('venueURL', event.value.venue.url!)
       } else body.append('venue', event.value.venue.id.toString())
-      body.append('renewsDSW', event.value.renewsDSW.toString())
       body.append('coveredByDSW', event.value.coveredByDSW.toString())
       body.append('details', event.value.details)
       roles.value!.forEach((r) => {

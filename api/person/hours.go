@@ -103,9 +103,6 @@ func GPPersonHoursMonth(r *util.Request, idstr, month string) error {
 			if canEdit {
 				out.RawString(`,"canEdit":true`)
 			}
-			if e.RenewsDSW && attend.Type == model.AttendAsVolunteer && attend.Minutes > 0 {
-				out.RawString(`,"renewsDSW":true`)
-			}
 			out.RawByte('}')
 		case http.MethodPost:
 			var (

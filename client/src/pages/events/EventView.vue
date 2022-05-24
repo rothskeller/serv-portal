@@ -46,7 +46,6 @@ export type GetEventEvent = {
   end: string
   venue: GetEventVenue
   details: string
-  renewsDSW: boolean
   coveredByDSW: boolean
   org: string
   type: string

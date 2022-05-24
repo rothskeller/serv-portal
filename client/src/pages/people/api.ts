@@ -44,7 +44,6 @@ export type GetPersonHoursEvent = {
   placeholder: boolean
   canViewType: boolean
   canEdit: boolean
-  renewsDSW: boolean
 }
 
 // Part of the return type for GET /api/person/${id}/status.

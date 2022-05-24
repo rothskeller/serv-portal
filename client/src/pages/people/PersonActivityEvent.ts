@@ -47,10 +47,7 @@ const PersonActivityEvent = defineComponent({
                 if (isNaN(props.event.minutes)) props.event.minutes = 0
               },
             })
-          : h('div', { class: 'person-activity-hours' }, [
-              fmtMinutes(props.event.minutes),
-              props.event.renewsDSW ? h('span', { class: 'person-activity-dsw' }, ' *') : null,
-            ]),
+          : h('div', { class: 'person-activity-hours' }, fmtMinutes(props.event.minutes)),
       ])
     }
     return render

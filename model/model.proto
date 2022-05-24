@@ -44,8 +44,10 @@ message Event {
   string         details      = 7;
   int32          type         = 8 [(gogoproto.casttype) = "EventType"];
   // RenewsDSW, if true, indicates that a person whose DSW registration is valid
-  // at the time of the event, and who is marked as attending the event, gets
-  // their DSW registration automatically renewed.
+  // at the time of the event, and who is marked as attending the event, got
+  // their DSW registration automatically renewed.  THIS SETTING IS OBSOLETE.
+  // It is retained for historical data, but the code no longer pays any
+  // attention to it, and DSW renewals are no longer automatic.
   bool renewsDSW = 13 [(gogoproto.customname) = "RenewsDSW"];
   // CoveredByDSW, if true, indicates that injuries at the event are covered by
   // DSW for attendees with current DSW registration.  For training events, it

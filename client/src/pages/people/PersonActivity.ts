@@ -91,25 +91,13 @@ function renderButtons(showCancel: boolean, router: Router) {
 function renderTotalRow(events: Array<GetPersonHoursEvent>) {
   const total = events.reduce((sum, e) => sum + e.minutes, 0)
   const count = events.reduce((count, e) => count + (e.minutes ? 1 : 0), 0)
-  const renewsDSW = events.find((e) => e.renewsDSW && !e.canEdit)
   const canViewTypes = events.some((e) => e.canViewType)
-  if (count > 1 && renewsDSW) {
-    return [
-      h('div', { id: 'person-activity-total-dsw' }, [
-        h('div', { id: 'person-activity-dsw-note' }, '* renews DSW registration'),
-        h('div', { id: 'person-activity-total-label' }, 'TOTAL'),
-      ]),
-      canViewTypes ? h('div') : null,
-      h('div', { id: 'person-activity-total' }, fmtMinutes(total)),
-    ]
-  } else if (count > 1 && !renewsDSW) {
+  if (count > 1) {
     return [
       h('div', { id: 'person-activity-total-label' }, 'TOTAL'),
       canViewTypes ? h('div') : null,
       h('div', { style: 'person-activity-total' }, fmtMinutes(total)),
     ]
-  } else if (count < 2 && renewsDSW) {
-    return h('div', { class: 'person-activity-dsw' }, '* renews DSW registration')
   } else {
     return null
   }
