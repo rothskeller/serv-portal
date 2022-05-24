@@ -69,11 +69,11 @@ func getClearanceData(r *util.Request, params clearanceParameters) (data []*clea
 			dswCERT: p.DSWRegistrations != nil &&
 				!p.DSWRegistrations[model.DSWCERT].IsZero() &&
 				!p.DSWRegistrations[model.DSWCERT].After(now) &&
-				(p.DSWUntil == nil || p.DSWUntil[model.DSWCERT].Before(now)),
+				(p.DSWUntil == nil || !p.DSWUntil[model.DSWCERT].Before(now)),
 			dswComm: p.DSWRegistrations != nil &&
 				!p.DSWRegistrations[model.DSWComm].IsZero() &&
 				!p.DSWRegistrations[model.DSWComm].After(now) &&
-				(p.DSWUntil == nil || p.DSWUntil[model.DSWComm].Before(now)),
+				(p.DSWUntil == nil || !p.DSWUntil[model.DSWComm].Before(now)),
 			identification: p.Identification,
 		}
 		// In calculating the orgs and privLevels to display, we don't

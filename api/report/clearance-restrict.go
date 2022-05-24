@@ -57,12 +57,12 @@ func matchClearanceRestriction(p *model.Person, s string) bool {
 		return p.DSWRegistrations != nil &&
 			!p.DSWRegistrations[model.DSWCERT].IsZero() &&
 			!p.DSWRegistrations[model.DSWCERT].After(time.Now()) &&
-			(p.DSWUntil == nil || p.DSWUntil[model.DSWCERT].Before(time.Now()))
+			(p.DSWUntil == nil || !p.DSWUntil[model.DSWCERT].Before(time.Now()))
 	case "dswComm":
 		return p.DSWRegistrations != nil &&
 			!p.DSWRegistrations[model.DSWComm].IsZero() &&
 			!p.DSWRegistrations[model.DSWComm].After(time.Now()) &&
-			(p.DSWUntil == nil || p.DSWUntil[model.DSWComm].Before(time.Now()))
+			(p.DSWUntil == nil || !p.DSWUntil[model.DSWComm].Before(time.Now()))
 	case "idPhoto":
 		return p.Identification&model.IDPhoto != 0
 	case "servShirt":
