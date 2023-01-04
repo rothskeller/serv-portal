@@ -65,7 +65,7 @@ Attendance displays the attendance report.
     v-text='personCount > 1 ? `${personCount} people listed` : "1 person listed"'
   )
   #attrep-buttons(v-if='rows.length')
-    SButton(variant='primary', @click='exportCSV')
+    SButton(variant='primary', @click='exportCSV') Export
 </template>
 
 <script lang="ts">
@@ -201,6 +201,7 @@ export default defineComponent({
       query.set('attendanceTypes', Array.from(attendanceTypes.value.keys(), (v) => v.toString()).sort().join(','))
       if (params.value.includeZerosX) query.set('includeZerosX', 'true')
       if (params.value.includeZerosY) query.set('includeZerosY', 'true')
+      query.set('format', 'csv')
       window.location.href = '/api/reports/attendance?' + query.toString()
     }
 
