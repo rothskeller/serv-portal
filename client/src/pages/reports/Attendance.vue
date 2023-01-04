@@ -64,6 +64,8 @@ Attendance displays the attendance report.
     v-if='personCount',
     v-text='personCount > 1 ? `${personCount} people listed` : "1 person listed"'
   )
+  #attrep-buttons(v-if='rows.length')
+    SButton(variant='primary', @click='exportCSV')
 </template>
 
 <script lang="ts">
@@ -71,7 +73,7 @@ import { defineComponent, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../../plugins/axios'
 import setPage from '../../plugins/page'
-import { SCheck, SCheckGroup, SRadioGroup, SSelect } from '../../base'
+import { SButton, SCheck, SCheckGroup, SRadioGroup, SSelect } from '../../base'
 
 interface GetReportsAttendanceDateRange {
   tag: string
@@ -132,7 +134,7 @@ const cellOptions = [
 ]
 
 export default defineComponent({
-  components: { SCheck, SCheckGroup, SRadioGroup, SSelect },
+  components: { SButton, SCheck, SCheckGroup, SRadioGroup, SSelect },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -188,12 +190,27 @@ export default defineComponent({
       { deep: true }
     )
 
+    function exportCSV() {
+      const query = new URLSearchParams()
+      query.set('dateRange', params.value.dateRange)
+      query.set('rows', params.value.rows)
+      query.set('columns', params.value.columns)
+      query.set('cells', params.value.cells)
+      query.set('orgs', Array.from(orgs.value.keys(), (v) => v.toString()).sort().join(','))
+      query.set('eventTypes', Array.from(eventTypes.value.keys(), (v) => v.toString()).sort().join(','))
+      query.set('attendanceTypes', Array.from(attendanceTypes.value.keys(), (v) => v.toString()).sort().join(','))
+      if (params.value.includeZerosX) query.set('includeZerosX', 'true')
+      if (params.value.includeZerosY) query.set('includeZerosY', 'true')
+      window.location.href = '/api/reports/attendance?' + query.toString()
+    }
+
     return {
       attendanceTypes,
       cells,
       cellOptions,
       columns,
       columnOptions,
+      exportCSV,
       eventTypes,
       options,
       orgs,
@@ -298,6 +315,9 @@ export default defineComponent({
   font-weight: bold;
 }
 #attrep-count {
+  margin-top: 1.5rem;
+}
+#attrep-buttons {
   margin-top: 1.5rem;
 }
 </style>
