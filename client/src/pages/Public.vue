@@ -15,6 +15,12 @@ shown at / when the user is not logged in.
       respond in disasters when professional responders are&nbsp;overloaded.
     #public-head-login
       SButton(to='/login', variant='primary') Volunteer&nbsp;Login
+  #public-nno
+    | SERV provides disaster preparedness information tables for Sunnyvale
+    | neighborhood <b>National Night Out</b> events.  Please contact Thao
+    | Nguyen at the Sunnyvale Department of Public Safety to request a table.
+    | Email <a href="mailto:tnguyen@sunnyvale.ca.gov">TNguyen@sunnyvale.ca.gov</a>
+    | or call 408-730-7140.
   #public-folders
     #public-folder-listos.public-folder
       .public-folder-name Disaster Preparedness
@@ -143,6 +149,16 @@ export default defineComponent({
   align-self: center;
   text-align: right;
   grid-area: login;
+}
+#public-nno {
+  max-width: 536px;
+  margin: 0 auto;
+  border: 3px solid #006600;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  @media (min-width: 632px) {
+    max-width: 1088px;
+  }
 }
 #public-folders {
   display: grid;
