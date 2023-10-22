@@ -329,13 +329,14 @@ export default defineComponent({
       emContact2HomePhoneError,
       emContact2CellPhoneError,
       emContact2RelationshipError,
+      relationshipOptions,
     }
   },
 })
 </script>
 
 <style lang="postcss">
-#person-emContact {
+.person-emContact {
   margin: 0 0.75rem;
   border-top: 1px solid #ccc;
   padding-top: 0.25rem;
