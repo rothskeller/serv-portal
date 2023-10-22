@@ -121,7 +121,7 @@ export default defineComponent({
       if (check === lastChecked) return
       const body = {address: {regionCode: 'US', addressLines: [check]}}
       const response = await fetch(
-        `https://addressvalidation.googleapis.com/validateAddress?key=AIzaSyCgi3GzjWG35S89-tnkxHgi5TJVD2eUe2o`,
+        `https://addressvalidation.googleapis.com/v1:validateAddress?key=AIzaSyCgi3GzjWG35S89-tnkxHgi5TJVD2eUe2o`,
         {method: 'POST', body: JSON.stringify(body)})
       if (!response || !response.ok) {
         error.value =
