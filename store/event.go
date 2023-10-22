@@ -38,7 +38,7 @@ func (tx *Tx) CreateEvent(e *model.Event) {
 		tx.entry.Change("set event [%d] roles to %s", e.ID, strings.Join(rstr, ", "))
 	}
 	for _, s := range e.Shifts {
-		tx.entry.Change("add event [%d] shift %s-%s task %q min %d max %d announce %v", e.ID, s.Start, s.End, s.Task, s.Announce)
+		tx.entry.Change("add event [%d] shift %s-%s task %q min %d max %d announce %v", e.ID, s.Start, s.End, s.Task, s.Min, s.Max, s.Announce)
 		for _, p := range s.SignedUp {
 			tx.entry.Change("add event [%d] shift %s-%s task %q signedUp person %q [%d]", e.ID, s.Start, s.End, s.Task, tx.FetchPerson(p).InformalName, p)
 		}
@@ -152,7 +152,7 @@ SHIFT2:
 }
 func (tx *Tx) updateShift(e *model.Event, s, os *model.Shift) {
 	if s.End != os.End {
-		tx.entry.Change("set event %s %q [%d] assignment %q shift at %s task %q end to %s", e.Date, e.Name, e.ID, s.Start, s.Task, s.End)
+		tx.entry.Change("set event %s %q [%d] shift at %s task %q end to %s", e.Date, e.Name, e.ID, s.Start, s.Task, s.End)
 	}
 	if s.Min != os.Min {
 		tx.entry.Change("set event %s %q [%d] shift %s-%s task %q min to %d", e.Date, e.Name, e.ID, s.Start, s.End, s.Task, s.Min)

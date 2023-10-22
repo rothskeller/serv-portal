@@ -150,6 +150,56 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 					}
 					in.Delim(']')
 				}
+			case "emContacts":
+				if in.IsNull() {
+					in.Skip()
+					p.EmContacts = nil
+				} else {
+					in.Delim('[')
+					if p.EmContacts == nil {
+						if !in.IsDelim(']') {
+							p.EmContacts = make([]*model.EmContact, 0, 2)
+						} else {
+							p.EmContacts = []*model.EmContact{}
+						}
+					} else {
+						p.EmContacts = p.EmContacts[:0]
+					}
+					for !in.IsDelim(']') {
+						if in.IsNull() {
+							in.Skip()
+						} else {
+							var em model.EmContact
+							in.Delim('{')
+							for !in.IsDelim('}') {
+								key := in.UnsafeString()
+								in.WantColon()
+								if in.IsNull() {
+									in.Skip()
+									in.WantComma()
+									continue
+								}
+								switch key {
+								case "name":
+									em.Name = in.String()
+								case "homePhone":
+									em.HomePhone = in.String()
+								case "cellPhone":
+									em.CellPhone = in.String()
+								case "relationship":
+									em.Relationship = in.String()
+								default:
+									in.SkipRecursive()
+								}
+								in.WantComma()
+							}
+							in.Delim('}')
+							p.EmContacts = append(p.EmContacts, &em)
+						}
+						in.WantComma()
+					}
+					in.Delim(']')
+				}
 			case "noEmail":
 				p.NoEmail = in.Bool()
 			case "noText":

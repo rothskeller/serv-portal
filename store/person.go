@@ -104,6 +104,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 			tx.entry.Change("add person [%d] bgCheck %s", p.ID, bc.Type.MaskString())
 		}
 	}
+	for _, em := range p.EmContacts {
+		tx.entry.Change("add person [%d] emContact name %q home %s cell %s rel %s", p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -130,6 +133,13 @@ func (tx *Tx) WillUpdatePerson(p *model.Person) {
 		op.DSWUntil = make(map[model.DSWClass]time.Time, len(p.DSWUntil))
 		for c, r := range p.DSWUntil {
 			op.DSWUntil[c] = r
+		}
+	}
+	if p.EmContacts != nil {
+		op.EmContacts = make([]*model.EmContact, len(p.EmContacts))
+		for i := range p.EmContacts {
+			oem := *p.EmContacts[i]
+			op.EmContacts[i] = &oem
 		}
 	}
 	tx.originalPeople[p.ID] = &op
@@ -377,6 +387,24 @@ NOTES2:
 				tx.entry.Change("remove person [%d] bgCheck %s", p.ID, oc.Type.MaskString())
 			}
 		}
+	}
+EMCONTACT1:
+	for _, oem := range op.EmContacts {
+		for _, em := range p.EmContacts {
+			if em.Name == oem.Name && em.HomePhone == oem.HomePhone && em.CellPhone == oem.CellPhone && em.Relationship == oem.Relationship {
+				continue EMCONTACT1
+			}
+		}
+		tx.entry.Change("remove person %q [%d] emContact name %q home %s cell %s rel %s", p.InformalName, p.ID, oem.Name, oem.HomePhone, oem.CellPhone, oem.Relationship)
+	}
+EMCONTACT2:
+	for _, em := range p.EmContacts {
+		for _, oem := range op.EmContacts {
+			if em.Name == oem.Name && em.HomePhone == oem.HomePhone && em.CellPhone == oem.CellPhone && em.Relationship == oem.Relationship {
+				continue EMCONTACT2
+			}
+		}
+		tx.entry.Change("add person %q [%d] emContact name %q home %s cell %s rel %s", p.InformalName, p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
 	}
 	tx.Tx.UpdatePerson(p)
 	delete(tx.originalPeople, p.ID)

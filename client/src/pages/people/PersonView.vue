@@ -125,6 +125,7 @@ export interface GetPerson {
   lists?: Array<string>
   status?: GetPersonStatus
   notes: Array<GetPersonNote>
+  emContacts: integer
   canEdit: boolean
   canEditRoles: boolean
   canEditNotes: boolean

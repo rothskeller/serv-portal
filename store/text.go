@@ -20,7 +20,7 @@ func (tx *Tx) CreateTextMessage(message *model.TextMessage) {
 		}
 	}
 	for _, l := range message.Lists {
-		tx.entry.Change("add text [%d] list %q [%d]", message.ID, l, tx.FetchList(l).Name)
+		tx.entry.Change("add text [%d] list %q [%d]", message.ID, tx.FetchList(l).Name, l)
 	}
 }
 

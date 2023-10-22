@@ -34,6 +34,13 @@ message BackgroundCheck {
   bool assumed = 3;
 }
 
+message EmContact {
+  string name = 1;
+  string home_phone = 2;
+  string cell_phone = 3;
+  string relationship = 4;
+}
+
 message Event {
   int64          id           = 1 [(gogoproto.customname) = "ID", (gogoproto.casttype) = "EventID"];
   string         name         = 2;
@@ -143,6 +150,8 @@ message Person {
   repeated OrgMembership orgs = 40 [(gogoproto.nullable) = false];
   // BGChecks is the list of background checks the person has cleared.
   repeated BackgroundCheck bg_checks = 41 [(gogoproto.customname) = "BGChecks"];
+  // EmContacts is the list of emergency contacts for the person.
+  repeated EmContact em_contacts = 42;
 }
 
 message PersonNote {

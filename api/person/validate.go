@@ -159,6 +159,44 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 		}
 	}
 	sort.Sort(model.NoteSort(person.Notes))
+	for _, em := range person.EmContacts {
+		if em.Name = strings.TrimSpace(em.Name); em.Name == "" {
+			return errors.New("missing emContact name")
+		}
+		switch em.HomePhone = strings.Map(util.KeepDigits, em.HomePhone); len(em.HomePhone) {
+		case 0:
+			break
+		case 10:
+			em.HomePhone = em.HomePhone[0:3] + "-" + em.HomePhone[3:6] + "-" + em.HomePhone[6:10]
+		default:
+			return errors.New("invalid emContact home phone")
+		}
+		switch em.CellPhone = strings.Map(util.KeepDigits, em.CellPhone); len(em.CellPhone) {
+		case 0:
+			break
+		case 10:
+			em.CellPhone = em.CellPhone[0:3] + "-" + em.CellPhone[3:6] + "-" + em.CellPhone[6:10]
+		default:
+			return errors.New("invalid emContact cell phone")
+		}
+		if em.HomePhone == "" && em.CellPhone == "" {
+			return errors.New("missing emContact phone")
+		}
+		if em.Relationship = strings.TrimSpace(em.Relationship); em.Relationship == "" {
+			return errors.New("missing emContact relationship")
+		} else {
+			found := false
+			for _, r := range model.EmContactRelationships {
+				if r == em.Relationship {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return errors.New("invalid emContact relationship")
+			}
+		}
+	}
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}

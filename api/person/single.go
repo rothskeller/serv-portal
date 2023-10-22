@@ -244,7 +244,9 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.String(n.Note)
 		out.RawByte('}')
 	}
-	out.RawString(`],"canEdit":`)
+	out.RawString(`],"emContacts":`)
+	out.Int(len(person.EmContacts))
+	out.RawString(`,"canEdit":`)
 	out.Bool(canEditDetails)
 	out.RawString(`,"canEditRoles":`)
 	out.Bool(r.Person.HasPrivLevel(model.PrivLeader) && person.ID != model.AdminPersonID)
@@ -322,6 +324,24 @@ func GetPersonContact(r *util.Request, idstr string) error {
 	out.String(person.HomePhone)
 	out.RawString(`,"workPhone":`)
 	out.String(person.WorkPhone)
+	if r.Person == person || r.Person.IsAdminLeader() {
+		out.RawString(`,"canEditEmContacts":true,"emContacts":[`)
+		for i, em := range person.EmContacts {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"name":`)
+			out.String(em.Name)
+			out.RawString(`,"homePhone":`)
+			out.String(em.HomePhone)
+			out.RawString(`,"cellPhone":`)
+			out.String(em.CellPhone)
+			out.RawString(`,"relationship":`)
+			out.String(em.Relationship)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -372,6 +392,25 @@ func PostPersonContact(r *util.Request, idstr string) error {
 		}
 	}
 	person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
+	if r.Person == person || r.Person.IsAdminLeader() {
+		person.EmContacts = person.EmContacts[:0]
+		var em = new(model.EmContact)
+		em.Name = r.FormValue("emContact1Name")
+		em.HomePhone = r.FormValue("emContact1HomePhone")
+		em.CellPhone = r.FormValue("emContact1CellPhone")
+		em.Relationship = r.FormValue("emContact1Relationship")
+		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+			person.EmContacts = append(person.EmContacts, em)
+		}
+		em = new(model.EmContact)
+		em.Name = r.FormValue("emContact2Name")
+		em.HomePhone = r.FormValue("emContact2HomePhone")
+		em.CellPhone = r.FormValue("emContact2CellPhone")
+		em.Relationship = r.FormValue("emContact2Relationship")
+		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+			person.EmContacts = append(person.EmContacts, em)
+		}
+	}
 	switch err = ValidatePerson(r.Tx, person); err {
 	case nil:
 		break

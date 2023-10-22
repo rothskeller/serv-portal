@@ -54,6 +54,10 @@ PersonViewSection(
     div Mailing Address:
     div(v-text='person.contact.mailAddress.address.split(",")[0]')
     div(v-text='person.contact.mailAddress.address.replace(/^[^,]*, */, "")')
+  #person-view-emContacts(
+    v-if='person.emContacts',
+    v-text='`${person.emContacts} emergency contact${person.emContacts > 1 ? "s" : ""} on file`'
+  )
   PersonEditContact(v-if='person.canEdit', ref='editContactModal', :pid='person.id')
 </template>
 
@@ -98,7 +102,8 @@ export default defineComponent({
 </script>
 
 <style lang="postcss">
-#person-view-emails {
+#person-view-emails,
+#person-view-emContacts {
   margin-top: 0.75rem;
 }
 .person-view-email-label {

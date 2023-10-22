@@ -430,6 +430,26 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		}
 		out.RawByte(']')
 	}
+	if len(p.EmContacts) != 0 {
+		out.RawString(`,"emContacts":[`)
+		for i, em := range p.EmContacts {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.RawString(`{"name":`)
+			out.String(em.Name)
+			out.RawString(`,"homePhone":`)
+			out.String(em.HomePhone)
+			if em.CellPhone != "" {
+				out.RawString(`,"cellPhone":`)
+				out.String(em.CellPhone)
+			}
+			out.RawString(`,"relationships":`)
+			out.String(em.Relationship)
+			out.RawByte('}')
+		}
+		out.RawByte(']')
+	}
 	var roles = model.Roles{Roles: make([]*model.Role, 0, len(p.Roles))}
 	for rid := range p.Roles {
 		roles.Roles = append(roles.Roles, tx.FetchRole(rid))

@@ -73,6 +73,13 @@ func (c *DSWClass) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	l.AddError(errors.New("unrecognized value for DSWClass"))
 }
 
+// EmContactRelationships is a list of allowed values for the Relationship
+// field of an EmContact.
+var EmContactRelationships = []string{
+	"Co-worker", "Daughter", "Father", "Friend", "Mother", "Neighbor",
+	"Other", "Relative", "Son", "Spouse", "Supervisor",
+}
+
 // An EventID is a positive integer uniquely identifying an Event.
 type EventID int
 
