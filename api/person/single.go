@@ -1153,7 +1153,7 @@ func GetPersonVolReg(r *util.Request, idstr string) error {
 	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 		return util.NotFound
 	}
-	if r.Person != person {
+	if r.Person != person || person.VolgisticsID != 0 || person.VolgisticsPending {
 		return util.Forbidden
 	}
 	out.RawString(`{"id":`)
@@ -1207,7 +1207,6 @@ func GetPersonVolReg(r *util.Request, idstr string) error {
 	return nil
 }
 
-/*
 // PostPersonVolReg handles POST /api/people/$id/volreg requests.
 func PostPersonVolReg(r *util.Request, idstr string) error {
 	var (
@@ -1217,10 +1216,15 @@ func PostPersonVolReg(r *util.Request, idstr string) error {
 	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
 		return util.NotFound
 	}
-	if r.Person != person && !r.Person.HasPrivLevel(model.PrivLeader) {
+	if r.Person != person || person.VolgisticsID != 0 || person.VolgisticsPending {
 		return util.Forbidden
 	}
 	r.Tx.WillUpdatePerson(person)
+	person.InformalName = r.FormValue("informalName")
+	person.FormalName = r.FormValue("formalName")
+	person.SortName = r.FormValue("sortName")
+	person.CallSign = r.FormValue("callSign")
+	person.Birthdate = r.FormValue("birthdate")
 	person.Email = r.FormValue("email")
 	person.Email2 = r.FormValue("email2")
 	person.CellPhone = r.FormValue("cellPhone")
@@ -1251,28 +1255,30 @@ func PostPersonVolReg(r *util.Request, idstr string) error {
 		}
 	}
 	person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
-	if r.Person == person || r.Person.IsAdminLeader() {
-		person.EmContacts = person.EmContacts[:0]
-		var em = new(model.EmContact)
-		em.Name = r.FormValue("emContact1Name")
-		em.HomePhone = r.FormValue("emContact1HomePhone")
-		em.CellPhone = r.FormValue("emContact1CellPhone")
-		em.Relationship = r.FormValue("emContact1Relationship")
-		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
-			person.EmContacts = append(person.EmContacts, em)
-		}
-		em = new(model.EmContact)
-		em.Name = r.FormValue("emContact2Name")
-		em.HomePhone = r.FormValue("emContact2HomePhone")
-		em.CellPhone = r.FormValue("emContact2CellPhone")
-		em.Relationship = r.FormValue("emContact2Relationship")
-		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
-			person.EmContacts = append(person.EmContacts, em)
-		}
+	person.EmContacts = person.EmContacts[:0]
+	var em = new(model.EmContact)
+	em.Name = r.FormValue("emContact1Name")
+	em.HomePhone = r.FormValue("emContact1HomePhone")
+	em.CellPhone = r.FormValue("emContact1CellPhone")
+	em.Relationship = r.FormValue("emContact1Relationship")
+	if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+		person.EmContacts = append(person.EmContacts, em)
+	}
+	em = new(model.EmContact)
+	em.Name = r.FormValue("emContact2Name")
+	em.HomePhone = r.FormValue("emContact2HomePhone")
+	em.CellPhone = r.FormValue("emContact2CellPhone")
+	em.Relationship = r.FormValue("emContact2Relationship")
+	if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+		person.EmContacts = append(person.EmContacts, em)
 	}
 	switch err = ValidatePerson(r.Tx, person); err {
 	case nil:
 		break
+	case errDuplicateSortName:
+		return util.SendConflict(r, "sortName")
+	case errDuplicateCallSign:
+		return util.SendConflict(r, "callSign")
 	case errDuplicateEmail:
 		return util.SendConflict(r, "email")
 	case errDuplicateCellPhone:
@@ -1280,8 +1286,26 @@ func PostPersonVolReg(r *util.Request, idstr string) error {
 	default:
 		return err
 	}
+	// Still need to check the extra requirements for registering:
+	// birthdate, home address, at least one phone number, both emergency
+	// contacts, and the agreement are required.
+	if person.Birthdate == "" {
+		return errors.New("missing birthdate")
+	}
+	if person.HomeAddress.Address == "" {
+		return errors.New("missing home address")
+	}
+	if person.CellPhone == "" && person.HomePhone == "" {
+		return errors.New("missing cell or home phone")
+	}
+	if len(person.EmContacts) != 2 {
+		return errors.New("missing emergency contact(s)")
+	}
+	if r.FormValue("agreement") != "true" {
+		return errors.New("missing agreement")
+	}
+	person.VolgisticsPending = true
 	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
 	return nil
 }
-*/

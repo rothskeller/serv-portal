@@ -167,7 +167,7 @@ export default defineComponent({
       props.type === 'Home'
         ? 'Home Address'
         : props.type === 'Work'
-          ? 'Business Hours Address'
+          ? 'Work Address'
           : 'Mailing Address'
 
     return { error, label, line1, line1input, line2, line2input, onFocusLine2, onBlur, sameAsHome }

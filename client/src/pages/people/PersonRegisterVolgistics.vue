@@ -15,11 +15,11 @@ Modal(ref='modal')
   )
     SSpinner(v-if='loading')
     template(v-else)
-      .form-item.
+      #person-volreg-intro.form-item.
         Thank you for your interest in volunteering with the City of Sunnyvale,
         Office of Emergency Services.  Please complete this form to register as
-        a City of Sunnyvale Volunteer.  Once we receive your registration —
-        which usually takes a few days — we will contact you to schedule an
+        a City of Sunnyvale Volunteer.  Once we receive your registration
+        (which usually takes a few days) we will contact you to schedule an
         appointment for your fingerprinting.
       SFInput#person-informalName(
         label='Name',
@@ -158,7 +158,7 @@ Modal(ref='modal')
         :errorFn='emContact2RelationshipError'
       )
       .form-item.person-heading Agreement
-      .form-item.
+      #person-volreg-agreement.form-item.
         By submitting this application, I certify that all statements I have made on this application are true and correct and I
         hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and
         a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times
@@ -487,5 +487,11 @@ export default defineComponent({
   margin: 0 0.75rem;
   border-top: 1px solid #ccc;
   padding-top: 0.25rem;
+}
+#person-volreg-intro {
+  margin: 0 0.75rem 1.5rem;
+}
+#person-volreg-agreement {
+  margin: 1rem 0.75rem;
 }
 </style>
