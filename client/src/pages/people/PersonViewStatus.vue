@@ -91,13 +91,14 @@ PersonViewSection(
 <script lang="ts">
 import { computed, defineComponent, inject, PropType, Ref, ref } from 'vue'
 import { LoginData } from '../../plugins/login'
+import { SButton } from '../../base'
 import type { GetPerson } from './PersonView.vue'
 import PersonEditStatus from './PersonEditStatus.vue'
 import PersonRegisterVolgistics from './PersonRegisterVolgistics.vue'
 import PersonViewSection from './PersonViewSection.vue'
 
 export default defineComponent({
-  components: { PersonEditStatus, PersonRegisterVolgistics, PersonViewSection },
+  components: { PersonEditStatus, PersonRegisterVolgistics, PersonViewSection, SButton },
   props: {
     person: { type: Object as PropType<GetPerson>, required: true },
   },
