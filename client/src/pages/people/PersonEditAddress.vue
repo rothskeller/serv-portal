@@ -137,6 +137,7 @@ export default defineComponent({
         line1.value = fmt.split(',')[0]
         line2.value = fmt.replace(/^[^,]*, */, '')
         line2.value = line2.value.replace(/-[0-8]{4}/, '') // remove ZIP+4
+        line2.value = line2.value.replace(', USA', '') // remove USA
         lastChecked = line1.value + ', ' + line2.value
         latitude = longitude = 0
         if (result.geocode && result.geocode.location) {
