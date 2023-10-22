@@ -131,6 +131,7 @@ export interface EmContact {
 }
 
 export const relationshipOptions = [
+  { value: '', label: '(select relationship)' },
   'Co-worker', 'Daughter', 'Father', 'Friend', 'Mother', 'Neighbor', 'Other',
   'Relative', 'Son', 'Spouse', 'Supervisor'
 ]
