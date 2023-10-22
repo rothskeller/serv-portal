@@ -128,7 +128,7 @@ export default defineComponent({
           'The address could not be verified because the address verification service is not available.'
         return
       }
-      const result = await response.json()
+      const result = (await response.json()).result
       if (result.verdict.validationGranularity !== 'SUB_PREMISE' && result.verdict.validationGranularity !== 'PREMISE') {
         lastChecked = check
         error.value = "We couldn't locate this address.  Please provide a valid address."
