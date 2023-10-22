@@ -12,7 +12,7 @@ import (
 )
 
 var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-var dateRE = regexp.MustCompile(`^20\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$`)
+var dateRE = regexp.MustCompile(`^(?:19|20)\d\d-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$`)
 
 var errDuplicateCallSign = errors.New("duplicate callSign")
 var errDuplicateCellPhone = errors.New("duplicate cellPhone")
@@ -33,6 +33,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 		return errors.New("missing sortName")
 	}
 	person.CallSign = strings.ToUpper(strings.TrimSpace(person.CallSign))
+	if person.Birthdate != "" && !dateRE.MatchString(person.Birthdate) {
+		return errors.New("invalid birthdate")
+	}
 	person.Email = strings.ToLower(strings.TrimSpace(person.Email))
 	if person.Email != "" && !emailRE.MatchString(person.Email) {
 		return errors.New("invalid email")

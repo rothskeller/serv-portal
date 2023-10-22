@@ -19,7 +19,8 @@ PersonViewSection(
       div(v-if='me.id === person.id')
         a(href='https://www.volgistics.com/ex/portal.dll/ap?AP=929478828', target='_blank') Please register
       div(v-else, style='color: red') Not registered
-    template(v-else-if='nothingElseToShow')
+    template(v-else)
+      div City volunteer
       div(v-if='person.status.volgistics.id') Registered
       div(v-else) Not registered
     template(v-if='person.status.dswCERT.registered')
@@ -27,7 +28,7 @@ PersonViewSection(
       template(v-if='person.status.dswCERT.expired')
         div(:style='{ color: person.status.dswCERT.needed ? "red" : null }') Expired on {{ person.status.dswCERT.expires }}
       template(v-else-if='person.status.level == "admin" && person.status.dswCERT.expires')
-        div Registered {{ person.status.dswCERT.registered }}, expires&nbsp;{{ person.status.dswCERT.expires.replace(/-/g, "\u2011") }}
+        div Registered {{ person.status.dswCERT.registered }}, expires&nbsp;{{ person.status.dswCERT.expires.replace(/-/g, '\u2011') }}
       template(v-else-if='person.status.level == "admin"')
         div Registered {{ person.status.dswCERT.registered }}
       template(v-else-if='person.status.dswCERT.expires')
@@ -42,7 +43,7 @@ PersonViewSection(
       template(v-if='person.status.dswComm.expired')
         div(:style='{ color: person.status.dswComm.needed ? "red" : null }') Expired on {{ person.status.dswComm.expires }}
       template(v-else-if='person.status.level == "admin" && person.status.dswComm.expires')
-        div Registered {{ person.status.dswComm.registered }}, expires&nbsp;{{ person.status.dswComm.expires.replace(/-/g, "\u2011") }}
+        div Registered {{ person.status.dswComm.registered }}, expires&nbsp;{{ person.status.dswComm.expires.replace(/-/g, '\u2011') }}
       template(v-else-if='person.status.level == "admin"')
         div Registered {{ person.status.dswComm.registered }}
       template(v-else-if='person.status.dswComm.expires')
@@ -96,18 +97,6 @@ export default defineComponent({
   emits: ['reload'],
   setup(props, { emit }) {
     const me = inject<Ref<LoginData>>('me')!
-    const nothingElseToShow = computed(
-      () =>
-        props.person.status &&
-        !props.person.status.dswCERT.registered &&
-        !props.person.status.dswCERT.needed &&
-        !props.person.status.dswComm.registered &&
-        !props.person.status.dswComm.needed &&
-        (props.person.status.backgroundCheck.admin
-          ? (!props.person.status.backgroundCheck.needed && !props.person.status.backgroundCheck.checks.length)
-          : (!props.person.status.backgroundCheck.cleared && !props.person.status.backgroundCheck.needed)) &&
-        !props.person.status.identification.length
-    )
     const missingBGCheck = computed(() =>
       props.person.status &&
         props.person.status.backgroundCheck.admin &&
@@ -127,7 +116,6 @@ export default defineComponent({
       onEditStatus,
       me,
       missingBGCheck,
-      nothingElseToShow,
     }
   },
 })

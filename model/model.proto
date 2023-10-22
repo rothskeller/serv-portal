@@ -152,6 +152,8 @@ message Person {
   repeated BackgroundCheck bg_checks = 41 [(gogoproto.customname) = "BGChecks"];
   // EmContacts is the list of emergency contacts for the person.
   repeated EmContact em_contacts = 42;
+  // Birthdate is the person's birthdate (in YYYY-MM-DD format).
+  string birthdate = 43;
 }
 
 message PersonNote {

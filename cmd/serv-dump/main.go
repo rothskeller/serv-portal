@@ -260,6 +260,10 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"callSign":`)
 		out.String(p.CallSign)
 	}
+	if p.Birthdate != "" {
+		out.RawString(`,"birthdate":`)
+		out.String(p.Birthdate)
+	}
 	if p.Email != "" {
 		out.RawString(`,"email":`)
 		out.String(p.Email)
@@ -444,7 +448,7 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 				out.RawString(`,"cellPhone":`)
 				out.String(em.CellPhone)
 			}
-			out.RawString(`,"relationships":`)
+			out.RawString(`,"relationship":`)
 			out.String(em.Relationship)
 			out.RawByte('}')
 		}

@@ -582,6 +582,10 @@ func GetPersonNames(r *util.Request, idstr string) error {
 	out.String(person.SortName)
 	out.RawString(`,"callSign":`)
 	out.String(person.CallSign)
+	if r.Person == person || r.Person.IsAdminLeader() {
+		out.RawString(`,"birthdate":`)
+		out.String(person.Birthdate)
+	}
 	out.RawByte('}')
 	r.Tx.Commit()
 	r.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -606,6 +610,9 @@ func PostPersonNames(r *util.Request, idstr string) error {
 	person.FormalName = r.FormValue("formalName")
 	person.SortName = r.FormValue("sortName")
 	person.CallSign = r.FormValue("callSign")
+	if r.Person == person || r.Person.IsAdminLeader() {
+		person.Birthdate = r.FormValue("birthdate")
+	}
 	switch err = ValidatePerson(r.Tx, person); err {
 	case nil:
 		break

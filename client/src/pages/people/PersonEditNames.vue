@@ -45,6 +45,13 @@ Modal(ref='modal')
         help='FCC amateur radio license',
         style='text-transform: uppercase'
       )
+      template(v-if='person.birthdate || person.birthdate === ""')
+        SFInput#person-callSign(
+          label='Birthdate',
+          type='date',
+          v-model='person.birthdate',
+          :errorFn='birthdateError'
+        )
 </template>
 
 <script lang="ts">
@@ -58,6 +65,7 @@ interface GetPersonNames {
   formalName: string
   sortName: string
   callSign: string
+  birthdate?: string
 }
 
 export default defineComponent({
@@ -108,6 +116,13 @@ export default defineComponent({
         return 'A different person has this call sign.'
       return ''
     }
+    function birthdateError(lostFocus: boolean) {
+      if (!person.value.birthdate) return ''
+      if (lostFocus && !person.value.birthdate.match(/^(?:19|20)\d\d-\d\d-\d\d$/)) {
+        return 'This is not a valid YYYY-MM-DD date.'
+      }
+      return ''
+    }
 
     // When the informal name is changed, we may update the formal and/or
     // sort name.
@@ -132,6 +147,7 @@ export default defineComponent({
       body.append('formalName', person.value.formalName)
       body.append('sortName', person.value.sortName)
       body.append('callSign', person.value.callSign)
+      body.append('birthdate', person.value.birthdate!)
       submitting.value = true
       try {
         await axios.post(`/api/people/${props.pid}/names`, body)
@@ -155,6 +171,7 @@ export default defineComponent({
     }
 
     return {
+      birthdateError,
       callSignError,
       formalNameError,
       informalNameError,

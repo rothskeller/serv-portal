@@ -66,6 +66,8 @@ func loadPeople(tx *store.Tx, in *jlexer.Lexer) {
 				p.SortName = in.String()
 			case "callSign":
 				p.CallSign = in.String()
+			case "birthdate":
+				p.Birthdate = in.String()
 			case "email":
 				p.Email = in.String()
 			case "email2":

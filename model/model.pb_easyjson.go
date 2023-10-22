@@ -1605,6 +1605,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *P
 				}
 				in.Delim(']')
 			}
+		case "birthdate":
+			out.Birthdate = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1880,6 +1882,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 			}
 			out.RawByte(']')
 		}
+	}
+	if in.Birthdate != "" {
+		const prefix string = ",\"birthdate\":"
+		out.RawString(prefix)
+		out.String(string(in.Birthdate))
 	}
 	out.RawByte('}')
 }

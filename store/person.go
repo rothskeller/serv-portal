@@ -107,6 +107,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	for _, em := range p.EmContacts {
 		tx.entry.Change("add person [%d] emContact name %q home %s cell %s rel %s", p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
 	}
+	if p.Birthdate != "" {
+		tx.entry.Change("set person [%d] birthdate to %s", p.ID, p.Birthdate)
+	}
 }
 
 // WillUpdatePerson saves a copy of a person before it's updated, so that we can
@@ -405,6 +408,9 @@ EMCONTACT2:
 			}
 		}
 		tx.entry.Change("add person %q [%d] emContact name %q home %s cell %s rel %s", p.InformalName, p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
+	}
+	if p.Birthdate != op.Birthdate {
+		tx.entry.Change("set person %q [%d] birthdate to %s", p.InformalName, p.ID, p.Birthdate)
 	}
 	tx.Tx.UpdatePerson(p)
 	delete(tx.originalPeople, p.ID)
