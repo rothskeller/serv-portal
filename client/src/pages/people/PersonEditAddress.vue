@@ -38,15 +38,8 @@ label.form-item-label(:class='`person-address-label-${type}`', v-text='label')
 
 <script lang="ts">
 import { defineComponent, inject, nextTick, PropType, ref, toRefs, watch } from 'vue'
-import SmartyStreetsSDK from 'smartystreets-javascript-sdk'
 import { useLostFocus } from '../../base/form/FormItem'
 import type { GetPersonAddress } from './PersonView.vue'
-
-const SmartyStreetsCore = SmartyStreetsSDK.core
-const Lookup = SmartyStreetsSDK.usStreet.Lookup
-// @ts-ignore: doesn't recognize import.meta.env
-const credentials = new SmartyStreetsCore.SharedCredentials('1674975535561744')
-const client = SmartyStreetsCore.buildClient.usStreet(credentials)
 
 export default defineComponent({
   props: {
@@ -126,32 +119,35 @@ export default defineComponent({
       let check = `${line1.value}, ${line2.value}`
       if (!check.match(/\W[A-Za-z][A-Za-z]\W/)) check += ', CA'
       if (check === lastChecked) return
-      const lookup = new Lookup()
-      lookup.street = check
-      error.value = 'Verifying address...' // prevent submit while looking up
-      const result = await client.send(lookup).catch(console.error)
-      if (!result) {
+      const body = {address: {regionCode: 'US', addressLines: [check]}}
+      const response = await fetch(
+        `https://addressvalidation.googleapis.com/validateAddress?key=AIzaSyCgi3GzjWG35S89-tnkxHgi5TJVD2eUe2o`,
+        {method: 'POST', body: JSON.stringify(body)})
+      if (!response || !response.ok) {
         error.value =
           'The address could not be verified because the address verification service is not available.'
         return
       }
-      if (result.lookups[0].result.length) {
-        const r = result.lookups[0].result[0]
-        line1.value = r.deliveryLine1 || ''
-        if (r.deliveryLine2) line1.value += ', ' + r.deliveryLine2
-        line2.value = r.lastLine ? r.lastLine.replace(/-[0-9]{4}/, '') : ''
+      const result = await response.json()
+      if (result.verdict.validationGranularity !== 'SUB_PREMISE' && result.verdict.validationGranularity !== 'PREMISE') {
+        lastChecked = check
+        error.value = "We couldn't locate this address.  Please provide a valid address."
+      } else {
+        let fmt = result.address.formattedAddress
+        line1.value = fmt.split(',')[0]
+        line2.value = fmt.replace(/^[^,]*, */, '')
+        line2.value = line2.value.replace(/-[0-8]{4}/, '') // remove ZIP+4
         lastChecked = line1.value + ', ' + line2.value
-        latitude = r.metadata?.latitude || 0
-        longitude = r.metadata?.longitude || 0
-        error.value = ''
+        latitude = longitude = 0
+        if (result.geocode && result.geocode.location) {
+          latitude = result.geocode.location.latitude
+          longitude = result.geocode.location.longitude
+        }
         emit('update:modelValue', {
           address: lastChecked,
           latitude: latitude,
           longitude: longitude,
         })
-      } else {
-        lastChecked = check
-        error.value = "We couldn't locate this address.  Please provide a valid address."
       }
     }
     watch(submitted!, validate)

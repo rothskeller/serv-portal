@@ -89,7 +89,6 @@ Policies displays a page with information about the site policies.
   p.
     This web site is hosted by
     <a href="https://www.dreamhost.com/" target="_blank">Dreamhost</a>.  It uses
-    <a href="https://smartystreets.com/" target="_blank">SmartyStreets</a> for geolocation,
     <a href="https://www.google.com/maps" target="_blank">Google Maps</a> for mapping, and
     <a href="https://www.twilio.com/" target="_blank">Twilio</a> for text messaging.
   div(style='margin: 1.5rem 0')
