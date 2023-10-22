@@ -154,6 +154,9 @@ message Person {
   repeated EmContact em_contacts = 42;
   // Birthdate is the person's birthdate (in YYYY-MM-DD format).
   string birthdate = 43;
+  // VolgisticsPending is a flag indicating that the person has submitted a
+  // volunteer application form but we don't have a Volgistics ID for them yet.
+  bool volgistics_pending = 44;
 }
 
 message PersonNote {

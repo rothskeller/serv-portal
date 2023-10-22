@@ -120,6 +120,8 @@ func GetPerson(r *util.Request, idstr string) error {
 		out.Bool(person.HasPrivLevel(model.PrivMember))
 		out.RawString(`,"id":`)
 		out.Int(int(person.VolgisticsID))
+		out.RawString(`,"pending":`)
+		out.Bool(person.VolgisticsPending)
 		out.RawByte('}')
 		for _, c := range model.AllDSWClasses {
 			out.RawString(`,"dsw`)
@@ -998,6 +1000,8 @@ func GetPersonStatus(r *util.Request, idstr string) error {
 	out.Int(int(person.ID))
 	out.RawString(`,"volgistics":`)
 	out.Int(person.VolgisticsID)
+	out.RawString(`,"volgisticsPending":`)
+	out.Bool(person.VolgisticsPending)
 	for _, c := range model.AllDSWClasses {
 		out.RawString(`,"dsw`)
 		out.RawString(model.DSWClassNames[c][:4])

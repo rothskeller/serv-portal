@@ -203,6 +203,9 @@ func ValidatePerson(tx *store.Tx, person *model.Person) error {
 	if person.VolgisticsID < 0 {
 		return errors.New("invalid volgisticsID")
 	}
+	if person.VolgisticsID > 0 {
+		person.VolgisticsPending = false
+	}
 	for rid, direct := range person.Roles {
 		if !direct {
 			continue

@@ -13,15 +13,21 @@ PersonViewSection(
     template(v-if='person.status.level === "admin"')
       div Volgistics
       div(v-if='person.status.volgistics.id', v-text='`#${person.status.volgistics.id}`')
+      div(
+        v-else-if='person.status.volgistics.pending',
+        :style='{ color: person.status.volgistics.needed ? "red" : null }'
+      ) Registration pending
       div(v-else, :style='{ color: person.status.volgistics.needed ? "red" : null }') Not registered
     template(v-else-if='person.status.volgistics.needed && !person.status.volgistics.id')
       div City volunteer
       div(v-if='me.id === person.id')
         a(href='https://www.volgistics.com/ex/portal.dll/ap?AP=929478828', target='_blank') Please register
+      div(v-else-if='person.status.volgistics.pending') Registration pending
       div(v-else, style='color: red') Not registered
     template(v-else)
       div City volunteer
       div(v-if='person.status.volgistics.id') Registered
+      div(v-else-if='person.status.volgistics.pending') Registration pending
       div(v-else) Not registered
     template(v-if='person.status.dswCERT.registered')
       div DSW CERT

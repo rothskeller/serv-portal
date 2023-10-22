@@ -89,6 +89,7 @@ interface GetPersonStatus {
   volgistics: {
     needed: boolean
     id: number
+    pending: boolean
   }
   dswCERT: {
     needed: boolean
@@ -125,7 +126,7 @@ export interface GetPerson {
   lists?: Array<string>
   status?: GetPersonStatus
   notes: Array<GetPersonNote>
-  emContacts: integer
+  emContacts: number
   canEdit: boolean
   canEditRoles: boolean
   canEditNotes: boolean

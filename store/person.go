@@ -17,6 +17,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	if p.CallSign != "" {
 		tx.entry.Change("set person [%d] callSign to %q", p.ID, p.CallSign)
 	}
+	if p.Birthdate != "" {
+		tx.entry.Change("set person [%d] birthdate to %s", p.ID, p.Birthdate)
+	}
 	if p.Email != "" {
 		tx.entry.Change("set person [%d] email to %q", p.ID, p.Email)
 	}
@@ -73,6 +76,9 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	if p.VolgisticsID != 0 {
 		tx.entry.Change("set person [%d] volgisticsID to %d", p.ID, p.VolgisticsID)
 	}
+	if p.VolgisticsPending {
+		tx.entry.Change("set person [%d] volgisticsPending to true", p.ID)
+	}
 	if p.DSWRegistrations != nil {
 		for c, r := range p.DSWRegistrations {
 			tx.entry.Change("set person [%d] dswRegistration[%s] to %s", p.ID, model.DSWClassNames[c], r.Format("2006-01-02"))
@@ -106,9 +112,6 @@ func (tx *Tx) CreatePerson(p *model.Person) {
 	}
 	for _, em := range p.EmContacts {
 		tx.entry.Change("add person [%d] emContact name %q home %s cell %s rel %s", p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
-	}
-	if p.Birthdate != "" {
-		tx.entry.Change("set person [%d] birthdate to %s", p.ID, p.Birthdate)
 	}
 }
 
@@ -166,6 +169,9 @@ func (tx *Tx) UpdatePerson(p *model.Person) {
 	}
 	if p.CallSign != op.CallSign {
 		tx.entry.Change("set person %q [%d] callSign to %q", p.InformalName, p.ID, p.CallSign)
+	}
+	if p.Birthdate != op.Birthdate {
+		tx.entry.Change("set person %q [%d] birthdate to %s", p.InformalName, p.ID, p.Birthdate)
 	}
 	if p.Email != op.Email {
 		tx.entry.Change("set person %q [%d] email to %q", p.InformalName, p.ID, p.Email)
@@ -257,6 +263,9 @@ NOTES2:
 	}
 	if p.VolgisticsID != op.VolgisticsID {
 		tx.entry.Change("set person %q [%d] volgisticsID to %d", p.InformalName, p.ID, p.VolgisticsID)
+	}
+	if p.VolgisticsPending != op.VolgisticsPending {
+		tx.entry.Change("set person %q [%d] volgisticsPending to %v", p.InformalName, p.ID, p.VolgisticsPending)
 	}
 	if p.HoursToken != op.HoursToken {
 		if p.HoursToken == "" {
@@ -408,9 +417,6 @@ EMCONTACT2:
 			}
 		}
 		tx.entry.Change("add person %q [%d] emContact name %q home %s cell %s rel %s", p.InformalName, p.ID, em.Name, em.HomePhone, em.CellPhone, em.Relationship)
-	}
-	if p.Birthdate != op.Birthdate {
-		tx.entry.Change("set person %q [%d] birthdate to %s", p.InformalName, p.ID, p.Birthdate)
 	}
 	tx.Tx.UpdatePerson(p)
 	delete(tx.originalPeople, p.ID)

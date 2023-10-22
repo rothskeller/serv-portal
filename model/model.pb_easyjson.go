@@ -1607,6 +1607,8 @@ func easyjson6578def1DecodeSunnyvaleservOrgPortalModel9(in *jlexer.Lexer, out *P
 			}
 		case "birthdate":
 			out.Birthdate = string(in.String())
+		case "volgistics_pending":
+			out.VolgisticsPending = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1887,6 +1889,11 @@ func easyjson6578def1EncodeSunnyvaleservOrgPortalModel9(out *jwriter.Writer, in 
 		const prefix string = ",\"birthdate\":"
 		out.RawString(prefix)
 		out.String(string(in.Birthdate))
+	}
+	if in.VolgisticsPending {
+		const prefix string = ",\"volgistics_pending\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.VolgisticsPending))
 	}
 	out.RawByte('}')
 }

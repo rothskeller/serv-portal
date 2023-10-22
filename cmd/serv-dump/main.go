@@ -344,6 +344,9 @@ func dumpPerson(tx *store.Tx, out *jwriter.Writer, p *model.Person) {
 		out.RawString(`,"volgisticsID":`)
 		out.Int(p.VolgisticsID)
 	}
+	if p.VolgisticsPending {
+		out.RawString(`,"volgisticsPending":true`)
+	}
 	if len(p.BGChecks) != 0 {
 		out.RawString(`,"bgChecks":[`)
 		for i, bc := range p.BGChecks {
