@@ -44,6 +44,7 @@ import type { GetPersonAddress } from './PersonView.vue'
 export default defineComponent({
   props: {
     type: String as PropType<'Home' | 'Work' | 'Mail'>,
+    required: { type: Boolean, default: false },
     modelValue: { type: Object as PropType<GetPersonAddress>, required: true },
     hasHome: { type: Boolean, default: false },
     help: String,
@@ -108,6 +109,10 @@ export default defineComponent({
     const { submitted } = useLostFocus()
     async function validate() {
       if (!line1.value && !line2.value) {
+        if (props.required) {
+          error.value = 'The address is required.'
+          return
+        }
         emit('update:modelValue', {
           address: '',
           latitude: 0,
@@ -119,10 +124,10 @@ export default defineComponent({
       let check = `${line1.value}, ${line2.value}`
       if (!check.match(/\W[A-Za-z][A-Za-z]\W/)) check += ', CA'
       if (check === lastChecked) return
-      const body = {address: {regionCode: 'US', addressLines: [check]}}
+      const body = { address: { regionCode: 'US', addressLines: [check] } }
       const response = await fetch(
         `https://addressvalidation.googleapis.com/v1:validateAddress?key=AIzaSyCgi3GzjWG35S89-tnkxHgi5TJVD2eUe2o`,
-        {method: 'POST', body: JSON.stringify(body)})
+        { method: 'POST', body: JSON.stringify(body) })
       if (!response || !response.ok) {
         error.value =
           'The address could not be verified because the address verification service is not available.'

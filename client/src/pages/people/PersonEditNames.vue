@@ -46,7 +46,7 @@ Modal(ref='modal')
         style='text-transform: uppercase'
       )
       template(v-if='person.birthdate || person.birthdate === ""')
-        SFInput#person-callSign(
+        SFInput#person-birthdate(
           label='Birthdate',
           type='date',
           v-model='person.birthdate',

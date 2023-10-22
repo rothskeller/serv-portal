@@ -18,17 +18,12 @@ PersonViewSection(
         :style='{ color: person.status.volgistics.needed ? "red" : null }'
       ) Registration pending
       div(v-else, :style='{ color: person.status.volgistics.needed ? "red" : null }') Not registered
-    template(v-else-if='person.status.volgistics.needed && !person.status.volgistics.id')
+    template(v-else-if='!person.status.volgistics.id')
       div City volunteer
       div(v-if='me.id === person.id')
-        a(href='https://www.volgistics.com/ex/portal.dll/ap?AP=929478828', target='_blank') Please register
+        SButton(variant='primary', small, @click='onVolgisticsRegister') Register
       div(v-else-if='person.status.volgistics.pending') Registration pending
-      div(v-else, style='color: red') Not registered
-    template(v-else)
-      div City volunteer
-      div(v-if='person.status.volgistics.id') Registered
-      div(v-else-if='person.status.volgistics.pending') Registration pending
-      div(v-else) Not registered
+      div(v-else, :style='{ color: person.status.volgistics.needed ? "red" : null }') Not registered
     template(v-if='person.status.dswCERT.registered')
       div DSW CERT
       template(v-if='person.status.dswCERT.expired')
@@ -86,6 +81,11 @@ PersonViewSection(
       #person-view-status-identification
         div(v-for='id in person.status.identification', v-text='id')
   PersonEditStatus(v-if='person.canEdit', ref='editStatusModal', :pid='person.id')
+  PersonRegisterVolgistics(
+    v-if='person.id === me.id && !person.status.volgistics.id',
+    ref='volgisticsRegisterModal',
+    :pid='person.id'
+  )
 </template>
 
 <script lang="ts">
@@ -93,10 +93,11 @@ import { computed, defineComponent, inject, PropType, Ref, ref } from 'vue'
 import { LoginData } from '../../plugins/login'
 import type { GetPerson } from './PersonView.vue'
 import PersonEditStatus from './PersonEditStatus.vue'
+import PersonRegisterVolgistics from './PersonRegisterVolgistics.vue'
 import PersonViewSection from './PersonViewSection.vue'
 
 export default defineComponent({
-  components: { PersonEditStatus, PersonViewSection },
+  components: { PersonEditStatus, PersonRegisterVolgistics, PersonViewSection },
   props: {
     person: { type: Object as PropType<GetPerson>, required: true },
   },
@@ -117,9 +118,16 @@ export default defineComponent({
       if (!(await editStatusModal.value.show())) return
       emit('reload')
     }
+    const volgisticsRegisterModal = ref(null as any)
+    async function onVolgisticsRegister() {
+      if (!(await volgisticsRegisterModal.value.show())) return
+      emit('reload')
+    }
     return {
       editStatusModal,
       onEditStatus,
+      volgisticsRegisterModal,
+      onVolgisticsRegister,
       me,
       missingBGCheck,
     }

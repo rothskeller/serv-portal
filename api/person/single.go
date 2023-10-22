@@ -1125,3 +1125,162 @@ IDENTS:
 	r.Tx.Commit()
 	return nil
 }
+
+/*
+  id: number
+  informalName: string
+  formalName: string
+  sortName: string
+  callSign: string
+  birthdate: string
+  email: string
+  email2: string
+  cellPhone: string
+  homePhone: string
+  workPhone: string
+  homeAddress: GetPersonAddress
+  workAddress: GetPersonAddress
+  mailAddress: GetPersonAddress
+  emContacts: Array<EmContact>
+*/
+
+// GetPersonVolReg handles GET /api/people/$id/volreg requests.
+func GetPersonVolReg(r *util.Request, idstr string) error {
+	var (
+		person *model.Person
+		out    jwriter.Writer
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if r.Person != person {
+		return util.Forbidden
+	}
+	out.RawString(`{"id":`)
+	out.Int(int(person.ID))
+	out.RawString(`,"informalName":`)
+	out.String(person.InformalName)
+	out.RawString(`,"formalName":`)
+	out.String(person.FormalName)
+	out.RawString(`,"sortName":`)
+	out.String(person.SortName)
+	out.RawString(`,"callSign":`)
+	out.String(person.CallSign)
+	out.RawString(`,"birthdate":`)
+	out.String(person.Birthdate)
+	out.RawString(`,"email":`)
+	out.String(person.Email)
+	out.RawString(`,"email2":`)
+	out.String(person.Email2)
+	out.RawString(`,"homeAddress":`)
+	person.HomeAddress.MarshalEasyJSON(&out)
+	out.RawString(`,"mailAddress":`)
+	person.MailAddress.MarshalEasyJSON(&out)
+	out.RawString(`,"workAddress":`)
+	person.WorkAddress.MarshalEasyJSON(&out)
+	out.RawString(`,"cellPhone":`)
+	out.String(person.CellPhone)
+	out.RawString(`,"homePhone":`)
+	out.String(person.HomePhone)
+	out.RawString(`,"workPhone":`)
+	out.String(person.WorkPhone)
+	for i, em := range person.EmContacts {
+		if i != 0 {
+			out.RawByte(',')
+		}
+		out.RawString(`{"name":`)
+		out.String(em.Name)
+		out.RawString(`,"homePhone":`)
+		out.String(em.HomePhone)
+		out.RawString(`,"cellPhone":`)
+		out.String(em.CellPhone)
+		out.RawString(`,"relationship":`)
+		out.String(em.Relationship)
+		out.RawByte('}')
+	}
+	out.RawByte(']')
+	out.RawByte('}')
+	r.Tx.Commit()
+	r.Header().Set("Content-Type", "application/json; charset=utf-8")
+	out.DumpTo(r)
+	return nil
+}
+
+/*
+// PostPersonVolReg handles POST /api/people/$id/volreg requests.
+func PostPersonVolReg(r *util.Request, idstr string) error {
+	var (
+		person *model.Person
+		err    error
+	)
+	if person = r.Tx.FetchPerson(model.PersonID(util.ParseID(idstr))); person == nil {
+		return util.NotFound
+	}
+	if r.Person != person && !r.Person.HasPrivLevel(model.PrivLeader) {
+		return util.Forbidden
+	}
+	r.Tx.WillUpdatePerson(person)
+	person.Email = r.FormValue("email")
+	person.Email2 = r.FormValue("email2")
+	person.CellPhone = r.FormValue("cellPhone")
+	person.HomePhone = r.FormValue("homePhone")
+	person.WorkPhone = r.FormValue("workPhone")
+	person.HomeAddress.Address = r.FormValue("homeAddress")
+	if l := r.FormValue("homeAddressLatitude"); l != "" {
+		if person.HomeAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid latitude")
+		}
+	}
+	if l := r.FormValue("homeAddressLongitude"); l != "" {
+		if person.HomeAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid longitude")
+		}
+	}
+	person.MailAddress.Address = r.FormValue("mailAddress")
+	person.MailAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("mailAddressSameAsHome"))
+	person.WorkAddress.Address = r.FormValue("workAddress")
+	if l := r.FormValue("workAddressLatitude"); l != "" {
+		if person.WorkAddress.Latitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid latitude")
+		}
+	}
+	if l := r.FormValue("workAddressLongitude"); l != "" {
+		if person.WorkAddress.Longitude, err = strconv.ParseFloat(l, 64); err != nil {
+			return errors.New("invalid longitude")
+		}
+	}
+	person.WorkAddress.SameAsHome, _ = strconv.ParseBool(r.FormValue("workAddressSameAsHome"))
+	if r.Person == person || r.Person.IsAdminLeader() {
+		person.EmContacts = person.EmContacts[:0]
+		var em = new(model.EmContact)
+		em.Name = r.FormValue("emContact1Name")
+		em.HomePhone = r.FormValue("emContact1HomePhone")
+		em.CellPhone = r.FormValue("emContact1CellPhone")
+		em.Relationship = r.FormValue("emContact1Relationship")
+		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+			person.EmContacts = append(person.EmContacts, em)
+		}
+		em = new(model.EmContact)
+		em.Name = r.FormValue("emContact2Name")
+		em.HomePhone = r.FormValue("emContact2HomePhone")
+		em.CellPhone = r.FormValue("emContact2CellPhone")
+		em.Relationship = r.FormValue("emContact2Relationship")
+		if em.Name != "" || em.HomePhone != "" || em.CellPhone != "" || em.Relationship != "" {
+			person.EmContacts = append(person.EmContacts, em)
+		}
+	}
+	switch err = ValidatePerson(r.Tx, person); err {
+	case nil:
+		break
+	case errDuplicateEmail:
+		return util.SendConflict(r, "email")
+	case errDuplicateCellPhone:
+		return util.SendConflict(r, "cellPhone")
+	default:
+		return err
+	}
+	r.Tx.UpdatePerson(person)
+	r.Tx.Commit()
+	return nil
+}
+*/

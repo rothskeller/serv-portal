@@ -123,14 +123,14 @@ interface GetPersonContact {
   canEditEmContacts: boolean
   emContacts: Array<EmContact>
 }
-interface EmContact {
+export interface EmContact {
   name: string
   homePhone: string
   cellPhone: string
   relationship: string
 }
 
-const relationshipOptions = [
+export const relationshipOptions = [
   'Co-worker', 'Daughter', 'Father', 'Friend', 'Mother', 'Neighbor', 'Other',
   'Relative', 'Son', 'Spouse', 'Supervisor'
 ]
