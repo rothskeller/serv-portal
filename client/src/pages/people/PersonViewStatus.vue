@@ -20,9 +20,9 @@ PersonViewSection(
       div(v-else, :style='{ color: person.status.volgistics.needed ? "red" : null }') Not registered
     template(v-else-if='!person.status.volgistics.id')
       div City volunteer
-      div(v-if='me.id === person.id')
+      div(v-if='person.status.volgistics.pending') Registration pending
+      div(v-else-if='me.id === person.id')
         SButton(variant='primary', small, @click='onVolgisticsRegister') Register
-      div(v-else-if='person.status.volgistics.pending') Registration pending
       div(v-else, :style='{ color: person.status.volgistics.needed ? "red" : null }') Not registered
     template(v-if='person.status.dswCERT.registered')
       div DSW CERT
