@@ -1184,6 +1184,7 @@ func GetPersonVolReg(r *util.Request, idstr string) error {
 	out.String(person.HomePhone)
 	out.RawString(`,"workPhone":`)
 	out.String(person.WorkPhone)
+	out.RawString(`,"emContacts":[`)
 	for i, em := range person.EmContacts {
 		if i != 0 {
 			out.RawByte(',')
