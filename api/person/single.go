@@ -1307,5 +1307,8 @@ func PostPersonVolReg(r *util.Request, idstr string) error {
 	person.VolgisticsPending = true
 	r.Tx.UpdatePerson(person)
 	r.Tx.Commit()
+	if err := SendVolunteerRegistration(person, strings.Split(r.FormValue("interests"), ",")); err != nil {
+		r.LogEntry.Error = "volgistics registration failed: " + err.Error()
+	}
 	return nil
 }
