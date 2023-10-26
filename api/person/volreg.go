@@ -27,11 +27,11 @@ func SendVolunteerRegistration(p *model.Person, interests []string) (err error) 
 	if match == nil {
 		return errors.New("can't parse home address")
 	}
-	out.String(match[0])
-	out.RawString(`,"g1f8":`)
 	out.String(match[1])
-	out.RawString(`,"g1f9":104,"g1f10":`)
+	out.RawString(`,"g1f8":`)
 	out.String(match[2])
+	out.RawString(`,"g1f9":104,"g1f10":`)
+	out.String(match[3])
 	if p.HomePhone != "" {
 		out.RawString(`,"g1f11":`)
 		out.String(volgisticsPhoneFormat(p.HomePhone))
