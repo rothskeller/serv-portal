@@ -30,7 +30,7 @@ func WithNumber(storer phys.Storer, tmid textmsg.ID, number string, fields perso
 	var sb strings.Builder
 	sb.WriteString("SELECT ")
 	person.ColumnList(&sb, fields)
-	sb.WriteString(" FROM textmsg_recipient tr, person p WHER tr.textmsg=? AND tr.number=? AND tr.recipient=p.id")
+	sb.WriteString(" FROM textmsg_recipient tr, person p WHERE tr.textmsg=? AND tr.number=? AND tr.recipient=p.id")
 	phys.SQL(storer, sb.String(), func(stmt *phys.Stmt) {
 		stmt.BindInt(int(tmid))
 		stmt.BindText(number)
