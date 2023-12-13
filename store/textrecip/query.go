@@ -9,6 +9,21 @@ import (
 	"sunnyvaleserv.org/portal/store/textmsg"
 )
 
+// FormatNumberForTwilio formats a phone number to be accepted by Twilio: all
+// digits, no punctuation, with a +1 prefix.
+func FormatNumberForTwilio(n string) string {
+	if n == "" {
+		return ""
+	}
+	n = strings.TrimPrefix(n, "+1")
+	return "+1" + strings.Map(func(r rune) rune {
+		if r < '0' || r > '9' {
+			return -1
+		}
+		return r
+	}, n)
+}
+
 // WithNumber returns the recipient of the specified text message who has the
 // specified number, or nil if there is none.
 func WithNumber(storer phys.Storer, tmid textmsg.ID, number string, fields person.Fields) (p *person.Person) {

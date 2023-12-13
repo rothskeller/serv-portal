@@ -157,7 +157,7 @@ func sendMessage(r *request.Request, utm *textmsg.Updater) (tm *textmsg.TextMess
 			} else {
 				status = "Not Sent Yet"
 			}
-			textrecip.AddRecipient(r, tm, p, p.CellPhone(), status, utm.Timestamp)
+			textrecip.AddRecipient(r, tm, p, textrecip.FormatNumberForTwilio(p.CellPhone()), status, utm.Timestamp)
 		}
 	})
 	params.Set("From", config.Get("twilioPhoneNumber"))
@@ -177,7 +177,7 @@ func sendMessage(r *request.Request, utm *textmsg.Updater) (tm *textmsg.TextMess
 		if p.CellPhone() == "" {
 			return
 		}
-		params.Set("To", p.CellPhone())
+		params.Set("To", textrecip.FormatNumberForTwilio(p.CellPhone()))
 		request, _ = http.NewRequest(http.MethodPost, href, strings.NewReader(params.Encode()))
 		request.SetBasicAuth(config.Get("twilioAccountSID"), config.Get("twilioAuthToken"))
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
