@@ -1,0 +1,125 @@
+.eventscal {
+  --dotsMaxWidth: 360px; /* maximum width of the calendar when in dots mode */
+  --minTouch: 40px; /* minimum touchable size */
+  --printMargin: 1rem; /* margin around calendar when printing */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+.eventscalGrid {
+  display: grid;
+  justify-content: center;
+  margin-top: 0.5rem;
+  max-width: var(--dotsMaxWidth);
+  width: 100%;
+  grid: auto / repeat(7, 14.2857%);
+}
+.eventscalHeading {
+  display: flex;
+  justify-content: center;
+  grid-area: 1 / 1 / 2 / 8;
+  margin-bottom: 0.5rem;
+}
+.eventscalWeekday {
+  margin-top: 0.5rem;
+  padding: 0 0 1rem;
+  color: #888;
+  text-align: center;
+  line-height: 1;
+}
+.eventscalDay {
+  padding: 0 0 1rem;
+  min-height: 3rem;
+  text-align: center;
+  line-height: 1;
+}
+.eventscalDay:not(.eventscalDay-empty):hover {
+  background-color: #efefef;
+}
+.eventscalDay-clicked {
+  background-color: #dfdfdf;
+}
+.eventscalDay .eventscalEvents {
+  padding: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+}
+.eventscalDay .eventscalEventLink {
+  display: none;
+}
+#eventscalFooter {
+  min-width: 16rem;
+}
+.eventscalFooterDate {
+  font-weight: bold;
+}
+#eventscalFooter .eventscalEvents {
+  display: flex;
+  flex-direction: column;
+}
+#eventscalFooter {
+  margin-left: calc(10px + 0.25rem);
+  text-indent: calc(-10px - 0.25rem);
+}
+#eventscalFooter .orgdot {
+  margin-right: 0.25rem;
+}
+@media (pointer: coarse), (hover: none), (-moz-touch-enabled: 1) {
+  #eventscalFooter .eventscalEvent {
+    margin-top: calc((var(--minTouch) - 1.2rem) / 2);
+    margin-bottom: calc((var(--minTouch) - 1.2rem) / 2);
+  }
+}
+
+@media (min-width: 42em /* 5em per day * 7 days + 7em for menu */) {
+  .eventscalGrid {
+    max-width: none;
+    gap: 1px;
+  }
+  .eventscalWeekday {
+    outline: 1px solid #eee;
+  }
+  .eventscalDay {
+    min-height: calc(1rem + 3 * 0.875rem + 1rem);
+    outline: 1px solid #eee;
+    color: #888;
+  }
+  .eventscalDay .eventscalEvents {
+    display: flex;
+    flex-direction: column;
+  }
+  .eventscalDay .eventscalEvent {
+    display: flex;
+    margin: 0 0.25rem;
+    width: 100%;
+    align-items: baseline;
+  }
+  .eventscalDay .orgdot {
+    flex: none;
+    margin-right: 0.25rem;
+  }
+  .eventscalDay .eventscalEventLink {
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    display: inline;
+  }
+  #eventscalFooter {
+    margin-top: 1rem;
+  }
+  @media (pointer: coarse), (hover: none), (-moz-touch-enabled: 1) {
+    .eventscalDay .eventscalEventLink {
+      color: black;
+      cursor: default;
+    }
+    .eventscalDay .eventscalEventLink:hover {
+      text-decoration: none;
+    }
+  }
+}

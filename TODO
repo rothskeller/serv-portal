@@ -1,21 +1,28 @@
-Tier 1:
-  Support adding new person
-  Event signups and RSVPs
-    Send text messages to people who signed up for an event
-    Shift signups
-    Generate sign-in sheet for event
-  Schedule Zoom meetings through API
+To bring v3 to parity:
+  volunteer-hours
+  Lots of testing (including live texts)
+  Finalize conversion of November event attendance
 
-Unprioritized:
-  Change text report to show delivered time
+Features to add:
+  Create person
+  Send messages to people signed up for event
+  Generate sign-in sheets
   Search engine covers document contents
-  Skills and other person data
-  Data export
-  Place to request print runs for documents e.g. brochures
-  Contacts download to phone etc.
-  Complete the implementation of serv-load venues.  Better validation, allow updates.
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
   Start event list scrolled to "today".
-  Search engine efficiency — encode type and ids in rowid
+  Class registrations
+  Tie events to folders
+  Automate monthly communications tests
+  Venue editor
+  Synch email immediately on change that requires it
+
+Defects / Cleanup:
+  send-signups
   Reuse google map instance on return to people map page.
+  Reporting code could be streamlined, especially clearance report styles.
+  Switch people role editor to use s-seltree
+  Improve efficiency of Attendance report with custom queries
+  Attendance report visual detailing and horizontal scrolling
+  Need cleanup of exactly what is being up-targeted, not always precise
+  Coalesce flags on Person

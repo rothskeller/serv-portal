@@ -2,14 +2,15 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/search"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 func main() {
-	var tx *store.Tx
-
 	switch os.Getenv("HOME") {
 	case "/home/snyserv":
 		os.Chdir("/home/snyserv/sunnyvaleserv.org/data")
@@ -17,8 +18,11 @@ func main() {
 		os.Chdir("/Users/stever/src/serv-portal/data")
 	default:
 	}
-	store.Open("./serv.db")
-	tx = store.Begin(nil)
-	tx.RebuildSearchIndex()
-	tx.Commit()
+	entry := log.New("", "rebuild-search-index")
+	store.Connect(context.Background(), entry, func(st *store.Store) {
+		st.Transaction(func() {
+			search.RebuildSearchIndex(st)
+		})
+	})
+	entry.Log()
 }

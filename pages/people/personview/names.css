@@ -1,0 +1,28 @@
+.personviewNames {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.personviewNamesIFC {
+  margin-bottom: 1.5rem;
+}
+.personviewNamesIC {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: black;
+}
+.personviewNamesInformal {
+  display: inline;
+  font-weight: bold;
+}
+.personviewNamesCall {
+  display: inline;
+  margin-left: 0.5rem;
+}
+.personviewNamesFormal {
+  color: #888;
+  line-height: 1;
+}
+.personviewNamesEdit {
+  margin-left: 0.5rem;
+}

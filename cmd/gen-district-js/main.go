@@ -5,7 +5,7 @@ import (
 
 	"github.com/paulmach/orb"
 
-	"sunnyvaleserv.org/portal/api/person"
+	"sunnyvaleserv.org/portal/store/person"
 )
 
 func main() {

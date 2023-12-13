@@ -1,0 +1,46 @@
+.signupTaskShifts {
+  display: grid;
+  grid: auto-flow / repeat(3, max-content) 1fr;
+  align-items: center;
+}
+.signupVenueName {
+  grid-column: 1 / 5;
+  margin-top: 0.5rem;
+}
+.signupShiftCheck {
+  grid-column: 1;
+}
+.signupShiftHave {
+  margin-left: 0.5rem;
+}
+.signupShiftHave a[href]:hover {
+  text-decoration: underline dotted;
+}
+.signupShiftNeed {
+  margin-left: 0.25rem;
+  color: red;
+}
+.signupShiftMax {
+  margin-left: 0.25rem;
+}
+.signupShiftEdit {
+  grid-column: 4;
+  align-self: start;
+  text-align: right;
+  margin-left: 0.25rem;
+}
+.signupShiftDisabled {
+  grid-column: 1 / 5;
+  padding-left: 1.75rem;
+  color: #888;
+}
+.signupShiftList {
+  grid-column: 1 / 5;
+  padding-left: 1.75rem;
+}
+.signupShiftRemove,
+.signupShiftRemove:hover {
+  font-style: italic;
+  color: red;
+  margin-left: 0.75rem;
+}

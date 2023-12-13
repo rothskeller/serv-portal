@@ -1,0 +1,14 @@
+.roleeditOrg {
+  display: grid;
+  grid: auto-flow / repeat(3, max-content);
+  column-gap: 0.5rem;
+}
+.roleeditPriv {
+  display: grid;
+  grid: auto-flow / repeat(2, max-content);
+  column-gap: 0.5rem;
+}
+.roleeditFlags {
+  display: flex;
+  flex-direction: column;
+}

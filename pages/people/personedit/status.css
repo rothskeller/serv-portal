@@ -1,0 +1,20 @@
+.personeditStatusHeading {
+  border-top: 1px solid #888;
+  font-weight: bold;
+  padding-top: 0.5rem;
+  color: #888;
+}
+.formInput.personeditDSWExpireAdd {
+  display: flex;
+  column-gap: 0.5rem;
+}
+.personeditBGAssumed {
+  margin-top: 0.25rem;
+}
+.personeditDSWCERT,
+.personeditDSWComm,
+.personeditBGDOJ,
+.personeditBGFBI,
+.personeditBGPHS {
+  display: contents;
+}

@@ -1,0 +1,26 @@
+.s-year {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  column-gap: 0.5rem;
+}
+.s-year-arrow {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+.s-year-year {
+  margin: 0 0.5rem;
+  font-size: 2rem;
+  font-weight: bold;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

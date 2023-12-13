@@ -1,0 +1,24 @@
+.personviewContactEmails,
+.personviewContactEmerg {
+  margin-top: 0.75rem;
+}
+.personviewContactPhone {
+  font-variant: tabular-nums;
+}
+.personviewContactPhoneLabel {
+  margin-left: 0.25rem;
+  color: #888;
+}
+.personviewContactAddress {
+  margin-top: 0.75rem;
+  line-height: 1.2;
+}
+.personviewContactAddressMap {
+  margin-left: 1rem;
+}
+.personviewContactAddressMap::before {
+  content: '[';
+}
+.personviewContactAddressMap::after {
+  content: ']';
+}

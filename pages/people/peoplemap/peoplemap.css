@@ -1,0 +1,14 @@
+.peoplemap {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.peoplemapForm {
+  display: flex;
+  column-gap: 1rem;
+  margin: 0.5rem;
+}
+#peoplemapCanvas {
+  width: 100vw;
+  flex: auto;
+}

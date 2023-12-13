@@ -1,0 +1,23 @@
+body {
+  color: #212529;
+  background-color: #fff;
+}
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+a:hover {
+  color: #0069d9; /* darken(#007bff, 15%); */
+  text-decoration: underline;
+}
+a:not([href]),
+a:not([href]):hover,
+a.nolink,
+a.nolink:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+:root {
+  --titlebarHeight: 40px;
+}

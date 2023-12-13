@@ -1,0 +1,6 @@
+.orgdot {
+  display: inline-block;
+  width: 0.625em;
+  height: 0.625em;
+  border-radius: 50%;
+}

@@ -1,20 +1,24 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/mailru/easyjson/jwriter"
 
-	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/enum"
+	"sunnyvaleserv.org/portal/store/list"
+	"sunnyvaleserv.org/portal/store/listperson"
+	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/util/log"
 )
 
 func main() {
 	var (
-		tx     *store.Tx
-		lists  []*model.List
+		entry  *log.Entry
 		out    jwriter.Writer
 		tempfn string
 		permfn string
@@ -34,73 +38,70 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	store.Open("serv.db")
-	tx = store.Begin(nil)
-	for _, l := range tx.FetchLists() {
-		if l.Type == model.ListEmail {
-			l.Name += "@sunnyvaleserv.org"
-			lists = append(lists, l)
-		}
-	}
-	out.RawByte('[')
-	for _, p := range tx.FetchPeople() {
-		var sender, receiver []string
+	entry = log.New("", "synch-email")
+	store.Connect(context.Background(), entry, func(st *store.Store) {
+		out.RawByte('[')
+		person.All(st, person.FID|person.FInformalName|person.FEmail|person.FEmail2|person.FFlags|person.FPrivLevels, func(p *person.Person) {
+			var sender, receiver []string
 
-		if p.NoEmail || (p.Email == "" && p.Email2 == "") || !p.HasPrivLevel(model.PrivStudent) {
-			continue
-		}
-		for _, l := range lists {
-			if l.People[p.ID]&model.ListSender != 0 {
-				sender = append(sender, l.Name)
+			if p.Flags()&person.NoEmail != 0 || (p.Email() == "" && p.Email2() == "") || !p.HasPrivLevel(0, enum.PrivStudent) {
+				return
 			}
-			if l.People[p.ID]&model.ListSubscribed != 0 {
-				receiver = append(receiver, l.Name)
-			}
-		}
-		if len(sender) == 0 && len(receiver) == 0 {
-			continue
-		}
-		for _, email := range []string{p.Email, p.Email2} {
-			if email == "" {
-				continue
-			}
-			if first {
-				first = false
-			} else {
-				out.RawByte(',')
-			}
-			out.RawString(`{"id":`)
-			out.IntStr(int(p.ID))
-			out.RawString(`,"name":`)
-			out.String(p.InformalName)
-			out.RawString(`,"email":`)
-			out.String(email)
-			out.RawString(`,"token":`)
-			out.String(p.UnsubscribeToken)
-			if len(sender) != 0 {
-				out.RawString(`,"sender":[`)
-				for i, s := range sender {
-					if i != 0 {
-						out.RawByte(',')
-					}
-					out.String(s)
+			listperson.SubscriptionsByPerson(st, p.ID(), func(l *list.List) {
+				if l.Type == list.Email {
+					receiver = append(receiver, l.Name+"@sunnyvaleserv.org")
 				}
-				out.RawByte(']')
-			}
-			if len(receiver) != 0 {
-				out.RawString(`,"receiver":[`)
-				for i, r := range receiver {
-					if i != 0 {
-						out.RawByte(',')
-					}
-					out.String(r)
+			})
+			listperson.SendersByPerson(st, p.ID(), func(l *list.List) {
+				if l.Type == list.Email {
+					sender = append(sender, l.Name+"@sunnyvaleserv.org")
 				}
-				out.RawByte(']')
+			})
+			if len(sender) == 0 && len(receiver) == 0 {
+				return
 			}
-			out.RawByte('}')
-		}
-	}
-	out.RawByte(']')
+			for _, email := range []string{p.Email(), p.Email2()} {
+				if email == "" {
+					continue
+				}
+				if first {
+					first = false
+				} else {
+					out.RawByte(',')
+				}
+				out.RawString(`{"id":`)
+				out.IntStr(int(p.ID()))
+				out.RawString(`,"name":`)
+				out.String(p.InformalName())
+				out.RawString(`,"email":`)
+				out.String(email)
+				out.RawString(`,"token":`)
+				out.String(p.UnsubscribeToken())
+				if len(sender) != 0 {
+					out.RawString(`,"sender":[`)
+					for i, s := range sender {
+						if i != 0 {
+							out.RawByte(',')
+						}
+						out.String(s)
+					}
+					out.RawByte(']')
+				}
+				if len(receiver) != 0 {
+					out.RawString(`,"receiver":[`)
+					for i, r := range receiver {
+						if i != 0 {
+							out.RawByte(',')
+						}
+						out.String(r)
+					}
+					out.RawByte(']')
+				}
+				out.RawByte('}')
+			}
+		})
+		out.RawByte(']')
+	})
 	permfn = filepath.Join(os.Getenv("HOME"), "maillist", "lists")
 	tempfn = permfn + ".temp"
 	if tempfh, err = os.Create(tempfn); err != nil {

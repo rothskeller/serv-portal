@@ -1,0 +1,53 @@
+main.login {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  margin: 0 auto;
+  /* max-width: calc(0.75rem + 10rem + 20rem + 0.75rem + 1.5rem); */
+}
+.loginBanner {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+.loginExplain {
+  max-width: 30rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+.loginBrowserwarn {
+  max-width: 30rem;
+  margin-top: 0.5rem;
+  padding: 2px 4px;
+  background-color: red;
+  color: white;
+}
+@supports (display: grid) {
+  .loginBrowserwarn {
+    display: none;
+  }
+}
+.loginForm {
+  margin-top: 0.5rem;
+}
+.loginSubmit {
+  text-align: center;
+  margin-top: 1rem;
+}
+.loginFailed {
+  color: red;
+  text-align: center;
+}
+.loginReset {
+  flex: none;
+  text-align: center;
+  margin-top: 1rem;
+}
+.loginAbout {
+  flex: auto;
+  display: flex;
+  font-size: 0.875rem;
+  margin-top: 1.5rem;
+  align-items: flex-end;
+  justify-content: center;
+}

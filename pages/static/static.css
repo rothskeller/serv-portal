@@ -1,0 +1,15 @@
+main.static {
+  margin: 0 auto;
+  padding: 0.75rem;
+  max-width: 40rem;
+}
+.static h1 {
+  font-size: 1.25rem;
+  margin: 0.5rem 0;
+}
+.emaillist {
+  list-style: none;
+}
+.emaillist li {
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}

@@ -1,0 +1,29 @@
+:is(.folder, .document) {
+  min-height: 1.5rem;
+  display: flex;
+  align-items: start;
+  background-color: transparent;
+  transition: background 1s;
+}
+.folder-dragging {
+  background-color: #ccc;
+}
+.folderContents {
+  margin-left: 1.75rem;
+}
+:is(.folder, .document) s-icon {
+  flex: none;
+  margin-right: 0.25rem;
+  width: 1.5rem;
+  height: 1rem;
+}
+.folderItem-new {
+  background-color: pink;
+}
+#folderDelete {
+  margin-top: 1.5rem;
+  display: flex;
+  height: 1.5rem;
+  gap: 0.5rem;
+  color: red;
+}

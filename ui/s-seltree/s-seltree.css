@@ -1,0 +1,41 @@
+.s-seltree-node {
+  display: grid;
+  grid: auto-flow / 1.5rem 1fr;
+}
+.s-seltree-node.open > .s-seltree-right,
+.s-seltree-node.hidekids > .s-seltree-right,
+.s-seltree-node:not(.open) > .s-seltree-down,
+.s-seltree-node.open.hidekids > .s-seltree-down {
+  display: none;
+}
+.s-seltree-node:not(.open):not(.hidekids) > .s-seltree-right,
+.s-seltree-node.open:not(.hidekids) > .s-seltree-down {
+  grid-column: 1;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #666;
+}
+.s-seltree-label {
+  grid-column: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.s-seltree-node.disabled > .s-seltree-label {
+  color: gray;
+}
+.s-seltree-node.rolledup > .s-seltree-label span {
+  background-color: lightblue;
+  color: white;
+}
+.s-seltree-node.selected > .s-seltree-label span {
+  background-color: blue;
+  color: white;
+}
+.s-seltree-kids {
+  grid-column: 2;
+}
+.s-seltree-node:not(.open) > .s-seltree-kids,
+.s-seltree-node.hidekids > .s-seltree-kids {
+  display: none;
+}

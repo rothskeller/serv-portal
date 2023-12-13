@@ -8,14 +8,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/cgi"
 	"os"
 	"time"
 
-	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/textmsg"
+	"sunnyvaleserv.org/portal/store/textrecip"
 	"sunnyvaleserv.org/portal/util/log"
 )
 
@@ -32,28 +35,26 @@ func main() {
 		var (
 			number  = r.FormValue("From")
 			body    = r.FormValue("Body")
-			message *model.TextMessage
+			message *textmsg.TextMessage
+			p       *person.Person
 		)
-		store.Open("serv.db")
 		entry := log.New("", "received-text-hook")
 		defer entry.Log()
-		tx := store.Begin(entry)
-		if message = tx.FetchTextMessageByNumber(number); message == nil {
-			entry.Error = "incoming message from unknown phone number: " + number
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		for _, r := range message.Recipients {
-			if r.Number == number {
-				r.Responses = append(r.Responses, &model.TextResponse{
-					Response:  body,
-					Timestamp: time.Now(),
-				})
-				break
+		store.Connect(context.Background(), entry, func(st *store.Store) {
+			if message = textmsg.WithNumber(st, number, textmsg.FID); message == nil {
+				entry.Problems.Add("incoming message from unknown phone number: " + number)
+				w.WriteHeader(http.StatusNoContent)
+				return
 			}
-		}
-		tx.UpdateTextMessage(message)
-		tx.Commit()
+			if p = textrecip.WithNumber(st, message.ID(), number, person.FID|person.FInformalName); p == nil {
+				entry.Problems.Add("no recipient with phone number: " + number)
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			st.Transaction(func() {
+				textrecip.AddReply(st, message, p, body, time.Now())
+			})
+		})
 		w.WriteHeader(http.StatusNoContent)
 	}))
 }

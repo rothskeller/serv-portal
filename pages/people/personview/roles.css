@@ -1,0 +1,19 @@
+.personviewRoles {
+  display: grid;
+  grid: auto-flow / min-content 1fr;
+  min-width: 0;
+}
+.personviewRolesBadge {
+  margin: 1.2rem 0.5rem 0 0;
+  width: 32px;
+}
+.personviewRolesTitles {
+  margin-top: 1rem;
+  line-height: 1.2;
+  min-width: 0;
+}
+.personviewRolesTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,48 @@
+.personviewStatus {
+  margin-top: 0.75rem;
+  display: grid;
+  grid: auto-flow / 1fr;
+}
+.personviewStatus > div:nth-child(2n + 1) {
+  white-space: nowrap;
+}
+.personviewStatus > div:nth-child(2n) {
+  margin-left: 2rem;
+}
+@media (min-width: 25em) {
+  .personviewStatus {
+    grid: auto-flow / min-content 1fr;
+  }
+  .personviewStatus > div:nth-child(2n) {
+    margin-left: 1rem;
+  }
+}
+@media (min-width: 48em) {
+  .personviewStatus {
+    grid: auto-flow / 1fr;
+  }
+  .personviewStatus > div:nth-child(2n) {
+    margin-left: 2rem;
+  }
+}
+.personviewStatus-needed {
+  color: red;
+}
+.personviewStatusBGChecks {
+  display: grid;
+  grid: auto-flow / max-content 1fr;
+  column-gap: 0.25rem;
+}
+.personviewStatusIdents {
+  display: flex;
+  flex-wrap: wrap;
+}
+.personviewStatusIdents div {
+  white-space: nowrap;
+}
+.personviewStatusIdents div::after {
+  content: ', '; /* non-breaking space */
+}
+.personviewStatusIdents div:last-child::after {
+  content: '';
+}

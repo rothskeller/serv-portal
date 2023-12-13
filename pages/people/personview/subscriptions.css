@@ -1,0 +1,9 @@
+.personviewSubscriptions {
+  margin-top: 0.75rem;
+  line-height: 1.2;
+  margin-left: 2em;
+  text-indent: -2em;
+}
+.personviewSubscriptionsUnsubscribed {
+  color: red;
+}

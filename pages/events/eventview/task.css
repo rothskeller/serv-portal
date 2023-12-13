@@ -1,0 +1,62 @@
+.eventviewTask {
+  margin-top: 0.75rem
+}
+.eventviewTaskOrg {
+  margin-left: 0.5rem;
+}
+.eventviewTaskDSW {
+  margin-left: 0.5rem;
+  background-color: #006600;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.25rem;
+  vertical-align: top;
+  line-height: 1.5rem;
+  border-radius: 0.25rem;
+}
+.eventviewTaskDetails {
+  margin-top: 1rem;
+}
+.eventviewTaskHeading {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  font-weight: bold;
+  font-size: 1.125rem;
+  min-height: 1.75rem;
+}
+.eventviewTaskProxy {
+  color: red;
+}
+.eventviewTaskSignupsEdit {
+  text-align: right;
+  margin-left: 0.25rem;
+}
+.eventviewTaskButtons {
+  margin: 0.25rem 0 1.5rem 0;
+}
+.eventviewTaskAttendance {
+  display: grid;
+  grid: auto-flow / min-content 1fr;
+  column-gap: 0.5rem;
+  align-items: center;
+}
+.eventviewTaskStatusIcon {
+  width: 1.5rem;
+  height: 1.25rem;
+}
+.eventviewTaskStatusIcon.attended,
+.eventviewTaskStatusIcon.minutes {
+  color: blue;
+}
+.eventviewTaskStatusIcon.credited {
+  color: #f1cc00;
+}
+.eventviewTaskStatusIcon.false {
+  color: gray;
+}
+.eventviewTaskHoursSave {
+  vertical-align: baseline;
+  margin-left: 0.25rem;
+}

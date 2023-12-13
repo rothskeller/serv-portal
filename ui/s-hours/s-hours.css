@@ -1,0 +1,43 @@
+s-hours {
+  display: inline-block;
+  position: relative;
+}
+s-hours .SHoursFrame {
+  position: absolute;
+  top: -1.5rem;
+  left: -0.5rem;
+  width: 10.5rem;
+  height: 5.25rem;
+  background-color: white;
+  border: 1px solid #888;
+  border-radius: 1rem;
+  padding: 0.25rem 1rem;
+}
+s-hours .SHoursTI {
+  position: absolute;
+  top: 3.875rem;
+  left: 0.5rem;
+  font-size: 0.875rem;
+}
+s-hours .SHoursTO {
+  position: absolute;
+  top: 3.875rem;
+  left: 5.5rem;
+  font-size: 0.875rem;
+}
+s-hours input.formInput {
+  width: 4.5rem;
+}
+s-hours input:disabled {
+  color: #888;
+}
+s-hours .SHoursInput1 {
+  position: relative;
+  z-index: 1;
+}
+s-hours .SHoursInput2 {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 5rem;
+}

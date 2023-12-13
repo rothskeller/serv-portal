@@ -1,0 +1,31 @@
+.s-search {
+  position: relative;
+}
+.s-search-dd {
+  position: absolute;
+  left: 0;
+  top: calc(100% - 1px);
+  border: 1px solid #ccc;
+  background-color: white;
+  z-index: 1;
+}
+.s-search-sr {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  min-height: 36px;
+  user-select: none;
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.s-search-sr:hover {
+  background-color: #b3d7ff;
+}
+.s-search-sr.selected {
+  background-color: #80bdff;
+}
+.s-search-sr.nomatch {
+  color: red;
+}

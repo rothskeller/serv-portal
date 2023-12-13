@@ -1,0 +1,8 @@
+.eventeditTimes {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+#eventeditDetails {
+  line-height: 1.2;
+}

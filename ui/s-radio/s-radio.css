@@ -1,0 +1,76 @@
+.s-radio {
+  display: flex;
+  align-items: center;
+}
+
+/* The input takes up space but is hidden (opacity 0).  The appearance of the
+ * button is drawn by the :before and :after rules for the label, below.
+ */
+.s-radio-rb {
+  z-index: -1;
+  width: 1.75rem;
+  opacity: 0;
+  margin: 0;
+}
+
+.s-radio-lb {
+  display: inline-block;
+  position: relative;
+  padding: 3px 0;
+  vertical-align: top;
+  line-height: 1;
+}
+
+/* This draws the outline of the control: the part that doesn't change (other
+ * than color, shadow, etc.) when the control is checked.
+ */
+.s-radio-lb:before {
+  background-color: #fff;
+  border: 1px solid #adb5bd;
+  position: absolute;
+  top: 0;
+  left: -1.75rem;
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  content: '';
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+  border-radius: 0.625rem;
+}
+
+/* When the control is active, give it a blue tinge. */
+.s-radio-rb:not(:disabled):active ~ .s-radio-lb:before {
+  color: #fff;
+  background-color: #b3d7ff;
+  border-color: #b3d7ff;
+}
+
+/* When the control has focus, give it a more prominent tinge. */
+.s-radio-rb:focus:not(:checked) ~ label:before {
+  border-color: #80bdff;
+}
+
+/* When the control has focus, give it a box shadow. */
+.s-radio-rb:focus ~ .s-radio-lb:before {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* When the control is checked, give it a full-on blue. */
+.s-radio-rb:checked ~ .s-radio-lb:before {
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* This draws the filler inside the control, if it is checked. */
+.s-radio-rb:checked ~ .s-radio-lb:after {
+  position: absolute;
+  top: 0.25rem;
+  left: -1.5rem;
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  content: '';
+  background-color: #007bff;
+  border-radius: 0.375rem;
+}

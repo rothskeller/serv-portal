@@ -1,60 +1,430 @@
-== Basic Information ==
+The "Events" portion of the SERV website is among the most complex.  It displays
+a calendar and information about events of interest to SERV volunteers.  It
+handles attendance tracking and course credit, volunteer hours tracking, and
+signups for work shifts.
 
-Events are uniquely identified by a positive integer ID.  Events have a name,
-date, start time, end time, and details.  The name is free form text, which must
-be unique among events on that date.  Dates are times are stored and manipulated
-as strings, not time.Time objects.  Dates are in YYYY-MM-DD format and times are
-in 24-hour HH:MM format (no seconds, always local time).  The details block is
-free-form text; it can have <a> tags for hyperlinks, but no other tags.  (It is
-sanitized of other tags on input.)
+The three basic object types are Event, Task, and Shift.  An Event is something
+that appears on the calendar.  A Task is a portion of an Event with volunteer
+hours tracking, attendance tracking, and/or credit tracking.  A Shift is a
+portion of a Task with explicit signups.  Every Event has at least one Task;
+some have multiple Tasks.  A Task that supports explicit signups has one or more
+Shifts.
 
-== Venues ==
+== Events ==
 
-Each event can have a venue, which is a reference to a separate Venue object.
-Venues are identified by a positive integer ID, and have a name, address, city,
-and map URL.  The address, city, and map URL are optional.  (We don't store a
-state because nothing we do is outside of California, and we don't store a zip
-code because we have no need for it.)  If an event does not have a venue, its
-location is displayed as "TBD".
+Every Event has a date.  Real-world events that span multiple days are
+represented in the data model as multiple Events, one per day.  (There is no
+data model tie between such events.  One might be added in the future.)  Every
+Event has a time span, expressed with a starting and ending time on the Event's
+date.  Often these will be the starting time of its first Task and the ending
+time of its last Task, but this is not required.  For example, a public Event's
+time span might be the opening hours for the event as published to the general
+public, but it might have setup Tasks that occur before the start of those hours
+or cleanup Tasks that occur after them.
 
-== Roles ==
+If the starting and ending time of an Event are both midnight, the Event is
+considered an "all day" event and times are not shown.
 
-Each event has one or more roles "invited" to it, which means that holders of
-those roles can see the event in their calendar.  It also means that their names
-are listed as possibilities when recording attendance at the event.  Each role
-is associated with zero or more SERV groups (usually one).  The union of all
-SERV groups across all roles invited to the event gives the set of SERV groups
-for the event itself.
+Every Event has a name.  No two Events on the same day may have the same name.
+Events may have an associated Venue, activation number, and/or descriptive text.
+Events may have connections to zero or more folders in the Files area, where
+files related to the event are stored.
 
-== Classification: SERV Groups and Types ==
+Every Event has at least one Task.  Tasks are described below.
 
-Every event has a set of zero or more SERV groups (usually one), derived from
-the SERV groups of the invited roles as described above.  The calendar and event
-list pages display each different SERV group as a different-colored dot.  An
-event with multiple groups gets multiple dots.  In addition, the list of SERV
-groups for an event is displayed on the event's page.  The SERV groups for an
-event are not directly editable; you have to change the set of roles invited to
-the event, or the SERV groups associated with those roles.
+Events can track volunteer hours.  Most volunteer hours are tracked on a
+per-Task basis (see below).  However, an Event has multiple Tasks for which a
+particular volunteer can record hours, that volunteer can also record hours for
+the Event that are not associated with any Task.
 
-Every event also has a set of zero or more event types (usually one).  These are
-not visible on the calendar, but they are shown on the individual event pages,
-and they are used in report generation.
+Events can be created, and Tasks can be added to them, by any organization
+leader.  Events can be edited or deleted only by people with organization leader
+privilege in the associated organizations of every Task in the Event.
 
-A real-world data model would allow each invited role to have a different event
-type.  For example, a CERT Graduation is a class with respect to its students,
-but a drill with respect to SARES participants.  However, that complexity is
-unnecessary and unhelpful.  Listing all of the event types and all of the SERV
-groups for an event, without correlating them, is good enough and much simpler.
-Graduation, for example, might be shown as
-    Class, Drill, Party for CERT-D, CERT-T, SARES
+== Tasks ==
 
-Report generation needs a single event type for each event.  The event types are
-implicitly ranked, and the highest-ranking event type for an event is used when
-reporting on that event.
+Every Task has a name, which must be unique among all Tasks for that Event.  The
+default name (primarily used for Tasks that are the only Task in their Event) is
+"Tracking".
 
-== Attendance ==
+Every Task has an associated organization.  Only leaders of that organization
+can create, edit or delete the Task.
 
-The system tracks attendance at each event.  Only people holding the roles
-invited to the event are listed on the attendance tracking page.  The attendance
-data model is binary, not trinary: attendance not recorded is the same as
-absent.
+Tasks have a (possibly empty) set of roles controlling who participates in the
+Task, and a (possibly empty) set of Shifts for which people can sign up.  If a
+Task has Shifts, only people who hold one of the associated roles can sign up to
+participate.  If a Task has no Shifts, everyone holding any of the associated
+roles is considered a participant.
+
+Tasks may have associated descriptive text.  Tasks have a flag indicating
+whether participation in them is covered by state Disaster Service Worker
+Volunteer Program insurance.  (The classification of DSW registration needed for
+this coverage is implied by the Task's organization.)
+
+Tasks have a flag indicating whether volunteer hours can be recorded for them.
+(This will be disabled for things like parties.)  When enabled, volunteer hours
+can be recorded by anyone who holds a participating or eligible role (whether or
+not they explicitly signed up).  Leaders of the Task organization may record
+volunteer hours for the Task for any person, even if they are not otherwise a
+participant in the Task.
+
+Any Task may track sign-ins.  A leader in the Task organization may record who
+signed in for that Task.  Any person can be marked as signed in, even if they
+are not otherwise a participant in the Task.  This implies that the actual
+sign-in sheet is on file in an appropriate place (usually the Activations folder
+in the OES SharePoint).
+
+Any Task may track completion credits.  (These are typically used for students
+in multi-session classes.)  A leader in the Task organization may record who
+should receive credit for completion of the Task.  Any person can be marked as
+receiving credit, even if they are not otherwise a participant in the Task.
+
+== Shifts ==
+
+Every Shift has a time range and an optional venue.  No two Shifts of the same
+Task may have overlapping time ranges at the same venue.  No two Shifts of the
+same Task without venues may have overlapping time ranges.  The time range of a
+Shift must start and end on the date of the containing Event, but it need not
+fall within the time range of the Event.
+
+Each Shift may have a desired minimum number of signups and/or a maximum number
+of signups.
+
+Each Shift tracks the ordered list of people who have explicitly signed up, and
+the set of people who have explicitly declined to sign up.  People can
+explicitly sign up for the Task if all of these are true:
+  - they are not signed up for another Shift at an overlapping time (on any Task
+    of any Event)
+  - the Shift has not yet ended
+  - they hold one of the roles associated with the Task
+  - explicit signups for the Task are enabled
+  - their signup would not exceed the maximum number of signups for the Shift
+Leaders of the Task organization can sign up any person for the Shift.  For
+leaders signing people up, the first constraint applies but the others are
+not enforced.  Leaders can also remove signups.
+
+== Calendar Display ==
+
+The calendar is displayed in two forms: a list form, which displays all Events
+in a particular year in a chronological list, and a grid form, which displays
+all Events in a particular month in a traditional calendar grid.
+
+There is one special type of Event which never appears on the calendar (the
+"Other Hours" event on the last day of every month).  With that exception, all
+Events are visible to all logged-in users; there is no concept of a private
+Event.
+
+The calendar shows a set of colored dots next to each Event, indicating the SERV
+organization(s) it's associated with.  This is the union of the associated
+organizations of the Event's Tasks.
+
+An Event's Venue, if any, may be displayed in the list form of the calendar if
+space is sufficient.
+
+== Event Details Page ==
+
+Clicking on an Event in the calendar displays its full details and, for
+appropriate users, allows them to be edited.  The format is similar to that of
+the Person details page: a heading, followed by a series of bubbles, each with
+its own title bar and Edit button.
+
+The heading for an Event page shows the event name in large bold font, and its
+date and activation number underneath it.
+
+The bubbles on the Event details page include:
+
+  - A "Details" bubble.  This contains the event time range, location, and
+    descriptive text.  The Edit dialog for this bubble allows editing the name,
+    date, and activation number as well.
+  - A bubble for each associated Files folder, giving the contents of that
+    Folder.
+  - A bubble for each Task.  This contains the details of the Task as well as
+    signups, volunteer hours, sign-ins, and credits for the Task.
+  - A bubble for "Other Hours".  This allows entry of volunteer hours unrelated
+    to a Task.
+
+Details on each of these bubbles are in the sections below.
+
+=== Heading ===
+
+The page heading has the event name in a large, bold font.  It is preceded by
+colored dots representing all of the organizations associated with the event's
+Tasks.  If the event has an activation number, this follows after the name in
+large, normal weight font (as the callsign is handled on the People details
+page).  If all Tasks in the Event are marked as eligible for DSW, a DSW flag
+appears next to the activation number (or name, if there is no activation
+number).  The next line has the event date, written out long form (Sunday,
+November 12, 2023).
+
+There is no Edit button next to this heading.  However, at the right margin,
+there is an Actions drop-down with a menu of actions for appropriately
+privileged people, including:
+  - Delete
+  - Copy
+  - Attach Folder
+  - Sign-In Sheet
+Other actions may be added in the future, e.g., for contacting participants,
+advertising sign-ups, etc.
+
+=== Details Bubble ===
+
+The title of this bubble is always "Details".  It contains:
+  - The event time range, unless both start and end are midnight.
+  - The event venue, if set; otherwise, the venue shared by all Tasks, if any.
+  - The descriptive text for the event, if any.
+If none of the above are available, and the viewing user lacks edit capability,
+the Details bubble does not appear.
+
+If the viewing user has leader privileges in all of the organizations associated
+with the Event's Tasks, then an Edit button appears in the heading.  The Edit
+dialog allows editing the event name, date, time range, venue, and descriptive
+text.  The activation number is editable if the viewing user is an admin leader.
+
+=== Folder Bubble ===
+
+For each folder attached to the Event, there will be a folder bubble, with the
+title given when the folder was attached.  Next to the title is an arrow icon,
+which when clicked, moves to the actual Files page with that folder open.
+
+The contents of the folder bubble will be the contents of the attached folder,
+displayed the same as on the Files page.  However, subfolders are not shown; it
+is a flat file list only.  If the viewing user has the appropriate privileges,
+the list supports drag/drop and the Add File and Add URL buttons, but it does
+not have Add Folder.
+
+If the viewing user has leader privileges in all of the organizations associated
+with the Event's Tasks, then an Edit button appears in the heading.  The Edit
+dialog allows editing the folder bubble title.  It also has a button to detach
+the folder from the event.
+
+=== Task Bubble ===
+
+There is a Task bubble for each Task of the event.  Task bubbles are shown only
+to people who hold a participating or eligible role; who are leaders in the
+Task's organization; or who have recorded hours, sign-up, sign-in, or credit
+for the Task.
+
+The title of the bubble is the name of the Task; if the Task name is empty
+(which only happens when there is a single Task), the title is "Tracking".  If
+the Task is marked as eligible for DSW, and there are other tasks that aren't so
+marked, a DSW flag appears next to the title.  If the Tasks of the Event have
+multiple organizations, the colored dot appropriate for this Task's organization
+appears in the heading before the title.
+
+The Task bubble starts by giving the time range, venue, and descriptive text
+for the task.  However, the time range and/or venue are omitted if they are the
+same for all tasks (and were therefore shown in the Details bubble).
+
+Next, the Task bubble lists the participating and eligible roles.  If there are
+any which the viewing user doesn't hold, they are displayed partially greyed.
+
+Next, the Task bubble shows the viewing user's recorded volunteer hours for the
+Task, in one of the following variants:
+  - If the Task has not yet finished, nothing is shown.
+  - If volunteer hours collection is disabled and no hours are recorded for the
+    viewing user, nothing is shown.
+  - If the collection period has ended, the number of hours recorded is
+    displayed with no editing capability.
+  - Otherwise, an entry field is displayed for entry of the number of hours for
+    the viewing user.
+
+
+If the Task is in the past, and supports volunteer hours collection, the
+volunteer hours are shown next, as follows:
+  - If the collection threshold is still open
+Hours
+Signups
+Signins
+Credits
+
+
+
+
+  These include
+its time span, name, organizations, venue, activation number, and descriptive
+text as described above.  If an Event has only one Task, and that Task's
+"Covered by DSW" flag is set, this will be indicated at the top of the Event
+detail page as well.
+
+After the whole-Event information is displayed, each of the Event's Tasks are
+displayed.  The display of a Task may include a form that allows editing of
+volunteer hours and/or signups for the Task, depending on user privileges and
+other factors as described below.  Tasks are displayed in the order selected by
+the Event author, which defaults to the order in which they were created.
+
+=== Task Details ===
+
+When an Event has multiple Tasks, the display of each Task starts with a header
+including the colored dot for the Task's organization, and the Task's name, time
+span, optional venue, and optional "Covered by DSW" flag.
+
+If the Event has only one Task, its header is not displayed.  The Task is
+required to have the same time span and venue as the parent Event, and the
+Task's name is ignored.  The colored dot for the organization and the DSW flag
+are displayed in the header of the Event as noted above.
+
+If the Task has descriptive text, it is displayed after the Task header (or, for
+single-Task events, after the descriptive text for the Event).
+
+After the Task header and descriptive text, if any, information is provided
+regarding role assignments, signups, attendance, and volunteer hours for the
+Task, as described in the sections below.
+
+==== Implicit Task Signups ====
+
+If the viewer holds a role that is marked as being automatically signed up for
+the Task, the page will note that, telling them that they are signed up and
+which role(s) of theirs caused that to happen.  Note that they have no option to
+remove that signup.
+
+If any other roles are marked as being automatically signed up for the Task, the
+page will say that, naming those roles.  (Roles already mentioned because the
+viewer holds them will be omitted, to avoid redundancy.)
+
+==== Explicit Task Signups ====
+
+Two different displays of explicit Task signups are possible:  privileged and
+non-privileged.
+
+The privileged display is shown to leaders of the Task's organization, and to
+holders of any role marked as being allowed to see the explicit signups.  The
+privileged display is a numbered list of names of people signed up, in the order
+that they signed up.  It is shown only if (a) the Task has people signed up, (b)
+it has roles marked eligible to sign up, or (c) the viewer is a leader of the
+Task's organization.  For leaders of the Task's organization, a button appears
+below the list allowing them to sign up someone else.
+
+The privileged display has additional features if signups for the Task are
+enabled and the Task starts in the future.  In that case:
+  - If the number of signups is less than the desired minimum number for the
+    Task, at least that many lines are printed in the list, with empty lines
+    being shown for unfilled spots.  They are marked or colored to make it clear
+    that more signups are needed.
+  - If the Task has a maximum number of signups, at least that many lines are
+    printed in the list, with empty lines being shown for unfilled spots.
+  - If the viewer is not signed up and can sign up (see below), at least one
+    empty line is shown, and the first empty line has a button allowing them to
+    add themselves to the list.
+  - If the viewer is signed up, a button is shown next to their name allowing
+    them to cancel their signup.  (This happens even if signups for the Task are
+    disabled; they can still cancel as long as it's in the future.)
+
+The non-privileged display starts with a series of person silhouettes, as
+follows:
+  - If the Task has a maximum number of signups, one silhouette is displayed for
+    each place; the silhouettes are filled in for places that are taken, and
+    outlined in red for places that need to be filled to hit any desired
+    minimum.
+  - If the Task has a desired minimum but no maximum, one silhouette is
+    displayed for each person signed up and/or place that needs to be filled.
+    Places that need to be filled are outlined in red.  If signups for the Task
+    are enabled and the Task starts in the future, the set of silhouettes will
+    end with an empty one (adding it if need be), followed by an ellipsis.
+  - If the Task has no desired minimum or maximum, one silhouette is displayed
+    for each person signed up.  If signups for the Task are enabled and the Task
+    starts in the future, the set of silhouettes will end with an additional
+    empty one, followed by an ellipsis.
+
+If the viewer is signed up, this will be noted following the silhouettes.  If
+the Task starts in the future, they are given a button to cancel their signup.
+
+If the viewer is not signed up and any silhouettes were displayed, the fact that
+they are not signed up is noted.  If they can sign up (see below), they are
+given a button to do so.
+
+A person can sign up for a Task if all of the following are true:
+  1. The person does not hold a role that is implicitly signed up for the task
+  2. The person is not signed up for any other task on any other event at an
+     overlapping time
+  3. The task is in the future
+  4. Explicit self-signups are enabled for the task
+  5. The person holds a role that is marked as eligible to sign up for the task
+  6. The number of explicit signups is less than the maximum for the task
+When an organization leader is signing someone else up for a Task, conditions 1
+and 2 still apply but the other conditions are not enforced.
+
+==== Volunteer Hours and Attendance ====
+
+The Task details describe, and perhaps allow editing of, the viewer's volunteer
+hours and attendance flags for the Task, as follows.
+
+  - If the Task hasn't started yet:  nothing is shown.
+  - Else if the Task has started, volunteer hours collection for the Task is
+    enabled, and the volunteer hours collection period containing the Task is in
+    progress:
+    - An entry field for volunteer hours is presented.
+    - The status of the person's Attended and Credited flags for the Task is
+      displayed (see below).
+  - Else if the viewer has recorded hours for the Task:
+    - The number of recorded hours is presented.
+    - The status of the person's Attended and Credited flags for the Task is
+      displayed (see below).
+  - Else:
+    - The status of the person's Attended and Credited flags for the Task is
+      displayed (see below).
+
+For display of the flags, the rule is:  if the flag is set for the viewer, say
+so; otherwise, if the flag is set for any person, say that the flag is not set
+for this viewer; otherwise, say nothing.
+
+==== Volunteer Hours ====
+
+If a task's "Report Hours" flag is set, volunteer hours are collected and
+reported for the Task.  Collection starts when the Task starts, and ends when
+volunteer hours have been reported to the city (usually at midnight on the 11th
+of the month following).  During that period, any volunteer (that is, any person
+with a Volgistics ID) can report hours for the Task, through an entry field in
+the Task details (or through their Activity page).  After that period is over,
+if the viewer reported any hours for the Task, the details will say so.
+
+Leaders of the Task's organization can mark people as having attended the Task,
+as described below.  If volunteer hours are being collected for the Task, and a
+volunteer is marked as having attended who has not yet reported any hours for
+the Task, the system automatically records their volunteer hours for the Task as
+being equal to the duration of the Task.  If they have already recorded hours,
+they are not changed.
+
+It is also possible for people to report volunteer hours not associated with any
+visible task.  To accommodate this, special Events are created with an "Other
+Hours" flag.  This flag causes them not to be visible in the calendar.  These
+Events have one Task for each organization, and volunteers can record hours for
+those Tasks on their Activity page.  These Tasks are handled specially in that
+volunteer hours can be recorded for them only between their start and end times.
+Usually one such Event is created in each month.
+
+==== Attendance ====
+
+For some Tasks, it's important to record who was in attendance and/or who got
+"credit" for the Task.  (These are not necessarily the same thing; for example,
+an auditor for a class is in attendance but does not get credit.)  Organization
+leaders can set "attended" and/or "credited" flags for people on the event.  As
+noted above, if a person being marked as "attended" is a volunteer, and
+volunteer hours are being collected for the Task, and they have not already
+recorded any, volunteer hours will be recorded for them covering the duration of
+the Task.
+
+In cases where a person has been marked as "attended" or "credited" for a Task,
+but does not have any volunteer hours recorded, the Task details will say this.
+(This could happen if the Task is not enabled for volunteer hours collection, or
+if they were marked as "attended" after the collection period ended.)
+
+== Event Edit Page ==
+
+Starts with a regular form with:
+  - Event name
+  - Activation number
+  - Start date and time
+  - End date and time   (end date defaults to start date)
+  - Venue choice
+  - Descriptive text
+
+Then a split.  If there are multiple tasks:
+  - Table with task details and an Edit button next to each editable one.  Edit
+    button opens task edit dialog described below.
+  - Add Task button under table, also opens task edit dialog.
+If there is only one task:
+  - Task edit dialog contents, minus a few fields, not in a dialog box.
+
+Then the closing button bar, including Save, Cancel, maybe Delete, and maybe
+Add Task.
+

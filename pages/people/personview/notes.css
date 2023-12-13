@@ -1,0 +1,24 @@
+.personviewNotes {
+  margin-top: 0.75rem;
+}
+.personviewNote {
+  line-height: 1.2;
+  margin-left: 2rem;
+  text-indent: -2rem;
+}
+.personviewNoteDate {
+  display: inline;
+  margin-right: 0.75rem;
+  color: #666;
+  font-variant: tabular-nums;
+}
+.personviewNoteText {
+  display: inline;
+  margin-left: 0.5rem;
+  color: #212529;
+}
+.personviewNotesHelp {
+  color: #888;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}

@@ -1,0 +1,11 @@
+.vregisterIntro {
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.75rem;
+}
+.vregisterAgreement {
+  margin-top: 1.25rem;
+  border-top: 1px solid #ccc;
+  padding-top: 0.25rem;
+  margin-bottom: -0.5rem;
+}

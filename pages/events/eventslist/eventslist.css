@@ -1,0 +1,81 @@
+.eventslistTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+#eventslistYear {
+  margin-left: 1rem;
+  font-size: 1rem;
+}
+.eventslistTable {
+  display: grid;
+  margin-top: 1.5rem;
+  grid: auto / min-content 1fr;
+}
+.eventslistHeading {
+  display: none;
+}
+.eventslistDate {
+  flex: none;
+  margin: 0.25rem 0.75rem 0 0;
+  white-space: nowrap;
+  font-variant: tabular-nums;
+}
+.eventslistYear {
+  display: none;
+}
+.eventslistStart {
+  display: none;
+}
+.eventslistEvent {
+  flex: none;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eventslistEvent .orgdot {
+  margin-right: 0.25rem;
+}
+.eventslistLocation {
+  display: none;
+}
+@media (min-width: 36em) {
+  .eventslistHeading {
+    display: block;
+    font-weight: bold;
+  }
+  .eventslistHeading.eventslistLocation {
+    display: none;
+  }
+  .eventslistYear {
+    display: inline;
+  }
+  .eventslistStart {
+    display: inline;
+    padding-left: 0.25rem;
+  }
+}
+@media (min-width: 50em) {
+  .eventslistTable {
+    grid: auto / min-content 2fr 1fr;
+  }
+  .eventslistLocation {
+    display: block;
+    flex: none;
+    overflow: hidden;
+    margin-top: 0.25rem;
+    padding-left: 0.25rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eventslistHeading.eventslistLocation {
+    display: block;
+  }
+}
+@media (min-width: 64em) {
+  .eventslistTable {
+    grid: auto / min-content fit-content(30rem) 1fr; /* empirical */
+  }
+}

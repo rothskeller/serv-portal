@@ -1,0 +1,45 @@
+.eventviewIdent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+.eventviewIdentL1 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: black;
+}
+.eventviewIdentName {
+  font-weight: bold;
+}
+.eventviewIdentActivation {
+  margin-left: 0.5rem;
+}
+.eventviewIdentOrgs {
+  margin-left: 0.5rem;
+}
+.eventviewIdentDSW {
+  margin-left: 0.5rem;
+  background-color: #006600;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.25rem;
+  vertical-align: top;
+  line-height: 1.5rem;
+  border-radius: 0.25rem;
+}
+.eventviewIdentDate {
+  color: #888;
+  line-height: 1.5;
+}
+
+@media (min-width: 48em) {
+  .eventviewIdent {
+    grid-column: span 2;
+  }
+}
+@media (min-width: 66em) {
+  .eventviewIdent {
+    grid-column: span 3;
+  }
+}

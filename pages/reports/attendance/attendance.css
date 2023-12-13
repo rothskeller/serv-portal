@@ -1,0 +1,115 @@
+.attrepForm {
+  display: flex;
+  flex-direction: column;
+}
+.attrepParams {
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  border-left: 1px solid #888;
+  border-top: 1px solid #888;
+}
+.attrepParamsBox {
+  border-bottom: 1px solid #888;
+  border-right: 1px solid #888;
+  padding: 0.5rem 0.75rem;
+}
+.attrepParamsBoxTitle {
+  font-weight: bold;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+#attrepParamsDates {
+  white-space: pre;
+  margin-top: 0.75rem;
+}
+.attrepParamsZeros {
+  margin-top: 0.75rem;
+}
+.attrepTable {
+  margin-top: 1.75rem;
+  border-collapse: collapse;
+}
+.attrepColH {
+  border-left: 2px solid #888;
+}
+.attrepColH2 {
+  border-left: 1px solid #ccc;
+}
+.attrepColS {
+  border-left: 2px solid #888;
+}
+.attrepColC {
+  border-left: 1px solid #ccc;
+}
+.attrepColT {
+  border-left: 1px solid #ccc;
+  border-right: 2px solid #888;
+}
+.attrepCol1 {
+  border-left: 2px solid #888;
+  border-right: 2px solid #888;
+}
+.attrepRowH,
+.attrepRowS,
+.attrepRowT {
+  border-top: 2px solid #888;
+}
+.attrepRowH2 {
+  border-top: 1px solid #ccc;
+}
+.attrepRowT {
+  border-bottom: 2px solid #888;
+}
+.attrepRowC2,
+.attrepRowTc2 {
+  background-color: #eee;
+}
+.attrepRowH > .attrepColH,
+.attrepRowH > .attrepColH2,
+.attrepRowH2 > .attrepColH,
+.attrepRowH2 > .attrepColH2 {
+  border-left: hidden;
+  border-top: hidden;
+}
+.attrepRowH > .attrepColS,
+.attrepRowH > .attrepCol1,
+.attrepRowH > .attrepColC,
+.attrepRowH > .attrepColT {
+  text-align: right;
+  vertical-align: bottom;
+  padding-right: 0.5rem;
+}
+.attrepCell-vertical {
+  writing-mode: vertical-rl;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.attrepColS,
+.attrepCol1,
+.attrepColC,
+.attrepColT {
+  padding-right: 0.5rem;
+  min-width: 4rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.attrepColH,
+.attrepColH2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  white-space: nowrap;
+}
+.attrepColT,
+.attrepRowT {
+  font-weight: bold;
+}
+.attrepPcount {
+  margin-top: 1.5rem;
+}
+.attrepButtons {
+  margin-top: 1.5rem;
+}

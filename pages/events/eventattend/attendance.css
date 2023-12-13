@@ -1,0 +1,44 @@
+.attendanceDefault {
+  display: grid;
+  grid: auto-flow / repeat(3, max-content) 1fr;
+  gap: 0.25rem;
+  align-items: center;
+  background-color: #33ccff;
+  padding: 0.25rem 0.5rem;
+}
+.attendanceGrid {
+  display: grid;
+  grid: auto-flow / repeat(3, max-content) 1fr;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.25rem 0.5rem 0;
+}
+.attendanceRow {
+  display: contents;
+}
+.attendanceHours {
+  grid-column: 1;
+}
+.attendanceSignedIn {
+  grid-column: 2;
+}
+.attendanceCredited {
+  grid-column: 3;
+}
+.attendanceSignedIn .s-icon,
+.attendanceCredited .s-icon {
+  height: 1.25rem;
+  width: 1.5rem;
+  color: #888;
+}
+.attendanceSignedIn.true .s-icon {
+  color: blue;
+}
+.attendanceCredited.true .s-icon {
+  color: #f1cc00;
+}
+.attendanceName,
+.attendanceNew {
+  grid-column: 4;
+  padding-left: 0.25rem;
+}

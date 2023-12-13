@@ -1,0 +1,19 @@
+.formInput.eventcopyEvery {
+  display: flex;
+  gap: 0.5rem;
+}
+.formInput.eventcopyEvery input {
+  width: 4em;
+}
+.formInput.eventcopyEvery select {
+  width: auto;
+}
+.formInput.eventcopyRepeat {
+  display: grid;
+  grid: auto-flow / repeat(7, max-content);
+  justify-items: center;
+  margin-bottom: 0.75rem;
+}
+.formInput.eventcopyRepeat div {
+  margin-right: 0.5rem;
+}

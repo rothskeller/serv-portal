@@ -1,0 +1,43 @@
+.searchForm {
+  display: flex;
+  margin: 0 auto;
+  column-gap: 0.5rem;
+  justify-content: center;
+}
+.searchForm input[type=search] {
+  max-width: 10rem;
+}
+.searchResults {
+  margin: 0 auto;
+  max-width: 40rem;
+}
+.searchHeading {
+  margin-top: 1.5rem;
+  font-weight: bold;
+}
+.searchContext {
+  display: block;
+  margin-left: 2rem;
+  font-style: italic;
+}
+.searchLogo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 3rem;
+}
+.searchLogo img {
+  width: 100%;
+  max-width: 8rem;
+}
+
+@media (min-width: 36em /* from page.css, when menu becomes visible */ ) {
+  .searchForm {
+    margin-right: 7rem; /* empirical, menu width */
+  }
+  .searchLogo {
+    margin-right: 7rem;
+  }
+}

@@ -1,0 +1,320 @@
+.clearrepForm {
+  display: grid;
+  grid: auto / max-content max-content;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.clearrepTable {
+  display: grid;
+  grid: auto / repeat(6, max-content);
+  column-gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+.clearrepHeading {
+  display: flex;
+  font-weight: bold;
+}
+.clearrepBoxes {
+  display: grid;
+  grid: auto / auto-flow;
+  align-items: center;
+  column-gap: 2px;
+}
+.clearrepOrgPH,
+.clearrepVolgistics,
+.clearrepDSWCERT,
+.clearrepDSWComm,
+.clearrepBGCheck,
+.clearrepBGDOJ,
+.clearrepBGDOJ-recorded,
+.clearrepBGDOJ-assumed,
+.clearrepBGFBI,
+.clearrepBGFBI-recorded,
+.clearrepBGFBI-assumed,
+.clearrepBGPHS,
+.clearrepBGPHS-recorded,
+.clearrepBGPHS-assumed,
+.clearrepIDPhoto,
+.clearrepIDCardkey,
+.clearrepIDCERTShirtls,
+.clearrepIDCERTShirtss,
+.clearrepIDSERVShirt {
+  width: calc(1rem + 2px);
+}
+.clearrepOrg13, /* admin leader */
+.clearrepVolgistics:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #888;
+  background-color: #888;
+}
+.clearrepOrg31,
+.clearrepOrg41 {
+  border-radius: 0.25rem;
+  color: transparent;
+  background-color: #888;
+  border: 2px solid #888;
+  width: 8px;
+  height: 8px;
+  margin: calc(0.5rem - 3px);
+}
+.clearrepOrg12 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #888;
+  border-color: 1px solid #888;
+}
+.clearrepOrg22 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #060;
+  border-color: 1px solid #060;
+}
+.clearrepOrg32 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #060;
+  border-color: #060;
+}
+.clearrepOrg42 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #ff6600;
+  border-color: #ff6600;
+}
+.clearrepOrg52 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #fc0;
+  border-color: #fc0;
+}
+.clearrepOrg62 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  color: #0000ff;
+  border-color: #0000ff;
+}
+.clearrepOrg23,
+.clearrepDSWCERT:not(:empty),
+.clearrepIDCERTShirtls:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #060;
+  background-color: #060;
+}
+.clearrepOrg33 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  background-color: #060;
+  border-color: #060;
+}
+.clearrepOrg43 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  background-color: #ff6600;
+  border-color: #ff6600;
+}
+.clearrepOrg53,
+.clearrepDSWComm:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #fc0;
+  background-color: #fc0;
+}
+.clearrepOrg63 {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  background-color: #0000ff;
+  border-color: #0000ff;
+}
+.clearrepBGCheck:not(:empty),
+.clearrepBGDOJ-recorded,
+.clearrepBGFBI-recorded,
+.clearrepBGPHS-recorded {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #0c0;
+  background-color: #0c0;
+}
+.clearrepBGDOJ-assumed,
+.clearrepBGFBI-assumed,
+.clearrepBGPHS-assumed {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #0c0;
+  color: #0c0;
+}
+.clearrepIDPhoto:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #00f;
+  background-color: #00f;
+}
+.clearrepIDCardkey:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #f0f;
+  background-color: #f0f;
+}
+.clearrepIDCERTShirtss:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #060;
+  background-image: linear-gradient(to bottom, #060, #cfc);
+}
+.clearrepIDSERVShirt:not(:empty) {
+  width: calc(1rem + 2px);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1;
+  color: white;
+  border-width: 1px;
+  border-style: solid;
+  align-self: center;
+  border-color: #c93;
+  background-color: #c93;
+}
+.clearrepCount {
+  margin-top: 1.5rem;
+}
+.clearrepButtons {
+  margin-top: 1.5rem;
+}

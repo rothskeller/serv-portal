@@ -1,0 +1,113 @@
+
+.textviewMeta {
+  display: grid;
+  flex: none;
+  line-height: 1.2;
+  grid: auto-flow / 8rem 1fr;
+}
+.textviewMetaValue {
+  max-width: 40rem;
+}
+.textviewGrid {
+  display: grid;
+  justify-content: start;
+  align-items: start;
+  margin-top: 1rem;
+  line-height: 1.2;
+  grid: auto-flow / 1fr 7rem;
+}
+.textviewGridHeading {
+  display: contents;
+  font-weight: bold;
+}
+.textviewGridHeading .textviewGridReply {
+  display: none;
+}
+.textviewGridRow {
+  display: contents;
+}
+.textviewGridPerson {
+  overflow: hidden;
+  margin-top: 0.75rem;
+  padding-right: 0.5rem;
+}
+.textviewGridName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.textviewGridNumber {
+  color: #888;
+  font-size: 0.75rem;
+}
+.textviewGridStatus {
+  margin-top: 0.75rem;
+}
+.textviewStatusPending {
+  color: #888;
+}
+.textviewStatusFailed {
+  background-color: #e6194b;
+  color: white;
+}
+.textviewStatusDelivered {
+  background-color: #808000;
+  color: white;
+}
+.textviewStatusReplied {
+  background-color: #3cb44b;
+  color: white;
+}
+.textviewStatusSent {
+  background-color: #9a6324;
+  color: white;
+}
+.textviewGridState {
+  padding-left: 2px;
+}
+.textviewGridTime {
+  color: #888;
+  font-size: 0.75rem;
+}
+.textviewGridReply {
+  margin-left: 4rem;
+  text-indent: -2rem;
+  grid-column: 1 / 3;
+}
+.textviewGridReplyTime {
+  display: none;
+  color: #888;
+  font-variant: tabular-nums;
+  font-size: 0.75rem;
+}
+.textviewGridReplyTime:before {
+  content: '[';
+}
+.textviewGridReplyTime:after {
+  content: '] ';
+}
+
+@media (min-width: 20.5em) {
+  .textviewGrid {
+    grid: auto-flow / 12rem 7rem;
+  }
+}
+@media (min-width: 36em) {
+  .textviewGrid {
+    grid: auto-flow / 12rem 7rem 1fr;
+  }
+  .textviewGridHeading .textviewGridReply {
+    display: block;
+  }
+  .textviewGridReply {
+    margin-top: 0.75rem;
+    margin-left: 1.5rem;
+    text-indent: -1rem;
+    grid-column: 3;
+  }
+}
+@media (min-width: 50em) {
+  .textviewGridReplyTime {
+    display: inline;
+  }
+}

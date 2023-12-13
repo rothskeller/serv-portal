@@ -1,0 +1,67 @@
+.s-month {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  column-gap: 0.5rem;
+}
+.s-month-arrow {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+.s-month-icon {
+  height: 1.25rem;
+}
+.s-month-month {
+  margin: 0 0.5rem;
+  font-size: 1.25rem;
+  border: 1px solid #212539;
+  border-radius: 0.25rem;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 2rem 0 0.5rem;
+  background: url("data:image/svg+xml;utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='currentColor' d='M441.9 167.3l-19.8-19.8c-4.7-4.7-12.3-4.7-17 0L224 328.2 42.9 147.5c-4.7-4.7-12.3-4.7-17 0L6.1 167.3c-4.7 4.7-4.7 12.3 0 17l209.4 209.4c4.7 4.7 12.3 4.7 17 0l209.4-209.4c4.7-4.7 4.7-12.3 0-17z'%3E%3C/path%3E%3C/svg%3E")
+    right 0.5rem center / 1rem auto no-repeat;
+  user-select: none;
+  cursor: pointer;
+}
+.s-month-dd {
+  position: absolute;
+  top: calc(100% - 0.25rem);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #212539;
+  border-radius: 0.25rem;
+  background: white;
+  display: grid;
+  grid: min-content / 4rem 4rem 4rem;
+  padding: 0 4px 4px;
+}
+.s-month-dd-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-column: 1 / 4;
+}
+.s-month-dd-year {
+  margin: 0 0.5rem;
+  font-size: 1.25rem;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+.s-month-dd-month {
+  min-height: 40px;
+  min-width: 40px;
+  margin: 4px;
+}

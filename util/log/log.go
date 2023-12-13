@@ -7,17 +7,19 @@ import (
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
+	"sunnyvaleserv.org/portal/util/problem"
 )
 
 // An Entry encapsulates all of the information that might be included in a log
 // entry.  The only strictly required fields are Timestamp and Request.
 type Entry struct {
 	Timestamp time.Time
+	User      string
 	Session   string
 	Request   string
 	Params    map[string][]string
 	Status    int
-	Error     string
+	Problems  problem.List
 	Stack     []byte
 	Changes   []string
 	Elapsed   time.Duration
@@ -85,6 +87,10 @@ func (e *Entry) ToJSON(out *jwriter.Writer) {
 	out.RawString(`{"time":`)
 	e.Timestamp.In(time.Local).AppendFormat(timebuf[:0], `"2006-01-02 15:04:05"`)
 	out.Raw(timebuf[:], nil)
+	if e.User != "" {
+		out.RawString(`,"user":`)
+		out.String(e.User)
+	}
 	if e.Session != "" {
 		out.RawString(`,"session":`)
 		out.String(string(e.Session))
@@ -97,7 +103,7 @@ func (e *Entry) ToJSON(out *jwriter.Writer) {
 		out.RawString(`,"params":{`)
 		first := true
 		for k, va := range e.Params {
-			if len(va) == 0 || k == "auth" || k == "password" || k == "oldPassword" {
+			if len(va) == 0 || k == "auth" || k == "password" || k == "oldpwd" || k == "newpwd" {
 				continue
 			}
 			if first {
@@ -126,9 +132,15 @@ func (e *Entry) ToJSON(out *jwriter.Writer) {
 		out.RawString(`,"status":`)
 		out.Int(e.Status)
 	}
-	if e.Error != "" {
-		out.RawString(`,"error":`)
-		out.String(e.Error)
+	if !e.Problems.OK() {
+		out.RawString(`,"errors":[`)
+		for i, e := range e.Problems.Problems() {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(e)
+		}
+		out.RawByte(']')
 	}
 	if len(e.Stack) != 0 {
 		out.RawString(`,"stack":`)

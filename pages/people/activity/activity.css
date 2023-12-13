@@ -1,0 +1,76 @@
+.activity {
+  display: grid;
+  grid: max-content 1fr max-content / auto-flow;
+  height: 100%;
+}
+.activityGrid {
+  display: grid;
+  grid: auto-flow / repeat(3, max-content) 1fr;
+  gap: 0.25rem;
+  align-items: center;
+  overflow-y: auto;
+}
+.activityAttended {
+  grid-column: 2;
+  width: 1.5rem;
+  height: 1.25rem;
+  color: blue;
+}
+.activityCredited {
+  grid-column: 3;
+  width: 1.5rem;
+  height: 1.25rem;
+  color: #f1cc00;
+}
+.activityLabel {
+  grid-column: 4;
+}
+.activityTaskName {
+  margin-left: 1rem;
+  font-style: italic;
+}
+.activityButtons {
+  margin-top: 1.5rem;
+}
+
+.activityYearGrid {
+  display: grid;
+  grid: auto-flow / repeat(5, max-content) 1fr;
+  align-items: start;
+  overflow-y: auto;
+}
+.activityYearHours {
+  grid-column: 1;
+  text-align: right;
+}
+.activityYearHalf {
+  grid-column: 2;
+}
+.activityYearAttended {
+  grid-column: 3;
+  margin-left: 0.25rem;
+  width: 1.2rem;
+  height: 1rem;
+  color: blue;
+}
+.activityYearCredited {
+  grid-column: 4;
+  margin-left: 0.25rem;
+  width: 1.2rem;
+  height: 1rem;
+  color: #f1cc00;
+}
+.activityYearDate {
+  grid-column: 5;
+  margin-left: 0.25rem;
+}
+.activityYearLabel {
+  grid-column: 6;
+  margin-left: 0.25rem;
+}
+.activityYearTaskName {
+  font-style: italic;
+}
+.activityYearTaskName:before {
+  content: ": "
+}

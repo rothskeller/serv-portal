@@ -1,0 +1,12 @@
+.errpage {
+  max-width: 44rem;
+  margin: 1.5rem auto;
+  padding: 0 2rem;
+}
+.errpage h1 {
+  font-weight: bold;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: red;
+  text-align: center;
+}

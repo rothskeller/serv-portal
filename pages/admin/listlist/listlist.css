@@ -1,0 +1,15 @@
+.listlistGrid {
+  display: grid;
+  grid: auto-flow / fit-content(100%) max-content max-content max-content;
+  column-gap: 0.75rem;
+}
+.listlistHeading {
+  display: contents;
+  font-weight: bold;
+}
+.listlistRow {
+  display: contents;
+}
+.listlistButtons {
+  margin-top: 0.75rem;
+}

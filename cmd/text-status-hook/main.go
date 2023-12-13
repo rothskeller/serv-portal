@@ -8,14 +8,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/cgi"
 	"os"
 	"time"
 
-	"sunnyvaleserv.org/portal/model"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/textmsg"
+	"sunnyvaleserv.org/portal/store/textrecip"
 	"sunnyvaleserv.org/portal/util/log"
 )
 
@@ -32,27 +35,28 @@ func main() {
 		var (
 			number  = r.FormValue("To")
 			status  = r.FormValue("MessageStatus")
-			message *model.TextMessage
+			message *textmsg.TextMessage
+			p       *person.Person
 		)
-		store.Open("serv.db")
 		entry := log.New("", "text-status-hook")
 		defer entry.Log()
-		tx := store.Begin(entry)
-		if message = tx.FetchTextMessageByNumber(number); message == nil {
-			println("text-status-hook: unknown recipient phone number: ", number)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Invalid recipient phone number.")
-			return
-		}
-		for _, r := range message.Recipients {
-			if r.Number == number {
-				r.Status = status
-				r.Timestamp = time.Now()
-				break
+		store.Connect(context.Background(), entry, func(st *store.Store) {
+			if message = textmsg.WithNumber(st, number, textmsg.FID); message == nil {
+				println("text-status-hook: unknown recipient phone number: ", number)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "Invalid recipient phone number.")
+				return
 			}
-		}
-		tx.UpdateTextMessage(message)
-		tx.Commit()
+			if p = textrecip.WithNumber(st, message.ID(), number, person.FID|person.FInformalName); p == nil {
+				println("text-status-hook: unmatched recipient phone number: ", number)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "Invalid recipient phone number.")
+				return
+			}
+			st.Transaction(func() {
+				textrecip.UpdateStatus(st, message, p, status, time.Now())
+			})
+		})
 		w.WriteHeader(http.StatusNoContent)
 	}))
 }

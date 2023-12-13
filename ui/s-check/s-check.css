@@ -1,0 +1,81 @@
+input.s-check {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  cursor: pointer;
+}
+.s-check-lb {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1 !important;
+  padding: calc(0.125rem + 1px) 0;
+  padding-left: 1.75rem;
+}
+input:disabled + .s-check-lb {
+  color: #888;
+}
+.s-check-lb:before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 0.25rem;
+  content: "";
+  background-color: #fff;
+  border: 1px solid #adb5bd;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+input:not(:disabled):active + .s-check-lb:before {
+  background-color: #b3d7ff;
+  border-color: #b3d7ff;
+}
+input:focus-visible + .s-check-lb:before {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+input:checked + .s-check-lb:before {
+  background-color: #007bff;
+}
+input:indeterminate + .s-check-lb:before {
+  border-radius: 0.625rem;
+}
+.s-check-lb:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+input:checked + .s-check-lb:after {
+  display: block;
+  left: 0.5rem;
+  top: 0.25rem;
+  width: 0.3125rem;
+  height: 0.625rem;
+  border: solid white;
+  border-width: 0 0.1875rem 0.1875rem 0;
+  transform: rotate(45deg);
+}
+input:indeterminate + .s-check-lb:after {
+  position: absolute;
+  top: 0.5625rem;
+  left: 0.5625rem;
+  width: 0;
+  height: 0;
+  outline: 3px solid #ffc107;
+  display: block;
+  border-radius: 50%;
+  background-color: #ffc107;
+  border: 1px solid #ffc107;
+  animation: 1s linear alternate infinite s-check-indeterminate;
+}
+@keyframes s-check-indeterminate {
+  from {
+    outline-width: 1px;
+  }
+  to {
+    outline-width: 0.5rem;
+  }
+}

@@ -1,34 +1,21 @@
-// Package store contains the data store code for the SERV portal.  This handles
-// caching, auditing of changes, and data storage.
 package store
 
 import (
-	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/store/internal/cache"
+	"context"
+
+	"sunnyvaleserv.org/portal/store/internal/phys"
 	"sunnyvaleserv.org/portal/util/log"
 )
 
-// Open opens the database.
-func Open(path string) {
-	cache.Open(path)
-}
+// Store is a handle for access to the data store.  Each Store handle can be
+// used only in a single goroutine.
+type Store = phys.Store
 
-// Tx is a handle to a transaction on the data store.
-type Tx struct {
-	*cache.Tx
-	entry          *log.Entry
-	originalLists  map[model.ListID]*model.List
-	originalPeople map[model.PersonID]*model.Person
-	originalRoles  map[model.RoleID]*model.Role
-}
+// Storer is an interface to anything that has access to a Store.
+type Storer = phys.Storer
 
-// Begin starts a transaction, returning our Tx wrapper.
-func Begin(entry *log.Entry) (tx *Tx) {
-	return &Tx{
-		Tx:             cache.Begin(),
-		entry:          entry,
-		originalLists:  make(map[model.ListID]*model.List),
-		originalPeople: make(map[model.PersonID]*model.Person),
-		originalRoles:  make(map[model.RoleID]*model.Role),
-	}
+// Connect connects to the physical data store and runs the supplied function in
+// it.  The function must not pass the connection handle to any other goroutine.
+func Connect(ctx context.Context, logentry *log.Entry, fn func(*Store)) error {
+	return phys.Connect(ctx, logentry, fn)
 }
