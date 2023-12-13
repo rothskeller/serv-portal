@@ -14,11 +14,13 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 )
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/algolia/algoliasearch-client-go/v3 v3.31.0
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect

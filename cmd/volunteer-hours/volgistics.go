@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"sunnyvaleserv.org/portal/model"
-	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util/config"
 )
 
@@ -25,6 +23,7 @@ type pinfo struct {
 
 var client http.Client
 
+/*
 func submitHours(tx *store.Tx, loginID string) {
 	var (
 		mstr   string
@@ -72,6 +71,7 @@ func submitToVolgistics(loginID string, people map[model.PersonID]*pinfo, date t
 		submitPersonToVolgistics(loginID, date, pi)
 	}
 }
+*/
 
 func logInToVolgistics() (id string) {
 	var (
@@ -113,6 +113,7 @@ func logInToVolgistics() (id string) {
 	return id
 }
 
+/*
 func submitPersonToVolgistics(id string, date time.Time, pi *pinfo) {
 	var (
 		doc *goquery.Document
@@ -213,6 +214,7 @@ ASSN:
 		fmt.Printf("%s - %s - %s\n", pi.Name, assnToName[a], disposition)
 	}
 }
+*/
 
 func findVolunteerInVolgistics(loginID string, name string, volunteerID uint, report bool) (key string) {
 	var (

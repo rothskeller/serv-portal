@@ -57,15 +57,6 @@ type rdata struct {
 	Unregistered []*pinfo
 }
 
-/*
-SELECT e.id, tp.person, t.org, tp.minutes
-FROM task_person tp, task t, event e, person p
-WHERE tp.task=t.id AND t.event=e.id
-  AND tp.minutes!=0
-  AND e.start>=?
-  AND e.end<?
-*/
-
 func reportHours(st *store.Store) {
 	var (
 		mstr   string

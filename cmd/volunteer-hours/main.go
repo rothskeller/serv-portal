@@ -23,13 +23,10 @@ import (
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
-	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/task"
 	"sunnyvaleserv.org/portal/store/venue"
 	"sunnyvaleserv.org/portal/util/log"
 )
-
-const personFields = person.FID | person.FInformalName | person.FEmail | person.FEmail2 | person.FNoEmail
 
 var mflag monthArg
 var dflag = flag.Bool("d", false, "debug (emails to admin only)")
@@ -55,7 +52,7 @@ func main() {
 	}
 	flag.Var(&mflag, "m", "target month (YYYY-MM, default last month)")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `usage: volunteer-hours [-m YYYY-MM] [-p people] [-dk] request|remind|submit|report...
+		fmt.Fprintf(os.Stderr, `usage: volunteer-hours [-m YYYY-MM] [-dk] request|remind|submit|report|status...
      -m YYYY-MM specifies the target month (default "last month")
      -d specifies debug mode; emails to go admin only
      -k keeps existing HoursTokens and HoursReminders
@@ -79,14 +76,14 @@ func main() {
 		for _, op := range flag.Args() {
 			switch op {
 			case "request":
-				sendRequests(st)
+				// sendRequests(st)
 			case "remind":
-				sendReminders(st)
+				// sendReminders(st)
 			case "submit":
 				if loginID == "" {
 					loginID = logInToVolgistics()
 				}
-				submitHours(st, loginID)
+				// submitHours(st, loginID)
 			case "report":
 				reportHours(st)
 			case "status":
