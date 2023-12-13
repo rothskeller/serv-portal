@@ -1,8 +1,6 @@
 portal
 data
 .DS_Store
-.env.local
-.env.*.local
 _migrate
 *.assets.go
 *.js.gz
