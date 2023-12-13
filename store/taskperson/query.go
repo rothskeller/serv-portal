@@ -122,7 +122,7 @@ func AllBetween(storer phys.Storer, start, end string, pid person.ID, eventField
 
 const minutesBetweenSQL = `
 SELECT e.id, tp.person, t.org, tp.minutes
-FROM task_person tp, task t, event e, person p
+FROM task_person tp, task t, event e
 WHERE tp.task=t.id AND t.event=e.id
   AND tp.minutes!=0
   AND e.start>=?

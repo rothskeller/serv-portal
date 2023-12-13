@@ -61,7 +61,7 @@ func reportHours(st *store.Store) {
 	var (
 		mstr   string
 		people = make(map[person.ID]*pinfo)
-		events = make(map[event.ID]*einfo)
+		events = make(map[event.ID]map[string]*einfo)
 		report rdata
 	)
 	mstr = time.Time(mflag).Format("2006-01")
@@ -75,9 +75,13 @@ func reportHours(st *store.Store) {
 		if assn == 0 {
 			return
 		}
-		if ei = events[eid]; ei == nil {
-			ei = &einfo{Assignment: assnToName[assn]}
-			events[eid] = ei
+		aname := assnToName[assn]
+		if events[eid] == nil {
+			events[eid] = make(map[string]*einfo)
+		}
+		if ei = events[eid][aname]; ei == nil {
+			ei = &einfo{Assignment: aname}
+			events[eid][aname] = ei
 		}
 		if pi = people[pid]; pi == nil {
 			pi = new(pinfo)
@@ -88,17 +92,15 @@ func reportHours(st *store.Store) {
 		report.ByGroup[0] += minutes
 		ei.Volunteers++
 		ei.Hours += minutes
-		if ei.Hours > 0 {
+	})
+	for eid, emap := range events {
+		for _, ei := range emap {
+			e := event.WithID(st, eid, event.FName|event.FStart)
+			ei.Name = e.Name()
+			ei.Date = e.Start()[:10]
 			ei.Hours = (ei.Hours + 59) / 60
 			report.Events = append(report.Events, ei)
 		}
-	})
-	for eid, ei := range events {
-		e := event.WithID(st, eid, event.FName|event.FStart)
-		ei.Name = e.Name()
-		ei.Date = e.Start()[:10]
-		ei.Hours = (ei.Hours + 59) / 60
-		report.Events = append(report.Events, ei)
 	}
 	for pid, pi := range people {
 		p := person.WithID(st, pid, person.FInformalName|person.FVolgisticsID)
@@ -110,6 +112,15 @@ func reportHours(st *store.Store) {
 	for assn := range report.ByGroup {
 		report.ByGroup[assn] = (report.ByGroup[assn] + 59) / 60
 	}
+	sort.Slice(report.Events, func(i, j int) bool {
+		if report.Events[i].Date != report.Events[j].Date {
+			return report.Events[i].Date < report.Events[j].Date
+		}
+		if report.Events[i].Name != report.Events[j].Name {
+			return report.Events[i].Name < report.Events[j].Name
+		}
+		return report.Events[i].Assignment < report.Events[j].Assignment
+	})
 	sort.Slice(report.Leaders, func(i, j int) bool {
 		if report.Leaders[i].Total != report.Leaders[j].Total {
 			return report.Leaders[i].Total > report.Leaders[j].Total
