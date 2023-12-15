@@ -133,7 +133,7 @@ func makePlaceholders(st *store.Store) {
 		now   = time.Now()
 		mstr  = now.Format("2006-01")
 	)
-	event.AllBetween(st, mstr+"-28", mstr+"-31", event.FFlags, 0, func(e *event.Event, _ *venue.Venue) {
+	event.AllBetween(st, mstr+"-28", mstr+"-32", event.FFlags, 0, func(e *event.Event, _ *venue.Venue) {
 		if e.Flags()*event.OtherHours != 0 {
 			found = true
 		}
@@ -143,7 +143,7 @@ func makePlaceholders(st *store.Store) {
 	}
 	mstr = time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, time.Local).Format("2006-01-02T15:04")
 	ue.Start, ue.End = mstr, mstr
-	ue.Name = "Other Volunteer Hours"
+	ue.Name = "Other Hours"
 	ue.Flags = event.OtherHours
 	st.Transaction(func() {
 		ut.Event = event.Create(st, &ue)
