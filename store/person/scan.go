@@ -104,6 +104,10 @@ func ColumnList(sb *strings.Builder, fields Fields) {
 		sb.WriteString(sep())
 		sb.WriteString("p.birthdate")
 	}
+	if fields&FLanguage != 0 {
+		sb.WriteString(sep())
+		sb.WriteString("p.language")
+	}
 	if fields&FFlags != 0 {
 		sb.WriteString(sep())
 		sb.WriteString("p.flags")
@@ -193,6 +197,9 @@ func (p *Person) Scan(stmt *phys.Stmt, fields Fields) {
 	}
 	if fields&FBirthdate != 0 {
 		p.birthdate = stmt.ColumnText()
+	}
+	if fields&FLanguage != 0 {
+		p.language = stmt.ColumnText()
 	}
 	if fields&FFlags != 0 {
 		p.flags = Flags(stmt.ColumnHexInt())

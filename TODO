@@ -1,8 +1,3 @@
-To bring v3 to parity:
-  volunteer-hours
-  Lots of testing (including live texts)
-  Finalize conversion of November event attendance
-
 Features to add:
   Create person
   Send messages to people signed up for event
@@ -25,4 +20,3 @@ Defects / Cleanup:
   Improve efficiency of Attendance report with custom queries
   Attendance report visual detailing and horizontal scrolling
   Need cleanup of exactly what is being up-targeted, not always precise
-  Coalesce flags on Person

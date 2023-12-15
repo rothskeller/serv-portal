@@ -10,7 +10,7 @@ import (
 
 // tableFields is the bitmask of fields that are stored in the main person
 // table.
-const tableFields = FID | FVolgisticsID | FInformalName | FFormalName | FSortName | FCallSign | FPronouns | FEmail | FEmail2 | FCellPhone | FHomePhone | FWorkPhone | FPassword | FBadLoginCount | FBadLoginTime | FPWResetToken | FPWResetTime | FUnsubscribeToken | FHoursToken | FIdentification | FBirthdate | FFlags
+const tableFields = FID | FVolgisticsID | FInformalName | FFormalName | FSortName | FCallSign | FPronouns | FEmail | FEmail2 | FCellPhone | FHomePhone | FWorkPhone | FPassword | FBadLoginCount | FBadLoginTime | FPWResetToken | FPWResetTime | FUnsubscribeToken | FHoursToken | FIdentification | FBirthdate | FLanguage | FFlags
 
 // Updater is a structure that can be filled with data for a new or changed
 // person, and then later applied.  For creating new people, it can simply be
@@ -39,6 +39,7 @@ type Updater struct {
 	HoursToken       string
 	Identification   IdentType
 	Birthdate        string
+	Language         string
 	Flags            Flags
 	Addresses        Addresses
 	BGChecks         BGChecks
@@ -72,6 +73,7 @@ func (p *Person) Updater() *Updater {
 		HoursToken:       p.hoursToken,
 		Identification:   p.identification,
 		Birthdate:        p.birthdate,
+		Language:         p.language,
 		Flags:            p.flags,
 		Addresses:        p.addresses.clone(),
 		BGChecks:         p.bgChecks.clone(),
@@ -81,7 +83,7 @@ func (p *Person) Updater() *Updater {
 	}
 }
 
-const createSQL = `INSERT INTO person (id, volgistics_id, informal_name, formal_name, sort_name, call_sign, pronouns, email, email2, cell_phone, home_phone, work_phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time, unsubscribe_token, hours_token, identification, birthdate, flags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+const createSQL = `INSERT INTO person (id, volgistics_id, informal_name, formal_name, sort_name, call_sign, pronouns, email, email2, cell_phone, home_phone, work_phone, password, bad_login_count, bad_login_time, pwreset_token, pwreset_time, unsubscribe_token, hours_token, identification, birthdate, language, flags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 
 // Create creates a new person, with the data in the Updater.
 func Create(storer phys.Storer, u *Updater) (p *Person) {
@@ -116,7 +118,8 @@ func Create(storer phys.Storer, u *Updater) (p *Person) {
 		stmt.BindNullText(u.UnsubscribeToken)
 		stmt.BindNullText(u.HoursToken)
 		stmt.BindInt(int(u.Identification))
-		stmt.BindText(u.Birthdate)
+		stmt.BindNullText(u.Birthdate)
+		stmt.BindText(u.Language)
 		stmt.BindHexInt(int(u.Flags))
 		stmt.Step()
 		if u.ID != 0 {
@@ -234,6 +237,10 @@ func (p *Person) Update(storer phys.Storer, u *Updater, fields Fields) {
 				sb.WriteString(sep())
 				sb.WriteString("birthdate=?")
 			}
+			if tf&FLanguage != 0 {
+				sb.WriteString(sep())
+				sb.WriteString("language=?")
+			}
 			if tf&FFlags != 0 {
 				sb.WriteString(sep())
 				sb.WriteString("flags=?")
@@ -308,7 +315,10 @@ func (p *Person) Update(storer phys.Storer, u *Updater, fields Fields) {
 				stmt.BindInt(int(u.Identification))
 			}
 			if tf&FBirthdate != 0 {
-				stmt.BindText(u.Birthdate)
+				stmt.BindNullText(u.Birthdate)
+			}
+			if tf&FLanguage != 0 {
+				stmt.BindText(u.Language)
 			}
 			if tf&FFlags != 0 {
 				stmt.BindHexInt(int(u.Flags))
@@ -580,8 +590,12 @@ func (p *Person) auditAndUpdate(storer phys.Storer, u *Updater, fields Fields, c
 		p.identification = u.Identification
 	}
 	if fields&FBirthdate != 0 && u.Birthdate != p.birthdate {
-		phys.Audit(storer, "%s:: birthdate = %s", context, u.Birthdate)
+		phys.Audit(storer, "%s:: birthdate = %q", context, u.Birthdate)
 		p.birthdate = u.Birthdate
+	}
+	if fields&FLanguage != 0 && u.Language != p.language {
+		phys.Audit(storer, "%s:: language = %s", context, u.Language)
+		p.language = u.Language
 	}
 	if fields&FFlags != 0 && u.Flags != p.flags {
 		phys.Audit(storer, "%s:: flags = 0x%x", context, u.Flags)

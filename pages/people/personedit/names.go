@@ -18,7 +18,7 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns | person.FBirthdate
+const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns | person.FBirthdate | person.FLanguage
 
 // HandleNames handles requests for /people/$id/ednames.
 func HandleNames(r *request.Request, idstr string) {
@@ -54,6 +54,7 @@ func HandleNames(r *request.Request, idstr string) {
 		sortNameError = readSortName(r, up)
 		callSignError = readCallSign(r, up)
 		birthdateError = readBirthdate(r, up)
+		readLanguage(r, up)
 		readPronouns(r, up)
 		// If there were no errors *and* we're not validating, save the
 		// data and return to the view page.
@@ -91,6 +92,7 @@ func HandleNames(r *request.Request, idstr string) {
 		emitBirthdate(form, up, birthdateError != "", birthdateError)
 	}
 	if len(validate) == 0 {
+		emitLanguage(form, up)
 		emitPronouns(form, up)
 		emitButtons(form)
 	}
@@ -191,6 +193,22 @@ func emitBirthdate(form *htmlb.Element, up *person.Updater, focus bool, err stri
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
+}
+
+func readLanguage(r *request.Request, up *person.Updater) {
+	if r.FormValue("language") == "es" {
+		up.Language = "es"
+	} else {
+		up.Language = "en"
+	}
+}
+
+func emitLanguage(form *htmlb.Element, up *person.Updater) {
+	row := form.E("div class=formRow")
+	row.E("label for=personeditLanguage>Language")
+	sel := row.E("select id=personeditLanguage name=language class=formInput")
+	sel.E("option value=en", up.Language != "es", "selected").R("English")
+	sel.E("option value=es", up.Language == "es", "selected").R("Español")
 }
 
 func readPronouns(r *request.Request, up *person.Updater) {

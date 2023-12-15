@@ -67,6 +67,7 @@ const (
 	FHoursToken
 	FIdentification
 	FBirthdate
+	FLanguage
 	FFlags
 	FAddresses
 	FBGChecks
@@ -103,6 +104,7 @@ type Person struct {
 	hoursToken       string
 	birthdate        string
 	identification   IdentType
+	language         string
 	flags            Flags
 	addresses        Addresses
 	bgChecks         BGChecks

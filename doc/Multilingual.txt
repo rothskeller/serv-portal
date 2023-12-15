@@ -1,0 +1,24 @@
+= Bilingual Design =
+
+This website supports bilingual access, English or Spanish.  (It is not a fully
+multi-lingual design supporting any number of languages.)  To determine the
+language in which to render a page, this site consults the following sources,
+and follows the first one that gives an answer:
+
+1.  If the URL is language-specific, the language is taken from it.  The only
+    known example of this is /clases, which forces Spanish.
+2.  If the URL has a language prefix (/en or /es).  These force the specified
+    language, and the URL is then resolved as if they weren't there.
+3.  If the user is logged in, the preferred language from their profile is used.
+4.  If the user has a "lang=en" or "lang=es" cookie, that language is used.
+5.  If the request has an Accept-Language header that prefers one language over
+    the other, that language is used.
+6.  If none of the above apply, English is used.
+
+In all cases, the response sets the "lang=en" or "lang=es" cookie to show what
+language was selected.  When creating a new user, the selected language during
+the user creation process becomes the initial preferred language for that user.
+
+Regardless of the selected language, not all pages are translated.  Some will
+reply in English regardless of the selected language.  This does not change the
+selected language to English.
