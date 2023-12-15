@@ -15,8 +15,8 @@ func EmailListsPage(r *request.Request) {
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
 	}
-	ui.Page(r, user, ui.PageOpts{Title: "SERV Email Lists"}, func(main *htmlb.Element) {
-		main.A("class=static").R(`<h1>SERV Email Lists</h1>
+	ui.Page(r, user, ui.PageOpts{Title: r.LangString("SERV Email Lists", "Listas de correo electrónico de SERV")}, func(main *htmlb.Element) {
+		main.A("class=static").R(r.LangString(`<h1>SERV Email Lists</h1>
 <p>
   The SunnyvaleSERV.org site offers a number of email distribution lists.
   We have one for each volunteer program, that we give out to the general
@@ -65,6 +65,60 @@ func EmailListsPage(r *request.Request) {
   receiving email at the wrong address, you can change your email address in
   the “Profile” section of this web site.
 </p>
-<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`)
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`,
+
+			`<h1>Listas de correo electrónico de SERV</h1>
+<p>
+  El sitio SunnyvaleSERV.org ofrece varias listas de distribución de correo
+  electrónico.  Tenemos uno para cada programa de voluntariado, que entregamos
+  al público general que pueda querer más información sobre el programa.  Estas
+  listas se entregan a las personas de contacto público designadas para cada
+  programa:
+</p>
+<ul class="emaillist">
+  <li>cert@sunnyvaleserv.org
+  <li>listos@sunnyvaleserv.org
+  <li>sares@sunnyvaleserv.org
+  <li>snap@sunnyvaleserv.org
+</ul>
+<p>También hay listas de los voluntarios de cada uno de nuestros equipos:</p>
+<ul class="emaillist">
+  <li>cert-alpha@sunnyvaleserv.org
+  <li>cert-committee@sunnyvaleserv.org
+  <li>listos-team@sunnyvaleserv.org
+  <li>outreach-team@sunnyvaleserv.org
+  <li>sares-active@sunnyvaleserv.org
+  <li>sares-leads@sunnyvaleserv.org
+  <li>snap-team@sunnyvaleserv.org
+</ul>
+<p>y para los estudiantes en cada clase CERT:</p>
+<ul class="emaillist">
+  <li>cert-60@sunnyvaleserv.org
+  <li>cert-61@sunnyvaleserv.org
+  <li>cert-62@sunnyvaleserv.org
+  <li style="font:inherit">etc.
+</ul>
+<p>Finalmente, existen algunas listas más amplias para propósitos especiales:</p>
+<ul class="emaillist">
+  <li>serv-all@sunnyvaleserv.org
+  <li>volunteer-hours@sunnyvaleserv.org
+</ul>
+<p>
+  Todas estas listas de correo electrónico tienen acceso restringido.  Para las
+  listas de equipos, solo los miembros del equipo pueden enviarles correo; para
+  las listas de clases, sólo el los instructores pueden enviarles correo; y para
+  las listas más amplias, solo el personal de DSP puedo enviarles correo.
+  Cualquier correo enviado a cualquiera de nuestras listas por parte de otra
+  persona se retiene para su aprobación antes de ser enviado a la lista.
+  Mensajes sobre temas que no estén relacionados con SERV generalmente serán
+  rechazados.
+<p>
+  Si recibe un correo electrónico de una de estas listas que no desea, hay un
+  enlace para "cancelar suscripción" en la parte inferior de cada correo
+  electrónico. Si recibe un correo electrónico en la dirección incorrecta, puede
+  cambiar su dirección de correo electrónico en la sección “Perfil” de este
+  sitio web.
+</p>
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>`))
 	})
 }

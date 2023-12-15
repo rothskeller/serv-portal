@@ -70,7 +70,7 @@ hidden (but still takes up space) on wide devices.
 }
 .page-noMenu .pageTitle {
   padding: 0 0.75rem;
-  grid: 'title' auto / 1fr;
+  grid: 'unused title language' auto / 4rem 1fr 4rem;
 }
 .pageTitleMenu {
   grid-area: menu;
@@ -86,6 +86,14 @@ hidden (but still takes up space) on wide devices.
 }
 .pageTitleSearch {
   grid-area: search;
+}
+.pageTitleLanguage {
+  grid-area: language;
+  text-align: center;
+}
+.pageTitleLanguage a {
+  white-space: pre;
+  color: white;
 }
 .pageTitleMenu,
 .pageTitleSearch {

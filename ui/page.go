@@ -56,7 +56,7 @@ func Page(r *request.Request, user *person.Person, opts PageOpts, fn func(*htmlb
 	pageHead(html, opts.Title)
 
 	body := html.E("body class=page", user == nil, "class=page-noMenu")
-	pageTitle(body, user, opts.Banner, opts.Title)
+	pageTitle(r, body, user, opts.Banner, opts.Title)
 	if user != nil {
 		pageMenu(body, r, user, opts.MenuItem)
 	}
@@ -94,7 +94,7 @@ func pageHead(h *htmlb.Element, title string) {
 		R("window.algoliaIndex='").R(config.Get("algoliaIndex")).R("';\n")
 }
 
-func pageTitle(h *htmlb.Element, user *person.Person, banner, title string) {
+func pageTitle(r *request.Request, h *htmlb.Element, user *person.Person, banner, title string) {
 	h = h.E("div class=pageTitle")
 	if user != nil {
 		h.E("div id=pageMenuTrigger class=pageTitleMenu").E("s-icon icon=menu")
@@ -109,6 +109,10 @@ func pageTitle(h *htmlb.Element, user *person.Person, banner, title string) {
 	}
 	if user != nil {
 		h.E("div class=pageTitleSearch").E("a class=nolink href=/search").E("s-icon icon=search")
+	} else if r.Language == "es" {
+		h.E("div class=pageTitleLanguage").E("a href=%s>View in\nEnglish", "/en"+r.Path)
+	} else {
+		h.E("div class=pageTitleLanguage").E("a href=%s>Vea en\nespañol", "/es"+r.Path)
 	}
 }
 

@@ -42,3 +42,13 @@ func (r *Request) DisableCompression() {
 		panic("DisableCompression called on unknown response writer type")
 	}
 }
+
+// LangString returns either its first or its second argument, depending on the
+// language selected for the request.
+func (r *Request) LangString(english, spanish string) string {
+	if r.Language == "es" {
+		return spanish
+	} else {
+		return english
+	}
+}
