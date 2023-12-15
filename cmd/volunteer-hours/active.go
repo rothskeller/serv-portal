@@ -84,8 +84,10 @@ func setStatusToActive(loginID, name string, volunteerID uint) {
 		os.Exit(1)
 	}
 	val.Add("A5", sel.AttrOr("value", ""))
-	delay()
-	checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Core", val))
+	if !*dflag {
+		delay()
+		checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Core", val))
+	}
 	fmt.Printf("%s - %s => Active\n", name, was)
 }
 
@@ -182,7 +184,9 @@ func setStatusToInactive(loginID, key, name string) {
 		os.Exit(1)
 	}
 	val.Add("A5", sel.AttrOr("value", ""))
-	delay()
-	checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Core", val))
+	if !*dflag {
+		delay()
+		checkResponse(client.PostForm("https://www.volgistics.com/ex/core.dll/volunteers?TAB=Core", val))
+	}
 	fmt.Printf("%s - %s => Inactive\n", name, was)
 }

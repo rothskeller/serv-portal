@@ -231,16 +231,6 @@ func route(r *request.Request) {
 		textview.Get(r, c[1])
 	case c[0] == "volunteer-hours" && c[1] != "" && c[2] == "":
 		activity.HandleVolunteerHours(r, c[1])
-		/*
-			case r.User == nil && c[0] == "api":
-				http.Error(r, "401 Unauthorized", http.StatusUnauthorized)
-			case r.User == nil:
-				http.Redirect(r, r.Request, "/login"+r.Path, http.StatusSeeOther)
-				/***** END OF PAGES THAT DON'T REQUIRE LOGIN *****/
-	/*
-		case c[0] == "api":
-			http.Error(r, "404 Not Found", http.StatusNotFound)
-	*/
 	default:
 		errpage.NotFound(r, auth.SessionUser(r, 0, false))
 	}

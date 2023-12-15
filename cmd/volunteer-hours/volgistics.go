@@ -11,6 +11,12 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/enum"
+	"sunnyvaleserv.org/portal/store/event"
+	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/task"
+	"sunnyvaleserv.org/portal/store/taskperson"
 	"sunnyvaleserv.org/portal/util/config"
 )
 
@@ -23,55 +29,48 @@ type pinfo struct {
 
 var client http.Client
 
-/*
-func submitHours(tx *store.Tx, loginID string) {
+func submitHours(st *store.Store, loginID string) {
+	const personFlags = person.FInformalName | person.FVolgisticsID
 	var (
 		mstr   string
-		eatt   = make(map[model.EventID]map[model.PersonID]model.AttendanceInfo)
-		people = make(map[model.PersonID]*pinfo)
+		people = make(map[person.ID]*pinfo)
 	)
 	mstr = time.Time(mflag).Format("2006-01")
-	for _, e := range tx.FetchEvents(mstr+"-01", mstr+"-31") {
-		assn := orgToAssignment[e.Org]
+	taskperson.MinutesBetween(st, mstr+"-01", mstr+"-32", func(eid event.ID, tid task.ID, pid person.ID, org enum.Org, minutes uint) {
+		assn := orgToAssignment[org]
 		if assn == 0 {
-			continue
+			return
 		}
-		eatt[e.ID] = tx.FetchAttendanceByEvent(e)
-		for pid, ai := range eatt[e.ID] {
-			if len(pflags) != 0 && !pflags[pid] {
-				continue
+		if people[pid] == nil {
+			p := person.WithID(st, pid, personFlags)
+			people[pid] = &pinfo{
+				Name:         p.InformalName(),
+				VolgisticsID: p.VolgisticsID(),
+				Minutes:      make(map[int]uint),
 			}
-			if ai.Minutes == 0 || ai.Type == model.AttendAsAuditor || ai.Type == model.AttendAsStudent {
-				continue
-			}
-			if people[pid] == nil {
-				p := tx.FetchPerson(pid)
-				people[pid] = &pinfo{
-					Name:         p.InformalName,
-					VolgisticsID: p.VolgisticsID,
-					Minutes:      make(map[int]uint16),
-				}
-			}
-			people[pid].Minutes[assn] += ai.Minutes
 		}
-	}
+		people[pid].Minutes[assn] += minutes
+
+	})
 	for pid, pi := range people {
 		if pi.VolgisticsID == 0 {
 			delete(people, pid)
 		}
 	}
-	submitToVolgistics(loginID, people, time.Date(time.Time(mflag).Year(), time.Time(mflag).Month()+1, 1, 0, 0, 0, 0, time.Local).Add(-time.Second))
+	submitToVolgistics(loginID, people, time.Date(time.Time(mflag).Year(), time.Time(mflag).Month()+1, 0, 0, 0, 0, 0, time.Local))
 }
 
-func submitToVolgistics(loginID string, people map[model.PersonID]*pinfo, date time.Time) {
-	for _, pi := range people {
+func submitToVolgistics(loginID string, people map[person.ID]*pinfo, date time.Time) {
+	for pid, pi := range people {
+		if len(pflag) != 0 && !pflag[pid] {
+			continue
+		}
 		if pi.VolgisticsID == 0 {
 			continue
 		}
 		submitPersonToVolgistics(loginID, date, pi)
 	}
 }
-*/
 
 func logInToVolgistics() (id string) {
 	var (
@@ -113,7 +112,6 @@ func logInToVolgistics() (id string) {
 	return id
 }
 
-/*
 func submitPersonToVolgistics(id string, date time.Time, pi *pinfo) {
 	var (
 		doc *goquery.Document
@@ -214,7 +212,6 @@ ASSN:
 		fmt.Printf("%s - %s - %s\n", pi.Name, assnToName[a], disposition)
 	}
 }
-*/
 
 func findVolunteerInVolgistics(loginID string, name string, volunteerID uint, report bool) (key string) {
 	var (

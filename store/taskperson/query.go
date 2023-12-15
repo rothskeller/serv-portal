@@ -121,7 +121,7 @@ func AllBetween(storer phys.Storer, start, end string, pid person.ID, eventField
 }
 
 const minutesBetweenSQL = `
-SELECT e.id, tp.person, t.org, tp.minutes
+SELECT e.id, t.id, tp.person, t.org, tp.minutes
 FROM task_person tp, task t, event e
 WHERE tp.task=t.id AND t.event=e.id
   AND tp.minutes!=0
@@ -130,16 +130,17 @@ WHERE tp.task=t.id AND t.event=e.id
 
 // MinutesBetween fetches all minutes entries for events between the specified
 // dates.
-func MinutesBetween(storer phys.Storer, start, end string, fn func(event.ID, person.ID, enum.Org, uint)) {
+func MinutesBetween(storer phys.Storer, start, end string, fn func(event.ID, task.ID, person.ID, enum.Org, uint)) {
 	phys.SQL(storer, minutesBetweenSQL, func(stmt *phys.Stmt) {
 		stmt.BindText(start)
 		stmt.BindText(end)
 		for stmt.Step() {
 			var eid = event.ID(stmt.ColumnInt())
+			var tid = task.ID(stmt.ColumnInt())
 			var pid = person.ID(stmt.ColumnInt())
 			var org = enum.Org(stmt.ColumnInt())
 			var minutes = uint(stmt.ColumnInt())
-			fn(eid, pid, org, minutes)
+			fn(eid, tid, pid, org, minutes)
 		}
 	})
 }

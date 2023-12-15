@@ -821,3 +821,11 @@ func (u *Updater) DuplicateVolgisticsID(storer phys.Storer) (found bool) {
 
 // We intentionally do not have a Delete method for Person objects.  Person
 // objects should never be deleted.
+
+// ClearAllHoursReminders turns off the HoursReminder flag on all people.
+func ClearAllHoursReminders(storer phys.Storer) {
+	phys.SQL(storer, fmt.Sprintf("UPDATE person SET flags=flags-%d WHERE flags&%d", HoursReminder, HoursReminder), func(stmt *phys.Stmt) {
+		stmt.Step()
+	})
+	phys.Audit(storer, "Clear all hours reminder flags")
+}

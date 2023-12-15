@@ -5,8 +5,9 @@
 // usage: volunteer-hours [-m YYYY-MM] [-p people] [-d] request|remind|submit|report...
 //
 //	-m YYYY-MM specifies the target month (default "last month")
-//	-p person specifies a target person ID
-//	-d specifies debug mode; emails to go admin only
+//	-p person specifies a target person ID for request/remind/submit
+//	-d specifies debug mode; emails to go admin only; no actions taken
+//	-k keeps existing HoursTokens and HoursReminders
 //	"request" means to send an email requesting hours
 //	"remind" means to send an email reminder for submitting hours
 //	"submit" means to submit hours to Volgistics
@@ -18,11 +19,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
+	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/task"
 	"sunnyvaleserv.org/portal/store/venue"
 	"sunnyvaleserv.org/portal/util/log"
@@ -31,6 +35,7 @@ import (
 var mflag monthArg
 var dflag = flag.Bool("d", false, "debug (emails to admin only)")
 var kflag = flag.Bool("k", false, "keep existing HoursTokens")
+var pflag = make(peoplelist)
 
 func main() {
 	var (
@@ -51,10 +56,12 @@ func main() {
 		}
 	}
 	flag.Var(&mflag, "m", "target month (YYYY-MM, default last month)")
+	flag.Var(pflag, "p", "person IDs to include")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `usage: volunteer-hours [-m YYYY-MM] [-dk] request|remind|submit|report|status...
      -m YYYY-MM specifies the target month (default "last month")
      -d specifies debug mode; emails to go admin only
+     -p person specifies a target person ID for request/remind/submit
      -k keeps existing HoursTokens and HoursReminders
      "request" means to send an email requesting hours
      "remind" means to send an email reminder for submitting hours
@@ -76,14 +83,14 @@ func main() {
 		for _, op := range flag.Args() {
 			switch op {
 			case "request":
-				// sendRequests(st)
+				sendRequests(st)
 			case "remind":
-				// sendReminders(st)
+				sendReminders(st)
 			case "submit":
 				if loginID == "" {
 					loginID = logInToVolgistics()
 				}
-				// submitHours(st, loginID)
+				submitHours(st, loginID)
 			case "report":
 				reportHours(st)
 			case "status":
@@ -147,4 +154,27 @@ func makePlaceholders(st *store.Store) {
 			task.Create(st, &ut)
 		}
 	})
+}
+
+type peoplelist map[person.ID]bool
+
+func (pl peoplelist) Set(v string) (err error) {
+	var pid int
+
+	if pid, err = strconv.Atoi(v); err != nil {
+		return err
+	}
+	if pid < 1 {
+		return fmt.Errorf("%d: invalid person ID", pid)
+	}
+	pl[person.ID(pid)] = true
+	return nil
+}
+
+func (pl peoplelist) String() string {
+	var ids []string
+	for id := range pl {
+		ids = append(ids, strconv.Itoa(int(id)))
+	}
+	return strings.Join(ids, ", ")
 }

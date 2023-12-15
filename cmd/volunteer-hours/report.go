@@ -12,6 +12,7 @@ import (
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/task"
 	"sunnyvaleserv.org/portal/store/taskperson"
 	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/sendmail"
@@ -67,7 +68,7 @@ func reportHours(st *store.Store) {
 	mstr = time.Time(mflag).Format("2006-01")
 	report.Month = time.Time(mflag).Format("January 2006")
 	report.ByGroup = make(map[int]uint)
-	taskperson.MinutesBetween(st, mstr+"-01", mstr+"-32", func(eid event.ID, pid person.ID, org enum.Org, minutes uint) {
+	taskperson.MinutesBetween(st, mstr+"-01", mstr+"-32", func(eid event.ID, tid task.ID, pid person.ID, org enum.Org, minutes uint) {
 		var ei *einfo
 		var pi *pinfo
 
