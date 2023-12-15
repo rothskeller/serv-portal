@@ -83,6 +83,10 @@ func main() {
 				requestElapsedMax = elapsed
 			}
 		}
+		// This next bit adds an entry to either the "changes" or
+		// "authn" slice.  In either case, the first string in the entry
+		// is the time, the second contains the username and request,
+		// and the remainder are the "::"-separated parts of the change.
 		if cs, ok := entry["changes"].([]interface{}); ok {
 			for _, c := range cs {
 				var components []string
@@ -186,6 +190,10 @@ func reorder(list [][]string) {
 	}
 }
 
+// Each entry in the list is a slice of strings.  The first string is the time;
+// the second string is the user and request, and the subsequent strings are
+// details of the change.  We show this as a hierarchical list where each
+// string is indented under the one before it.
 func showlist(w io.Writer, list [][]string, label string) {
 	var stack []string
 
@@ -194,8 +202,6 @@ func showlist(w io.Writer, list [][]string, label string) {
 	}
 	fmt.Fprintf(w, `<div style="margin-top:1em;font-weight:bold">%s</div>`, label)
 	for i, item := range list {
-		var sb strings.Builder
-
 		if len(stack) < 2 || item[1] != stack[1] {
 			var multipleTimes bool
 			for j := i + 1; j < len(list); j++ {
@@ -214,20 +220,14 @@ func showlist(w io.Writer, list [][]string, label string) {
 		for i := 2; i < len(item); i++ {
 			part := item[i]
 			if i < len(stack) && part == stack[i] {
-				sb.WriteString("    ")
 				continue
 			}
 			if i == len(item)-1 {
-				sb.WriteString(part)
-				break
-			}
-			stack = append(stack[:i], part)
-			sb.WriteString(part)
-			sb.WriteString("::\n")
-			for j := 2; j <= i; j++ {
-				sb.WriteString("    ")
+				fmt.Fprintf(w, `<div style="margin-left:%dem;font-family:monospace">%s</div>`, 2*i+2, part)
+			} else {
+				stack = append(stack[:i], part)
+				fmt.Fprintf(w, `<div style="margin-left:%dem;font-family:monospace">%s::</div>`, 2*i+2, part)
 			}
 		}
-		fmt.Fprintf(w, `<div style="margin-left:2em;font-family:monospace;white-space:pre">%s</div>`, sb.String())
 	}
 }
