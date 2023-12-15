@@ -22,10 +22,10 @@ const sessionExpiration = time.Hour
 const rememberExpiration = 10 * 365 * 24 * time.Hour // ten years, ish
 
 // SessionUser validates the session and returns the session user, with all of
-// the specified fields fetched.  (As a convenience, ID, name, and privilege
-// levels are always fetched even if not specified.)  If the session is not
-// valid, it returns nil.  If respond is true and the session is not valid, it
-// issues the appropriate web response before returning nil.
+// the specified fields fetched.  (As a convenience, ID, name, language, and
+// privilege levels are always fetched even if not specified.)  If the session
+// is not valid, it returns nil.  If respond is true and the session is not
+// valid, it issues the appropriate web response before returning nil.
 func SessionUser(r *request.Request, fields person.Fields, respond bool) (p *person.Person) {
 	var (
 		pid     person.ID
@@ -50,12 +50,23 @@ func SessionUser(r *request.Request, fields person.Fields, respond bool) (p *per
 		goto UNAUTHORIZED
 	}
 	// Get the session user's data.  Note that we always retrieve the user's
-	// ID, name, and privilege levels, even if not requested.  The name is
-	// needed for session logging, and all three are needed to display the
-	// page menu.
-	p = person.WithID(r, pid, fields|person.FInformalName|person.FPrivLevels)
+	// ID, name, language, and privilege levels, even if not requested.  The
+	// name is needed for session logging, the ID and privilege levels are
+	// needed for session logging, and the language is needed for proper
+	// page rendering.
+	p = person.WithID(r, pid, fields|person.FInformalName|person.FPrivLevels|person.FLanguage)
 	r.LogEntry.User = p.InformalName()
 	r.CSRF = csrf
+
+	// Always set the language cookie, so that if they visit a public page
+	// in the future they'll still get their preferred language.
+	http.SetCookie(r, &http.Cookie{
+		Name:     "lang",
+		Value:    p.Language(),
+		Path:     "/",
+		Expires:  time.Now().Add(10 * 365 * 24 * time.Hour),
+		SameSite: http.SameSiteLaxMode,
+	})
 	return p
 
 UNAUTHORIZED:

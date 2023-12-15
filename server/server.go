@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 
+	"golang.org/x/text/language"
 	"sunnyvaleserv.org/portal/pages/admin/listedit"
 	"sunnyvaleserv.org/portal/pages/admin/listlist"
 	"sunnyvaleserv.org/portal/pages/admin/listpeople"
@@ -75,6 +77,9 @@ func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		req.ResponseWriter = request.NewCompressedResponse(req.ResponseWriter)
 	}
 	req.LogEntry = log.New(req.Method, req.Path)
+	// Determine the language for the request.  Note that this will be
+	// overridden by auth.SessionUser if the user is logged in.
+	req.Language = chooseLanguage(req)
 	// Parse the form now, before we connect to the data store.  This avoids
 	// chewing up a connection while we're still reading from the client.
 	r.ParseMultipartForm(1048576)
@@ -234,4 +239,39 @@ func route(r *request.Request) {
 	default:
 		errpage.NotFound(r, auth.SessionUser(r, 0, false))
 	}
+}
+
+var matcher = language.NewMatcher([]language.Tag{language.English, language.Spanish})
+
+// chooseLanguage chooses the language that will be used to satisfy the request.
+// Note that this will be overridden by auth.SessionUser if the user is logged
+// in.
+func chooseLanguage(r *request.Request) (lang string) {
+	if r.Path == "/clases" || r.Path == "/Clases" || r.Path == "/CLASES" {
+		// Special case:  if the URL is "/clases", language is Spanish.
+		lang = "es"
+	} else if strings.HasPrefix(r.Path, "/en/") || strings.HasPrefix(r.Path, "/es/") {
+		// If the URL has a language prefix, use it.  Also remove it
+		// from the URL.
+		lang = r.Path[1:3]
+		r.Path = r.Path[3:]
+	} else if c, err := r.Request.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {
+		lang = c.Value
+	} else if accept := r.Request.Header.Get("Accept-Language"); accept != "" {
+		t, _, _ := language.ParseAcceptLanguage(accept)
+		tag, _, _ := matcher.Match(t...)
+		if tag == language.Spanish {
+			lang = "es"
+		} else {
+			lang = "en"
+		}
+	}
+	http.SetCookie(r, &http.Cookie{
+		Name:     "lang",
+		Value:    lang,
+		Path:     "/",
+		Expires:  time.Now().Add(10 * 365 * 24 * time.Hour),
+		SameSite: http.SameSiteLaxMode,
+	})
+	return lang
 }

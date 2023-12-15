@@ -5,11 +5,11 @@ multi-lingual design supporting any number of languages.)  To determine the
 language in which to render a page, this site consults the following sources,
 and follows the first one that gives an answer:
 
-1.  If the URL is language-specific, the language is taken from it.  The only
+1.  If the user is logged in, the preferred language from their profile is used.
+2.  If the URL is language-specific, the language is taken from it.  The only
     known example of this is /clases, which forces Spanish.
-2.  If the URL has a language prefix (/en or /es).  These force the specified
+3.  If the URL has a language prefix (/en or /es).  These force the specified
     language, and the URL is then resolved as if they weren't there.
-3.  If the user is logged in, the preferred language from their profile is used.
 4.  If the user has a "lang=en" or "lang=es" cookie, that language is used.
 5.  If the request has an Accept-Language header that prefers one language over
     the other, that language is used.

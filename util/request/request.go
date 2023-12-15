@@ -17,6 +17,7 @@ type Request struct {
 	SessionToken string
 	CSRF         string
 	Path         string
+	Language     string
 	LogEntry     *log.Entry
 }
 
