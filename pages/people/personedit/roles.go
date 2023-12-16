@@ -66,7 +66,7 @@ func handleGetRoles(r *request.Request, user, p *person.Person) {
 	if user.IsAdminLeader() {
 		handleGetOrgRoles(r, form, p, held, enum.OrgAdmin)
 	}
-	emitButtons(form)
+	emitButtons(r, form)
 }
 
 var orgLabels = map[enum.Org]string{
@@ -116,7 +116,7 @@ func handlePostRoles(r *request.Request, user, p *person.Person) {
 		}
 		role.Recalculate(r)
 	})
-	personview.Render(r, user, p, true, "")
+	personview.Render(r, user, p, person.ViewFull, "")
 }
 
 func handlePostOrgRoles(r *request.Request, p *person.Person, held map[role.ID]bool, org enum.Org) {

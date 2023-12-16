@@ -99,7 +99,7 @@ func HandleVRegister(r *request.Request, idstr string) {
 			if err := SendVolunteerRegistration(p, interests); err != nil {
 				r.LogEntry.Problems.Add("volgistics registration failed: " + err.Error())
 			}
-			personview.Render(r, user, p, false, "")
+			personview.Render(r, user, p, person.ViewFull, "")
 			return
 		}
 	}
@@ -110,53 +110,54 @@ func HandleVRegister(r *request.Request, idstr string) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class=form method=POST up-main up-layer=parent up-target=.personview")
-	form.E("div class='formTitle formTitle-primary'>Register as a City Volunteer")
+	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Register as a City Volunteer", "Registrarse como voluntario de ciudad"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
-	emitVRegIntro(form)
+	emitVRegIntro(r, form)
 	if len(validate) == 0 || slices.Contains(validate, "informalName") {
-		emitInformalName(form, up, informalNameError != "" || (formalNameError == "" && sortNameError == "" && callSignError == ""), informalNameError)
+		emitInformalName(r, form, up, informalNameError != "" || (formalNameError == "" && sortNameError == "" && callSignError == ""), informalNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "formalName") {
-		emitFormalName(form, up, formalNameError != "", formalNameError)
+		emitFormalName(r, form, up, formalNameError != "", formalNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "sortName") {
-		emitSortName(form, up, sortNameError != "", sortNameError)
+		emitSortName(r, form, up, sortNameError != "", sortNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "callSign") {
-		emitCallSign(form, up, callSignError != "", callSignError)
+		emitCallSign(r, form, up, callSignError != "", callSignError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "birthdate") {
-		emitBirthdate(form, up, birthdateError != "", birthdateError)
+		emitBirthdate(r, form, up, birthdateError != "", birthdateError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "email") {
-		emitEmail(form, up, emailError != "" || !haveErrors, emailError)
+		emitEmail(r, form, up, emailError != "" || !haveErrors, emailError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "email2") {
-		emitEmail2(form, up, email2Error != "", email2Error)
+		emitEmail2(r, form, up, email2Error != "", email2Error)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "cellPhone") {
-		emitCellPhone(form, up, cellPhoneError != "", cellPhoneError)
+		emitCellPhone(r, form, up, cellPhoneError != "", cellPhoneError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "homePhone") {
-		emitHomePhone(form, up, homePhoneError != "", homePhoneError)
+		emitHomePhone(r, form, up, homePhoneError != "", homePhoneError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "workPhone") {
-		emitWorkPhone(form, up, workPhoneError != "", workPhoneError)
+		emitWorkPhone(r, form, up, workPhoneError != "", workPhoneError)
 	}
 	if len(validate) == 0 {
-		emitHomeAddress(form, up, homeAddressError != "", homeAddressError)
-		emitWorkAddress(form, up, workAddressError != "", workAddressError)
-		emitMailAddress(form, up, mailAddressError != "", mailAddressError)
-		emitInterests(form, interests)
-		emitEmergencyContact(form, up, 0, ec1NameError, ec1HomePhoneError, ec1CellPhoneError, ec1RelationshipError)
-		emitEmergencyContact(form, up, 1, ec2NameError, ec2HomePhoneError, ec2CellPhoneError, ec2RelationshipError)
-		emitAgreement(form, agreementError)
-		emitVRegisterButtons(form)
+		emitHomeAddress(r, form, up, homeAddressError != "", homeAddressError)
+		emitWorkAddress(r, form, up, workAddressError != "", workAddressError)
+		emitMailAddress(r, form, up, mailAddressError != "", mailAddressError)
+		emitInterests(r, form, interests)
+		emitEmergencyContact(r, form, up, 0, ec1NameError, ec1HomePhoneError, ec1CellPhoneError, ec1RelationshipError)
+		emitEmergencyContact(r, form, up, 1, ec2NameError, ec2HomePhoneError, ec2CellPhoneError, ec2RelationshipError)
+		emitAgreement(r, form, agreementError)
+		emitVRegisterButtons(r, form)
 	}
 }
 
-func emitVRegIntro(form *htmlb.Element) {
-	form.E("div class='formRow-3col vregisterIntro'>Thank you for your interest in volunteering with the City of Sunnyvale, Office of Emergency Services.  Please complete this form to register as a City of Sunnyvale Volunteer.  Once we receive your registration (which usually takes a few days) we will contact you to schedule an appointment for your fingerprinting.  (Please note: registering as a city volunteer is not required for taking one of our classes.  It is only required when joining one of our volunteer groups.)")
+func emitVRegIntro(r *request.Request, form *htmlb.Element) {
+	form.E("div class='formRow-3col vregisterIntro'").R(r.LangString("Thank you for your interest in volunteering with the City of Sunnyvale, Office of Emergency Services.  Please complete this form to register as a City of Sunnyvale Volunteer.  Once we receive your registration (which usually takes a few days) we will contact you to schedule an appointment for your fingerprinting.  (Please note: registering as a city volunteer is not required for taking one of our classes.  It is only required when joining one of our volunteer groups.)",
+		"Gracias por su interés en ser voluntario en la Oficina de Servicios de Emergencia de la ciudad de Sunnyvale.  Complete este formulario para registrarse como voluntario de la ciudad de Sunnyvale.  Una vez que recibamos su registro (lo que generalmente demora unos días), nos comunicaremos con usted para programar una cita para su toma de huellas digitales.  (Tenga en cuenta: no es necesario registrarse como voluntario de la ciudad para tomar una de nuestras clases.  Solo es necesario cuando se une a uno de nuestros grupos de voluntarios)."))
 }
 
 func readVRegBirthdate(r *request.Request, up *person.Updater) string {
@@ -164,7 +165,7 @@ func readVRegBirthdate(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.Birthdate == "" {
-		return "Your birthdate is required."
+		return r.LangString("Your birthdate is required.", "Se requiere su fecha de nacimiento.")
 	}
 	return ""
 }
@@ -174,7 +175,7 @@ func readVRegHomePhone(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.CellPhone == "" && up.HomePhone == "" {
-		return "A cell or home phone number is required."
+		return r.LangString("A cell or home phone number is required.", "Se requiere un número de teléfono móvil o a casa.")
 	}
 	return ""
 }
@@ -184,7 +185,7 @@ func readVRegHomeAddress(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.Addresses.Home.Address == "" {
-		return "Your home address is required."
+		return r.LangString("Your home address is required.", "Se requiere su dirección de casa.")
 	}
 	return ""
 }
@@ -192,7 +193,7 @@ func readVRegHomeAddress(r *request.Request, up *person.Updater) string {
 func readVRegECName(r *request.Request, up *person.Updater, num int) string {
 	readECName(r, up, num)
 	if up.EmContacts[num].Name == "" {
-		return "The emergency contacts are required."
+		return r.LangString("The emergency contacts are required.", "Se requieren los contactos de emergencia.")
 	}
 	return ""
 }
@@ -200,43 +201,51 @@ func readVRegECName(r *request.Request, up *person.Updater, num int) string {
 func readInterests(r *request.Request) (interests []string) {
 	return r.Form["interests"]
 }
-func emitInterests(form *htmlb.Element, interests []string) {
+func emitInterests(r *request.Request, form *htmlb.Element, interests []string) {
 	row := form.E("div class=formRow")
-	row.E("label for=vregisterCERTD>Interests")
+	row.E("label for=vregisterCERTD").R(r.LangString("Interests", "Intereses"))
 	box := row.E("div class=formInput")
-	box.E("input type=checkbox id=vregisterCERTD name=interests value=CERT-D class=s-check label='CERT Deployment Team'",
+	box.E("input type=checkbox id=vregisterCERTD name=interests value=CERT-D class=s-check label=%s",
+		r.LangString("CERT Deployment Team", "Equipo de despliegue CERT"),
 		slices.Contains(interests, "CERT-D"), "checked")
-	box.E("input type=checkbox name=interests value=Outreach class=s-check label='Community Outreach'",
+	box.E("input type=checkbox name=interests value=Outreach class=s-check label=%s",
+		r.LangString("Community Outreach", "Alcance comunitario"),
 		slices.Contains(interests, "Outreach"), "checked")
-	box.E("input type=checkbox name=interests value=SARES class=s-check label='Amateur Radio (SARES)'",
+	box.E("input type=checkbox name=interests value=SARES class=s-check label=%s",
+		r.LangString("Amateur Radio (SARES)", "Radioaficionados (SARES)"),
 		slices.Contains(interests, "SARES"), "checked")
-	box.E("input type=checkbox name=interests value=SNAP class=s-check label='Neighborhood Preparedness Facilitator'",
+	box.E("input type=checkbox name=interests value=SNAP class=s-check label=%s",
+		r.LangString("Neighborhood Preparedness Facilitator", "Facilitador de preparación vecinal"),
 		slices.Contains(interests, "SNAP"), "checked")
-	box.E("input type=checkbox name=interests value=Listos class=s-check label='Preparedness Class Instructor'",
+	box.E("input type=checkbox name=interests value=Listos class=s-check label=%s",
+		r.LangString("Preparedness Class Instructor", "Instructor de clases de preparación"),
 		slices.Contains(interests, "Listos"), "checked")
-	box.E("input type=checkbox name=interests value=CERT-T class=s-check label='CERT Basic Training Instructor'",
+	box.E("input type=checkbox name=interests value=CERT-T class=s-check label=%s",
+		r.LangString("CERT Basic Training Instructor", "Instructor de clases CERT"),
 		slices.Contains(interests, "CERT-T"), "checked")
 }
 
 func readAgreement(r *request.Request) (err string) {
 	if r.FormValue("agreement") == "" {
-		return "Please check that you agree with the above statement in order to register."
+		return r.LangString("Please check that you agree with the above statement in order to register.",
+			"Por favor, marque la casilla para mostrar que está de acuerdo con la declaración anterior para poder registrarse.")
 	}
 	return ""
 }
-func emitAgreement(form *htmlb.Element, err string) {
-	form.E("div class='formRow-3col vregisterAgreement'>By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty.")
+func emitAgreement(r *request.Request, form *htmlb.Element, err string) {
+	form.E("div class='formRow-3col vregisterAgreement'").R(r.LangString("By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty.",
+		"Al enviar esta solicitud, certifico que todas las declaraciones que he hecho en esta solicitud son verdaderas y correctas y por la presente autorizo a la ciudad de Sunnyvale a investigar la exactitud de esta información.  Soy consciente de que se requieren huellas dactilares y una búsqueda de antecedentes penales para los voluntarios mayores de 18 años.  Entiendo que estoy trabajando en todo momento de forma voluntaria, sin compensación monetaria ni beneficios, y no como empleado remunerado.  Doy permiso a la ciudad de Sunnyvale para utilizar fotografías o videos tomados de mí durante mi servicio sin obligación ni compensación para mí.  Entiendo que la ciudad de Sunnyvale se reserva el derecho de cancelar el servicio de un voluntario en cualquier momento.  Entiendo que los voluntarios están cubiertos por el Programa de Compensación para Trabajadores de la Ciudad de Sunnyvale por una lesión o accidente que ocurra mientras están de servicio."))
 	row := form.E("div class=formRow")
-	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label='I agree'")
+	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label=%s").R(r.LangString("I agree", "Estoy de acuerdo"))
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
 }
 
-func emitVRegisterButtons(form *htmlb.Element) {
+func emitVRegisterButtons(r *request.Request, form *htmlb.Element) {
 	buttons := form.E("div class=formButtons")
-	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss>Cancel")
-	buttons.E("input type=submit class='sbtn sbtn-primary' value=Register")
+	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.LangString("Cancel", "Cancelar"))
+	buttons.E("input type=submit class='sbtn sbtn-primary' value=%s", r.LangString("Register", "Registrarse"))
 }
 
 var addressSplitRE = regexp.MustCompile(`^(.*),\s*([^,]+),?\s+CA\s+(\d{5})$`)

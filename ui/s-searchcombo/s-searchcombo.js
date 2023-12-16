@@ -138,7 +138,7 @@ class SSearchCombo extends HTMLElement {
       if (!hits.length) {
         const nm = document.createElement('div')
         nm.className = 's-searchcombo-sr nomatch'
-        nm.textContent = '(no match)'
+        nm.textContent = document.documentElement.lang === 'es' ? '(no hay resultados)' : '(no match)'
         this._dd.appendChild(nm)
         return
       }

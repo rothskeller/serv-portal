@@ -65,7 +65,7 @@ func HandleStatus(r *request.Request, idstr string) {
 			r.Transaction(func() {
 				p.Update(r, up, setStatusPersonFields)
 			})
-			personview.Render(r, user, p, true, "status")
+			personview.Render(r, user, p, person.ViewFull, "status")
 			return
 		}
 	}
@@ -98,7 +98,7 @@ func HandleStatus(r *request.Request, idstr string) {
 		emitBGPHS(form, up, bgPHSError != "", bgPHSError)
 	}
 	if len(validate) == 0 {
-		emitButtons(form)
+		emitButtons(r, form)
 	}
 }
 

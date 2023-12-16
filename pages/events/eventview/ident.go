@@ -3,17 +3,19 @@ package eventview
 import (
 	"time"
 
+	"sunnyvaleserv.org/portal/pages/events/langdate"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/task"
 	"sunnyvaleserv.org/portal/ui/orgdot"
 	"sunnyvaleserv.org/portal/util/htmlb"
+	"sunnyvaleserv.org/portal/util/request"
 )
 
 const identEventFields = event.FStart | event.FName | event.FActivation
 const identTaskFields = task.FOrg | task.FFlags
 
-func showIdent(main *htmlb.Element, e *event.Event, ts []*task.Task) {
+func showIdent(r *request.Request, main *htmlb.Element, e *event.Event, ts []*task.Task) {
 	names := main.E("div class=eventviewIdent")
 	left := names.E("div class=eventviewIdentLeft")
 	line1 := left.E("div class=eventviewIdentL1")
@@ -28,7 +30,7 @@ func showIdent(main *htmlb.Element, e *event.Event, ts []*task.Task) {
 	dots := line1.E("span class=eventviewIdentOrgs")
 	for org, show := range orgs {
 		if show {
-			orgdot.OrgDot(dots, enum.Org(org))
+			orgdot.OrgDot(r, dots, enum.Org(org))
 		}
 	}
 	dsw := ts[0].Flags()&task.CoveredByDSW != 0
@@ -41,5 +43,5 @@ func showIdent(main *htmlb.Element, e *event.Event, ts []*task.Task) {
 		line1.E("span class=eventviewIdentDSW>DSW")
 	}
 	date, _ := time.ParseInLocation("2006-01-02T15:04", e.Start(), time.Local)
-	left.E("div class=eventviewIdentDate>%s", date.Format("Monday, January 2, 2006"))
+	left.E("div class=eventviewIdentDate>%s", langdate.LangDate(r, date))
 }

@@ -86,7 +86,7 @@ func getSubscriptions(r *request.Request, p *person.Person) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=.personviewSubscriptions")
-	form.E("div class='formTitle formTitle-primary'>Edit List Subscriptions")
+	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Edit List Subscriptions", "Editar suscripciones"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	ldiv := form.E("div class='formRow-3col personeditSubscriptions'")
 	for _, ld := range lists {
@@ -102,24 +102,30 @@ func getSubscriptions(r *request.Request, p *person.Person) {
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked")
 		case 1:
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles='%s role'", ld.warnroles[0])
+				r.LangString("data-warnroles='Messages sent to %s are considered required for the “%s” role.  Unsubscribing from it may cause you to lose that role.'",
+					"data-warnroles='Los mensajes enviados a %s se consideran obligatorios para el rol “%s”.  Darse de baja puede hacer que pierdas ese rol.'"),
+				name, ld.warnroles[0])
 		case 2:
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles='%s and %s roles'", ld.warnroles[0], ld.warnroles[1])
+				r.LangString("data-warnroles='Messages sent to %s are considered required for the “%s” and “%s” roles.  Unsubscribing from it may cause you to lose those roles.'",
+					"data-warnroles='Los mensajes enviados a %s se consideran obligatorios para los roles “%s” y “%s”.  Darse de baja puede hacer que pierdas esos roles.'"),
+				name, ld.warnroles[0], ld.warnroles[1])
 		default:
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles='%s, and %s roles'", strings.Join(ld.warnroles[:len(ld.warnroles)-1], ", "), ld.warnroles[len(ld.warnroles)-1])
+				r.LangString("data-warnroles='Messages sent to %s are considered required for the “%s”, and “%s” roles.  Unsubscribing from it may cause you to lose those roles.'",
+					"data-warnroles='Los mensajes enviados a %s se consideran obligatorios para los roles “%s”, y “%s”.  Darse de baja puede hacer que pierdas esos roles.'"),
+				name, strings.Join(ld.warnroles[:len(ld.warnroles)-1], "”, “"), ld.warnroles[len(ld.warnroles)-1])
 		}
 	}
 	form.E("div id=personeditSubscriptionsWarnings class=formRow-3col")
 	buttons := form.E("div class=formButtons")
 	buttons.E("div class=formButtonSpace")
-	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss>Cancel")
-	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=Save")
+	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.LangString("Cancel", "Cancelar"))
+	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=%s", r.LangString("Save", "Guardar"))
 	// This button comes last in the tree order so that it is not
 	// the default.  But it comes first in the visual order because
 	// of the formButton-beforeAll class.
-	buttons.E("input type=submit name=unsuball class='sbtn sbtn-secondary formButton-beforeAll' value='Unsubscribe All'")
+	buttons.E("input type=submit name=unsuball class='sbtn sbtn-secondary formButton-beforeAll' value=%s", r.LangString("Unsubscribe All", "Darse de baja todos"))
 }
 
 func postSubscriptions(r *request.Request, user, p *person.Person) {
@@ -155,5 +161,5 @@ func postSubscriptions(r *request.Request, user, p *person.Person) {
 			p.Update(r, up, person.FFlags)
 		}
 	})
-	personview.Render(r, user, p, true, "subscriptions")
+	personview.Render(r, user, p, person.ViewFull, "subscriptions")
 }

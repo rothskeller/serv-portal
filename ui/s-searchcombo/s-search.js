@@ -111,7 +111,7 @@ up.compiler('input.s-search', elm => {
     if (!hits.length) {
       const nm = document.createElement('div')
       nm.className = 's-search-sr nomatch'
-      nm.textContent = '(no match)'
+      nm.textContent = document.documentElement.lang === 'es' ? '(no hay resultados)' : '(no match)'
       dropdown.appendChild(nm)
       return
     }

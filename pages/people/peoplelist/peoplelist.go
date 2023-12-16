@@ -63,7 +63,7 @@ func Handle(r *request.Request) {
 		title = focus.Name()
 		state.SetFocusRole(r, focus.ID())
 	} else {
-		title = "People"
+		title = r.LangString("People", "Personas")
 		state.SetFocusRole(r, 0)
 	}
 	// Figure out the sort order.
@@ -79,8 +79,8 @@ func Handle(r *request.Request) {
 		Title:    title,
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: "List", URL: "/people", Target: "main", Active: true},
-			{Name: "Map", URL: "/people/map", Target: "main"},
+			{Name: r.LangString("List", "Lista"), URL: "/people", Target: "main", Active: true},
+			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: "main"},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
@@ -95,12 +95,12 @@ func Handle(r *request.Request) {
 			currsort != "suffix" && focus != nil && focus.Org() == enum.OrgSARES, "class=peoplelistGrid-callsign",
 		)
 		for _, p := range people {
-			showPerson(grid, p, focus != nil && focus.Org() == enum.OrgSARES, currsort == "suffix")
+			showPerson(r, grid, p, focus != nil && focus.Org() == enum.OrgSARES, currsort == "suffix")
 		}
 		if len(people) == 1 {
-			main.E("div class=peoplelistCount>1 person listed.")
+			main.E("div class=peoplelistCount").R(r.LangString("1 person listed.", "1 persona en la lista."))
 		} else {
-			main.E("div class=peoplelistCount>%d people listed.", len(people))
+			main.E("div class=peoplelistCount>%d ", len(people)).R(r.LangString("people listed.", "personas en la lista."))
 		}
 		if user.HasPrivLevel(0, enum.PrivLeader) {
 			// TODO add user
@@ -120,7 +120,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 	if len(roleOptions) > 1 {
 		sort.Slice(roleOptions, func(i, j int) bool { return roleOptions[i].Name() < roleOptions[j].Name() })
 		sel := form.E("select id=peoplelistRole name=role")
-		sel.E("option value=0", focus == nil, "selected").R("(all)")
+		sel.E("option value=0", focus == nil, "selected").R(r.LangString("(all)", "(todos)"))
 		for _, role := range roleOptions {
 			sel.E("option value=%d", role.ID(), focus != nil && focus.ID() == role.ID(), "selected").T(role.Name())
 		}
@@ -141,7 +141,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 	case "suffix":
 		nextsort = "priority"
 	}
-	form.E("button type=submit name=sort class='sbtn sbtn-small sbtn-secondary' value=%s>Sort", nextsort)
+	form.E("button type=submit name=sort class='sbtn sbtn-small sbtn-secondary' value=%s", nextsort).R(r.LangString("Sort", "Ordenar"))
 	// Emit the current sort order.  If they click the button, this will be
 	// ignored because it will be the second value of "sort" in the form.
 	// Otherwise, this will retain the current sort order when changing
@@ -249,7 +249,7 @@ func personDataLess(a, b *personData, currsort string) bool {
 }
 
 // showPerson displays a single person.
-func showPerson(grid *htmlb.Element, p *personData, showCall, splitCall bool) {
+func showPerson(r *request.Request, grid *htmlb.Element, p *personData, showCall, splitCall bool) {
 	// Show the call sign column(s) if needed.
 	if splitCall {
 		grid.E("div class=peoplelistPersonCall1", p.role1 != "", "peoplelistPerson-withrole").T(p.callPrefix)
@@ -287,20 +287,20 @@ func showPerson(grid *htmlb.Element, p *personData, showCall, splitCall bool) {
 	// Show the details popup.
 	det := grid.E("div class=peoplelistPersonDetails")
 	det.E("s-icon icon=info")
-	showPersonDetails(det.E("div class=peoplelistDetails style=display:none"), p)
+	showPersonDetails(r, det.E("div class=peoplelistDetails style=display:none"), p)
 }
 
 // showPersonDetails renders the details popup for a person.
-func showPersonDetails(box *htmlb.Element, p *personData) {
+func showPersonDetails(r *request.Request, box *htmlb.Element, p *personData) {
 	// Show the name and call sign.
 	n := box.E("div class=peoplelistDetailsName>%s", p.InformalName())
 	if p.CallSign() != "" {
 		n.E("span class=peoplelistDetailsCall>%s", p.CallSign())
 	}
 	// Show all of the person's roles.
-	r := box.E("div class=peoplelistDetailsRoles")
+	rb := box.E("div class=peoplelistDetailsRoles")
 	for _, role := range p.roles {
-		r.E("div>%s", role)
+		rb.E("div>%s", role)
 	}
 	// If the caller can't see the person's contact info, show no more.
 	if p.viewLevel <= person.ViewNoContact {
@@ -331,7 +331,7 @@ func showPersonDetails(box *htmlb.Element, p *personData) {
 		ph := box.E("div class=peoplelistDetailsPhones")
 		if p.viewLevel == person.ViewFull && p.CellPhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (cell)", p.CellPhone()).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.CellPhone(), r.LangString("cell", "móvil")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=sms:%s target=_blank>", p.CellPhone()).
@@ -342,7 +342,7 @@ func showPersonDetails(box *htmlb.Element, p *personData) {
 		}
 		if p.viewLevel == person.ViewFull && p.HomePhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (home)", p.HomePhone()).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.HomePhone(), r.LangString("home", "casa")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=tel:%s target=_blank>", p.HomePhone()).
@@ -350,7 +350,7 @@ func showPersonDetails(box *htmlb.Element, p *personData) {
 		}
 		if p.WorkPhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (work)", p.WorkPhone()).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.WorkPhone(), r.LangString("work", "trabajo")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=tel:%s target=_blank>", p.WorkPhone()).

@@ -51,7 +51,7 @@ func Page(r *request.Request, user *person.Person, opts PageOpts, fn func(*htmlb
 		r.WriteHeader(opts.StatusCode)
 	}
 
-	html := htmlb.HTML(r).Attr("translate=no")
+	html := htmlb.HTML(r).Attr("lang=%s translate=no", r.Language)
 	defer html.Close()
 	pageHead(html, opts.Title)
 
@@ -120,16 +120,16 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 	// Note: any changes to the list of menu items, or the conditions for
 	// showing them, need to be reflected in the userhome page as well.
 	h = h.E("nav class=pageMenu")
-	h.E("div class=pageMenuWelcome>Welcome<br>").E("b").T(user.InformalName())
+	h.E("div class=pageMenuWelcome").R(r.LangString("Welcome<br>", "Bienvenido<br>")).E("b").T(user.InformalName())
 	ul := h.E("ul class=pageMenuList up-nav")
 	ul.E("li").E("a href=%s up-target=.pageCanvas up-alias=/events/* class=pageMenuItem", state.GetEventsURL(r),
-		menuItem == "events", "class=up-current").R("Events")
+		menuItem == "events", "class=up-current").R(r.LangString("Events", "Eventos"))
 	if user.HasPrivLevel(0, enum.PrivStudent) {
 		ul.E("li").E("a href=/people up-target=.pageCanvas up-alias='/people/* -/people/%d -/people/%d/*' class=pageMenuItem", user.ID(), user.ID(),
-			menuItem == "people", "class=up-current").R("People")
+			menuItem == "people", "class=up-current").R(r.LangString("People", "Personas"))
 	}
 	ul.E("li").E("a href=/files up-target=.pageCanvas up-alias=/files/* class=pageMenuItem",
-		menuItem == "files", "class=up-current").R("Files")
+		menuItem == "files", "class=up-current").R(r.LangString("Files", "Archivos"))
 	if user.HasPrivLevel(0, enum.PrivLeader) {
 		ul.E("li").E("a href=/reports/attendance up-target=.pageCanvas up-alias=/reports/* class=pageMenuItem",
 			menuItem == "reports", "class=up-current").R("Reports")
@@ -144,8 +144,8 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 	}
 	if user.ID() != person.AdminID {
 		ul.E("li").E("a href=/people/%d up-target=.pageCanvas up-alias=/people/%d/* class=pageMenuItem", user.ID(), user.ID(),
-			menuItem == "profile", "class=up-current").R("Profile")
+			menuItem == "profile", "class=up-current").R(r.LangString("Profile", "Perfil"))
 	}
-	ul.E("li").E("a href=/logout up-target=body class=pageMenuItem>Logout")
-	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout>Web Site Info")
+	ul.E("li").E("a href=/logout up-target=body class=pageMenuItem").R(r.LangString("Logout", "Cerrar"))
+	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout").R(r.LangString("Web Site Info", "Información del sitio"))
 }

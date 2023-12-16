@@ -45,7 +45,7 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 		}
 		if v.ID() != lastv {
 			if v == nil {
-				tdiv.E("div class=signupVenueName>Location TBD")
+				tdiv.E("div class=signupVenueName").R(r.LangString("Location TBD", "Sitio por determinar"))
 			} else if v.URL() != "" {
 				tdiv.E("div class=signupVenueName").
 					E("a href=%s target=_blank>%s", v.URL(), v.Name())
@@ -67,6 +67,9 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 		} else {
 			ineligibleReason = ec.CanSignUp(s)
 		}
+		if r.Language == "es" {
+			ineligibleReason = esIneligibleReasons[ineligibleReason]
+		}
 		label := s.Start()[11:]
 		if s.End() != s.Start() {
 			label += "–" + s.End()[11:]
@@ -76,16 +79,16 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 			ineligibleReason != "", "disabled", ineligibleReason != "", "title=%s", string(ineligibleReason))
 		hdiv := tdiv.E("div class=signupShiftHave")
 		if len(people) != 0 {
-			hdiv.E("a href=#>Have %d,", len(people))
+			hdiv.E("a href=#>%s %d,", r.LangString("Have", "Tenemos"), len(people))
 		} else {
 			hdiv.R(fmt.Sprintf("Have %d,", len(people)))
 		}
 		if s.Min() != 0 && len(people) < int(s.Min()) {
-			tdiv.E("div class=signupShiftNeed>need %d", s.Min())
+			tdiv.E("div class=signupShiftNeed>%s %d", r.LangString("need", "necesitamos"), s.Min())
 		} else if s.Max() != 0 {
-			tdiv.E("div class=signupShiftMax>max %d", s.Max())
+			tdiv.E("div class=signupShiftMax>%s %d", r.LangString("limit", "límite"), s.Max())
 		} else {
-			tdiv.E("div class=signupShiftMax>no limit")
+			tdiv.E("div class=signupShiftMax").R(r.LangString("no limit", "no hay límite"))
 		}
 		if privileged && editable {
 			tdiv.E("div class=signupShiftEdit").
@@ -164,4 +167,16 @@ func HandleShiftSignup(r *request.Request, user, p *person.Person) (date string)
 		}
 	})
 	return
+}
+
+var esIneligibleReasons = map[shiftperson.IneligibleReason]shiftperson.IneligibleReason{
+	shiftperson.ErrOverlapping: shiftperson.IneligibleReason("Ya se inscribió a un turno conflictivo."),
+	shiftperson.ErrClosed:      shiftperson.IneligibleReason("Las inscripciones están cerradas."),
+	shiftperson.ErrIneligible:  shiftperson.IneligibleReason("No es elegible para registrarse."),
+	shiftperson.ErrNoDSW:       shiftperson.IneligibleReason("Se requiere registro DSW."),
+	shiftperson.ErrNoBGCheck:   shiftperson.IneligibleReason("Se requiere una verificación de antecedentes."),
+	shiftperson.ErrEnded:       shiftperson.IneligibleReason("El turno ha terminado."),
+	shiftperson.ErrStarted:     shiftperson.IneligibleReason("El turno ya ha comenzado."),
+	shiftperson.ErrFull:        shiftperson.IneligibleReason("El turno está completo."),
+	shiftperson.ErrNoPerson:    shiftperson.IneligibleReason("Ninguna persona seleccionada."),
 }

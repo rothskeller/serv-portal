@@ -3,6 +3,7 @@ package eventview
 import (
 	"time"
 
+	"sunnyvaleserv.org/portal/pages/events/langdate"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/person"
@@ -35,12 +36,12 @@ func showDetails(r *request.Request, main *htmlb.Element, user *person.Person, e
 	}
 	bdiv := section.E("div class=eventviewDetails")
 	datet, _ := time.ParseInLocation("2006-01-02T15:04", e.Start(), time.Local)
-	date := datet.Format("Monday, January 2, 2006")
+	date := langdate.LangDate(r, datet)
 	if e.Start()[11:] != "00:00" || e.End()[11:] != "00:00" {
 		if e.Start() != e.End() {
-			bdiv.E("div class=eventviewDetailsTime>%s from %s to %s", date, e.Start()[11:], e.End()[11:])
+			bdiv.E("div class=eventviewDetailsTime>%s %s %s %s %s", date, r.LangString("from", "de"), e.Start()[11:], r.LangString("to", "a"), e.End()[11:])
 		} else {
-			bdiv.E("div class=eventviewDetailsTime>%s at %s", date, e.Start()[11:])
+			bdiv.E("div class=eventviewDetailsTime>%s %s %s", date, r.LangString("at", "a las"), e.Start()[11:])
 		}
 	} else {
 		bdiv.E("div class=eventviewDetailsTime>%s", date)
@@ -56,7 +57,7 @@ func showDetails(r *request.Request, main *htmlb.Element, user *person.Person, e
 			vdiv.T(v.Name())
 		}
 	} else {
-		bdiv.E("div class=eventviewDetailsVenue>Location TBD")
+		bdiv.E("div class=eventviewDetailsVenue").R(r.LangString("Location TBD", "Sitio por determinar"))
 	}
 	if e.Details() != "" {
 		bdiv.E("div class=eventviewDetailsDetails").R(e.Details())

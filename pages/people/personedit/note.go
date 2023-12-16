@@ -81,7 +81,7 @@ func HandleNote(r *request.Request, idstr, indexstr string) {
 				up.Notes = append(up.Notes[:nidx], up.Notes[nidx+1:]...)
 				p.Update(r, up, person.FNotes)
 			})
-			personview.Render(r, user, p, true, "notes")
+			personview.Render(r, user, p, user.CanView(p), "notes")
 			return
 		}
 		dateError = readNoteDate(r, n)
@@ -97,7 +97,7 @@ func HandleNote(r *request.Request, idstr, indexstr string) {
 				}
 				p.Update(r, up, person.FNotes)
 			})
-			personview.Render(r, user, p, true, "notes")
+			personview.Render(r, user, p, user.CanView(p), "notes")
 			return
 		}
 	}

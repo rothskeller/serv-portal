@@ -86,10 +86,10 @@ func HandleActivity(r *request.Request, pidstr, period string) {
 		return
 	}
 	tabs = []ui.PageTab{
-		{Name: "List", URL: "/people", Target: ".pageCanvas"},
-		{Name: "Map", URL: "/people/map", Target: ".pageCanvas"},
-		{Name: "Details", URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main"},
-		{Name: "Activity", URL: fmt.Sprintf("/people/%d/activity/%s", p.ID(), period), Target: "main", Active: true},
+		{Name: r.LangString("List", "Lista"), URL: "/people", Target: ".pageCanvas"},
+		{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: ".pageCanvas"},
+		{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main"},
+		{Name: r.LangString("Activity", "Actividad"), URL: fmt.Sprintf("/people/%d/activity/%s", p.ID(), period), Target: "main", Active: true},
 	}
 	handleCommon(r, user, p, cy, cm, y, m, tabs)
 }
@@ -123,18 +123,20 @@ func handleCommon(r *request.Request, user, p *person.Person, cy, cm, y, m int, 
 	if user.ID() == p.ID() && p.Flags()&person.HoursReminder != 0 && y == cy && m == cm {
 		var up = p.Updater()
 		up.Flags &^= person.HoursReminder
-		p.Update(r, up, person.FFlags)
+		r.Transaction(func() {
+			p.Update(r, up, person.FFlags)
+		})
 	}
 	// Save any changed data.
 	if r.Method == http.MethodPost && m != 0 {
 		saveHours(r, user, p, y, m)
 	}
 	// Set the page options.
-	opts.Title = "Activity"
+	opts.Title = r.LangString("Activity", "Actividad")
 	if user.ID() == p.ID() {
-		opts.Banner = "Volunteer Activity"
+		opts.Banner = r.LangString("Volunteer Activity", "Actividad de voluntariado")
 	} else {
-		opts.Banner = p.InformalName() + " Activity"
+		opts.Banner = r.LangString(p.InformalName()+" Activity", "Actividad de "+p.InformalName())
 	}
 	if user.ID() == p.ID() {
 		opts.MenuItem = "profile"
@@ -222,10 +224,10 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 				}
 			}
 			if flags&taskperson.Attended != 0 {
-				grid.E("s-icon class=activityYearAttended icon=signature title='Signed In'")
+				grid.E("s-icon class=activityYearAttended icon=signature title=%s", r.LangString("Signed In", "Registrado"))
 			}
 			if flags&taskperson.Credited != 0 {
-				grid.E("s-icon class=activityYearCredited icon=star-solid title='Credited'")
+				grid.E("s-icon class=activityYearCredited icon=star-solid title=%s", r.LangString("Credited", "Acreditado"))
 			}
 			if e.Flags()&event.OtherHours != 0 {
 				grid.E("div class=activityYearDate>%s", e.Start()[:7])
@@ -233,9 +235,9 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 				grid.E("div class=activityYearDate>%s", e.Start()[:10])
 			}
 			label := grid.E("div class=activityYearLabel")
-			orgdot.OrgDot(label, t.Org())
+			orgdot.OrgDot(r, label, t.Org())
 			if e.Flags()&event.OtherHours != 0 {
-				label.TF(" Other %s Hours", t.Name())
+				label.TF(r.LangString(" Other %s Hours", " Otras horas para %s"), t.Name())
 			} else {
 				label.TF(" %s", e.Name())
 				if t.Name() != "Tracking" {
@@ -244,7 +246,7 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 			}
 		})
 	if grid == nil {
-		main.E("No activity.")
+		main.E("div").R(r.LangString("No activity.", "No hay actividad."))
 	}
 }
 
@@ -269,15 +271,15 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 			minutes, flags := taskperson.Get(r, t.ID(), p.ID())
 			grid.E("s-hours class=activityHours name=t%d value=%s", t.ID(), ui.MinutesToHours(minutes), !editable, "disabled")
 			if flags&taskperson.Attended != 0 {
-				grid.E("s-icon class=activityAttended icon=signature title='Signed In'")
+				grid.E("s-icon class=activityAttended icon=signature title=%s", r.LangString("Signed In", "Registrado"))
 			}
 			if flags&taskperson.Credited != 0 {
-				grid.E("s-icon class=activityCredited icon=star-solid title='Credited'")
+				grid.E("s-icon class=activityCredited icon=star-solid title=%s", r.LangString("Credited", "Acreditado"))
 			}
 			label := grid.E("div class=activityLabel")
-			orgdot.OrgDot(label, t.Org())
+			orgdot.OrgDot(r, label, t.Org())
 			if e.Flags()&event.OtherHours != 0 {
-				label.TF(" %s Other %s Hours", e.Start()[:7], t.Name())
+				label.TF(r.LangString(" %s Other %s Hours", " %s Otras horas para %s"), e.Start()[:7], t.Name())
 			} else {
 				label.TF(" %s %s", e.Start()[:10], e.Name())
 				if t.Name() != "Tracking" {
@@ -287,5 +289,5 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 		})
 	})
 	form.E("div class=activityButtons hidden").
-		E("input type=submit class='sbtn sbtn-warning' value=Save")
+		E("input type=submit class='sbtn sbtn-warning' value=%s", r.LangString("Save", "Guardar"))
 }

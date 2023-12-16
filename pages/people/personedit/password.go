@@ -46,7 +46,7 @@ func HandlePassword(r *request.Request, idstr string) {
 		newPassword, newPasswordError = readNewPassword(r, user, p)
 		if oldPasswordError == "" && newPasswordError == "" {
 			auth.SetPassword(r, p, newPassword)
-			personview.Render(r, user, p, true, "password")
+			personview.Render(r, user, p, person.ViewFull, "password")
 			return
 		}
 	}
@@ -57,27 +57,27 @@ func HandlePassword(r *request.Request, idstr string) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class='form form-2col personeditPassword' method=POST up-main up-layer=parent up-target=.personviewPassword")
-	form.E("div class='formTitle formTitle-primary'>Change Password")
+	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Change Password", "Cambiar de contraseña"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if !user.IsWebmaster() {
-		emitOldPassword(form, oldPassword, oldPasswordError, oldPasswordError != "" || newPasswordError == "")
+		emitOldPassword(r, form, oldPassword, oldPasswordError, oldPasswordError != "" || newPasswordError == "")
 	}
-	emitNewPassword(form, user, p, newPassword)
-	emitButtons(form)
+	emitNewPassword(r, form, user, p, newPassword)
+	emitButtons(r, form)
 }
 
 func readOldPassword(r *request.Request, p *person.Person) (oldPassword, oldPasswordError string) {
 	if oldPassword = r.FormValue("oldpwd"); oldPassword == "" {
-		oldPasswordError = "Please specify your old password."
+		oldPasswordError = r.LangString("Please specify your old password.", "Por favor ingrese su contraseña anterior.")
 	} else if !auth.CheckPassword(r, p, oldPassword) {
-		oldPasswordError = "This is not the correct old password."
+		oldPasswordError = r.LangString("This is not the correct old password.", "Esta no es la contraseña anterior correcta.")
 	}
 	return
 }
 
-func emitOldPassword(form *htmlb.Element, oldPassword, oldPasswordError string, focus bool) {
+func emitOldPassword(r *request.Request, form *htmlb.Element, oldPassword, oldPasswordError string, focus bool) {
 	row := form.E("div class=formRow")
-	row.E("label for=personeditPasswordOld>Old Password")
+	row.E("label for=personeditPasswordOld").R(r.LangString("Old Password", "Contraseña anterior"))
 	row.E("input type=password id=personeditPasswordOld name=oldpwd autocomplete=current-password value=%s", oldPassword,
 		focus, "autofocus")
 	if oldPasswordError != "" {
@@ -87,16 +87,16 @@ func emitOldPassword(form *htmlb.Element, oldPassword, oldPasswordError string, 
 
 func readNewPassword(r *request.Request, user, p *person.Person) (newPassword, newPasswordError string) {
 	if newPassword = r.FormValue("newpwd"); newPassword == "" {
-		newPasswordError = "Please specify a valid new password."
+		newPasswordError = r.LangString("Please specify a valid new password.", "Por favor ingrese una nueva contraseña válida.")
 	} else if !user.IsWebmaster() && !auth.StrongPassword(p, newPassword) {
-		newPasswordError = "The new password is too weak."
+		newPasswordError = r.LangString("The new password is too weak.", "La nueva contraseña es demasiado débil.")
 	}
 	return
 }
 
-func emitNewPassword(form *htmlb.Element, user, p *person.Person, newPassword string) {
+func emitNewPassword(r *request.Request, form *htmlb.Element, user, p *person.Person, newPassword string) {
 	row := form.E("div class=formRow")
-	row.E("label for=personeditPasswordNew>New Password")
+	row.E("label for=personeditPasswordNew").R(r.LangString("New Password", "Contraseña nueva"))
 	row.E("div class=formInput-2col").E("s-password id=personeditPasswordNew name=newpwd hints=%s value=%s",
 		strings.Join(auth.StrongPasswordHints(p), ","), newPassword,
 		user.IsWebmaster(), "override")

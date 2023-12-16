@@ -9,7 +9,7 @@ import (
 
 const notesPersonFields = person.FNotes
 
-func showNotes(r *request.Request, main *htmlb.Element, user, p *person.Person, canViewContactInfo bool) {
+func showNotes(r *request.Request, main *htmlb.Element, user, p *person.Person, viewLevel person.ViewLevel) {
 	var (
 		section  *htmlb.Element
 		notes    = p.Notes()
@@ -31,11 +31,11 @@ func showNotes(r *request.Request, main *htmlb.Element, user, p *person.Person, 
 				continue
 			}
 		case person.NoteVisibleWithContact:
-			if !canViewContactInfo {
+			if viewLevel != person.ViewFull {
 				continue
 			}
 		}
-		section = startNotes(main, section, p, editable)
+		section = startNotes(r, main, section, p, editable)
 		ndiv := section
 		if editable {
 			ndiv = ndiv.E("a href=/people/%d/ednote/%d up-layer=new up-size=grow up-dismissable=key up-history=false", p.ID(), i)
@@ -46,18 +46,18 @@ func showNotes(r *request.Request, main *htmlb.Element, user, p *person.Person, 
 	}
 	if editable {
 		if section == nil {
-			startNotes(main, nil, p, true).E("div>No notes on file.")
+			startNotes(r, main, nil, p, true).E("div>No notes on file.")
 		} else {
 			section.E("div class=personviewNotesHelp>(Click a note to edit or remove it.)")
 		}
 	}
 }
 
-func startNotes(main *htmlb.Element, section *htmlb.Element, p *person.Person, editable bool) *htmlb.Element {
+func startNotes(r *request.Request, main *htmlb.Element, section *htmlb.Element, p *person.Person, editable bool) *htmlb.Element {
 	if section == nil {
 		section = main.E("div class=personviewSection")
 		sheader := section.E("div class=personviewSectionHeader")
-		sheader.E("div class=personviewSectionHeaderText>Notes")
+		sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Notes", "Notas"))
 		if editable {
 			sheader.E("div class=personviewSectionHeaderEdit").
 				E("a href=/people/%d/ednote up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Add", p.ID())

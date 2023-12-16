@@ -121,7 +121,7 @@ func AboutPage(r *request.Request) {
   <li>Información basica:
   <ul>
     <li>nombre
-    <li>distintivo de llamada de radioaficionado
+    <li>indicativo de radioaficionado
     <li>información de contacto (direcciones de correo electrónico, números de teléfono y direcciones físicas y postales)
     <li>membresías y roles desempeñados en grupos de voluntarios de SERV
     <li>clases de respuesta a emergencias tomadas y certificados emitidos

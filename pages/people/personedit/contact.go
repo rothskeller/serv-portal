@@ -90,7 +90,7 @@ func HandleContact(r *request.Request, idstr string) {
 			r.Transaction(func() {
 				p.Update(r, up, contactPersonFields)
 			})
-			personview.Render(r, user, p, false, "contact")
+			personview.Render(r, user, p, person.ViewFull, "contact")
 			return
 		}
 	}
@@ -101,32 +101,32 @@ func HandleContact(r *request.Request, idstr string) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=.personviewContact")
-	form.E("div class='formTitle formTitle-primary'>Edit Contact Information")
+	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Edit Contact Information", "Editar información de contacto"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if len(validate) == 0 || slices.Contains(validate, "email") {
-		emitEmail(form, up, emailError != "" || !haveErrors, emailError)
+		emitEmail(r, form, up, emailError != "" || !haveErrors, emailError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "email2") {
-		emitEmail2(form, up, email2Error != "", email2Error)
+		emitEmail2(r, form, up, email2Error != "", email2Error)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "cellPhone") {
-		emitCellPhone(form, up, cellPhoneError != "", cellPhoneError)
+		emitCellPhone(r, form, up, cellPhoneError != "", cellPhoneError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "homePhone") {
-		emitHomePhone(form, up, homePhoneError != "", homePhoneError)
+		emitHomePhone(r, form, up, homePhoneError != "", homePhoneError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "workPhone") {
-		emitWorkPhone(form, up, workPhoneError != "", workPhoneError)
+		emitWorkPhone(r, form, up, workPhoneError != "", workPhoneError)
 	}
 	if len(validate) == 0 {
-		emitHomeAddress(form, up, homeAddressError != "", homeAddressError)
-		emitWorkAddress(form, up, workAddressError != "", workAddressError)
-		emitMailAddress(form, up, mailAddressError != "", mailAddressError)
+		emitHomeAddress(r, form, up, homeAddressError != "", homeAddressError)
+		emitWorkAddress(r, form, up, workAddressError != "", workAddressError)
+		emitMailAddress(r, form, up, mailAddressError != "", mailAddressError)
 		if canEditEmContacts {
-			emitEmergencyContact(form, up, 0, "", ec1HomePhoneError, ec1CellPhoneError, ec1RelationshipError)
-			emitEmergencyContact(form, up, 1, "", ec2HomePhoneError, ec2CellPhoneError, ec2RelationshipError)
+			emitEmergencyContact(r, form, up, 0, "", ec1HomePhoneError, ec1CellPhoneError, ec1RelationshipError)
+			emitEmergencyContact(r, form, up, 1, "", ec2HomePhoneError, ec2CellPhoneError, ec2RelationshipError)
 		}
-		emitButtons(form)
+		emitButtons(r, form)
 	}
 }
 
@@ -138,28 +138,28 @@ func readEmail(r *request.Request, up *person.Updater) string {
 		up.Email = strings.ToLower(strings.TrimSpace(r.FormValue("email2")))
 	}
 	if up.Email != "" && !emailRE.MatchString(up.Email) {
-		return fmt.Sprintf("%q is not a valid email address.", up.Email)
+		return fmt.Sprintf(r.LangString("%q is not a valid email address.", "%q no es una dirección de correo electrónico válida."), up.Email)
 	}
 	if up.DuplicateEmail(r) {
-		return fmt.Sprintf("The email address %q is in use by another person.", up.Email)
+		return fmt.Sprintf(r.LangString("The email address %q is in use by another person.", "La dirección de correo electrónico %q está siendo utilizada por otra persona."), up.Email)
 	}
 	return ""
 }
 
-func emitEmail(form *htmlb.Element, up *person.Updater, focus bool, err string) {
+func emitEmail(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
 	row.E("label for=personeditEmail>Email")
 	row.E("input id=personeditEmail name=email s-validate value=%s", up.Email, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
-	row.E("div class=formHelp>This is the email address you log in with.")
+	row.E("div class=formHelp").R(r.LangString("This is the email address you log in with.", "Esta es la dirección de correo electrónico con la que inicia sesión."))
 }
 
 func readEmail2(r *request.Request, up *person.Updater) string {
 	up.Email2 = strings.ToLower(strings.TrimSpace(r.FormValue("email2")))
 	if up.Email2 != "" && !emailRE.MatchString(up.Email2) {
-		return fmt.Sprintf("%q is not a valid email address.", up.Email2)
+		return fmt.Sprintf(r.LangString("%q is not a valid email address.", "%q no es una dirección de correo electrónico válida."), up.Email2)
 	}
 	if up.Email == up.Email2 {
 		up.Email2 = ""
@@ -167,9 +167,9 @@ func readEmail2(r *request.Request, up *person.Updater) string {
 	return ""
 }
 
-func emitEmail2(form *htmlb.Element, up *person.Updater, focus bool, err string) {
+func emitEmail2(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditEmail2>Alt. Email")
+	row.E("label for=personeditEmail2").R(r.LangString("Alt. Email", "Otro email"))
 	row.E("input id=personeditEmail2 name=email2 s-validate value=%s", up.Email2, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
@@ -179,16 +179,16 @@ func emitEmail2(form *htmlb.Element, up *person.Updater, focus bool, err string)
 func readCellPhone(r *request.Request, up *person.Updater) string {
 	up.CellPhone = strings.TrimSpace(r.FormValue("cellPhone"))
 	if !fmtPhone(&up.CellPhone, false) {
-		return fmt.Sprintf("%q is not a valid 10-digit phone number.", up.CellPhone)
+		return fmt.Sprintf(r.LangString("%q is not a valid 10-digit phone number.", "%q no es un número de teléfono válido de 10 dígitos."), up.CellPhone)
 	}
 	// In theory, we could use a Twilio API to verify that it's really a
 	// mobile phone number.  Probably not worth bothering.
 	return ""
 }
 
-func emitCellPhone(form *htmlb.Element, up *person.Updater, focus bool, err string) {
+func emitCellPhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditCellPhone>Cell Phone")
+	row.E("label for=personeditCellPhone").R(r.LangString("Cell Phone", "Tel. móvil"))
 	row.E("input id=personeditCellPhone name=cellPhone s-validate value=%s", up.CellPhone, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
@@ -198,7 +198,7 @@ func emitCellPhone(form *htmlb.Element, up *person.Updater, focus bool, err stri
 func readHomePhone(r *request.Request, up *person.Updater) string {
 	up.HomePhone = strings.TrimSpace(r.FormValue("homePhone"))
 	if !fmtPhone(&up.HomePhone, false) {
-		return fmt.Sprintf("%q is not a valid 10-digit phone number.", up.HomePhone)
+		return fmt.Sprintf(r.LangString("%q is not a valid 10-digit phone number.", "%q no es un número de teléfono válido de 10 dígitos."), up.HomePhone)
 	}
 	if up.HomePhone == up.CellPhone {
 		up.HomePhone = ""
@@ -206,9 +206,9 @@ func readHomePhone(r *request.Request, up *person.Updater) string {
 	return ""
 }
 
-func emitHomePhone(form *htmlb.Element, up *person.Updater, focus bool, err string) {
+func emitHomePhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditHomePhone>Home Phone")
+	row.E("label for=personeditHomePhone").R(r.LangString("Home Phone", "Tel. de casa"))
 	row.E("input id=personeditHomePhone name=homePhone s-validate value=%s", up.HomePhone, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
@@ -218,7 +218,7 @@ func emitHomePhone(form *htmlb.Element, up *person.Updater, focus bool, err stri
 func readWorkPhone(r *request.Request, up *person.Updater) string {
 	up.WorkPhone = strings.TrimSpace(r.FormValue("workPhone"))
 	if !fmtPhone(&up.WorkPhone, true) {
-		return fmt.Sprintf("%q is not a valid phone number.", up.WorkPhone)
+		return fmt.Sprintf(r.LangString("%q is not a valid phone number.", "%q no es un número de teléfono válido."), up.WorkPhone)
 	}
 	if up.WorkPhone == up.CellPhone || up.WorkPhone == up.HomePhone {
 		up.WorkPhone = ""
@@ -226,9 +226,9 @@ func readWorkPhone(r *request.Request, up *person.Updater) string {
 	return ""
 }
 
-func emitWorkPhone(form *htmlb.Element, up *person.Updater, focus bool, err string) {
+func emitWorkPhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditWorkPhone>Work Phone")
+	row.E("label for=personeditWorkPhone").R(r.LangString("Work Phone", "Tel. de trabajo"))
 	row.E("input id=personeditWorkPhone name=workPhone s-validate value=%s", up.WorkPhone, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
@@ -285,7 +285,8 @@ func readAddress(
 	if canBeSameAsHome && r.FormValue(name+"SameAsHome") != "" {
 		*addr = &person.Address{SameAsHome: true}
 		if home == nil {
-			return "This address cannot be marked “same as home” when there is no home address."
+			return r.LangString("This address cannot be marked “same as home” when there is no home address.",
+				"Esta dirección no se puede marcar como “igual que la de casa” cuando no hay una dirección de casa.")
 		}
 		return ""
 	}
@@ -324,14 +325,15 @@ func readAddress(
 		} else {
 			r.LogEntry.Problems.AddF("address verification failure %s", resp.Status)
 		}
-		return "Address changes cannot be accepted right now because the address verification service is offline."
+		return r.LangString("Address changes cannot be accepted right now because the address verification service is offline.",
+			"No se pueden aceptar cambios de dirección en este momento porque el servicio de verificación de dirección está fuera de línea.")
 	}
 	// If we got back a match for the address, save the reformatted address.
 	switch answer.Result.Verdict.ValidationGranularity {
 	case "SUB_PREMISE", "PREMISE":
 		(*addr).Address = zip4RE.ReplaceAllLiteralString(answer.Result.Address.FormattedAddress, "")
 	default:
-		return "This is not a valid address."
+		return r.LangString("This is not a valid address.", "Esta no es una dirección válida.")
 	}
 	// If geocoding is needed, save the coordinates.
 	if canGeocode {
@@ -345,18 +347,17 @@ func readAddress(
 	return ""
 }
 
-func emitHomeAddress(form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	emitAddress(form, up.Addresses.Home, "Home", false, focus, err)
+func emitHomeAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
+	emitAddress(r, form, up.Addresses.Home, "Home", r.LangString("Home Address", "Dirección de casa"), false, focus, err)
 }
-func emitWorkAddress(form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	emitAddress(form, up.Addresses.Work, "Work", true, focus, err)
+func emitWorkAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
+	emitAddress(r, form, up.Addresses.Work, "Work", r.LangString("Work Address", "Dirección de trabajo"), true, focus, err)
 }
-func emitMailAddress(form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	emitAddress(form, up.Addresses.Mail, "Mailing", true, focus, err)
+func emitMailAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
+	emitAddress(r, form, up.Addresses.Mail, "Mail", r.LangString("Mailing Address", "Dirección de correos"), true, focus, err)
 }
-func emitAddress(form *htmlb.Element, addr *person.Address, name string, canSameAsHome, focus bool, err string) {
+func emitAddress(r *request.Request, form *htmlb.Element, addr *person.Address, name4, name string, canSameAsHome, focus bool, err string) {
 	var line1, line2 string
-	var name4 = name[:4]
 	var lname = strings.ToLower(name4)
 
 	if addr != nil {
@@ -368,14 +369,14 @@ func emitAddress(form *htmlb.Element, addr *person.Address, name string, canSame
 	}
 	row := form.E("div class='formRow personeditAddress'")
 	if canSameAsHome {
-		row.E("label for=personedit%sSameAsHome>%s Address", name4, name)
+		row.E("label for=personedit%sSameAsHome>%s", name4, name)
 	} else {
-		row.E("label for=personedit%sAddress>%s Address", name4, name)
+		row.E("label for=personedit%sAddress>%s", name4, name)
 	}
 	in := row.E("div class=formInput")
 	if canSameAsHome {
 		in.E("div").E("input type=checkbox class=s-check id=personedit%sSameAsHome name=%sSameAsHome", name4, lname,
-			"label='Same as home address' up-switch=.personedit%sAddressInput", name4,
+			"label=%s up-switch=.personedit%sAddressInput", r.LangString("Same as home address", "Igual que la de casa"), name4,
 			addr != nil && addr.SameAsHome, "checked")
 	}
 	in.E("div").E("input id=personedit%sAddress name=%sAddress", name4, lname,
@@ -394,6 +395,11 @@ var emContactRelationships = []string{
 	"Co-worker", "Daughter", "Father", "Friend", "Mother", "Neighbor", "Other",
 	"Relative", "Son", "Spouse", "Supervisor",
 }
+var esEmContactRelationships = []string{
+	// Parallel array.
+	"Compañero de trabajo", "Hija", "Padre", "Amigo", "Madre", "Vecina", "Otro",
+	"Pariente", "Hijo", "Cónyuge", "Supervisor",
+}
 
 func readECName(r *request.Request, up *person.Updater, num int) {
 	for len(up.EmContacts) <= num {
@@ -407,12 +413,13 @@ func readECHomePhone(r *request.Request, up *person.Updater, num int) string {
 	ec.HomePhone = strings.TrimSpace(r.FormValue(fmt.Sprintf("emchome%d", num)))
 	if ec.Name == "" {
 		if ec.HomePhone != "" {
-			return "A phone number may not be specified without a name."
+			return r.LangString("A phone number may not be specified without a name.",
+				"No se puede especificar un número de teléfono sin un nombre.")
 		}
 		return ""
 	}
 	if !fmtPhone(&ec.HomePhone, false) {
-		return fmt.Sprintf("%q is not a valid 10-digit phone number.", ec.HomePhone)
+		return fmt.Sprintf(r.LangString("%q is not a valid 10-digit phone number.", "%q no es un número de teléfono válido de 10 dígitos."), ec.HomePhone)
 	}
 	return ""
 }
@@ -421,18 +428,19 @@ func readECCellPhone(r *request.Request, up *person.Updater, num int) string {
 	ec.CellPhone = strings.TrimSpace(r.FormValue(fmt.Sprintf("emccell%d", num)))
 	if ec.Name == "" {
 		if ec.CellPhone != "" {
-			return "A phone number may not be specified without a name."
+			return r.LangString("A phone number may not be specified without a name.",
+				"No se puede especificar un número de teléfono sin un nombre.")
 		}
 		return ""
 	}
 	if !fmtPhone(&ec.CellPhone, false) {
-		return fmt.Sprintf("%q is not a valid 10-digit phone number.", ec.CellPhone)
+		return fmt.Sprintf(r.LangString("%q is not a valid 10-digit phone number.", "%q no es un número de teléfono válido de 10 dígitos."), ec.CellPhone)
 	}
 	if ec.HomePhone == ec.CellPhone {
 		ec.HomePhone = ""
 	}
 	if ec.HomePhone == "" && ec.CellPhone == "" {
-		return "At least one phone number is required."
+		return r.LangString("At least one phone number is required.", "Se requiere al menos un número de teléfono.")
 	}
 	return ""
 }
@@ -441,56 +449,66 @@ func readECRelationship(r *request.Request, up *person.Updater, num int) string 
 	ec.Relationship = r.FormValue(fmt.Sprintf("emcrel%d", num))
 	if ec.Name == "" {
 		if ec.Relationship != "" {
-			return "A relationship may not be specified without a name."
+			return r.LangString("A relationship may not be specified without a name.",
+				"No se puede especificar una relación sin un nombre.")
 		}
 		return ""
 	}
 	if ec.Relationship == "" {
-		return "The relationship is required."
+		return r.LangString("The relationship is required.", "Se requiere la relación.")
+	}
+	if idx := slices.Index(esEmContactRelationships, ec.Relationship); idx >= 0 {
+		ec.Relationship = emContactRelationships[idx]
 	}
 	if !slices.Contains(emContactRelationships, ec.Relationship) {
-		return fmt.Sprintf("%q is not one of the relationship choices.", ec.Relationship)
+		return fmt.Sprintf(r.LangString("%q is not one of the relationship choices.", "%q no es una de las opciones de relación."), ec.Relationship)
 	}
 	return ""
 }
 
-func emitEmergencyContact(form *htmlb.Element, up *person.Updater, num int, nameErr, homePhoneErr, cellPhoneErr, relationshipErr string) {
+func emitEmergencyContact(r *request.Request, form *htmlb.Element, up *person.Updater, num int, nameErr, homePhoneErr, cellPhoneErr, relationshipErr string) {
 	var ec *person.EmContact
 	if num >= len(up.EmContacts) {
 		ec = new(person.EmContact)
 	} else {
 		ec = up.EmContacts[num]
 	}
-	form.E("div class='formRow-3col personeditEmContact'>Emergency Contact %d", num+1)
+	form.E("div class='formRow-3col personeditEmContact'>%s %d", r.LangString("Emergency Contact", "Contacto de emergencias"), num+1)
 	row := form.E("div class=formRow")
-	row.E("label for=personeditEmContactName%d>Name", num)
+	row.E("label for=personeditEmContactName%d", num).R(r.LangString("Name", "Nombre"))
 	row.E("input id=personeditEmContactName%d name=emcname%d class=formInput value=%s", num, num, ec.Name)
 	if nameErr != "" {
 		row.E("div class=formError>%s", nameErr)
 	}
 	row = form.E("div class=formRow")
-	row.E("label for=personeditEmContactHomePhone%d>Home Phone", num)
+	row.E("label for=personeditEmContactHomePhone%d", num).R(r.LangString("Home Phone", "Tel. de casa"))
 	row.E("input id=personeditEmContactHomePhone%d name=emchome%d class=formInput value=%s", num, num, ec.HomePhone,
 		homePhoneErr != "", "autofocus")
 	if homePhoneErr != "" {
 		row.E("div class=formError>%s", homePhoneErr)
 	}
 	row = form.E("div class=formRow")
-	row.E("label for=personeditEmContactCellPhone%d>Cell Phone", num)
+	row.E("label for=personeditEmContactCellPhone%d", num).R(r.LangString("Cell Phone", "Tel. móvil"))
 	row.E("input id=personeditEmContactCellPhone%d name=emccell%d class=formInput value=%s", num, num, ec.CellPhone,
 		cellPhoneErr != "", "autofocus")
 	if cellPhoneErr != "" {
 		row.E("div class=formError>%s", cellPhoneErr)
 	}
 	row = form.E("div class=formRow")
-	row.E("label for=personeditEmContactRelationship%d>Relationship", num)
+	row.E("label for=personeditEmContactRelationship%d", num).R(r.LangString("Relationship", "Relación"))
 	sel := row.E("select id=personeditEmContactRelationship%d name=emcrel%d class=formInput", num, num,
 		relationshipErr != "", "autofocus")
 	if ec.Relationship == "" {
-		sel.E("option value='' selected>(select relationship)")
+		sel.E("option value='' selected").R(r.LangString("(select relationship)", "(seleccione una relación)"))
 	}
-	for _, rel := range emContactRelationships {
-		sel.E("option", rel == ec.Relationship, "selected").T(rel)
+	if r.Language == "es" {
+		for _, rel := range emContactRelationships {
+			sel.E("option", rel == ec.Relationship, "selected").T(rel)
+		}
+	} else {
+		for i, rel := range esEmContactRelationships {
+			sel.E("option", emContactRelationships[i] == ec.Relationship, "selected").T(rel)
+		}
 	}
 	if relationshipErr != "" {
 		row.E("div class=formError>%s", relationshipErr)

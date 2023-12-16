@@ -80,7 +80,7 @@ func postPWReset(r *request.Request, user, p *person.Person) {
 		emails = append(emails, p.Email2())
 		fmt.Fprintf(crlf, "To: %s\n", (&mail.Address{Name: p.InformalName(), Address: p.Email2()}).String())
 	}
-	fmt.Fprintf(crlf, `From: %s
+	fmt.Fprintf(crlf, r.LangString(`From: %s
 Subject: SunnyvaleSERV.org Password Reset
 Content-Type: text/plain; charset=utf8
 
@@ -97,9 +97,28 @@ You can change this password by logging into SunnyvaleSERV.org and clicking the 
 
 Regards,
 SunnyvaleSERV.org
-`, config.Get("fromEmail"), p.InformalName(), user.InformalName(), p.Email(), password)
+`,
+		`From: %s
+Subject: SunnyvaleSERV.org restablecimiento de contraseña
+Content-Type: text/plain; charset=utf8
+
+Hola, %s,
+
+%s ha restablecido la contraseña de su cuenta en SunnyvaleSERV.org.  Su información nueva es:
+
+    Email:      %s
+    Contraseña: %s
+
+Esta contraseña es tres palabras elegidas al azar de un diccionario inglés.  Este es un método que generalmente produce una contraseña muy segura y, a menudo, fácil de recordar.  Si la frase resultante tiene algún significado, es una coincidencia involuntaria.
+
+Puede cambiar esta contraseña iniciando sesión en SunnyvaleSERV.org y haciendo clic en el botón “Cambiar contraseña” en su página de perfil.  Si tiene alguna pregunta, simplemente responda a este mensaje.
+
+Saludos,
+SunnyvaleSERV.org
+`),
+		config.Get("fromEmail"), p.InformalName(), user.InformalName(), p.Email(), password)
 	if err := sendmail.SendMessage(config.Get("fromAddr"), emails, body.Bytes()); err != nil {
 		panic(err)
 	}
-	personview.Render(r, user, p, true, "password")
+	personview.Render(r, user, p, person.ViewFull, "password")
 }

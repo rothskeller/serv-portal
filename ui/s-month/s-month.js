@@ -32,7 +32,8 @@ class SMonth extends HTMLElement {
   setMonthLabel() {
     const value = this.getAttribute('value')
     if (!value || !this._month) return
-    this._month.textContent = `${SMonth.monthnames[value.substr(5, 2)]} ${value.substr(0, 4)}`
+    const names = document.documentElement.lang === 'es' ? SMonth.esMonthnames : SMonth.monthnames
+    this._month.textContent = `${names[value.substr(5, 2)]} ${value.substr(0, 4)}`
   }
   toggleDD() {
     if (this._dd) {
@@ -59,11 +60,12 @@ class SMonth extends HTMLElement {
     right.addEventListener('click', this.nextYear.bind(this))
     top.appendChild(right)
     this._dd.appendChild(top)
-    Object.keys(SMonth.monthabbrs).sort().forEach(month => {
+    const abbrs = document.documentElement.lang === 'es' ? SMonth.esMonthabbrs : SMonth.monthabbrs
+    Object.keys(abbrs).sort().forEach(month => {
       const btn = document.createElement('button')
       btn.className = 'sbtn sbtn-secondary s-month-dd-month'
       btn.setAttribute('data-month', month)
-      btn.textContent = SMonth.monthabbrs[month]
+      btn.textContent = abbrs[month]
       btn.addEventListener('click', this.clickMonth.bind(this))
       this._dd.appendChild(btn)
     })
@@ -136,6 +138,34 @@ SMonth.monthabbrs = {
   '06': 'Jun',
   '07': 'Jul',
   '08': 'Aug',
+  '09': 'Sep',
+  '10': 'Oct',
+  '11': 'Nov',
+  '12': 'Dec',
+}
+SMonth.esMonthnames = {
+  '01': 'Enero',
+  '02': 'Febrero',
+  '03': 'Marzo',
+  '04': 'Abril',
+  '05': 'Mayo',
+  '06': 'Junio',
+  '07': 'Julio',
+  '08': 'Agosto',
+  '09': 'Septiembre',
+  '10': 'Octubre',
+  '11': 'Noviembre',
+  '12': 'Diciembre',
+}
+SMonth.esMonthabbrs = {
+  '01': 'Ene',
+  '02': 'Feb',
+  '03': 'Mar',
+  '04': 'Abr',
+  '05': 'May',
+  '06': 'Jun',
+  '07': 'Jul',
+  '08': 'Ago',
   '09': 'Sep',
   '10': 'Oct',
   '11': 'Nov',

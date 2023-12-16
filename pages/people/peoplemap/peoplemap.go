@@ -70,7 +70,7 @@ func Handle(r *request.Request) {
 		title = focus.Name()
 		state.SetFocusRole(r, focus.ID())
 	} else {
-		title = "People"
+		title = r.LangString("People", "Personas")
 		state.SetFocusRole(r, 0)
 	}
 	// Showing home or business addresses or both?
@@ -102,7 +102,7 @@ func Handle(r *request.Request) {
 		}
 		if w := p.Addresses().Work; w != nil && w.Latitude != 0 && work {
 			people = append(people, &personData{
-				Name: p.InformalName() + " (Business Hours)",
+				Name: p.InformalName() + r.LangString(" (Business Hours)", " (Horas de trabajo)"),
 				Lat:  w.Latitude,
 				Lng:  w.Longitude,
 			})
@@ -114,8 +114,8 @@ func Handle(r *request.Request) {
 		// ExternalScript: "https://maps.googleapis.com/maps/api/js?key=AIzaSyCi9J9RDZh5ouo3zk23yDmtY5Pp-NNBsBo",
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: "List", URL: "/people", Target: "main"},
-			{Name: "Map", URL: "/people/map", Target: "main", Active: true},
+			{Name: r.LangString("List", "Lista"), URL: "/people", Target: "main"},
+			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: "main", Active: true},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
@@ -148,13 +148,13 @@ func mapControls(r *request.Request, user *person.Person, main *htmlb.Element, f
 	if len(roleOptions) > 1 {
 		sort.Slice(roleOptions, func(i, j int) bool { return roleOptions[i].Name() < roleOptions[j].Name() })
 		sel := form.E("select id=peoplemapRole name=role")
-		sel.E("option value=0", focus == nil, "selected").R("(all)")
+		sel.E("option value=0", focus == nil, "selected").R(r.LangString("(all)", "(todos)"))
 		for _, role := range roleOptions {
 			sel.E("option value=%d", role.ID(), focus != nil && focus.ID() == role.ID(), "selected").T(role.Name())
 		}
 	} else if focus != nil {
 		form.E("input type=hidden name=role value=%d", focus.ID())
 	}
-	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=Home", home, "checked")
-	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=Business", work, "checked")
+	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.LangString("Home", "En casa"), home, "checked")
+	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=%s", r.LangString("Business", "A trabajo"), work, "checked")
 }

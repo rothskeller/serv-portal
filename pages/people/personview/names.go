@@ -4,11 +4,12 @@ import (
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/util/htmlb"
+	"sunnyvaleserv.org/portal/util/request"
 )
 
 const namesPersonFields = person.FInformalName | person.FFormalName | person.FCallSign | person.FPronouns
 
-func showNames(main *htmlb.Element, user, p *person.Person) {
+func showNames(r *request.Request, main *htmlb.Element, user, p *person.Person) {
 	names := main.E("div class=personviewNames")
 	ifc := names.E("div class=personviewNamesIFC")
 	informal := ifc.E("div class=personviewNamesIC").
@@ -25,6 +26,6 @@ func showNames(main *htmlb.Element, user, p *person.Person) {
 	}
 	if user.ID() == p.ID() || user.HasPrivLevel(0, enum.PrivLeader) {
 		names.E("div class=personviewNamesEdit").
-			E("a href=/people/%d/ednames up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Edit", p.ID())
+			E("a href=/people/%d/ednames up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.LangString("Edit", "Editar"))
 	}
 }

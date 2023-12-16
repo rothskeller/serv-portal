@@ -168,14 +168,14 @@ class SHours extends HTMLElement {
       this.appendChild(this._in2)
       this._frame = document.createElement('div')
       this._frame.className = 'SHoursFrame'
-      this._frame.textContent = 'Timesheet Entry'
+      this._frame.textContent = document.documentElement.lang === 'es' ? 'De la hoja de horas' : 'Timesheet Entry'
       const ti = document.createElement('div')
       ti.className = 'SHoursTI'
-      ti.textContent = 'Time In'
+      ti.textContent = document.documentElement.lang === 'es' ? 'Llegada' : 'Time In'
       this._frame.appendChild(ti)
       const to = document.createElement('div')
       to.className = 'SHoursTO'
-      to.textContent = 'Time Out'
+      to.textContent = document.documentElement.lang === 'es' ? 'Salida' : 'Time Out'
       this._frame.appendChild(to)
       this.insertBefore(this._frame, this._in)
     }

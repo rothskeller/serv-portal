@@ -20,10 +20,9 @@ const PersonFields = person.FID | person.FInformalName | person.FPrivLevels | na
 // Get handles GET /people/${id} requests.
 func Get(r *request.Request, idstr string) {
 	var (
-		user               *person.Person
-		p                  *person.Person
-		canView            bool
-		canViewContactInfo bool
+		user      *person.Person
+		p         *person.Person
+		viewLevel person.ViewLevel
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
@@ -32,47 +31,47 @@ func Get(r *request.Request, idstr string) {
 		errpage.NotFound(r, user)
 		return
 	}
-	if canView, canViewContactInfo = canViewPerson(user, p); !canView {
+	if viewLevel = user.CanView(p); viewLevel == person.ViewNone {
 		errpage.Forbidden(r, user)
 		return
 	}
-	Render(r, user, p, canViewContactInfo, "")
+	Render(r, user, p, viewLevel, "")
 }
 
 // Render renders the person view page, or a particular section of it.  It is
 // called by Get, above, and also by the edit dialogs after accepting a change
 // to a person.
-func Render(r *request.Request, user, p *person.Person, canViewContactInfo bool, section string) {
+func Render(r *request.Request, user, p *person.Person, viewLevel person.ViewLevel, section string) {
 	// Show the page.
 	opts := ui.PageOpts{
 		Title:    p.InformalName(),
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: "List", URL: "/people", Target: ".pageCanvas"},
-			{Name: "Map", URL: "/people/map", Target: ".pageCanvas"},
-			{Name: "Details", URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main", Active: true},
+			{Name: r.LangString("List", "Lista"), URL: "/people", Target: ".pageCanvas"},
+			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: ".pageCanvas"},
+			{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main", Active: true},
 		},
 	}
 	if user.ID() == p.ID() || user.HasPrivLevel(0, enum.PrivLeader) {
-		opts.Tabs = append(opts.Tabs, ui.PageTab{Name: "Activity", URL: fmt.Sprintf("/people/%d/activity/current", p.ID()), Target: "main"})
+		opts.Tabs = append(opts.Tabs, ui.PageTab{Name: r.LangString("Activity", "Actividad"), URL: fmt.Sprintf("/people/%d/activity/current", p.ID()), Target: "main"})
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
 		main.A("class=personview")
 		if section == "" || section == "names" {
-			showNames(main, user, p)
+			showNames(r, main, user, p)
 			main.E("div class=personviewSpacer")
 		}
 		if section == "" {
 			showRoles(r, main, user, p)
 		}
 		if section == "" || section == "contact" {
-			showContact(main, user, p, canViewContactInfo)
+			showContact(r, main, user, p, viewLevel)
 		}
 		if section == "" || section == "status" {
 			showStatus(r, main, user, p)
 		}
 		if section == "" || section == "notes" {
-			showNotes(r, main, user, p, canViewContactInfo)
+			showNotes(r, main, user, p, viewLevel)
 		}
 		if section == "" || section == "subscriptions" {
 			showSubscriptions(r, main, user, p)
@@ -81,32 +80,4 @@ func Render(r *request.Request, user, p *person.Person, canViewContactInfo bool,
 			showPassword(r, main, user, p)
 		}
 	})
-}
-
-// canViewPerson returns whether the specified viewer is allowed to see the
-// specified viewee.  It returns two flags: one indicating whether the viewee
-// can be seen in the roster at all; the other indicating whether the viewee's
-// contact information can be seen.
-func canViewPerson(viewer, viewee *person.Person) (roster, contact bool) {
-	if viewer.ID() == viewee.ID() || viewer.HasPrivLevel(0, enum.PrivLeader) {
-		return true, true
-	}
-	for o, op := range viewer.PrivLevels() {
-		if op < enum.PrivMember {
-			continue
-		}
-		if viewee.PrivLevels()[o] == 0 {
-			continue
-		}
-		roster = true
-		if op < enum.PrivMember {
-			continue
-		}
-		if op == enum.PrivMember && viewee.PrivLevels()[o] < enum.PrivLeader && !enum.Org(o).MembersCanViewContactInfo() {
-			continue
-		}
-		contact = true
-		return
-	}
-	return
 }

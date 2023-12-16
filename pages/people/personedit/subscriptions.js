@@ -5,7 +5,7 @@ up.on('input', '.personeditSubscriptions input', (evt, elm) => {
     if (check.hasAttribute('checked')) return
     if (!check.dataset.warnroles) return
     const p = document.createElement('p')
-    p.textContent = `Messages sent to ${check.getAttribute('label')} are considered required for the ${check.dataset.warnroles}.  Unsubscribing from it may cause you to lose that role.`
+    p.textContent = check.dataset.warnroles
     warnings.appendChild(p)
   })
 })

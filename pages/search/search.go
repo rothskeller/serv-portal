@@ -37,10 +37,10 @@ func Handle(r *request.Request) {
 		results, searchErr = search.Search(r, query)
 	}
 	r.HTMLNoCache()
-	ui.Page(r, user, ui.PageOpts{Title: "Search"}, func(main *htmlb.Element) {
+	ui.Page(r, user, ui.PageOpts{Title: r.LangString("Search", "Buscar")}, func(main *htmlb.Element) {
 		form := main.E("form class=searchForm method=GET")
 		form.E("input type=search name=q class=formInput value=%s autofocus", query)
-		form.E("input type=submit class='sbtn sbtn-primary' value=Search")
+		form.E("input type=submit class='sbtn sbtn-primary' value=%s", r.LangString("Search", "Buscar"))
 		if searchErr != nil {
 			main.E("div class=searchErr>%s", searchErr.Error())
 		}
@@ -48,7 +48,7 @@ func Handle(r *request.Request) {
 		for _, result := range results {
 			if e, ok := result.(*event.Event); ok {
 				if !seen {
-					rdiv.E("div class=searchHeading>Events")
+					rdiv.E("div class=searchHeading").R(r.LangString("Events", "Eventos"))
 					seen, seenAny = true, true
 				}
 				rdiv.E("div class=searchResult").
@@ -62,7 +62,7 @@ func Handle(r *request.Request) {
 					continue
 				}
 				if !seen {
-					rdiv.E("div class=searchHeading>People")
+					rdiv.E("div class=searchHeading").R(r.LangString("People", "Personas"))
 					seen, seenAny = true, true
 				}
 				rdiv.E("div class=searchResult").
@@ -76,7 +76,7 @@ func Handle(r *request.Request) {
 					continue
 				}
 				if !seen {
-					rdiv.E("div class=searchHeading>Folders")
+					rdiv.E("div class=searchHeading").R(r.LangString("Folders", "Carpetas"))
 					seen, seenAny = true, true
 				}
 				rdiv.E("div class=searchResult").
@@ -91,7 +91,7 @@ func Handle(r *request.Request) {
 					continue
 				}
 				if !seen {
-					rdiv.E("div class=searchHeading>Documents")
+					rdiv.E("div class=searchHeading").R(r.LangString("Documents", "Archivos"))
 					seen, seenAny = true, true
 				}
 				sr := rdiv.E("div class=searchResult")
@@ -107,14 +107,14 @@ func Handle(r *request.Request) {
 					sr.E("a href=%s", path.Join(f.Path(r), url.PathEscape(d.Name)), newtab, "target=_blank").
 						T(d.Name)
 				}
-				sr.E("span class=searchContext> in folder ").E("a href=%s>%s", f.Path(r), f.Name())
+				sr.E("span class=searchContext> %s ", r.LangString("in folder", "en carpeta")).E("a href=%s>%s", f.Path(r), f.Name())
 			}
 		}
 		seen = false
 		for _, result := range results {
 			if v, ok := result.(*venue.Venue); ok {
 				if !seen {
-					rdiv.E("div class=searchHeading>Venues")
+					rdiv.E("div class=searchHeading").R(r.LangString("Venues", "Sitios"))
 					seen, seenAny = true, true
 				}
 				if v.URL() != "" {
@@ -140,7 +140,7 @@ func Handle(r *request.Request) {
 			}
 		}
 		if !seenAny {
-			rdiv.E("div class=searchHeading>Nothing matched your search.")
+			rdiv.E("div class=searchHeading").R(r.LangString("Nothing matched your search.", "No se encontró nada en su búsqueda."))
 		}
 		main.E("div class=searchLogo>Search provided by").E("img src=%s", ui.AssetURL("algolia-logo.png"))
 	})

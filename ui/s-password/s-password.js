@@ -85,7 +85,7 @@ class SPassword extends HTMLElement {
     // showMismatch flag.
     if (this.showMismatch && this.password1.value !== this.password2.value) {
       this.meter.style.display = 'none'
-      this.message.textContent = `The two passwords are not the same.`
+      this.message.textContent = document.documentElement.lang === 'es' ? `Las dos contraseñas no son iguales.` : `The two passwords are not the same.`
       this.message.classList.remove('success')
       this.result.value = ''
       return

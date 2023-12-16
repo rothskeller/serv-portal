@@ -41,12 +41,12 @@ func Get(r *request.Request, yearstr string) {
 	}
 	state.SetEventsMonth(r, month)
 	opts = ui.PageOpts{
-		Title:    "Events",
+		Title:    r.LangString("Events", "Eventos"),
 		MenuItem: "events",
 		Tabs: []ui.PageTab{
-			{Name: "Calendar", URL: "/events/calendar/" + month, Target: "main"},
-			{Name: "List", URL: "/events/list/" + month[0:4], Target: "main", Active: true},
-			{Name: "Signups", URL: "/events/signups", Target: "main"},
+			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + month, Target: "main"},
+			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + month[0:4], Target: "main", Active: true},
+			{Name: r.LangString("Signups", "Inscripciones"), URL: "/events/signups", Target: "main"},
 		},
 	}
 	if user.HasPrivLevel(0, enum.PrivLeader) {
@@ -61,9 +61,9 @@ func Get(r *request.Request, yearstr string) {
 		main.A("class=eventslist")
 		main.E("div class=eventslistTitle").E("s-year id=eventslistYear value=%s", month[0:4])
 		table := main.E("div class=eventslistTable")
-		table.E("div class='eventslistHeading eventslistDate'>Date")
-		table.E("div class='eventslistHeading eventslistEvent'>Event")
-		table.E("div class='eventslistHeading eventslistLocation'>Location")
+		table.E("div class='eventslistHeading eventslistDate'").R(r.LangString("Date", "Fecha"))
+		table.E("div class='eventslistHeading eventslistEvent'").R(r.LangString("Event", "Evento"))
+		table.E("div class='eventslistHeading eventslistLocation'").R(r.LangString("Location", "Sitio"))
 		// Walk through all of the tasks in the year, gathering them up
 		// by date and emitting all of them on the same date together.
 		event.AllBetween(r, yearstr+"-01-01", yearstr+"-12-32", eventFields, 0, func(e *event.Event, _ *venue.Venue) {
@@ -99,14 +99,14 @@ func emitDateEvents(r *request.Request, table *htmlb.Element, events []event.Eve
 		ediv := table.E("div class=eventslistEvent")
 		for org := enum.Org(0); org < enum.NumOrgs; org++ {
 			if orgs[org] {
-				orgdot.OrgDot(ediv, org)
+				orgdot.OrgDot(r, ediv, org)
 			}
 		}
 		ediv.E("a up-target=.pageCanvas href=/events/%d", events[i].ID()).T(events[i].Name())
 		loc := table.E("div class=eventslistLocation")
 		switch vid := events[i].Venue(); vid {
 		case 0:
-			loc.R("TBD")
+			loc.R(r.LangString("TBD", "Por determinar"))
 		default:
 			var v *venue.Venue
 			if v = venueCache[vid]; v == nil {

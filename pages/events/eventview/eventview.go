@@ -68,15 +68,15 @@ func Render(r *request.Request, user *person.Person, e *event.Event, section str
 		Banner:   e.Start()[:10] + " " + e.Name(),
 		MenuItem: "events",
 		Tabs: []ui.PageTab{
-			{Name: "Calendar", URL: "/events/calendar/" + e.Start()[0:7], Target: ".pageCanvas"},
-			{Name: "List", URL: "/events/list/" + e.Start()[0:4], Target: ".pageCanvas"},
-			{Name: "Details", URL: fmt.Sprintf("/events/%d", e.ID()), Target: "main", Active: true},
+			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + e.Start()[0:7], Target: ".pageCanvas"},
+			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + e.Start()[0:4], Target: ".pageCanvas"},
+			{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/events/%d", e.ID()), Target: "main", Active: true},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
 		box := main.E("div class=eventview")
 		if section == "" || section == "details" {
-			showIdent(box, e, ts)
+			showIdent(r, box, e, ts)
 			showDetails(r, box, user, e, ts)
 		}
 		for _, t := range ts {
