@@ -77,9 +77,11 @@ func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		req.ResponseWriter = request.NewCompressedResponse(req.ResponseWriter)
 	}
 	req.LogEntry = log.New(req.Method, req.Path)
-	// Determine the language for the request.  Note that this will be
-	// overridden by auth.SessionUser if the user is logged in.
-	req.Language = chooseLanguage(req)
+	// Determine the language for the request.  Returns true if a redirect
+	// was issued.
+	if chooseLanguage(req) {
+		return
+	}
 	// Parse the form now, before we connect to the data store.  This avoids
 	// chewing up a connection while we're still reading from the client.
 	r.ParseMultipartForm(1048576)
@@ -244,19 +246,18 @@ func route(r *request.Request) {
 var matcher = language.NewMatcher([]language.Tag{language.English, language.Spanish})
 
 // chooseLanguage chooses the language that will be used to satisfy the request.
-// Note that this will be overridden by auth.SessionUser if the user is logged
-// in.
-func chooseLanguage(r *request.Request) (lang string) {
-	if r.Path == "/clases" || r.Path == "/Clases" || r.Path == "/CLASES" {
+func chooseLanguage(r *request.Request) (redirected bool) {
+	var lang string
+
+	if r.Path == "/en" || r.Path == "/es" || strings.HasPrefix(r.Path, "/en/") || strings.HasPrefix(r.Path, "/es/") {
+		lang = r.Path[1:3]
+		redirected = true
+	} else if r.Path == "/clases" || r.Path == "/Clases" || r.Path == "/CLASES" {
 		// Special case:  if the URL is "/clases", language is Spanish.
 		lang = "es"
-	} else if strings.HasPrefix(r.Path, "/en/") || strings.HasPrefix(r.Path, "/es/") {
-		// If the URL has a language prefix, use it.  Also remove it
-		// from the URL.
-		lang = r.Path[1:3]
-		r.Path = r.Path[3:]
 	} else if c, err := r.Request.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {
 		lang = c.Value
+		return false // no need to set cookie
 	} else if accept := r.Request.Header.Get("Accept-Language"); accept != "" {
 		t, _, _ := language.ParseAcceptLanguage(accept)
 		tag, _, _ := matcher.Match(t...)
@@ -265,6 +266,8 @@ func chooseLanguage(r *request.Request) (lang string) {
 		} else {
 			lang = "en"
 		}
+	} else {
+		lang = "en"
 	}
 	http.SetCookie(r, &http.Cookie{
 		Name:     "lang",
@@ -273,5 +276,16 @@ func chooseLanguage(r *request.Request) (lang string) {
 		Expires:  time.Now().Add(10 * 365 * 24 * time.Hour),
 		SameSite: http.SameSiteLaxMode,
 	})
-	return lang
+	if !redirected {
+		return false
+	}
+	if r.Path == "/en/clases" || r.Path == "/en/Clases" || r.Path == "/en/CLASES" {
+		// Need to translate the URL to avoid the special case above.
+		http.Redirect(r, r.Request, "/classes", http.StatusSeeOther)
+	} else if len(r.Path) > 3 {
+		http.Redirect(r, r.Request, r.Path[3:], http.StatusSeeOther)
+	} else {
+		http.Redirect(r, r.Request, "/", http.StatusSeeOther)
+	}
+	return true
 }

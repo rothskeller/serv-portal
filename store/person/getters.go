@@ -195,14 +195,6 @@ func (p *Person) Birthdate() string {
 	return p.birthdate
 }
 
-// Language is the person's preferred language (currently either "en" or "es").
-func (p *Person) Language() string {
-	if p.fields&FLanguage == 0 {
-		panic("Person.Language called without having fetched FLanguage")
-	}
-	return p.language
-}
-
 // Flags is a set of flags describing the Person.
 func (p *Person) Flags() Flags {
 	if p.fields&FFlags == 0 {
