@@ -31,16 +31,16 @@ func showSubscriptions(r *request.Request, main *htmlb.Element, user, p *person.
 	})
 	if p.Flags()&person.NoEmail != 0 {
 		section = startSubscriptions(r, main, section, p, editable)
-		section.E("div class=personviewSubscriptionsUnsubscribed").R(r.LangString("Unsubscribed from all email.", "Se ha dado de baja de todos los correos electrónicos."))
+		section.E("div class=personviewSubscriptionsUnsubscribed").R(r.Loc("Unsubscribed from all email."))
 	}
 	if p.Flags()&person.NoText != 0 {
 		section = startSubscriptions(r, main, section, p, editable)
-		section.E("div class=personviewSubscriptionsUnsubscribed").R(r.LangString("Unsubscribed from all text messaging.", "Se ha dado de baja de todos los mensajes de texto."))
+		section.E("div class=personviewSubscriptionsUnsubscribed").R(r.Loc("Unsubscribed from all text messaging."))
 	}
 	if section == nil {
 		if editable {
 			section = startSubscriptions(r, main, section, p, editable)
-			section.E("div").R(r.LangString("Not subscribed to any email or text messaging.", "No suscrito a ningún correo electrónico o mensaje de texto."))
+			section.E("div").R(r.Loc("Not subscribed to any email or text messaging."))
 		}
 	}
 }
@@ -49,10 +49,10 @@ func startSubscriptions(r *request.Request, main *htmlb.Element, section *htmlb.
 	if section == nil {
 		section = main.E("div class=personviewSection")
 		sheader := section.E("div class=personviewSectionHeader")
-		sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Subscriptions", "Suscripciones"))
+		sheader.E("div class=personviewSectionHeaderText").R(r.Loc("Subscriptions"))
 		if editable {
 			sheader.E("div class=personviewSectionHeaderEdit").
-				E("a href=/people/%d/edsubscriptions up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.LangString("Edit", "Editar"))
+				E("a href=/people/%d/edsubscriptions up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.Loc("Edit"))
 		}
 		section = section.E("div class=personviewSubscriptions")
 	}

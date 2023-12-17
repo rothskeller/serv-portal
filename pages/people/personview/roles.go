@@ -67,9 +67,9 @@ func showRoles(r *request.Request, main *htmlb.Element, user, p *person.Person) 
 	section := main.E("div class=personviewSection")
 	sheader := section.E("div class=personviewSectionHeader")
 	if len(badges) > 1 || (len(badges) == 1 && len(badges[0].titles) > 1) {
-		sheader.E("div class=personviewSectionHeaderText").R(r.LangString("SERV Roles", "Roles en SERV"))
+		sheader.E("div class=personviewSectionHeaderText").R(r.Loc("SERV Roles"))
 	} else {
-		sheader.E("div class=personviewSectionHeaderText").R(r.LangString("SERV Role", "Rol en SERV"))
+		sheader.E("div class=personviewSectionHeaderText").R(r.Loc("SERV Role"))
 	}
 	if editable {
 		sheader.E("div class=personviewSectionHeaderEdit").
@@ -85,6 +85,6 @@ func showRoles(r *request.Request, main *htmlb.Element, user, p *person.Person) 
 	}
 	if len(badges) == 0 {
 		bdiv.E("div class=personviewRolesTitles").
-			E("div class=personviewRolesTitle").R(r.LangString("No current role in any SERV org.", "No hay ningún rol actual en ninguna organización de SERV."))
+			E("div class=personviewRolesTitle").R(r.Loc("No current role in any SERV org."))
 	}
 }

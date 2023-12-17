@@ -3,7 +3,7 @@ package eventview
 import (
 	"time"
 
-	"sunnyvaleserv.org/portal/pages/events/langdate"
+	"sunnyvaleserv.org/portal/server/l10n"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/task"
@@ -43,5 +43,5 @@ func showIdent(r *request.Request, main *htmlb.Element, e *event.Event, ts []*ta
 		line1.E("span class=eventviewIdentDSW>DSW")
 	}
 	date, _ := time.ParseInLocation("2006-01-02T15:04", e.Start(), time.Local)
-	left.E("div class=eventviewIdentDate>%s", langdate.LangDate(r, date))
+	left.E("div class=eventviewIdentDate>%s", l10n.LocalizeDate(date, r.Language))
 }

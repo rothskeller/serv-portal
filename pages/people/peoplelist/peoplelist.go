@@ -63,7 +63,7 @@ func Handle(r *request.Request) {
 		title = focus.Name()
 		state.SetFocusRole(r, focus.ID())
 	} else {
-		title = r.LangString("People", "Personas")
+		title = r.Loc("People")
 		state.SetFocusRole(r, 0)
 	}
 	// Figure out the sort order.
@@ -79,8 +79,8 @@ func Handle(r *request.Request) {
 		Title:    title,
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("List", "Lista"), URL: "/people", Target: "main", Active: true},
-			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: "main"},
+			{Name: r.Loc("List"), URL: "/people", Target: "main", Active: true},
+			{Name: r.Loc("Map"), URL: "/people/map", Target: "main"},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
@@ -98,9 +98,9 @@ func Handle(r *request.Request) {
 			showPerson(r, grid, p, focus != nil && focus.Org() == enum.OrgSARES, currsort == "suffix")
 		}
 		if len(people) == 1 {
-			main.E("div class=peoplelistCount").R(r.LangString("1 person listed.", "1 persona en la lista."))
+			main.E("div class=peoplelistCount").R(r.Loc("1 person listed."))
 		} else {
-			main.E("div class=peoplelistCount>%d ", len(people)).R(r.LangString("people listed.", "personas en la lista."))
+			main.E("div class=peoplelistCount").TF(r.Loc("%d people listed."), len(people))
 		}
 		if user.HasPrivLevel(0, enum.PrivLeader) {
 			// TODO add user
@@ -120,7 +120,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 	if len(roleOptions) > 1 {
 		sort.Slice(roleOptions, func(i, j int) bool { return roleOptions[i].Name() < roleOptions[j].Name() })
 		sel := form.E("select id=peoplelistRole name=role")
-		sel.E("option value=0", focus == nil, "selected").R(r.LangString("(all)", "(todos)"))
+		sel.E("option value=0", focus == nil, "selected").R(r.Loc("(all)"))
 		for _, role := range roleOptions {
 			sel.E("option value=%d", role.ID(), focus != nil && focus.ID() == role.ID(), "selected").T(role.Name())
 		}
@@ -141,7 +141,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 	case "suffix":
 		nextsort = "priority"
 	}
-	form.E("button type=submit name=sort class='sbtn sbtn-small sbtn-secondary' value=%s", nextsort).R(r.LangString("Sort", "Ordenar"))
+	form.E("button type=submit name=sort class='sbtn sbtn-small sbtn-secondary' value=%s", nextsort).R(r.Loc("Sort"))
 	// Emit the current sort order.  If they click the button, this will be
 	// ignored because it will be the second value of "sort" in the form.
 	// Otherwise, this will retain the current sort order when changing
@@ -331,7 +331,7 @@ func showPersonDetails(r *request.Request, box *htmlb.Element, p *personData) {
 		ph := box.E("div class=peoplelistDetailsPhones")
 		if p.viewLevel == person.ViewFull && p.CellPhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (%s)", p.CellPhone(), r.LangString("cell", "móvil")).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.CellPhone(), r.Loc("cell")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=sms:%s target=_blank>", p.CellPhone()).
@@ -342,7 +342,7 @@ func showPersonDetails(r *request.Request, box *htmlb.Element, p *personData) {
 		}
 		if p.viewLevel == person.ViewFull && p.HomePhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (%s)", p.HomePhone(), r.LangString("home", "casa")).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.HomePhone(), r.Loc("home")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=tel:%s target=_blank>", p.HomePhone()).
@@ -350,7 +350,7 @@ func showPersonDetails(r *request.Request, box *htmlb.Element, p *personData) {
 		}
 		if p.WorkPhone() != "" {
 			ph.E("div class=peoplelistDetailsIconline").
-				E("div class=peoplelistDetailsPhone>%s (%s)", p.WorkPhone(), r.LangString("work", "trabajo")).P().
+				E("div class=peoplelistDetailsPhone>%s (%s)", p.WorkPhone(), r.Loc("work")).P().
 				E("div class=peoplelistDetailsIcons").
 				E("div class=peoplelistDetailsIcon").
 				E("a href=tel:%s target=_blank>", p.WorkPhone()).

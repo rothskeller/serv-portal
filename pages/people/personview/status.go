@@ -17,7 +17,7 @@ func showStatus(r *request.Request, main *htmlb.Element, user, p *person.Person)
 	}
 	section := main.E("div class=personviewSection")
 	sheader := section.E("div class=personviewSectionHeader")
-	sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Volunteer Status", "Estado de voluntario"))
+	sheader.E("div class=personviewSectionHeaderText").R(r.Loc("Volunteer Status"))
 	if user.IsAdminLeader() {
 		sheader.E("div class=personviewSectionHeaderEdit").
 			E("a href=/people/%d/edstatus up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Edit", p.ID())
@@ -47,9 +47,9 @@ func showVolgistics(r *request.Request, section *htmlb.Element, user, p *person.
 			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("Not registered")
 		}
 	} else if p.VolgisticsID() == 0 {
-		section.E("div").R(r.LangString("City volunteer", "Voluntario de la ciudad"))
+		section.E("div").R(r.Loc("City volunteer"))
 		if p.Flags()&person.VolgisticsPending != 0 {
-			section.E("div").R(r.LangString("Registration pending", "Inscripción pendiente"))
+			section.E("div").R(r.Loc("Registration pending"))
 		} else if user.ID() == p.ID() {
 			section.E("div").E("a href=/people/%d/vregister up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Inscribirse", p.ID())
 		} else {
@@ -63,17 +63,17 @@ func showDSWCERT(r *request.Request, section *htmlb.Element, p *person.Person) {
 	if cert := p.DSWRegistrations().CERT; cert != nil {
 		if cert.Expiration.IsZero() {
 			section.E("div>DSW CERT")
-			section.E("div>%s %s", r.LangString("Registered", "Registrado"), formatDate(cert.Registered))
+			section.E("div").TF(r.Loc("Registered %s"), formatDate(cert.Registered))
 		} else if cert.Expiration.After(time.Now()) {
 			section.E("div>DSW CERT")
-			section.E("div>%s %s, %s %s", r.LangString("Registered", "Registrado"), formatDate(cert.Registered), r.LangString("expires", "expirá"), formatDate(cert.Expiration))
+			section.E("div").TF(r.Loc("Registered %s, expires %s"), formatDate(cert.Registered), formatDate(cert.Expiration))
 		} else {
 			section.E("div>DSW CERT")
 			section.E("div", needed, "class=personviewStatus-needed").TF("Expired on %s", formatDate(cert.Expiration))
 		}
 	} else if needed {
 		section.E("div>DSW CERT")
-		section.E("div class=personviewStatus-needed").R(r.LangString("Not registered", "No registrado"))
+		section.E("div class=personviewStatus-needed").R(r.Loc("Not registered"))
 	}
 }
 
@@ -82,17 +82,17 @@ func showDSWCommunications(r *request.Request, section *htmlb.Element, p *person
 	if comm := p.DSWRegistrations().Communications; comm != nil {
 		if comm.Expiration.IsZero() {
 			section.E("div>DSW SARES")
-			section.E("div>%s %s", r.LangString("Registered", "Registrado"), formatDate(comm.Registered))
+			section.E("div").TF(r.Loc("Registered %s"), formatDate(comm.Registered))
 		} else if comm.Expiration.After(time.Now()) {
 			section.E("div>DSW SARES")
-			section.E("div>%s %s, %s %s", r.LangString("Registered", "Registrado"), formatDate(comm.Registered), r.LangString("expires", "expirá"), formatDate(comm.Expiration))
+			section.E("div").TF(r.Loc("Registered %s, expires %s"), formatDate(comm.Registered), formatDate(comm.Expiration))
 		} else {
 			section.E("div>DSW SARES")
-			section.E("div", needed, "class=personviewStatus-needed").R(r.LangString("Expired on ", "Expiró ")).T(formatDate(comm.Expiration))
+			section.E("div", needed, "class=personviewStatus-needed").TF("Expired on %s", formatDate(comm.Expiration))
 		}
 	} else if needed {
 		section.E("div>DSW SARES")
-		section.E("div class=personviewStatus-needed").R(r.LangString("Not registered", "No registrado"))
+		section.E("div class=personviewStatus-needed").R(r.Loc("Not registered"))
 	}
 }
 
@@ -140,14 +140,14 @@ func showBGChecksNotAL(r *request.Request, section *htmlb.Element, user, p *pers
 		cleared = false
 	}
 	if cleared {
-		section.E("div").R(r.LangString("Background check", "Verificación de antecedentes"))
-		section.E("div").R(r.LangString("Cleared", "Aprobada"))
+		section.E("div").R(r.Loc("Background check"))
+		section.E("div").R(r.Loc("Cleared"))
 		return
 	}
 	needed := p.HasPrivLevel(0, enum.PrivMember) || p.Identification()&person.IDCardKey != 0
 	if needed {
-		section.E("div").R(r.LangString("Background check", "Verificación de antecedentes"))
-		section.E("div class=personviewStatus-needed").R(r.LangString("Needed", "Necesitada"))
+		section.E("div").R(r.Loc("Background check"))
+		section.E("div class=personviewStatus-needed").R(r.Loc("Needed"))
 	}
 }
 

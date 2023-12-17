@@ -25,10 +25,10 @@ func showContact(r *request.Request, main *htmlb.Element, user, p *person.Person
 	}
 	section := main.E("div class='personviewSection personviewContact'")
 	sheader := section.E("div class=personviewSectionHeader")
-	sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Contact Information", "Información del contacto"))
+	sheader.E("div class=personviewSectionHeaderText").R(r.Loc("Contact Information"))
 	if editable {
 		sheader.E("div class=personviewSectionHeaderEdit").
-			E("a href=/people/%d/edcontact up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.LangString("Edit", "Editar"))
+			E("a href=/people/%d/edcontact up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.Loc("Edit"))
 	}
 	if p.Email() != "" || p.Email2() != "" {
 		ediv := section.E("div class=personviewContactEmails")
@@ -42,35 +42,35 @@ func showContact(r *request.Request, main *htmlb.Element, user, p *person.Person
 	if viewLevel == person.ViewFull && p.CellPhone() != "" {
 		section.E("div class=personviewContactPhone").
 			E("a href=tel:%s target=_blank>%s", p.CellPhone(), p.CellPhone()).
-			P().E("span class=personviewContactPhoneLabel").R(r.LangString("(Cell)", "(Móvil)"))
+			P().E("span class=personviewContactPhoneLabel").R(r.Loc("(Cell)"))
 	}
 	if viewLevel == person.ViewFull && p.HomePhone() != "" {
 		section.E("div class=personviewContactPhone").
 			E("a href=tel:%s target=_blank>%s", p.HomePhone(), p.HomePhone()).
-			P().E("span class=personviewContactPhoneLabel").R(r.LangString("(Home)", "(Casa)"))
+			P().E("span class=personviewContactPhoneLabel").R(r.Loc("(Home)"))
 	}
 	if p.WorkPhone() != "" {
 		section.E("div class=personviewContactPhone").
 			E("a href=tel:%s target=_blank>%s", p.WorkPhone(), p.WorkPhone()).
-			P().E("span class=personviewContactPhoneLabel").R(r.LangString("(Work)", "(Trabajo)"))
+			P().E("span class=personviewContactPhoneLabel").R(r.Loc("(Work)"))
 	}
 	if p.Addresses().Work != nil && p.Addresses().Work.SameAsHome {
-		showAddress(r, section, p.Addresses().Home, r.LangString("Home Address (all day)", "Direccion de casa (todo el día)"), true)
+		showAddress(r, section, p.Addresses().Home, r.Loc("Home Address (all day)"), true)
 	} else if viewLevel == person.ViewFull {
-		showAddress(r, section, p.Addresses().Home, r.LangString("Home Address", "Direccion de casa"), true)
+		showAddress(r, section, p.Addresses().Home, r.Loc("Home Address"), true)
 	}
-	showAddress(r, section, p.Addresses().Work, r.LangString("Work Address", "Direccion de trabajo"), true)
+	showAddress(r, section, p.Addresses().Work, r.Loc("Work Address"), true)
 	if viewLevel == person.ViewFull {
-		showAddress(r, section, p.Addresses().Mail, r.LangString("Mailing Address", "Direccion de correos"), false)
+		showAddress(r, section, p.Addresses().Mail, r.Loc("Mailing Address"), false)
 	}
 	if editable {
 		switch len(p.EmContacts()) {
 		case 0:
-			section.E("div class=personviewContactEmerg").R(r.LangString("No emergency contacts on file.", "No hay contactos de emergencia registrados."))
+			section.E("div class=personviewContactEmerg").R(r.Loc("No emergency contacts on file."))
 		case 1:
-			section.E("div class=personviewContactEmerg").R(r.LangString("1 emergency contact on file.", "1 contacto de emergencia registrado."))
+			section.E("div class=personviewContactEmerg").R(r.Loc("1 emergency contact on file."))
 		default:
-			section.E("div class=personviewContactEmerg>%d", len(p.EmContacts())).R(r.LangString(" emergency contacts on file.", " contactos de emergencia registrados."))
+			section.E("div class=personviewContactEmerg>").TF(r.Loc("%d emergency contacts on file."), len(p.EmContacts()))
 		}
 	}
 }
@@ -82,7 +82,7 @@ func showAddress(r *request.Request, section *htmlb.Element, address *person.Add
 	div := section.E("div class=personviewContactAddress")
 	labeldiv := div.E("div>%s:", label)
 	if showMap {
-		labeldiv.E("a href=https://www.google.com/maps/search/?api=1&query=%s class=personviewContactAddressMap target=_blank", address.Address).R(r.LangString("Map", "Mapa"))
+		labeldiv.E("a href=https://www.google.com/maps/search/?api=1&query=%s class=personviewContactAddressMap target=_blank", address.Address).R(r.Loc("Map"))
 	}
 	parts := strings.SplitN(address.Address, ",", 2)
 	div.E("div>%s", parts[0])
@@ -90,6 +90,6 @@ func showAddress(r *request.Request, section *htmlb.Element, address *person.Add
 		div.E("div>%s", parts[1])
 	}
 	if address.FireDistrict != 0 {
-		div.E(r.LangString("div>Sunnyvale Fire District %d", "div>Distrito de bomberos %d de Sunnyvale"), address.FireDistrict)
+		div.E("div").TF(r.Loc("Sunnyvale Fire District %d"), address.FireDistrict)
 	}
 }

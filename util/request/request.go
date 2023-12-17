@@ -3,6 +3,7 @@ package request
 import (
 	"net/http"
 
+	"sunnyvaleserv.org/portal/server/l10n"
 	"sunnyvaleserv.org/portal/store"
 	"sunnyvaleserv.org/portal/util/log"
 )
@@ -43,12 +44,8 @@ func (r *Request) DisableCompression() {
 	}
 }
 
-// LangString returns either its first or its second argument, depending on the
-// language selected for the request.
-func (r *Request) LangString(english, spanish string) string {
-	if r.Language == "es" {
-		return spanish
-	} else {
-		return english
-	}
+// Loc returns its argument (an English string) translated into the request
+// language.
+func (r *Request) Loc(s string) string {
+	return l10n.Localize(s, r.Language)
 }

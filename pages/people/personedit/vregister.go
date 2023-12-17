@@ -110,7 +110,7 @@ func HandleVRegister(r *request.Request, idstr string) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class=form method=POST up-main up-layer=parent up-target=.personview")
-	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Register as a City Volunteer", "Registrarse como voluntario de ciudad"))
+	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Register as a City Volunteer"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	emitVRegIntro(r, form)
 	if len(validate) == 0 || slices.Contains(validate, "informalName") {
@@ -156,8 +156,7 @@ func HandleVRegister(r *request.Request, idstr string) {
 }
 
 func emitVRegIntro(r *request.Request, form *htmlb.Element) {
-	form.E("div class='formRow-3col vregisterIntro'").R(r.LangString("Thank you for your interest in volunteering with the City of Sunnyvale, Office of Emergency Services.  Please complete this form to register as a City of Sunnyvale Volunteer.  Once we receive your registration (which usually takes a few days) we will contact you to schedule an appointment for your fingerprinting.  (Please note: registering as a city volunteer is not required for taking one of our classes.  It is only required when joining one of our volunteer groups.)",
-		"Gracias por su interés en ser voluntario en la Oficina de Servicios de Emergencia de la ciudad de Sunnyvale.  Complete este formulario para registrarse como voluntario de la ciudad de Sunnyvale.  Una vez que recibamos su registro (lo que generalmente demora unos días), nos comunicaremos con usted para programar una cita para su toma de huellas digitales.  (Tenga en cuenta: no es necesario registrarse como voluntario de la ciudad para tomar una de nuestras clases.  Solo es necesario cuando se une a uno de nuestros grupos de voluntarios)."))
+	form.E("div class='formRow-3col vregisterIntro'").R(r.Loc("Thank you for your interest in volunteering with the City of Sunnyvale, Office of Emergency Services.  Please complete this form to register as a City of Sunnyvale Volunteer.  Once we receive your registration (which usually takes a few days) we will contact you to schedule an appointment for your fingerprinting.  (Please note: registering as a city volunteer is not required for taking one of our classes.  It is only required when joining one of our volunteer groups.)"))
 }
 
 func readVRegBirthdate(r *request.Request, up *person.Updater) string {
@@ -165,7 +164,7 @@ func readVRegBirthdate(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.Birthdate == "" {
-		return r.LangString("Your birthdate is required.", "Se requiere su fecha de nacimiento.")
+		return r.Loc("Your birthdate is required.")
 	}
 	return ""
 }
@@ -175,7 +174,7 @@ func readVRegHomePhone(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.CellPhone == "" && up.HomePhone == "" {
-		return r.LangString("A cell or home phone number is required.", "Se requiere un número de teléfono móvil o a casa.")
+		return r.Loc("A cell or home phone number is required.")
 	}
 	return ""
 }
@@ -185,7 +184,7 @@ func readVRegHomeAddress(r *request.Request, up *person.Updater) string {
 		return s
 	}
 	if up.Addresses.Home.Address == "" {
-		return r.LangString("Your home address is required.", "Se requiere su dirección de casa.")
+		return r.Loc("Your home address is required.")
 	}
 	return ""
 }
@@ -193,7 +192,7 @@ func readVRegHomeAddress(r *request.Request, up *person.Updater) string {
 func readVRegECName(r *request.Request, up *person.Updater, num int) string {
 	readECName(r, up, num)
 	if up.EmContacts[num].Name == "" {
-		return r.LangString("The emergency contacts are required.", "Se requieren los contactos de emergencia.")
+		return r.Loc("The emergency contacts are required.")
 	}
 	return ""
 }
@@ -203,40 +202,38 @@ func readInterests(r *request.Request) (interests []string) {
 }
 func emitInterests(r *request.Request, form *htmlb.Element, interests []string) {
 	row := form.E("div class=formRow")
-	row.E("label for=vregisterCERTD").R(r.LangString("Interests", "Intereses"))
+	row.E("label for=vregisterCERTD").R(r.Loc("Interests"))
 	box := row.E("div class=formInput")
 	box.E("input type=checkbox id=vregisterCERTD name=interests value=CERT-D class=s-check label=%s",
-		r.LangString("CERT Deployment Team", "Equipo de despliegue CERT"),
+		r.Loc("CERT Deployment Team"),
 		slices.Contains(interests, "CERT-D"), "checked")
 	box.E("input type=checkbox name=interests value=Outreach class=s-check label=%s",
-		r.LangString("Community Outreach", "Alcance comunitario"),
+		r.Loc("Community Outreach"),
 		slices.Contains(interests, "Outreach"), "checked")
 	box.E("input type=checkbox name=interests value=SARES class=s-check label=%s",
-		r.LangString("Amateur Radio (SARES)", "Radioaficionados (SARES)"),
+		r.Loc("Amateur Radio (SARES)"),
 		slices.Contains(interests, "SARES"), "checked")
 	box.E("input type=checkbox name=interests value=SNAP class=s-check label=%s",
-		r.LangString("Neighborhood Preparedness Facilitator", "Facilitador de preparación vecinal"),
+		r.Loc("Neighborhood Preparedness Facilitator"),
 		slices.Contains(interests, "SNAP"), "checked")
 	box.E("input type=checkbox name=interests value=Listos class=s-check label=%s",
-		r.LangString("Preparedness Class Instructor", "Instructor de clases de preparación"),
+		r.Loc("Preparedness Class Instructor"),
 		slices.Contains(interests, "Listos"), "checked")
 	box.E("input type=checkbox name=interests value=CERT-T class=s-check label=%s",
-		r.LangString("CERT Basic Training Instructor", "Instructor de clases CERT"),
+		r.Loc("CERT Basic Training Instructor"),
 		slices.Contains(interests, "CERT-T"), "checked")
 }
 
 func readAgreement(r *request.Request) (err string) {
 	if r.FormValue("agreement") == "" {
-		return r.LangString("Please check that you agree with the above statement in order to register.",
-			"Por favor, marque la casilla para mostrar que está de acuerdo con la declaración anterior para poder registrarse.")
+		return r.Loc("Please check that you agree with the above statement in order to register.")
 	}
 	return ""
 }
 func emitAgreement(r *request.Request, form *htmlb.Element, err string) {
-	form.E("div class='formRow-3col vregisterAgreement'").R(r.LangString("By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty.",
-		"Al enviar esta solicitud, certifico que todas las declaraciones que he hecho en esta solicitud son verdaderas y correctas y por la presente autorizo a la ciudad de Sunnyvale a investigar la exactitud de esta información.  Soy consciente de que se requieren huellas dactilares y una búsqueda de antecedentes penales para los voluntarios mayores de 18 años.  Entiendo que estoy trabajando en todo momento de forma voluntaria, sin compensación monetaria ni beneficios, y no como empleado remunerado.  Doy permiso a la ciudad de Sunnyvale para utilizar fotografías o videos tomados de mí durante mi servicio sin obligación ni compensación para mí.  Entiendo que la ciudad de Sunnyvale se reserva el derecho de cancelar el servicio de un voluntario en cualquier momento.  Entiendo que los voluntarios están cubiertos por el Programa de Compensación para Trabajadores de la Ciudad de Sunnyvale por una lesión o accidente que ocurra mientras están de servicio."))
+	form.E("div class='formRow-3col vregisterAgreement'").R(r.Loc("By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty."))
 	row := form.E("div class=formRow")
-	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label=%s").R(r.LangString("I agree", "Estoy de acuerdo"))
+	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label=%s").R(r.Loc("I agree"))
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
@@ -244,8 +241,8 @@ func emitAgreement(r *request.Request, form *htmlb.Element, err string) {
 
 func emitVRegisterButtons(r *request.Request, form *htmlb.Element) {
 	buttons := form.E("div class=formButtons")
-	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.LangString("Cancel", "Cancelar"))
-	buttons.E("input type=submit class='sbtn sbtn-primary' value=%s", r.LangString("Register", "Registrarse"))
+	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.Loc("Cancel"))
+	buttons.E("input type=submit class='sbtn sbtn-primary' value=%s", r.Loc("Register"))
 }
 
 var addressSplitRE = regexp.MustCompile(`^(.*),\s*([^,]+),?\s+CA\s+(\d{5})$`)

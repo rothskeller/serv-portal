@@ -18,10 +18,10 @@ func showPassword(r *request.Request, main *htmlb.Element, user, p *person.Perso
 	}
 	section := main.E("div class=personviewSection")
 	sheader := section.E("div class=personviewSectionHeader")
-	sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Password", "Contraseña"))
+	sheader.E("div class=personviewSectionHeaderText").R(r.Loc("Password"))
 	section = section.E("div class=personviewPassword")
 	if canChange {
-		section.E("a href=/people/%d/edpassword up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.LangString("Change Password", "Cambiar contraseña"))
+		section.E("a href=/people/%d/edpassword up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.Loc("Change Password"))
 	}
 	if canReset {
 		section.E("a href=/people/%d/pwreset up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Reset Password", p.ID())

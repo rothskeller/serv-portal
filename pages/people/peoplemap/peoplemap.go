@@ -28,10 +28,6 @@ type districtData struct {
 	Points orb.Ring `json:"points"`
 	Color  string   `json:"color"`
 }
-type point struct {
-	latitude  float64
-	longitude float64
-}
 
 var districtList = []districtData{
 	{Points: person.District1, Color: "#9900CC"},
@@ -70,7 +66,7 @@ func Handle(r *request.Request) {
 		title = focus.Name()
 		state.SetFocusRole(r, focus.ID())
 	} else {
-		title = r.LangString("People", "Personas")
+		title = r.Loc("People")
 		state.SetFocusRole(r, 0)
 	}
 	// Showing home or business addresses or both?
@@ -102,7 +98,7 @@ func Handle(r *request.Request) {
 		}
 		if w := p.Addresses().Work; w != nil && w.Latitude != 0 && work {
 			people = append(people, &personData{
-				Name: p.InformalName() + r.LangString(" (Business Hours)", " (Horas de trabajo)"),
+				Name: p.InformalName() + " " + r.Loc("(Business Hours)"),
 				Lat:  w.Latitude,
 				Lng:  w.Longitude,
 			})
@@ -114,8 +110,8 @@ func Handle(r *request.Request) {
 		// ExternalScript: "https://maps.googleapis.com/maps/api/js?key=AIzaSyCi9J9RDZh5ouo3zk23yDmtY5Pp-NNBsBo",
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("List", "Lista"), URL: "/people", Target: "main"},
-			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: "main", Active: true},
+			{Name: r.Loc("List"), URL: "/people", Target: "main"},
+			{Name: r.Loc("Map"), URL: "/people/map", Target: "main", Active: true},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
@@ -148,13 +144,13 @@ func mapControls(r *request.Request, user *person.Person, main *htmlb.Element, f
 	if len(roleOptions) > 1 {
 		sort.Slice(roleOptions, func(i, j int) bool { return roleOptions[i].Name() < roleOptions[j].Name() })
 		sel := form.E("select id=peoplemapRole name=role")
-		sel.E("option value=0", focus == nil, "selected").R(r.LangString("(all)", "(todos)"))
+		sel.E("option value=0", focus == nil, "selected").R(r.Loc("(all)"))
 		for _, role := range roleOptions {
 			sel.E("option value=%d", role.ID(), focus != nil && focus.ID() == role.ID(), "selected").T(role.Name())
 		}
 	} else if focus != nil {
 		form.E("input type=hidden name=role value=%d", focus.ID())
 	}
-	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.LangString("Home", "En casa"), home, "checked")
-	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=%s", r.LangString("Business", "A trabajo"), work, "checked")
+	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.Loc("Home"), home, "checked")
+	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=%s", r.Loc("Business"), work, "checked")
 }

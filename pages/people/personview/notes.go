@@ -57,7 +57,7 @@ func startNotes(r *request.Request, main *htmlb.Element, section *htmlb.Element,
 	if section == nil {
 		section = main.E("div class=personviewSection")
 		sheader := section.E("div class=personviewSectionHeader")
-		sheader.E("div class=personviewSectionHeaderText").R(r.LangString("Notes", "Notas"))
+		sheader.E("div class=personviewSectionHeaderText").R(r.Loc("Notes"))
 		if editable {
 			sheader.E("div class=personviewSectionHeaderEdit").
 				E("a href=/people/%d/ednote up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Add", p.ID())

@@ -171,7 +171,7 @@ func GetFolder(r *request.Request, user *person.Person, flist []*folder.Folder, 
 	r.Header().Set("X-Up-Method", "GET")
 	r.Header().Set("X-Up-Location", location)
 	// Now display the folder page.
-	ui.Page(r, user, ui.PageOpts{Title: r.LangString("Files", "Archivos")}, func(main *htmlb.Element) {
+	ui.Page(r, user, ui.PageOpts{Title: r.Loc("Files")}, func(main *htmlb.Element) {
 		var fdiv = main
 		var fpath string
 
