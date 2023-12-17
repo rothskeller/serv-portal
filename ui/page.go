@@ -120,16 +120,16 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 	// Note: any changes to the list of menu items, or the conditions for
 	// showing them, need to be reflected in the userhome page as well.
 	h = h.E("nav class=pageMenu")
-	h.E("div class=pageMenuWelcome").R(r.LangString("Welcome<br>", "Bienvenido<br>")).E("b").T(user.InformalName())
+	h.E("div class=pageMenuWelcome").R(r.Loc("Welcome") + "<br>").E("b").T(user.InformalName())
 	ul := h.E("ul class=pageMenuList up-nav")
 	ul.E("li").E("a href=%s up-target=.pageCanvas up-alias=/events/* class=pageMenuItem", state.GetEventsURL(r),
-		menuItem == "events", "class=up-current").R(r.LangString("Events", "Eventos"))
+		menuItem == "events", "class=up-current").R(r.Loc("Events"))
 	if user.HasPrivLevel(0, enum.PrivStudent) {
 		ul.E("li").E("a href=/people up-target=.pageCanvas up-alias='/people/* -/people/%d -/people/%d/*' class=pageMenuItem", user.ID(), user.ID(),
-			menuItem == "people", "class=up-current").R(r.LangString("People", "Personas"))
+			menuItem == "people", "class=up-current").R(r.Loc("People"))
 	}
 	ul.E("li").E("a href=/files up-target=.pageCanvas up-alias=/files/* class=pageMenuItem",
-		menuItem == "files", "class=up-current").R(r.LangString("Files", "Archivos"))
+		menuItem == "files", "class=up-current").R(r.Loc("Files"))
 	if user.HasPrivLevel(0, enum.PrivLeader) {
 		ul.E("li").E("a href=/reports/attendance up-target=.pageCanvas up-alias=/reports/* class=pageMenuItem",
 			menuItem == "reports", "class=up-current").R("Reports")
@@ -144,8 +144,8 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 	}
 	if user.ID() != person.AdminID {
 		ul.E("li").E("a href=/people/%d up-target=.pageCanvas up-alias=/people/%d/* class=pageMenuItem", user.ID(), user.ID(),
-			menuItem == "profile", "class=up-current").R(r.LangString("Profile", "Perfil"))
+			menuItem == "profile", "class=up-current").R(r.Loc("Profile"))
 	}
-	ul.E("li").E("a href=/logout up-target=body class=pageMenuItem").R(r.LangString("Logout", "Cerrar"))
-	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout").R(r.LangString("Web Site Info", "Información del sitio"))
+	ul.E("li").E("a href=/logout up-target=body class=pageMenuItem").R(r.Loc("Logout"))
+	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout").R(r.Loc("Web Site Info"))
 }

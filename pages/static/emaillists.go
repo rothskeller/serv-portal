@@ -15,8 +15,10 @@ func EmailListsPage(r *request.Request) {
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
 	}
-	ui.Page(r, user, ui.PageOpts{Title: r.LangString("SERV Email Lists", "Listas de correo electrónico de SERV")}, func(main *htmlb.Element) {
-		main.A("class=static").R(r.LangString(`<h1>SERV Email Lists</h1>
+	ui.Page(r, user, ui.PageOpts{Title: r.Loc("SERV Email Lists")}, func(main *htmlb.Element) {
+		main = main.A("class=static")
+		if r.Language != "es" {
+			main.R(`<h1>SERV Email Lists</h1>
 <p>
   The SunnyvaleSERV.org site offers a number of email distribution lists.
   We have one for each volunteer program, that we give out to the general
@@ -65,9 +67,9 @@ func EmailListsPage(r *request.Request) {
   receiving email at the wrong address, you can change your email address in
   the “Profile” section of this web site.
 </p>
-<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`,
-
-			`<h1>Listas de correo electrónico de SERV</h1>
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`)
+		} else {
+			main.R(`<h1>Listas de correo electrónico de SERV</h1>
 <p>
   El sitio SunnyvaleSERV.org ofrece varias listas de distribución de correo
   electrónico.  Tenemos uno para cada programa de voluntariado, que entregamos
@@ -119,6 +121,7 @@ func EmailListsPage(r *request.Request) {
   cambiar su dirección de correo electrónico en la sección “Perfil” de este
   sitio web.
 </p>
-<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>`))
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>`)
+		}
 	})
 }

@@ -47,13 +47,13 @@ func Render(r *request.Request, user, p *person.Person, viewLevel person.ViewLev
 		Title:    p.InformalName(),
 		MenuItem: "people",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("List", "Lista"), URL: "/people", Target: ".pageCanvas"},
-			{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: ".pageCanvas"},
-			{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main", Active: true},
+			{Name: r.Loc("List"), URL: "/people", Target: ".pageCanvas"},
+			{Name: r.Loc("Map"), URL: "/people/map", Target: ".pageCanvas"},
+			{Name: r.Loc("Details"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main", Active: true},
 		},
 	}
 	if user.ID() == p.ID() || user.HasPrivLevel(0, enum.PrivLeader) {
-		opts.Tabs = append(opts.Tabs, ui.PageTab{Name: r.LangString("Activity", "Actividad"), URL: fmt.Sprintf("/people/%d/activity/current", p.ID()), Target: "main"})
+		opts.Tabs = append(opts.Tabs, ui.PageTab{Name: r.Loc("Activity"), URL: fmt.Sprintf("/people/%d/activity/current", p.ID()), Target: "main"})
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
 		main.A("class=personview")

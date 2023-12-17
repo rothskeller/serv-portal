@@ -13,9 +13,9 @@ func OrgDot(r *request.Request, elm *htmlb.Element, org enum.Org) {
 	case enum.OrgAdmin:
 		elm.E("span class=orgdot style=background-color:#a9a9a9 title=Admin")
 	case enum.OrgCERTD:
-		elm.E("span class=orgdot style='border:2px solid #3cb44b;background-color:white' title=%s", r.LangString("CERT Deployment", "Displiegue de CERT"))
+		elm.E("span class=orgdot style='border:2px solid #3cb44b;background-color:white' title=%s", r.Loc("CERT Deployment"))
 	case enum.OrgCERTT:
-		elm.E("span class=orgdot style=background-color:#3cb44b title=%s", r.LangString("CERT Training", "Capacitación CERT"))
+		elm.E("span class=orgdot style=background-color:#3cb44b title=%s", r.Loc("CERT Training"))
 	case enum.OrgListos:
 		elm.E("span class=orgdot style=background-color:#f58231 title=Listos")
 	case enum.OrgSARES:

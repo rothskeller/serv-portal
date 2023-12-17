@@ -73,7 +73,7 @@ func HandleNames(r *request.Request, idstr string) {
 	html := htmlb.HTML(r)
 	defer html.Close()
 	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=.personviewNames")
-	form.E("div class='formTitle formTitle-primary'").R(r.LangString("Edit Names", "Editar nombres"))
+	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Edit Names"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if len(validate) == 0 || slices.Contains(validate, "informalName") {
 		emitInformalName(r, form, up, informalNameError != "" || (formalNameError == "" && sortNameError == "" && callSignError == ""), informalNameError)
@@ -98,55 +98,55 @@ func HandleNames(r *request.Request, idstr string) {
 
 func readInformalName(r *request.Request, up *person.Updater) string {
 	if up.InformalName = strings.TrimSpace(r.FormValue("informalName")); up.InformalName == "" {
-		return r.LangString("The name is required.", "Se requiere el nombre.")
+		return r.Loc("The name is required.")
 	}
 	return ""
 }
 
 func emitInformalName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditInformalName").R(r.LangString("Name", "Nombre"))
+	row.E("label for=personeditInformalName").R(r.Loc("Name"))
 	row.E("input id=personeditInformalName name=informalName s-validate value=%s", up.InformalName, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
-	row.E("div class=formHelp").R(r.LangString("What you like to be called, e.g. “Joe Banks”", "Cómo le gusta que le llamen, p.e. “Paco García”"))
+	row.E("div class=formHelp").R(r.Loc("What you like to be called, e.g. “Joe Banks”"))
 }
 
 func readFormalName(r *request.Request, up *person.Updater) string {
 	if up.FormalName = strings.TrimSpace(r.FormValue("formalName")); up.FormalName == "" {
-		return r.LangString("The formal name is required.", "Se requiere el nombre formal.")
+		return r.Loc("The formal name is required.")
 	}
 	return ""
 }
 
 func emitFormalName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditFormalName").R(r.LangString("Formal name", "Nombre formal"))
+	row.E("label for=personeditFormalName").R(r.Loc("Formal name"))
 	row.E("input id=personeditFormalName name=formalName s-validate value=%s", up.FormalName, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
-	row.E("div class=formHelp").R(r.LangString("For formal documents, e.g. “Joseph A. Banks, Jr.”", "Para documentos formales, p.e. “Francisco García Ramírez”"))
+	row.E("div class=formHelp").R(r.Loc("For formal documents, e.g. “Joseph A. Banks, Jr.”"))
 }
 
 func readSortName(r *request.Request, up *person.Updater) string {
 	if up.SortName = strings.TrimSpace(r.FormValue("sortName")); up.SortName == "" {
-		return r.LangString("The sort name is required.", "Se requiere el nombre ordenado.")
+		return r.Loc("The sort name is required.")
 	} else if up.DuplicateSortName(r) {
-		return fmt.Sprintf(r.LangString("Another person has the sort name %q.", "Otra persona tiene el nombre ordenado %q."), up.SortName)
+		return fmt.Sprintf(r.Loc("Another person has the sort name %q."), up.SortName)
 	}
 	return ""
 }
 
 func emitSortName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditSortName").R(r.LangString("Sort name", "Nombre ordenado"))
+	row.E("label for=personeditSortName").R(r.Loc("Sort name"))
 	row.E("input id=personeditSortName name=sortName s-validate value=%s", up.SortName, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
-	row.E("div class=formHelp").R(r.LangString("For appearance in sorted lists, e.g. “Banks, Joe”", "Para aparecer en listas ordenadas, p.e. “García, Paco”"))
+	row.E("div class=formHelp").R(r.Loc("For appearance in sorted lists, e.g. “Banks, Joe”"))
 }
 
 var callsignRE = regexp.MustCompile(`^[AKNW][A-Z]?[0-9][A-Z]{1,3}$`)
@@ -156,22 +156,22 @@ func readCallSign(r *request.Request, up *person.Updater) string {
 		return ""
 	}
 	if !callsignRE.MatchString(up.CallSign) {
-		return fmt.Sprintf(r.LangString("%q is not a valid FCC amateur radio call sign.", "%q no es un indicativo válido para radioaficionados de la FCC."), up.CallSign)
+		return fmt.Sprintf(r.Loc("%q is not a valid FCC amateur radio call sign."), up.CallSign)
 	}
 	if up.DuplicateCallSign(r) {
-		return fmt.Sprintf(r.LangString("Another person has the call sign %q.", "Otra persona tiene el indicativo %q."), up.CallSign)
+		return fmt.Sprintf(r.Loc("Another person has the call sign %q."), up.CallSign)
 	}
 	return ""
 }
 
 func emitCallSign(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditCallSign").R(r.LangString("Call sign", "Indicativo"))
+	row.E("label for=personeditCallSign").R(r.Loc("Call sign"))
 	row.E("input id=personeditCallSign name=callSign s-validate value=%s", up.CallSign, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
-	row.E("div class=formHelp").R(r.LangString("FCC amateur radio license (if any)", "Indicativo de licencia de radioaficionado de la FCC (si corresponde)"))
+	row.E("div class=formHelp").R(r.Loc("FCC amateur radio license (if any)"))
 }
 
 func readBirthdate(r *request.Request, up *person.Updater) string {
@@ -179,14 +179,14 @@ func readBirthdate(r *request.Request, up *person.Updater) string {
 		return ""
 	}
 	if d, err := time.Parse("2006-01-02", up.Birthdate); err != nil || d.Format("2006-01-02") != up.Birthdate {
-		return fmt.Sprintf(r.LangString("%q is not a valid YYYY-MM-DD date.", "%q no es una fecha válida AAAA-MM-DD."), up.Birthdate)
+		return fmt.Sprintf(r.Loc("%q is not a valid YYYY-MM-DD date."), up.Birthdate)
 	}
 	return ""
 }
 
 func emitBirthdate(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditBirthdate").R(r.LangString("Birthdate", "Fecha de nacimiento"))
+	row.E("label for=personeditBirthdate").R(r.Loc("Birthdate"))
 	row.E("input type=date id=personeditBirthdate name=birthdate s-validate value=%s", up.Birthdate, focus, "autofocus")
 	if err != "" {
 		row.E("div class=formError>%s", err)
@@ -199,22 +199,16 @@ func readPronouns(r *request.Request, up *person.Updater) {
 
 func emitPronouns(r *request.Request, form *htmlb.Element, up *person.Updater) {
 	row := form.E("div class='formRow'")
-	row.E("label for=personeditPronouns").R(r.LangString("Pronouns", "Pronumbres"))
+	row.E("label for=personeditPronouns").R(r.Loc("Pronouns"))
 	row.E("input id=personeditPronouns name=pronouns list=personeditPronounChoices value=%s", up.Pronouns)
 	list := row.E("datalist id=personeditPronounChoices")
-	if r.Language == "es" {
-		list.E("option value='él/lo'")
-		list.E("option value='ella/la'")
-		list.E("option value='elle/le'")
-	} else {
-		list.E("option value='he/him/his'")
-		list.E("option value='she/her/hers'")
-		list.E("option value='they/them/theirs'")
-	}
+	list.E("option value=%s", r.Loc("he/him/his"))
+	list.E("option value=%s", r.Loc("she/her/hers"))
+	list.E("option value=%s", r.Loc("they/them/theirs"))
 }
 
 func emitButtons(r *request.Request, form *htmlb.Element) {
 	buttons := form.E("div class=formButtons")
-	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.LangString("Cancel", "Cancelar"))
-	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=%s", r.LangString("Save", "Guardar"))
+	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss").R(r.Loc("Cancel"))
+	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=%s", r.Loc("Save"))
 }

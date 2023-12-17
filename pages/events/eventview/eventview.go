@@ -68,9 +68,9 @@ func Render(r *request.Request, user *person.Person, e *event.Event, section str
 		Banner:   e.Start()[:10] + " " + e.Name(),
 		MenuItem: "events",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + e.Start()[0:7], Target: ".pageCanvas"},
-			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + e.Start()[0:4], Target: ".pageCanvas"},
-			{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/events/%d", e.ID()), Target: "main", Active: true},
+			{Name: r.Loc("Calendar"), URL: "/events/calendar/" + e.Start()[0:7], Target: ".pageCanvas"},
+			{Name: r.Loc("List"), URL: "/events/list/" + e.Start()[0:4], Target: ".pageCanvas"},
+			{Name: r.Loc("Details"), URL: fmt.Sprintf("/events/%d", e.ID()), Target: "main", Active: true},
 		},
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {

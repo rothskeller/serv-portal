@@ -15,8 +15,10 @@ func SubscribeCalendarPage(r *request.Request) {
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
 	}
-	ui.Page(r, user, ui.PageOpts{Title: r.LangString("SERV Calendar Subscription", "Suscripción al calendario de SERV")}, func(main *htmlb.Element) {
-		main.A("class=static").R(r.LangString(`<p>You can subscribe to the SERV calendar so that SERV events will automatically appear in the calendar app on your
+	ui.Page(r, user, ui.PageOpts{Title: r.Loc("SERV Calendar Subscription")}, func(main *htmlb.Element) {
+		main = main.A("class=static")
+		if r.Language != "es" {
+			main.R(`<p>You can subscribe to the SERV calendar so that SERV events will automatically appear in the calendar app on your
   phone, or in your desktop calendar software. Please see the instructions for your phone or software below.
 <h1>iPhone or iPad Calendar App</h1>
 <ol>
@@ -60,9 +62,9 @@ func SubscribeCalendarPage(r *request.Request) {
 <h1>Other Software</h1>
 <p>Most calendar software has the ability to subscribe to Internet calendars. Consult the documentation for your
   software to find out how. The address of the SERV calendar is <code>https://sunnyvaleserv.org/calendar.ics</code>.
-<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`,
-
-			`<p>Puede suscribirse al calendario de SERV para que los eventos de SERV
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`)
+		} else {
+			main.R(`<p>Puede suscribirse al calendario de SERV para que los eventos de SERV
   aparezcan automáticamente en la aplicación de calendario de su teléfono o en
   el software de calendario de su computadora.  Consulte las instrucciones para
   su teléfono o software a continuación.
@@ -110,6 +112,7 @@ func SubscribeCalendarPage(r *request.Request) {
   calendarios de Internet. Consulta la documentación de tu software para
   descubrir cómo. La dirección del calendario de SERV es
   <code>https://sunnyvaleserv.org/calendar.ics</code>.
-<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>`))
+<div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>`)
+		}
 	})
 }

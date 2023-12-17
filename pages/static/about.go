@@ -10,7 +10,9 @@ import (
 // AboutPage handles GET /about requests.
 func AboutPage(r *request.Request) {
 	ui.Page(r, auth.SessionUser(r, 0, false), ui.PageOpts{}, func(main *htmlb.Element) {
-		main.A("class=static").R(r.LangString(`<h1>Privacy Policy</h1>
+		main = main.A("class=static")
+		if r.Language != "es" {
+			main.R(`<h1>Privacy Policy</h1>
 <p>
   This web site collects information about people who work for, volunteer for,
   or take classes organized through the Office of Emergency Services (OES) in
@@ -110,7 +112,9 @@ func AboutPage(r *request.Request) {
   <a href="https://www.algolia.com/" target="_blank">Algolia</a> for searching.
 </p>
 <div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>
-`, `<h1>Política de privacidad</h1>
+`)
+		} else {
+			main.R(`<h1>Política de privacidad</h1>
 <p>
   Este sitio web recopila información sobre personas que trabajan, son
   voluntarios, o tomar clases organizadas a través de la Oficina de Servicios de
@@ -213,6 +217,7 @@ func AboutPage(r *request.Request) {
   <a href="https://www.algolia.com/" target="_blank">Algolia</a> para buscar.
 </p>
 <div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regrese</button></div>
-`))
+`)
+		}
 	})
 }

@@ -86,10 +86,10 @@ func HandleActivity(r *request.Request, pidstr, period string) {
 		return
 	}
 	tabs = []ui.PageTab{
-		{Name: r.LangString("List", "Lista"), URL: "/people", Target: ".pageCanvas"},
-		{Name: r.LangString("Map", "Mapa"), URL: "/people/map", Target: ".pageCanvas"},
-		{Name: r.LangString("Details", "Detalles"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main"},
-		{Name: r.LangString("Activity", "Actividad"), URL: fmt.Sprintf("/people/%d/activity/%s", p.ID(), period), Target: "main", Active: true},
+		{Name: r.Loc("List"), URL: "/people", Target: ".pageCanvas"},
+		{Name: r.Loc("Map"), URL: "/people/map", Target: ".pageCanvas"},
+		{Name: r.Loc("Details"), URL: fmt.Sprintf("/people/%d", p.ID()), Target: "main"},
+		{Name: r.Loc("Activity"), URL: fmt.Sprintf("/people/%d/activity/%s", p.ID(), period), Target: "main", Active: true},
 	}
 	handleCommon(r, user, p, cy, cm, y, m, tabs)
 }
@@ -132,11 +132,11 @@ func handleCommon(r *request.Request, user, p *person.Person, cy, cm, y, m int, 
 		saveHours(r, user, p, y, m)
 	}
 	// Set the page options.
-	opts.Title = r.LangString("Activity", "Actividad")
+	opts.Title = r.Loc("Activity")
 	if user.ID() == p.ID() {
-		opts.Banner = r.LangString("Volunteer Activity", "Actividad de voluntariado")
+		opts.Banner = r.Loc("Volunteer Activity")
 	} else {
-		opts.Banner = r.LangString(p.InformalName()+" Activity", "Actividad de "+p.InformalName())
+		opts.Banner = fmt.Sprintf(r.Loc("%s Activity"), p.InformalName())
 	}
 	if user.ID() == p.ID() {
 		opts.MenuItem = "profile"
@@ -224,10 +224,10 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 				}
 			}
 			if flags&taskperson.Attended != 0 {
-				grid.E("s-icon class=activityYearAttended icon=signature title=%s", r.LangString("Signed In", "Registrado"))
+				grid.E("s-icon class=activityYearAttended icon=signature title=%s", r.Loc("Signed In"))
 			}
 			if flags&taskperson.Credited != 0 {
-				grid.E("s-icon class=activityYearCredited icon=star-solid title=%s", r.LangString("Credited", "Acreditado"))
+				grid.E("s-icon class=activityYearCredited icon=star-solid title=%s", r.Loc("Credited"))
 			}
 			if e.Flags()&event.OtherHours != 0 {
 				grid.E("div class=activityYearDate>%s", e.Start()[:7])
@@ -237,7 +237,7 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 			label := grid.E("div class=activityYearLabel")
 			orgdot.OrgDot(r, label, t.Org())
 			if e.Flags()&event.OtherHours != 0 {
-				label.TF(r.LangString(" Other %s Hours", " Otras horas para %s"), t.Name())
+				label.TF(" "+r.Loc("Other %s Hours"), t.Name())
 			} else {
 				label.TF(" %s", e.Name())
 				if t.Name() != "Tracking" {
@@ -246,7 +246,7 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 			}
 		})
 	if grid == nil {
-		main.E("div").R(r.LangString("No activity.", "No hay actividad."))
+		main.E("div").R(r.Loc("No activity."))
 	}
 }
 
@@ -271,15 +271,16 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 			minutes, flags := taskperson.Get(r, t.ID(), p.ID())
 			grid.E("s-hours class=activityHours name=t%d value=%s", t.ID(), ui.MinutesToHours(minutes), !editable, "disabled")
 			if flags&taskperson.Attended != 0 {
-				grid.E("s-icon class=activityAttended icon=signature title=%s", r.LangString("Signed In", "Registrado"))
+				grid.E("s-icon class=activityAttended icon=signature title=%s", r.Loc("Signed In"))
 			}
 			if flags&taskperson.Credited != 0 {
-				grid.E("s-icon class=activityCredited icon=star-solid title=%s", r.LangString("Credited", "Acreditado"))
+				grid.E("s-icon class=activityCredited icon=star-solid title=%s", r.Loc("Credited"))
 			}
 			label := grid.E("div class=activityLabel")
 			orgdot.OrgDot(r, label, t.Org())
 			if e.Flags()&event.OtherHours != 0 {
-				label.TF(r.LangString(" %s Other %s Hours", " %s Otras horas para %s"), e.Start()[:7], t.Name())
+				label.R(" " + e.Start()[:7] + " ")
+				label.TF(r.Loc("Other %s Hours"), t.Name())
 			} else {
 				label.TF(" %s %s", e.Start()[:10], e.Name())
 				if t.Name() != "Tracking" {
@@ -289,5 +290,5 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 		})
 	})
 	form.E("div class=activityButtons hidden").
-		E("input type=submit class='sbtn sbtn-warning' value=%s", r.LangString("Save", "Guardar"))
+		E("input type=submit class='sbtn sbtn-warning' value=%s", r.Loc("Save"))
 }

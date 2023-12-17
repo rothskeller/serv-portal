@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"sunnyvaleserv.org/portal/pages/events/langdate"
 	"sunnyvaleserv.org/portal/server/auth"
+	"sunnyvaleserv.org/portal/server/l10n"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/person"
@@ -48,14 +48,14 @@ func Handle(r *request.Request, token string) {
 	}
 	month = state.GetEventsMonth(r)
 	opts = ui.PageOpts{
-		Title:    r.LangString("Event Signups", "Inscripciones para eventos"),
+		Title:    r.Loc("Event Signups"),
 		MenuItem: "events",
 	}
 	if !fromToken {
 		opts.Tabs = []ui.PageTab{
-			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + month, Target: "main"},
-			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + month[0:4], Target: "main"},
-			{Name: r.LangString("Signups", "Inscripciones"), URL: "/events/signups", Target: "main", Active: true},
+			{Name: r.Loc("Calendar"), URL: "/events/calendar/" + month, Target: "main"},
+			{Name: r.Loc("List"), URL: "/events/list/" + month[0:4], Target: "main"},
+			{Name: r.Loc("Signups"), URL: "/events/signups", Target: "main", Active: true},
 		}
 		if user.HasPrivLevel(0, enum.PrivLeader) {
 			opts.Tabs = append(opts.Tabs, ui.PageTab{Name: "Add Event", URL: "/events/create", Target: "main"})
@@ -85,7 +85,7 @@ func Handle(r *request.Request, token string) {
 					date, _ := time.ParseInLocation("2006-01-02T15:04", e.Start(), time.Local)
 					ediv = form.E("div class=signupEvent")
 					ediv.E("div class=signupEventName>%s", e.Name())
-					ediv.E("div class=signupEventDate>%s", langdate.LangDate(r, date))
+					ediv.E("div class=signupEventDate>%s", l10n.LocalizeDate(date, r.Language))
 					if e.Details() != "" {
 						form.E("div class=signupEventDetails").R(e.Details())
 					}
@@ -102,7 +102,7 @@ func Handle(r *request.Request, token string) {
 				}
 			})
 		if lastd == "" {
-			main.E("div").R(r.LangString("There are no upcoming events with signups.", "No hay eventos próximos con inscripciones."))
+			main.E("div").R(r.Loc("There are no upcoming events with signups."))
 		}
 	})
 }

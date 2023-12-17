@@ -41,12 +41,12 @@ func Get(r *request.Request, yearstr string) {
 	}
 	state.SetEventsMonth(r, month)
 	opts = ui.PageOpts{
-		Title:    r.LangString("Events", "Eventos"),
+		Title:    r.Loc("Events"),
 		MenuItem: "events",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + month, Target: "main"},
-			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + month[0:4], Target: "main", Active: true},
-			{Name: r.LangString("Signups", "Inscripciones"), URL: "/events/signups", Target: "main"},
+			{Name: r.Loc("Calendar"), URL: "/events/calendar/" + month, Target: "main"},
+			{Name: r.Loc("List"), URL: "/events/list/" + month[0:4], Target: "main", Active: true},
+			{Name: r.Loc("Signups"), URL: "/events/signups", Target: "main"},
 		},
 	}
 	if user.HasPrivLevel(0, enum.PrivLeader) {
@@ -61,9 +61,9 @@ func Get(r *request.Request, yearstr string) {
 		main.A("class=eventslist")
 		main.E("div class=eventslistTitle").E("s-year id=eventslistYear value=%s", month[0:4])
 		table := main.E("div class=eventslistTable")
-		table.E("div class='eventslistHeading eventslistDate'").R(r.LangString("Date", "Fecha"))
-		table.E("div class='eventslistHeading eventslistEvent'").R(r.LangString("Event", "Evento"))
-		table.E("div class='eventslistHeading eventslistLocation'").R(r.LangString("Location", "Sitio"))
+		table.E("div class='eventslistHeading eventslistDate'").R(r.Loc("Date"))
+		table.E("div class='eventslistHeading eventslistEvent'").R(r.Loc("Event"))
+		table.E("div class='eventslistHeading eventslistLocation'").R(r.Loc("Location"))
 		// Walk through all of the tasks in the year, gathering them up
 		// by date and emitting all of them on the same date together.
 		event.AllBetween(r, yearstr+"-01-01", yearstr+"-12-32", eventFields, 0, func(e *event.Event, _ *venue.Venue) {
@@ -106,7 +106,7 @@ func emitDateEvents(r *request.Request, table *htmlb.Element, events []event.Eve
 		loc := table.E("div class=eventslistLocation")
 		switch vid := events[i].Venue(); vid {
 		case 0:
-			loc.R(r.LangString("TBD", "Por determinar"))
+			loc.R(r.Loc("TBD"))
 		default:
 			var v *venue.Venue
 			if v = venueCache[vid]; v == nil {

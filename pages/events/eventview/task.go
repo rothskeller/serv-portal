@@ -100,7 +100,7 @@ func showTaskSignups(r *request.Request, body *htmlb.Element, user *person.Perso
 	form.E("input type=hidden name=shift")
 	form.E("input type=hidden name=signedup")
 	form.E("input type=hidden name=person")
-	heading := form.E("div class=eventviewTaskHeading").R(r.LangString("Signups", "Inscripciones"))
+	heading := form.E("div class=eventviewTaskHeading").R(r.Loc("Signups"))
 	if editable {
 		heading.E("a href=/events/proxysignup/%d up-layer=new up-size=grow up-dismissable=false up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Proxy Signup", t.ID())
 	}
@@ -109,25 +109,25 @@ func showTaskSignups(r *request.Request, body *htmlb.Element, user *person.Perso
 
 		switch len(roles) {
 		case 0:
-			form.E("div").R(r.LangString("No one can sign up right now.", "Nadie puede inscribirse en este momento."))
+			form.E("div").R(r.Loc("No one can sign up right now."))
 			return
 		case 1:
 			conjoin = roles[0]
 		case 2:
-			conjoin = roles[0] + r.LangString(" and ", " y ") + roles[1]
+			conjoin = roles[0] + " " + r.Loc("and") + " " + roles[1]
 		default:
-			conjoin = strings.Join(roles[:len(roles)-1], ", ") + r.LangString(", and ", ", y ") + roles[len(roles)-1]
+			conjoin = strings.Join(roles[:len(roles)-1], ", ") + ", " + r.Loc("and") + " " + roles[len(roles)-1]
 		}
-		form.E("div").R(r.LangString("Only ", "Sólo ")).R(conjoin).R(r.LangString(" can sign up.", " pueden inscribirse."))
+		form.E("div").TF(r.Loc("Only %s can sign up."), conjoin)
 		return
 	}
 	if t.Flags()&task.RequiresBGCheck != 0 && !editable && (!user.BGChecks().DOJ.Valid() || !user.BGChecks().FBI.Valid()) {
-		form.E("div").R(r.LangString("Signups for this task require a completed background check.", "Las inscripciones para esta tarea requieren una verificación de antecedentes completa."))
+		form.E("div").R(r.Loc("Signups for this task require a completed background check."))
 		return
 	}
 	if t.Flags()&task.CoveredByDSW != 0 && !editable {
 		if reg, _ := user.DSWRegistrationForOrg(t.Org()); !reg.Valid() {
-			form.E("div").R(r.LangString("Signups for this task require current DSW registration.", "Las inscripciones para esta tarea requieren un registro DSW actualizado."))
+			form.E("div").R(r.Loc("Signups for this task require current DSW registration."))
 			return
 		}
 	}
@@ -144,7 +144,7 @@ func handleSignup(r *request.Request, user *person.Person, e *event.Event) {
 
 // showTaskTracking displays the tracking information for the Task.
 func showTaskTracking(r *request.Request, body *htmlb.Element, t *task.Task, editable, hasshifts, hasrole, attended, credited, anyAttended, anyCredited, hoursTracked, canRecordHours bool, minutes uint) {
-	heading := body.E("div class=eventviewTaskHeading").R(r.LangString("Attendance", "Asistencia"))
+	heading := body.E("div class=eventviewTaskHeading").R(r.Loc("Attendance"))
 	if editable {
 		heading.E("a href=/events/attendance/%d up-layer=new up-size=grow up-dismissable=false up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Record Attendance", t.ID())
 	}
@@ -154,38 +154,36 @@ func showTaskTracking(r *request.Request, body *htmlb.Element, t *task.Task, edi
 		box.E("div class=eventviewTaskStatusIcon", attended, "class=attended", !attended, "class=false").
 			E("s-icon icon=signature")
 		if attended {
-			box.E("div class=eventviewTaskStatusText").R(r.LangString("You signed in.", "Se registró."))
+			box.E("div class=eventviewTaskStatusText").R(r.Loc("You signed in."))
 		} else {
-			box.E("div class=eventviewTaskStatusText").R(r.LangString("You did not sign in.", "No se registró."))
+			box.E("div class=eventviewTaskStatusText").R(r.Loc("You did not sign in."))
 		}
 	}
 	if credited || (anyCredited && hasrole) {
 		if credited {
 			box.E("div class='eventviewTaskStatusIcon credited'").E("s-icon icon=star-solid")
-			box.E("div class=eventviewTaskStatusText").R(r.LangString("You were credited for this session.", "Se le acreditó por esta sesión."))
+			box.E("div class=eventviewTaskStatusText").R(r.Loc("You were credited for this session."))
 		} else {
 			box.E("div class='eventviewTaskStatusIcon false'").E("s-icon icon=star")
-			box.E("div class=eventviewTaskStatusText").R(r.LangString("You were not credited for this session.", "No se le acreditó por esta sesión."))
+			box.E("div class=eventviewTaskStatusText").R(r.Loc("You were not credited for this session."))
 		}
 	}
 	if hoursTracked && (minutes != 0 || hasrole) {
 		box.E("div class=eventviewTaskStatusIcon", minutes != 0, "class=minutes", minutes == 0, "class=false").
 			E("s-icon icon=clock")
 		if canRecordHours {
-			line := box.E("div class=eventviewTaskHours").R(r.LangString("Volunteer hours: ", "Horas de voluntariado: "))
+			line := box.E("div class=eventviewTaskHours").R(r.Loc("Volunteer hours") + ": ")
 			line.E("s-hours name=hours value=%s", ui.MinutesToHours(minutes))
-			line.E("input type=submit name=edhours%d class='sbtn sbtn-warning eventviewTaskHoursSave' hidden value=%s>", t.ID(), r.LangString("Save", "Guardar"))
+			line.E("input type=submit name=edhours%d class='sbtn sbtn-warning eventviewTaskHoursSave' hidden value=%s>", t.ID(), r.Loc("Save"))
 		} else if minutes != 0 {
 			var m = ui.MinutesToHours(minutes)
-			var phrase = ""
 			if m != "½" && m != "1" {
-				phrase = r.LangString(" volunteer hours.", " horas de voluntariado.")
+				box.E("div").TF(r.Loc("You spent %s volunteer hours."), m)
 			} else {
-				phrase = r.LangString(" volunteer hour.", " hora de voluntariado.")
+				box.E("div").TF(r.Loc("You spent %s volunteer hour."), m)
 			}
-			box.E("div").R(r.LangString("You spent ", "Pasó ")).R(m).R(phrase)
 		} else {
-			box.E("div").R(r.LangString("You did not record volunteer hours.", "No registró horas de voluntariado."))
+			box.E("div").R(r.Loc("You did not record volunteer hours."))
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package signups
 
 import (
-	"fmt"
 	"sort"
 
 	"sunnyvaleserv.org/portal/store/enum"
@@ -45,7 +44,7 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 		}
 		if v.ID() != lastv {
 			if v == nil {
-				tdiv.E("div class=signupVenueName").R(r.LangString("Location TBD", "Sitio por determinar"))
+				tdiv.E("div class=signupVenueName").R(r.Loc("Location TBD"))
 			} else if v.URL() != "" {
 				tdiv.E("div class=signupVenueName").
 					E("a href=%s target=_blank>%s", v.URL(), v.Name())
@@ -67,9 +66,7 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 		} else {
 			ineligibleReason = ec.CanSignUp(s)
 		}
-		if r.Language == "es" {
-			ineligibleReason = esIneligibleReasons[ineligibleReason]
-		}
+		ineligibleReason = shiftperson.IneligibleReason(r.Loc(string(ineligibleReason)))
 		label := s.Start()[11:]
 		if s.End() != s.Start() {
 			label += "–" + s.End()[11:]
@@ -79,16 +76,16 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 			ineligibleReason != "", "disabled", ineligibleReason != "", "title=%s", string(ineligibleReason))
 		hdiv := tdiv.E("div class=signupShiftHave")
 		if len(people) != 0 {
-			hdiv.E("a href=#>%s %d,", r.LangString("Have", "Tenemos"), len(people))
+			hdiv.E("a href=#").TF(r.Loc("Have %d,"), len(people))
 		} else {
-			hdiv.R(fmt.Sprintf("Have %d,", len(people)))
+			hdiv.TF(r.Loc("Have %d,"), len(people))
 		}
 		if s.Min() != 0 && len(people) < int(s.Min()) {
-			tdiv.E("div class=signupShiftNeed>%s %d", r.LangString("need", "necesitamos"), s.Min())
+			tdiv.E("div class=signupShiftNeed").TF(r.Loc("need %d"), s.Min())
 		} else if s.Max() != 0 {
-			tdiv.E("div class=signupShiftMax>%s %d", r.LangString("limit", "límite"), s.Max())
+			tdiv.E("div class=signupShiftMax").TF(r.Loc("limit %d"), s.Max())
 		} else {
-			tdiv.E("div class=signupShiftMax").R(r.LangString("no limit", "no hay límite"))
+			tdiv.E("div class=signupShiftMax").R(r.Loc("no limit"))
 		}
 		if privileged && editable {
 			tdiv.E("div class=signupShiftEdit").
@@ -167,16 +164,4 @@ func HandleShiftSignup(r *request.Request, user, p *person.Person) (date string)
 		}
 	})
 	return
-}
-
-var esIneligibleReasons = map[shiftperson.IneligibleReason]shiftperson.IneligibleReason{
-	shiftperson.ErrOverlapping: shiftperson.IneligibleReason("Ya se inscribió a un turno conflictivo."),
-	shiftperson.ErrClosed:      shiftperson.IneligibleReason("Las inscripciones están cerradas."),
-	shiftperson.ErrIneligible:  shiftperson.IneligibleReason("No es elegible para registrarse."),
-	shiftperson.ErrNoDSW:       shiftperson.IneligibleReason("Se requiere registro DSW."),
-	shiftperson.ErrNoBGCheck:   shiftperson.IneligibleReason("Se requiere una verificación de antecedentes."),
-	shiftperson.ErrEnded:       shiftperson.IneligibleReason("El turno ha terminado."),
-	shiftperson.ErrStarted:     shiftperson.IneligibleReason("El turno ya ha comenzado."),
-	shiftperson.ErrFull:        shiftperson.IneligibleReason("El turno está completo."),
-	shiftperson.ErrNoPerson:    shiftperson.IneligibleReason("Ninguna persona seleccionada."),
 }

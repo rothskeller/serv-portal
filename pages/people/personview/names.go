@@ -26,6 +26,6 @@ func showNames(r *request.Request, main *htmlb.Element, user, p *person.Person) 
 	}
 	if user.ID() == p.ID() || user.HasPrivLevel(0, enum.PrivLeader) {
 		names.E("div class=personviewNamesEdit").
-			E("a href=/people/%d/ednames up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.LangString("Edit", "Editar"))
+			E("a href=/people/%d/ednames up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'", p.ID()).R(r.Loc("Edit"))
 	}
 }

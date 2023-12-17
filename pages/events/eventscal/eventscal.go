@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"sunnyvaleserv.org/portal/pages/errpage"
-	"sunnyvaleserv.org/portal/pages/events/langdate"
 	"sunnyvaleserv.org/portal/server/auth"
+	"sunnyvaleserv.org/portal/server/l10n"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/person"
@@ -38,12 +38,12 @@ func Get(r *request.Request, month string) {
 	state.SetEventsPage(r, "calendar")
 	state.SetEventsMonth(r, month)
 	opts = ui.PageOpts{
-		Title:    r.LangString("Events", "Eventos"),
+		Title:    r.Loc("Events"),
 		MenuItem: "events",
 		Tabs: []ui.PageTab{
-			{Name: r.LangString("Calendar", "Calendario"), URL: "/events/calendar/" + month, Target: "main", Active: true},
-			{Name: r.LangString("List", "Lista"), URL: "/events/list/" + month[0:4], Target: "main"},
-			{Name: r.LangString("Signups", "Inscripciones"), URL: "/events/signups", Target: "main"},
+			{Name: r.Loc("Calendar"), URL: "/events/calendar/" + month, Target: "main", Active: true},
+			{Name: r.Loc("List"), URL: "/events/list/" + month[0:4], Target: "main"},
+			{Name: r.Loc("Signups"), URL: "/events/signups", Target: "main"},
 		},
 	}
 	if user.HasPrivLevel(0, enum.PrivLeader) {
@@ -57,13 +57,14 @@ func Get(r *request.Request, month string) {
 		main.A("class=eventscal")
 		grid := main.E("div class=eventscalGrid")
 		grid.E("div class=eventscalHeading").E("s-month id=eventscalMonth value=%s", month)
-		grid.E("div class=eventscalWeekday").R(r.LangString("S", "D"))
-		grid.E("div class=eventscalWeekday").R(r.LangString("M", "L"))
-		grid.E("div class=eventscalWeekday").R(r.LangString("T", "M"))
-		grid.E("div class=eventscalWeekday").R(r.LangString("W", "M"))
-		grid.E("div class=eventscalWeekday").R(r.LangString("T", "J"))
-		grid.E("div class=eventscalWeekday").R(r.LangString("F", "V"))
-		grid.E("div class=eventscalWeekday>S")
+		dow := r.Loc("SMTWTFS")
+		grid.E("div class=eventscalWeekday").R(dow[0:1])
+		grid.E("div class=eventscalWeekday").R(dow[1:2])
+		grid.E("div class=eventscalWeekday").R(dow[2:3])
+		grid.E("div class=eventscalWeekday").R(dow[3:4])
+		grid.E("div class=eventscalWeekday").R(dow[4:5])
+		grid.E("div class=eventscalWeekday").R(dow[5:6])
+		grid.E("div class=eventscalWeekday").R(dow[6:7])
 		for i := time.Sunday; i < start.Weekday(); i++ {
 			grid.E("div class='eventscalDay eventscalDay-empty'")
 		}
@@ -94,7 +95,7 @@ func Get(r *request.Request, month string) {
 // emitDayCell emits the calendar grid cell for the specified day, with all of
 // the events on that day.
 func emitDayCell(r *request.Request, grid *htmlb.Element, day time.Time, events []event.Event) {
-	cell := grid.E("div class=eventscalDay data-date=%s", langdate.LangDate(r, day))
+	cell := grid.E("div class=eventscalDay data-date=%s", l10n.LocalizeDate(day, r.Language))
 	cell.E("div").R(strconv.Itoa(day.Day()))
 	if len(events) == 0 {
 		return
