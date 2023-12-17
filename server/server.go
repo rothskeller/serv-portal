@@ -247,31 +247,29 @@ var matcher = language.NewMatcher([]language.Tag{language.English, language.Span
 
 // chooseLanguage chooses the language that will be used to satisfy the request.
 func chooseLanguage(r *request.Request) (redirected bool) {
-	var lang string
-
 	if r.Path == "/en" || r.Path == "/es" || strings.HasPrefix(r.Path, "/en/") || strings.HasPrefix(r.Path, "/es/") {
-		lang = r.Path[1:3]
+		r.Language = r.Path[1:3]
 		redirected = true
 	} else if r.Path == "/clases" || r.Path == "/Clases" || r.Path == "/CLASES" {
 		// Special case:  if the URL is "/clases", language is Spanish.
-		lang = "es"
+		r.Language = "es"
 	} else if c, err := r.Request.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {
-		lang = c.Value
+		r.Language = c.Value
 		return false // no need to set cookie
 	} else if accept := r.Request.Header.Get("Accept-Language"); accept != "" {
 		t, _, _ := language.ParseAcceptLanguage(accept)
 		tag, _, _ := matcher.Match(t...)
 		if tag == language.Spanish {
-			lang = "es"
+			r.Language = "es"
 		} else {
-			lang = "en"
+			r.Language = "en"
 		}
 	} else {
-		lang = "en"
+		r.Language = "en"
 	}
 	http.SetCookie(r, &http.Cookie{
 		Name:     "lang",
-		Value:    lang,
+		Value:    r.Language,
 		Path:     "/",
 		Expires:  time.Now().Add(10 * 365 * 24 * time.Hour),
 		SameSite: http.SameSiteLaxMode,
