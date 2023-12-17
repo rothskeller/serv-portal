@@ -88,7 +88,6 @@ CREATE TABLE person (
   hours_token        text    UNIQUE,
   identification     integer NOT NULL DEFAULT 0,
   birthdate          text,            -- YYYY-MM-DD
-  language           text    NOT NULL,
   flags              integer NOT NULL DEFAULT 0
 );
 CREATE INDEX person_sort_name_idx ON person (sort_name);

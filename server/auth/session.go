@@ -50,23 +50,12 @@ func SessionUser(r *request.Request, fields person.Fields, respond bool) (p *per
 		goto UNAUTHORIZED
 	}
 	// Get the session user's data.  Note that we always retrieve the user's
-	// ID, name, language, and privilege levels, even if not requested.  The
-	// name is needed for session logging, the ID and privilege levels are
-	// needed for session logging, and the language is needed for proper
-	// page rendering.
-	p = person.WithID(r, pid, fields|person.FInformalName|person.FPrivLevels|person.FLanguage)
+	// ID, name, and privilege levels, even if not requested.  The name is
+	// needed for session logging and the ID and privilege levels are needed
+	// for session logging.
+	p = person.WithID(r, pid, fields|person.FInformalName|person.FPrivLevels)
 	r.LogEntry.User = p.InformalName()
 	r.CSRF = csrf
-
-	// Always set the language cookie, so that if they visit a public page
-	// in the future they'll still get their preferred language.
-	http.SetCookie(r, &http.Cookie{
-		Name:     "lang",
-		Value:    p.Language(),
-		Path:     "/",
-		Expires:  time.Now().Add(10 * 365 * 24 * time.Hour),
-		SameSite: http.SameSiteLaxMode,
-	})
 	return p
 
 UNAUTHORIZED:
