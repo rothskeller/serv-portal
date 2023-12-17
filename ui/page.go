@@ -147,5 +147,5 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 			menuItem == "profile", "class=up-current").R(r.LangString("Profile", "Perfil"))
 	}
 	ul.E("li").E("a href=/logout up-target=body class=pageMenuItem").R(r.LangString("Logout", "Cerrar"))
-	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout").R(r.LangString("Web Site Info", "Información del sitio"))
+	h.E("a href=/about up-target=.pageCanvas class=pageMenuAbout").R(r.LangString("Web Site Info", "Info. del sitio"))
 }

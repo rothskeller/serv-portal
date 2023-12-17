@@ -127,6 +127,7 @@ var stylesheets = []string{
 	"pages/events/signups/shared.css",
 	"pages/events/signups/signups.css",
 	"pages/files/files.css",
+	"pages/homepage/homepage.css",
 	"pages/homepage/public.css",
 	"pages/homepage/user.css",
 	"pages/login/login.css",
