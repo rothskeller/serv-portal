@@ -112,7 +112,7 @@ func pageTitle(r *request.Request, h *htmlb.Element, user *person.Person, banner
 	} else if r.Language == "es" {
 		h.E("div class=pageTitleLanguage").E("a href=%s>View in\nEnglish", "/en"+r.Path)
 	} else {
-		h.E("div class=pageTitleLanguage").E("a href=%s>Vea en\nespañol", "/es"+r.Path)
+		h.E("div class=pageTitleLanguage").E("a href=%s>Ver en\nespañol", "/es"+r.Path)
 	}
 }
 

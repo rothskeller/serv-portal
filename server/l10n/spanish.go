@@ -102,6 +102,34 @@ var spanish = map[string]string{
 	"Event Signups": "Inscripciones para eventos",
 	"There are no upcoming events with signups.": "No hay eventos próximos con inscripciones.",
 
+	// homepage/homepage.go
+	"Sunnyvale Emergency Response Volunteers": "Voluntarios de Respuesta a Emergencias de Sunnyvale",
+	"Volunteer Login": "Iniciar sesión",
+	// "Profile": "Perfil",
+	"Classes and Training":                                     "Clases y capacitación",
+	"Preparedness for\nhomes and families":                     "Preparación para su\nfamilia y casa",
+	"2 hours\nEnglish and Spanish":                             "2 horas\nespañol e inglés",
+	"2 hours\nEnglish Jan. 25\nSpanish Jan. 13":                "2 horas\nespañol 13 enero\ninglés 25 enero",
+	"Helping others safely\nin a disaster":                     "Ayudar a otros\nen un desastre",
+	"7 weeks\nEnglish only":                                    "7 semanas\ninglés solamente",
+	"7 weeks\nEnglish only\nFeb–Mar 2024":                      "7 semanas\ninglés solamente\nfeb–mar 2024",
+	"Volunteer Programs":                                       "Programas de voluntariado",
+	"Emergency Response Team":                                  "Respuesta en emergencias",
+	"Community Emergency Response Team":                        "Equipo comunitario de respuesta a emergencias",
+	"Preparedness Education":                                   "Educación de preparación",
+	"Listos California: Preparedness Education":                "Listos California: Educación de preparación",
+	"Emergency Communications":                                 "Communicaciones en emergencias",
+	"Sunnyvale Amateur Radio Emergency Communications Service": "Radioaficionados de Sunnyvale:\nCommunicaciones en emergencias",
+	"Neighborhood Preparedness":                                "Preparación del vecindario",
+	"Sunnyvale Neighborhoods Actively Prepare":                 "Vecindarios de Sunnyvale se preparan activamente",
+	"Information Library":                                      "Archivos y recursos",
+	"Contact Us":                                               "Contáctenos",
+	"Office of Emergency Services\nDepartment of Public Safety\nCity of Sunnyvale":                                                       "Oficina de Servicios de Emergencia\nDepartamento de Seguridad Pública\nCiudad de Sunnyvale",
+	"<a href=\"mailto:oes@sunnyvale.ca.gov\">oes@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307190\">(408) 730-7190</a>\n(messages only)": "<a href=\"mailto:oes@sunnyvale.ca.gov\">oes@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307294\">(408) 730-7294</a>\n(mensajes solamente)",
+	"Web Site Information": "Información del sitio web",
+	// Asset URL for logo for PEP class:
+	"pep-logo.png": "ppde-logo.png",
+
 	// people/*
 	"(all)":    "(todos)", // as in, all roles, everyone
 	"Activity": "Actividad",

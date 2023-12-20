@@ -42,42 +42,38 @@ main.home {
   padding: 0.25rem 0.75rem;
 }
 .homeClasses {
-  display: grid;
-  grid: auto-flow / 1fr 1fr;
-  align-items: start;
-  justify-items: center;
+  padding-top: 0.25rem;
 }
 .homeClass {
-  text-align: center;
-  padding: 0.75rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   user-select: none;
   cursor: pointer;
   color: inherit;
-}
-#homeClassPEP {
-  padding-left: 0.375rem;
-}
-#homeClassCERT {
-  padding-right: 0.375rem;
+  padding: 0.25rem 0.5rem;
 }
 .homeClass:hover {
   color: inherit;
   background-color: #ccc;
   text-decoration: none;
 }
+.homeClassImg {
+  flex: none;
+  width: 6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .homeClassImg img {
-  width: 9rem;
+  max-width: 6rem;
+  max-height: 4rem;
 }
-.homeClassSlug {
+.homeClassTitle {
   font-weight: bold;
-  white-space: pre;
 }
-.homeClassInfoShort {
-  white-space: pre;
-}
-.homeClassInfoLong {
-  display: none;
-  white-space: pre;
+.homePrograms {
+  padding-top: 0.25rem;
 }
 .homeProgram {
   display: flex;
@@ -86,7 +82,7 @@ main.home {
   user-select: none;
   cursor: pointer;
   color: inherit;
-  padding: 0.125rem 0.5rem;
+  padding: 0.25rem 0.5rem;
 }
 .homeProgram:hover {
   color: inherit;
@@ -102,42 +98,31 @@ main.home {
 }
 .homeProgramBadge img {
   max-width: 4rem;
-  max-height: 2rem;
+  max-height: 2.4rem;
 }
-.homeProgramSlugShort {
-  flex: auto;
-  padding-left: 0.25rem;
-  white-space: nowrap;
-}
-.homeProgramSlugLong {
-  display: none;
+.homeProgramSlug {
   flex: auto;
   padding-left: 0.25rem;
   white-space: pre-wrap;
 }
-.homeLibraryShort {
-  flex: none;
-  text-align: center;
-}
-.homeLibraryShort a {
-  font-size: 1.25rem;
-  line-height: 1.2;
-  width: 100%;
-  padding: 0.25rem 0.75rem;
-}
-#homeBlockLibraryLong {
-  display: none;
-}
-.homeLibraryLong {
+.homeLibrary {
   padding: 0.75rem 0 0.25rem 0.5rem;
 }
 #homeBlockContact {
   display: none;
 }
 .homeContact {
+  padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.homeContactImg {
+  height: 4rem;
+}
+.homeContactText {
   text-align: center;
   white-space: pre;
-  padding: 0.5rem;
 }
 .homeSpacer {
   flex: auto;
@@ -154,33 +139,11 @@ main.home {
   margin-top: 1rem;
   justify-content: center;
   gap: 2rem;
-}
-.homeContact2 {
   text-align: center;
   white-space: pre;
 }
-@media (min-height: 46em), (min-width: 50em) {
-  .homeClassInfoShort {
-    display: none;
-  }
-  .homeClassInfoLong {
-    display: block;
-  }
-  .homePrograms {
-    padding-top: 0.5rem;
-  }
-  .homeProgram {
-    padding: 0.25rem 0.5rem;
-  }
-  .homeProgramBadge img {
-    max-height: 2.4rem;
-  }
-  .homeProgramSlugShort {
-    display: none;
-  }
-  .homeProgramSlugLong {
-    display: block;
-  }
+.homeContact2 img {
+  height: 3.6rem;
 }
 @media (min-width: 36em) {
   .homeTButtons {
@@ -191,14 +154,11 @@ main.home {
   }
 }
 @media (min-width: 50em) {
+  main.home {
+    padding: 1rem;
+  }
   .homeBlocks {
     grid: auto-flow / 1fr 1fr;
-  }
-  .homeLibraryShort {
-    display: none;
-  }
-  #homeBlockLibraryLong {
-    display: block;
   }
   #homeBlockContact {
     display: block;
