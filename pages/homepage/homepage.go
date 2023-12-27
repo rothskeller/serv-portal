@@ -120,5 +120,5 @@ func homeContact2(r *request.Request, main *htmlb.Element) {
 	contact := main.E("div class=homeContact2")
 	contact.E("img class=homeContactImg2 src=%s", ui.AssetURL("sny-logo.png"))
 	contact.E("div").R(r.Loc("Office of Emergency Services\nDepartment of Public Safety\nCity of Sunnyvale"))
-	contact.E("div").R(r.Loc("<a href=\"mailto:oes@sunnyvale.ca.gov\">oes@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307190\">(408) 730-7190</a>\n(messages only)"))
+	contact.E("div").R(r.Loc("<a href=\"mailto:serv@sunnyvale.ca.gov\">serv@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307190\">(408) 730-7190</a>\n(messages only)"))
 }

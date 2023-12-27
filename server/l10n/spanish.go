@@ -18,6 +18,24 @@ var spanish = map[string]string{
 	"List":                               "Lista",
 	"%q is not a valid YYYY-MM-DD date.": "%q no es una fecha válida AAAA-MM-DD.",
 
+	// classes/common.go
+	"Sign Up": "Inscribirse",
+	"No sessions of this class are currently scheduled.": "No hay sesiones programadas de esta clase actualmente.",
+	"This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services.": "Esta clase es presentada por Voluntarios de Respuesta a Emergencias de Sunnyvale (SERV, en inglés), el brazo voluntario de la Oficina de Servicios de Emergencia de Sunnyvale.",
+
+	// classes/cert.go
+	"CERT Basic Training":                         "Capacitación básica del CERT",
+	"How to help your community after a disaster": "Cómo ayudar a su comunidad después de un desastre",
+	"<p>In a disaster, professional emergency responders will be overwhelmed, and people will have to rely on their neighbors for help.  If you want to be one of the helpers, this class is for you.  It teaches basic emergency response skills, and how to use them safely.  Topics include:</p><ul><li>Disaster Preparedness<li>The CERT Organization<li>Usage of Personal Protective Equipment (PPE)<li>Disaster Medical Operations<li>Triaging, Assessing, and Treating Patients<li>Disaster Psychology<li>Fire Safety and Utility Control<li>Extinguishing Small Fires<li>Light Search and Rescue<li>Terrorism and CERT<li>Disaster Simulation Exercise</ul><p>This class meets for seven weekday evenings and one full Saturday (see dates below).  On successful completion of the class, you will be invited to join the Sunnyvale CERT Deployment Team, which supports the professional responders in Sunnyvale's Department of Public Safety.</p><p>IMPORTANT:  Space in this class is limited.  Please do not sign up unless you fully expect to attend all of the sessions.  This class is open to anyone aged 18 or over, but preference will be given to Sunnyvale residents.  High school students under age 18 are welcome if their parent or other responsible adult is also in the class.</p>": "<p>En un desastre, los servicios de emergencia profesionales se verán abrumados y los residentes tendrán que depender de la ayuda de sus vecinos.  Si quiere ser uno de los ayudantes, esta clase es para usted.  Enseña habilidades básicas de respuesta a emergencias y cómo usarlas de manera segura.  Los temas incluyen:</p><ul><li>Preparación para desastres<li>La organización CERT<li>Uso de equipo de protección personal<li>Operaciones médicas en casos de desastre<li>Selección, evaluación y tratamiento de pacientes<li >Psicología de desastres<li>Seguridad contra incendios y control de servicios públicos<li>Extinción de pequeños incendios<li>Búsqueda y rescate ligeros<li>Terrorismo y CERT<li>Ejercicio de simulación de desastres</ul><p>Esta clase se reúne durante siete tardes entre semana y un sábado completo (ver fechas a continuación).  Al completar exitosamente la clase, se le invitará a unirse al equipo de despliegue de Sunnyvale CERT, que apoya a los socorristas profesionales del Departamento de Seguridad Pública de Sunnyvale.</p><p><b>IMPORTANTE:</b>  El espacio en esta clase es limitado.  No se registre a menos que espere asistir a todas las sesiones.  Esta clase está abierta a cualquier persona mayor de 18 años, pero se dará preferencia a los residentes de Sunnyvale.  Los estudiantes de secundaria menores de 18 años son bienvenidos si sus padres u otro adulto responsable también están en la clase.</p><p><b>IMPORTANTE:</b> Esta clase se imparte únicamenta en inglés.  Sin embargo, los materiales impresos están disponibles en español.</p>",
+
+	// classes/pep.go
+	"Personal Emergency Preparedness":   "Preparación para desastres y emergencias",
+	"Are you prepared\nfor a disaster?": "¿Está preparado\npara un desastre?",
+	"Earthquakes, fires, floods, pandemics, power outages, chemical spills ... these are just some of the disasters than can strike our area without warning.  After a disaster strikes, professional emergency services may not be available to help you for several days.  Are you fully prepared to take care of yourself and your family if the need arises?\n\nOur <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize.": "Terremotos, incendios, inundaciones, pandemias, cortes de energía, derrames químicos ... estos son solo algunos de los desastres que pueden afectarnos sin aviso.  Después de un desastre, es posible que los servicios de emergencia profesionales no estén disponibles durante varios días.  ¿Está completamente preparado para cuidar de usted y de su familia si se necesita?\n\nNuestra clase puede ayudarle a prepararse para desastres.  Enseñaremos sobre los diversos desastres que podría enfrentar, qué preparativos puede hacer para ellos y cómo establecer prioridades.",
+
+	// classes/register.go
+	"Class Registration": "Inscripción de clase",
+
 	// errpage/errpage.go
 	"No Such Page": "No existe esa página",
 	"Sorry, the page you asked for doesn’t exist.  But we have plenty of other good ones!  You can <a href=\"javascript:history.back()\">go back</a> to where you were, or return to <a href=\"/\">the home page</a>.  Look around; you’re sure to find a page you like.": "Lo sentimos, la página que solicitó no existe.  ¡Pero tenemos muchas otras buenas! Puede <a href=\"javascript:history.back()\">volver</a> a donde estaba o regrese a la <a href=\"/\">la página de inicio</a>.  Mire alrededor; Seguro que encontrará una página que le gusta.",
@@ -124,8 +142,8 @@ var spanish = map[string]string{
 	"Sunnyvale Neighborhoods Actively Prepare":                 "Vecindarios de Sunnyvale se preparan activamente",
 	"Information Library":                                      "Archivos y recursos",
 	"Contact Us":                                               "Contáctenos",
-	"Office of Emergency Services\nDepartment of Public Safety\nCity of Sunnyvale":                                                       "Oficina de Servicios de Emergencia\nDepartamento de Seguridad Pública\nCiudad de Sunnyvale",
-	"<a href=\"mailto:oes@sunnyvale.ca.gov\">oes@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307190\">(408) 730-7190</a>\n(messages only)": "<a href=\"mailto:oes@sunnyvale.ca.gov\">oes@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307294\">(408) 730-7294</a>\n(mensajes solamente)",
+	"Office of Emergency Services\nDepartment of Public Safety\nCity of Sunnyvale":                                                         "Oficina de Servicios de Emergencia\nDepartamento de Seguridad Pública\nCiudad de Sunnyvale",
+	"<a href=\"mailto:serv@sunnyvale.ca.gov\">serv@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307190\">(408) 730-7190</a>\n(messages only)": "<a href=\"mailto:serv@sunnyvale.ca.gov\">serv@sunnyvale.ca.gov</a>\n<a href=\"tel:+14087307294\">(408) 730-7294</a>\n(mensajes solamente)",
 	"Web Site Information": "Información del sitio web",
 	// Asset URL for logo for PEP class:
 	"pep-logo.png": "ppde-logo.png",
@@ -175,7 +193,8 @@ var spanish = map[string]string{
 	"Work Phone":                      "Tel. de trabajo",
 	"(Work)":                          "(Trabajo)", // after the number
 	"%q is not a valid phone number.": "%q no es un número de teléfono válido.",
-	"%q is not a valid 10-digit phone number.": "%q no es un número de teléfono válido de 10 dígitos.",
+	"%q is not a valid 10-digit phone number.":     "%q no es un número de teléfono válido de 10 dígitos.",
+	"Another person has the cell phone number %q.": "Otra persona tiene el número de teléfono móvil %q.",
 	// Addresses:
 	"Home Address (all day)":     "Dirección de casa (todo el día)",
 	"Home Address":               "Dirección de casa",

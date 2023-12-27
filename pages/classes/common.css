@@ -1,0 +1,26 @@
+.classesRegisterGrid {
+  max-width: 40rem;
+  display: grid;
+  grid: auto-flow / 1fr;
+  margin-top: 0.75rem;
+}
+.classesRegisterGrid > :nth-child(odd) {
+  margin-top: 0.75rem;
+  white-space: pre-wrap;
+}
+.classesSERV {
+  margin-top: 1.5rem;
+  text-align: justify;
+  hyphens: auto;
+  max-width: 40rem;
+  font-size: 0.875rem;
+}
+@media (min-width: 28em) {
+  .classesRegisterGrid {
+    grid: auto-flow / 1fr max-content;
+    gap: 0.75rem;
+  }
+  .classesRegisterGrid > :nth-child(odd) {
+    margin-top: 0;
+  }
+}

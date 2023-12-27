@@ -1,0 +1,76 @@
+# Class Registrations
+
+Object Type:  "Course"
+  - Name (bilingual)
+  - Logo (bilingual)
+  - Home page slug (bilingual)
+  - Home page detail (bilingual)
+  - All of the elements of the page describing the class (bilingual)
+  (Most likely classes are hard-coded rather than database.)
+Object Type:  "Class"
+  - Date(s), Time(s), Location(s), and language if there's a choice, as a
+    bilingual text block.
+  - Enrollment limit
+  - Counts of "how did you hear" responses.
+Object Type:  "ClassReg"
+  - Name, email, cell phone, pronouns of student registered
+  - Class they're registered for
+  - ID of person who registered them
+
+This site allows public registration for classes.  At present there are three
+class types:  PEP, PPDE, and CERT.  Additional types may be added in the future.
+
+When someone clicks the "Register" button on a class, the first step is to get
+them logged in.  If they already are, great.  Otherwise, they will be given a
+page allowing either login to existing account or creation of a new account.  If
+they elect to create a new account, they will be asked for:
+  - First Name
+  - Last Name
+  - Email address (one)
+  - Password
+At this time, we do not attempt to verify their email address or to do a robot
+check.  We'll add those capabilities later if we have enough abuse to suggest a
+need for them.
+
+Once they have either logged in or created an account, we'll give them a page
+with a table of entries for each person they are registering.  For each person,
+we ask:
+  - First Name
+  - Last Name
+  - Email address
+  - Cell phone
+  - Pronouns
+If the user has already registered anyone (including themselves), the rows will
+be pre-filled with the information from those registrations.  Otherwise, the
+first row will be pre-filled with the user's own information.  The user can
+fill in as many rows as desired, up to but not exceeding the enrollment limit of
+the class.  If the user has not registered anyone yet, the page will also ask
+(once, not per person) how they learned about the class.
+
+On successful submission:
+  1.  The "how did you hear" response, if any, is recorded in the class data
+      (once, not per student being registered).
+  2.  If the first row was seeded with the user's own information, and the
+      received first row has either the same name, the same email, or the same
+      cell phone, update the user's person record with the information from the
+      row.
+  3.  All registrations by that user that are no longer listed on the form are
+      removed.
+  4.  All rows on the form are registered if they weren't already.
+  5.  The user is sent an email detailing who's registered, as well as the
+      logistics of the class.
+  6.  The user is shown a confirmation page telling them to look for that email.
+
+Submissions are blocked (atomically) if:
+  - The submission would exceed the enrollment limit of the class.
+  - Any row has a first name or last name but not both.
+  - Any two rows have the same first name and last name.
+
+Options for "how did you hear":
+    Social Media, Neighborhood Association, Community Event, Word of Mouth,
+    Company Event, Neighborhood Event, Flyer
+
+PEP currently requires Name and Email, asks for how did you hear.
+PPDE currentl requires Name and Email, asks for Cell Phone and how did you hear.
+CERT currently requires Name, Email, Cell Phone, Home Address, and how did you
+hear.

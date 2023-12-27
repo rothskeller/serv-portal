@@ -15,8 +15,8 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 )
 
 require (
@@ -32,6 +32,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.12.1
 	github.com/tdewolff/parse/v2 v2.6.3 // indirect
 	golang.org/x/sys v0.13.0 // indirect
+	k8s.io/apimachinery v0.29.0
 	modernc.org/libc v1.16.7 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
 	modernc.org/memory v1.1.1 // indirect

@@ -1,0 +1,19 @@
+.classlistButtons {
+  margin-bottom: 0.75rem;
+}
+.classlistGrid {
+  display: grid;
+  grid: auto-flow / max-content max-content 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+.classlistHeading {
+  display: contents;
+  font-weight: bold;
+}
+.classlistRow {
+  display: contents;
+}
+.classlistDesc {
+  white-space: pre;
+}

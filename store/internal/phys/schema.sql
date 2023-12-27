@@ -1,3 +1,30 @@
+DROP TABLE IF EXISTS class;
+CREATE TABLE class (
+  id        integer PRIMARY KEY,
+  type      integer NOT NULL,
+  start     text    NOT NULL, -- YYYY-MM-DD
+  en_desc   text    NOT NULL,
+  es_desc   text    NOT NULL,
+  elimit    integer NOT NULL CHECK (elimit >= 0),
+  referrals integer NOT NULL
+);
+CREATE UNIQUE INDEX class_start_idx ON class (start, type);
+
+DROP TABLE IF EXISTS classreg;
+CREATE TABLE classreg (
+  id            integer PRIMARY KEY,
+  class         integer NOT NULL REFERENCES class,
+  person        integer          REFERENCES person,
+  registered_by integer NOT NULL REFERENCES person,
+  first_name    text    NOT NULL,
+  last_name     text    NOT NULL,
+  email         text,
+  cell_phone    text
+);
+CREATE INDEX classreg_class_index ON classreg (class);
+CREATE INDEX classreg_person_index ON classreg (person);
+CREATE INDEX classreg_regby_index ON classreg (registered_by);
+
 DROP TABLE IF EXISTS document;
 CREATE TABLE document (
   id       integer PRIMARY KEY,

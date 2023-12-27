@@ -8,12 +8,15 @@ import (
 	"time"
 
 	"golang.org/x/text/language"
+	"sunnyvaleserv.org/portal/pages/admin/classedit"
+	"sunnyvaleserv.org/portal/pages/admin/classlist"
 	"sunnyvaleserv.org/portal/pages/admin/listedit"
 	"sunnyvaleserv.org/portal/pages/admin/listlist"
 	"sunnyvaleserv.org/portal/pages/admin/listpeople"
 	"sunnyvaleserv.org/portal/pages/admin/listrole"
 	"sunnyvaleserv.org/portal/pages/admin/roleedit"
 	"sunnyvaleserv.org/portal/pages/admin/rolelist"
+	"sunnyvaleserv.org/portal/pages/classes"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/events/eventattend"
 	"sunnyvaleserv.org/portal/pages/events/eventcopy"
@@ -144,6 +147,10 @@ func route(r *request.Request) {
 		ui.ServeAsset(r, c[1])
 	case c[0] == "about" && c[1] == "":
 		static.AboutPage(r)
+	case c[0] == "admin" && c[1] == "classes" && c[2] == "":
+		classlist.Get(r)
+	case c[0] == "admin" && c[1] == "classes" && c[2] != "" && c[3] == "":
+		classedit.Handle(r, c[2])
 	case c[0] == "admin" && c[1] == "lists" && c[2] == "":
 		listlist.Get(r)
 	case c[0] == "admin" && c[1] == "lists" && c[2] != "" && c[3] == "":
@@ -156,6 +163,12 @@ func route(r *request.Request) {
 		rolelist.Get(r)
 	case c[0] == "admin" && c[1] == "roles" && c[2] != "" && c[3] == "":
 		roleedit.Handle(r, c[2])
+	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":
+		classes.GetCERT(r)
+	case c[0] == "classes" && (strings.EqualFold(c[1], "cert") || strings.EqualFold(c[1], "cert-basic")) && c[2] == "":
+		classes.GetCERT(r)
+	case c[0] == "classes" && (strings.EqualFold(c[1], "pep") || strings.EqualFold(c[1], "ppde")) && c[2] == "":
+		classes.GetPEP(r)
 	case c[0] == "docedit" && c[1] != "" && c[2] != "" && c[3] == "":
 		docedit.Handle(r, c[1], c[2])
 	case c[0] == "email-lists" && c[1] == "":
@@ -222,6 +235,8 @@ func route(r *request.Request) {
 		personedit.HandlePWReset(r, c[1])
 	case c[0] == "people" && c[1] != "" && c[2] == "vregister" && c[3] == "":
 		personedit.HandleVRegister(r, c[1])
+	case (strings.EqualFold(c[0], "pep") || strings.EqualFold(c[0], "ppde")) && c[1] == "":
+		classes.GetPEP(r)
 	case c[0] == "reports" && c[1] == "attendance" && c[2] == "":
 		attrep.Get(r)
 	case c[0] == "reports" && c[1] == "clearance" && c[2] == "":

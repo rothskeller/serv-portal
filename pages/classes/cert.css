@@ -1,0 +1,22 @@
+.certHeading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  max-width: 40rem;
+}
+img.certLogo {
+  max-width: 50%;
+}
+.certSlogan {
+  font-weight: bold;
+  font-size: 1.125rem;
+  white-space: pre-wrap;
+}
+.certIntro {
+  margin-top: 0.75rem;
+  text-align: justify;
+  hyphens: auto;
+  max-width: 40rem;
+  white-space: pre-wrap;
+}

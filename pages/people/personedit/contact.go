@@ -181,6 +181,9 @@ func readCellPhone(r *request.Request, up *person.Updater) string {
 	if !fmtPhone(&up.CellPhone, false) {
 		return fmt.Sprintf(r.Loc("%q is not a valid 10-digit phone number."), up.CellPhone)
 	}
+	if up.DuplicateCellPhone(r) {
+		return fmt.Sprintf(r.Loc("Another person has the cell phone number %q."), up.CellPhone)
+	}
 	// In theory, we could use a Twilio API to verify that it's really a
 	// mobile phone number.  Probably not worth bothering.
 	return ""
