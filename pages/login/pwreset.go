@@ -41,7 +41,7 @@ func HandlePWReset(r *request.Request) {
 		})
 		return
 	}
-	const personFields = person.FID | person.FInformalName | person.FPrivLevels | person.FEmail | person.FEmail2 | person.FPWResetToken | person.FPWResetTime
+	const personFields = person.FID | person.FInformalName | person.FPrivLevels | person.FEmail | person.FEmail2 | person.FPWResetToken | person.FPWResetTime | person.FCallSign
 	var (
 		p      *person.Person
 		body   bytes.Buffer
@@ -138,9 +138,7 @@ func getPWResetToken(r *request.Request, p *person.Person) {
 }
 
 func postPWResetToken(r *request.Request, p *person.Person) {
-	var newpwd string
-
-	newpwd = r.FormValue("newpwd")
+	var newpwd = r.FormValue("newpwd")
 	if newpwd == "" || !auth.StrongPassword(p, newpwd) {
 		getPWResetToken(r, p) // somehow a weak password got through
 		return

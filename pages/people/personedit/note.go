@@ -17,7 +17,7 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const notePersonFields = person.FInformalName | person.FCallSign | person.FPrivLevels | person.FNotes
+const notePersonFields = person.FInformalName | person.FCallSign | person.FPrivLevels | person.FNotes | person.CanViewTargetFields
 
 // HandleNote handles requests for /people/$id/ednote[/$index].
 func HandleNote(r *request.Request, idstr, indexstr string) {

@@ -23,7 +23,7 @@ import (
 )
 
 const userFields = person.FID | person.FInformalName | person.FPrivLevels
-const personFields = person.FID | person.FInformalName | person.FFlags
+const personFields = person.FID | person.FInformalName | person.FFlags | person.FCallSign
 
 // HandleVolunteerHours handles /volunteer-hours/$token requests.
 func HandleVolunteerHours(r *request.Request, token string) {
