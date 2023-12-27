@@ -40,7 +40,7 @@ var districtList = []districtData{
 
 // Handle handles GET and POST /people/map requests.
 func Handle(r *request.Request) {
-	const personFields = person.FInformalName | person.FAddresses | person.FPrivLevels
+	const personFields = person.FInformalName | person.FAddresses | person.FPrivLevels | person.CanViewTargetFields
 	var (
 		user   *person.Person
 		opts   ui.PageOpts

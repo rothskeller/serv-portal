@@ -18,7 +18,7 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns | person.FBirthdate
+const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns | person.FBirthdate | person.CanViewTargetFields
 
 // HandleNames handles requests for /people/$id/ednames.
 func HandleNames(r *request.Request, idstr string) {
