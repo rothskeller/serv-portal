@@ -14,7 +14,7 @@ func ColumnList(sb *strings.Builder, fields Fields) {
 	sep := phys.NewSeparator(", ")
 	if fields&FID != 0 {
 		sb.WriteString(sep())
-		sb.WriteString("c.id")
+		sb.WriteString("cr.id")
 	}
 	if fields&FClass != 0 {
 		sb.WriteString(sep())

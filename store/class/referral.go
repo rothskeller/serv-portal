@@ -18,16 +18,16 @@ func (ref Referral) String() string {
 	switch ref {
 	case WordOfMouth:
 		return "Word of mouth"
-	case Flyer:
-		return "Posted flyer"
 	case EventBooth:
-		return "Event table"
+		return "Information table at an event"
+	case Flyer:
+		return "Printed advertisement"
 	case SocialMedia:
-		return "Social media"
+		return "Online advertisement"
 	default:
 		return ""
 	}
 }
 
 // AllReferrals is the list of all class types.
-var AllReferrals = []Referral{WordOfMouth, Flyer, EventBooth, SocialMedia}
+var AllReferrals = []Referral{WordOfMouth, EventBooth, Flyer, SocialMedia}

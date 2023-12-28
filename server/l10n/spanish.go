@@ -34,7 +34,13 @@ var spanish = map[string]string{
 	"Earthquakes, fires, floods, pandemics, power outages, chemical spills ... these are just some of the disasters than can strike our area without warning.  After a disaster strikes, professional emergency services may not be available to help you for several days.  Are you fully prepared to take care of yourself and your family if the need arises?\n\nOur <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize.": "Terremotos, incendios, inundaciones, pandemias, cortes de energía, derrames químicos ... estos son solo algunos de los desastres que pueden afectarnos sin aviso.  Después de un desastre, es posible que los servicios de emergencia profesionales no estén disponibles durante varios días.  ¿Está completamente preparado para cuidar de usted y de su familia si se necesita?\n\nNuestra clase puede ayudarle a prepararse para desastres.  Enseñaremos sobre los diversos desastres que podría enfrentar, qué preparativos puede hacer para ellos y cómo establecer prioridades.",
 
 	// classes/register.go
-	"Class Registration": "Inscripción de clase",
+	"Class Registration":                     "Inscripción de clase",
+	"First":                                  "nombre de pila",
+	"Last":                                   "apellido(s)",
+	"Student %d":                             "Estudioso %d",
+	"Clear":                                  "Vaciar",
+	"How did you find out about this class?": "¿Cómo se enteró de esta clase?",
+	"(select one)":                           "(elija uno)",
 
 	// errpage/errpage.go
 	"No Such Page": "No existe esa página",
@@ -332,6 +338,12 @@ var spanish = map[string]string{
 
 	// static/emaillists.go
 	"SERV Email Lists": "Listas de correo electrónico de SERV",
+
+	// store/class/referral.go
+	"Word of mouth":                 "Boca a boca",
+	"Information table at an event": "Mesa informativa en un evento",
+	"Printed advertisement":         "Publicidad impresa",
+	"Online advertisement":          "Publicidad en línea",
 
 	// ui/orgdot/orgdot.go
 	"CERT Deployment": "Despliegue de CERT",

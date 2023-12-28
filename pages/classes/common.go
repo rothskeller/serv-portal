@@ -27,7 +27,7 @@ func getClassesCommon(r *request.Request, main *htmlb.Element, ctype class.Type)
 		if classreg.ClassIsFull(r, c.ID()) {
 			classes.E("div class=classesFull").R(r.Loc("This session is full."))
 		} else {
-			classes.E("div").E("a href=/classes/%d/register up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
+			classes.E("div").E("a href=/classes/%d/register up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-primary sbtn-small'", c.ID()).R(r.Loc("Sign Up"))
 		}
 	})
 	if classes == nil {

@@ -9,12 +9,13 @@ import (
 	"sunnyvaleserv.org/portal/store/class"
 	"sunnyvaleserv.org/portal/store/classreg"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
 
 // HandleRegister handles /classes/$id/register requests.
-func HandleRegister(r *request.Request, cid class.ID) {
+func HandleRegister(r *request.Request, cidstr string) {
 	const personFields = person.FID | person.FInformalName | person.FSortName | person.FEmail | person.FEmail2 | person.FCellPhone
 	var (
 		user        *person.Person
@@ -25,7 +26,7 @@ func HandleRegister(r *request.Request, cid class.ID) {
 		askReferral bool
 	)
 	if user = auth.SessionUser(r, personFields, false); user == nil {
-		handleRegisterNotLoggedIn(r, cid)
+		handleRegisterNotLoggedIn(r, cidstr)
 		return
 	}
 	if !auth.CheckCSRF(r, user) {
@@ -36,7 +37,7 @@ func HandleRegister(r *request.Request, cid class.ID) {
 	} else {
 		langfield = class.FEnDesc
 	}
-	if c = class.WithID(r, cid, class.FLimit|class.FReferrals|class.FStart|class.FType|langfield); c == nil {
+	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), class.FLimit|class.FReferrals|class.FStart|class.FType|langfield); c == nil {
 		errpage.NotFound(r, user)
 		return
 	}
@@ -66,17 +67,35 @@ func HandleRegister(r *request.Request, cid class.ID) {
 	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=main")
 	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Class Registration"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
-	for i := 0; i < len(regs); i++ {
-		emitRow(form, regs[i])
+	for i := 0; i < len(uregs); i++ {
+		emitRow(r, form, uregs[i], i)
 	}
-	emitRow(form, nil)
-	tmpl := form.E("template id=classregTemplate")
-	emitRow(tmpl, nil)
-	emitButtons(form)
+	emitRow(r, form, new(classreg.Updater), len(uregs))
+	if askReferral {
+		emitReferral(r, form)
+	}
+	emitButtons(r, form)
 }
 
-func handleRegisterNotLoggedIn(r *request.Request, cid class.ID) {
+func handleRegisterNotLoggedIn(r *request.Request, cidstr string) {
 	panic("not implemented")
+}
+
+func emitRow(r *request.Request, form *htmlb.Element, reg *classreg.Updater, idx int) {
+	div := form.E("div class='formRow-3col classregDivider'", idx == 0, "class=first")
+	div.E("div").TF(r.Loc("Student %d"), idx+1)
+	div.E("button type=button class='sbtn sbtn-xsmall sbtn-danger classregClear' data-row=%d>%s", idx, r.Loc("Clear"))
+	row := form.E("div class=formRow")
+	row.E("label for=classregFirstname%d>%s", idx, r.Loc("Name"))
+	names := row.E("div class='formInput classregNames'")
+	names.E("input id=classregFirstname%d name=firstName class='formInput classregFirstname' placeholder=%s value=%s", idx, r.Loc("First"), reg.FirstName)
+	names.E("input id=classregLastname%d name=lastName class='formInput classregLastname' placeholder=%s value=%s", idx, r.Loc("Last"), reg.LastName)
+	row = form.E("div class=formRow")
+	row.E("label for=classregEmail%d>%s", idx, r.Loc("Email"))
+	row.E("input id=classregEmail%d name=email class='formInput classregEmail' value=%s", idx, reg.Email)
+	row = form.E("div class=formRow")
+	row.E("label for=classregCellPhone%d>%s", idx, r.Loc("Cell Phone"))
+	row.E("input id=classregCellPhone%d name=cellPhone class='formInput classregCellPhone' value=%s", idx, reg.CellPhone)
 }
 
 func personFirstName(p *person.Person) string {
@@ -97,4 +116,20 @@ func personEmail(p *person.Person) string {
 		return p.Email()
 	}
 	return p.Email2()
+}
+
+func emitReferral(r *request.Request, form *htmlb.Element) {
+	row := form.E("div class='formRow-3col classregReferral'")
+	row.E("label for=classregReferral>%s", r.Loc("How did you find out about this class?"))
+	sel := row.E("select id=classregReferral name=referral class=formInput")
+	sel.E("option value=''>%s", r.Loc("(select one)"))
+	for _, ref := range class.AllReferrals {
+		sel.E("option value=%d>%s", ref, r.Loc(ref.String()))
+	}
+}
+
+func emitButtons(r *request.Request, form *htmlb.Element) {
+	buttons := form.E("div class=formButtons")
+	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss>%s", r.Loc("Cancel"))
+	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=%s", r.Loc("Sign Up"))
 }

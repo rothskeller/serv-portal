@@ -169,6 +169,8 @@ func route(r *request.Request) {
 		classes.GetCERT(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "pep") || strings.EqualFold(c[1], "ppde")) && c[2] == "":
 		classes.GetPEP(r)
+	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
+		classes.HandleRegister(r, c[1])
 	case c[0] == "docedit" && c[1] != "" && c[2] != "" && c[3] == "":
 		docedit.Handle(r, c[1], c[2])
 	case c[0] == "email-lists" && c[1] == "":
