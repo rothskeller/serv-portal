@@ -41,7 +41,7 @@ func main() {
 	entry = log.New("", "synch-email")
 	store.Connect(context.Background(), entry, func(st *store.Store) {
 		out.RawByte('[')
-		person.All(st, person.FID|person.FInformalName|person.FEmail|person.FEmail2|person.FFlags|person.FPrivLevels, func(p *person.Person) {
+		person.All(st, person.FID|person.FInformalName|person.FEmail|person.FEmail2|person.FFlags|person.FPrivLevels|person.FUnsubscribeToken, func(p *person.Person) {
 			var sender, receiver []string
 
 			if p.Flags()&person.NoEmail != 0 || (p.Email() == "" && p.Email2() == "") || !p.HasPrivLevel(0, enum.PrivStudent) {
