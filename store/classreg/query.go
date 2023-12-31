@@ -81,6 +81,8 @@ func AllForClass(storer phys.Storer, cid class.ID, fields Fields, fn func(*Class
 	}
 	phys.SQL(storer, allForClassSQLCache[fields], func(stmt *phys.Stmt) {
 		var cr ClassReg
+
+		stmt.BindInt(int(cid))
 		for stmt.Step() {
 			cr.Scan(stmt, fields)
 			fn(&cr)

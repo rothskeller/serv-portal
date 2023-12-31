@@ -31,3 +31,7 @@ func (ref Referral) String() string {
 
 // AllReferrals is the list of all class types.
 var AllReferrals = []Referral{WordOfMouth, EventBooth, Flyer, SocialMedia}
+
+func (ref Referral) Valid() bool {
+	return ref == WordOfMouth || ref == EventBooth || ref == Flyer || ref == SocialMedia
+}

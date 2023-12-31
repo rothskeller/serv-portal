@@ -98,7 +98,7 @@ func (cr *ClassReg) Update(storer phys.Storer, u *Updater) {
 
 func bindUpdater(stmt *phys.Stmt, u *Updater) {
 	stmt.BindInt(int(u.Class.ID()))
-	stmt.BindInt(int(u.Person.ID()))
+	stmt.BindNullInt(int(u.Person.ID()))
 	stmt.BindInt(int(u.RegisteredBy.ID()))
 	stmt.BindText(u.FirstName)
 	stmt.BindText(u.LastName)
@@ -154,7 +154,7 @@ func (cr *ClassReg) Delete(storer phys.Storer, c *class.Class) {
 		c = class.WithID(storer, cr.class, class.FID|class.FType|class.FStart)
 	}
 	phys.SQL(storer, `DELETE FROM classreg WHERE id=?`, func(stmt *phys.Stmt) {
-		stmt.BindInt(int(c.ID()))
+		stmt.BindInt(int(cr.ID()))
 		stmt.Step()
 	})
 	phys.Audit(storer, "Class %s %s [%d]:: DELETE Registration %s %s [%d]", c.Type(), c.Start(), c.ID(), cr.FirstName(), cr.LastName(), cr.ID())

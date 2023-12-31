@@ -17,9 +17,9 @@ const (
 func (ctype Type) String() string {
 	switch ctype {
 	case CERTBasic:
-		return "CERT-Basic"
+		return "CERT Basic Training"
 	case PEP:
-		return "PEP/PPDE"
+		return "Personal Emergency Preparedness"
 	default:
 		return ""
 	}

@@ -9,6 +9,8 @@ up.on('click', '.classregClear', (evt, elm) => {
 up.on('input', '.classregFirstname', (evt, elm) => {
   if (!elm.value) return
   const row = parseInt(elm.id.substring(17)) + 1
+  const max = elm.closest('form').dataset.max
+  if (max && row >= parseInt(max)) return
   if (document.getElementById(`classregFirstname${row}`)) return
   const insertBefore = elm.parentElement.parentElement.nextElementSibling.nextElementSibling.nextElementSibling
   const divider = elm.parentElement.parentElement.previousElementSibling.cloneNode(true)
