@@ -38,7 +38,7 @@ func HandleNames(r *request.Request, idstr string) {
 	if !auth.CheckCSRF(r, user) {
 		return
 	}
-	if p = person.WithID(r, person.ID(util.ParseID(idstr)), namesPersonFields); p == nil {
+	if p = person.WithID(r, person.ID(util.ParseID(idstr)), namesPersonFields|person.CanViewTargetFields); p == nil {
 		errpage.NotFound(r, user)
 		return
 	}

@@ -35,7 +35,7 @@ func HandleNote(r *request.Request, idstr, indexstr string) {
 	if !auth.CheckCSRF(r, user) {
 		return
 	}
-	if p = person.WithID(r, person.ID(util.ParseID(idstr)), notePersonFields); p == nil {
+	if p = person.WithID(r, person.ID(util.ParseID(idstr)), notePersonFields|person.CanViewTargetFields); p == nil {
 		errpage.NotFound(r, user)
 		return
 	}

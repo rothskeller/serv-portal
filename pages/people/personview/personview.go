@@ -15,7 +15,7 @@ import (
 
 // PersonFields are the fields that must be retrieved in order to display the
 // entire PersonView page.
-const PersonFields = person.FID | person.FInformalName | person.FPrivLevels | namesPersonFields | contactPersonFields | statusPersonFields | notesPersonFields | subscriptionsPersonFields
+const PersonFields = person.FID | person.FInformalName | person.FPrivLevels | namesPersonFields | contactPersonFields | statusPersonFields | notesPersonFields | subscriptionsPersonFields | person.CanViewTargetFields
 
 // Get handles GET /people/${id} requests.
 func Get(r *request.Request, idstr string) {
@@ -24,7 +24,7 @@ func Get(r *request.Request, idstr string) {
 		p         *person.Person
 		viewLevel person.ViewLevel
 	)
-	if user = auth.SessionUser(r, 0, true); user == nil {
+	if user = auth.SessionUser(r, person.CanViewViewerFields, true); user == nil {
 		return
 	}
 	if p = person.WithID(r, person.ID(util.ParseID(idstr)), PersonFields); p == nil {

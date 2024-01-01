@@ -21,7 +21,7 @@ const badLoginThreshold = 20 * time.Minute
 
 // HandleLogin handles GET and POST /login and /login/* requests.
 func HandleLogin(r *request.Request) {
-	const personFields = person.FID | person.FInformalName | person.FBadLoginCount | person.FBadLoginTime | person.FPrivLevels | person.FPassword
+	const personFields = person.FID | person.FInformalName | person.FBadLoginCount | person.FBadLoginTime | person.FPrivLevels | person.FPassword | person.FCallSign
 	var (
 		email      string
 		remember   bool
