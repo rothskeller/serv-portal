@@ -21,9 +21,10 @@ import (
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
+const registerPersonFields = person.FID | person.FInformalName | person.FSortName | person.FEmail | person.FEmail2 | person.FCellPhone
+
 // HandleRegister handles /classes/$id/register requests.
 func HandleRegister(r *request.Request, cidstr string) {
-	const personFields = person.FID | person.FInformalName | person.FSortName | person.FEmail | person.FEmail2 | person.FCellPhone
 	var (
 		user      *person.Person
 		c         *class.Class
@@ -33,18 +34,18 @@ func HandleRegister(r *request.Request, cidstr string) {
 		errors    []string
 		referral  class.Referral
 		others    uint
+		forceGet  bool
 		max       = -1
 	)
 	// Get the user information.
-	if user = auth.SessionUser(r, personFields, false); user == nil {
-		handleRegisterNotLoggedIn(r, cidstr)
-		return
+	if user = auth.SessionUser(r, registerPersonFields, false); user == nil {
+		if user = handleRegisterNotLoggedIn(r, cidstr); user == nil {
+			return
+		}
+		forceGet = true
 	}
 	if !auth.CheckCSRF(r, user) {
 		return
-	}
-	if user.Email() == "" && user.Email2() == "" {
-		handleRegisterMissingEmail(r, cidstr)
 	}
 	// Get the class information and the current registrations by this user.
 	if r.Language == "es" {
@@ -71,7 +72,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		}
 	}
 	// Determine what to display in the form.
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost && !forceGet {
 		uregs, errors, referral = readForm(r, max)
 		if len(errors) == 0 {
 			applyForm(r, user, c, regs, uregs, referral)
@@ -99,7 +100,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		}
 	}
 	r.HTMLNoCache()
-	if len(errors) != 0 {
+	if len(errors) != 0 || forceGet {
 		r.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	html := htmlb.HTML(r)
@@ -127,13 +128,6 @@ func HandleRegister(r *request.Request, cidstr string) {
 		}
 		emitButtons(r, form)
 	}
-}
-
-func handleRegisterNotLoggedIn(r *request.Request, cidstr string) {
-	panic("not implemented")
-}
-func handleRegisterMissingEmail(r *request.Request, cidstr string) {
-	panic("not implemented")
 }
 
 func emitRow(r *request.Request, form *htmlb.Element, reg *classreg.Updater, err string, idx int) {

@@ -70,6 +70,16 @@ var spanish = map[string]string{
 	"A confirmation message has been sent to %s. If you don’t receive it promptly, look for it in your Junk Mail folder. Move it to your inbox so that future messages from us about the class are not marked as Junk Mail.": "Se ha enviado un mensaje de confirmación a %s. Si no lo recibe rápidamente, búsquelo en su carpeta de correo no deseado. Muévalo a su bandeja de entrada para que futuros mensajes nuestros sobre la clase no se marquen como correo no deseado.",
 	"If you need to withdraw from the class, please return to this website and remove your registration.  You may also send email to serv@sunnyvale.ca.gov.":                                                                 "Si necesita retirarse de la clase, regrese a este sitio web y vacie su inscripción. También puede enviar un correo electrónico a serv@sunnyvale.ca.gov.",
 
+	// classes/reglogin.go
+	"To register for this class, please enter your email address.": "Para inscribirse en esta clase, introduzca su dirección de correo electrónico.",
+	"Submit":                                     "Enviar",
+	"Your email address is required.":            "Se requiere su dirección de correo electrónico.",
+	"This is not a valid email address.":         "Esta dirección de correo electrónico no es válida.",
+	"To register for this class, please log in.": "Para inscribirse en esta clase, inicie sesión.",
+	"Login":                              "Iniciar sesión",
+	"Your password is required.":         "Se requiere su contraseña.",
+	"Login incorrect. Please try again.": "Acceso incorrecto. Por favor, inténtelo de nuevo.",
+
 	// errpage/errpage.go
 	"No Such Page": "No existe esa página",
 	"Sorry, the page you asked for doesn’t exist.  But we have plenty of other good ones!  You can <a href=\"javascript:history.back()\">go back</a> to where you were, or return to <a href=\"/\">the home page</a>.  Look around; you’re sure to find a page you like.": "Lo sentimos, la página que solicitó no existe.  ¡Pero tenemos muchas otras buenas! Puede <a href=\"javascript:history.back()\">volver</a> a donde estaba o regrese a la <a href=\"/\">la página de inicio</a>.  Mire alrededor; Seguro que encontrará una página que le gusta.",

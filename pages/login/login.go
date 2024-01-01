@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"sunnyvaleserv.org/portal/server/auth"
-	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/personrole"
 	"sunnyvaleserv.org/portal/store/role"
@@ -48,9 +47,6 @@ func HandleLogin(r *request.Request) {
 			goto FAIL // no person with that username
 		}
 		if p.ID() != person.AdminID { // admin cannot be disabled or locked out
-			if !p.HasPrivLevel(0, enum.PrivStudent) {
-				goto FAIL // person belongs to no orgs
-			}
 			if p.BadLoginCount() >= maxBadLogins && time.Now().Before(p.BadLoginTime().Add(badLoginThreshold)) {
 				goto FAIL // locked out
 			}
