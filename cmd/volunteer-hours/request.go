@@ -90,12 +90,6 @@ func sendRequests(st *store.Store) {
 		}
 		people[p.ID()] = p.Clone()
 	})
-	// Send an email to each of those people.
-	for _, p := range people {
-		if len(pflag) == 0 || pflag[p.ID()] {
-			sendRequest(p, mailer, pm[p.ID()], tnames, false)
-		}
-	}
 	// Set the hours reminder flag for those people and clear it on anyone
 	// else.
 	if !*kflag {
@@ -110,6 +104,12 @@ func sendRequests(st *store.Store) {
 				}
 			}
 		})
+	}
+	// Send an email to each of those people.
+	for _, p := range people {
+		if len(pflag) == 0 || pflag[p.ID()] {
+			sendRequest(p, mailer, pm[p.ID()], tnames, false)
+		}
 	}
 }
 
