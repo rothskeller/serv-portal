@@ -151,6 +151,6 @@ func mapControls(r *request.Request, user *person.Person, main *htmlb.Element, f
 	} else if focus != nil {
 		form.E("input type=hidden name=role value=%d", focus.ID())
 	}
-	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.Loc("Home"), home, "checked")
+	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.Loc("Home[ADDR]"), home, "checked")
 	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=%s", r.Loc("Business"), work, "checked")
 }

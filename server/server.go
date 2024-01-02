@@ -163,6 +163,8 @@ func route(r *request.Request) {
 		rolelist.Get(r)
 	case c[0] == "admin" && c[1] == "roles" && c[2] != "" && c[3] == "":
 		roleedit.Handle(r, c[2])
+	case strings.EqualFold(c[0], "cert") && c[1] == "":
+		static.CERTPage(r)
 	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":
 		classes.GetCERT(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "cert") || strings.EqualFold(c[1], "cert-basic")) && c[2] == "":
@@ -171,6 +173,8 @@ func route(r *request.Request) {
 		classes.GetPEP(r)
 	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
 		classes.HandleRegister(r, c[1])
+	case c[0] == "contact" && c[1] == "":
+		static.ContactUsPage(r)
 	case c[0] == "docedit" && c[1] != "" && c[2] != "" && c[3] == "":
 		docedit.Handle(r, c[1], c[2])
 	case c[0] == "email-lists" && c[1] == "":
@@ -197,12 +201,12 @@ func route(r *request.Request) {
 		eventcopy.Handle(r, c[1])
 	case c[0] == "events" && c[1] != "" && c[2] == "eddetails" && c[3] == "":
 		eventedit.HandleDetails(r, c[1])
-	// case c[0] == "events" && c[1] != "" && c[2] == "edit" && c[3] == "":
-	// 	eventedit.Handle(r, c[1])
 	case c[0] == "files":
 		files.Handle(r)
 	case c[0] == "folderedit" && c[1] != "" && c[2] == "":
 		folderedit.Handle(r, c[1])
+	case strings.EqualFold(c[0], "listos") && c[1] == "":
+		static.ListosPage(r)
 	case c[0] == "login":
 		login.HandleLogin(r)
 	case c[0] == "logout":
@@ -243,8 +247,12 @@ func route(r *request.Request) {
 		attrep.Get(r)
 	case c[0] == "reports" && c[1] == "clearance" && c[2] == "":
 		clearrep.Get(r)
+	case strings.EqualFold(c[0], "sares") && c[1] == "":
+		static.SARESPage(r)
 	case c[0] == "search" && c[1] == "":
 		search.Handle(r)
+	case strings.EqualFold(c[0], "snap") && c[1] == "":
+		static.SNAPPage(r)
 	case c[0] == "subscribe-calendar" && c[1] == "":
 		static.SubscribeCalendarPage(r)
 	case c[0] == "texts" && c[1] == "":

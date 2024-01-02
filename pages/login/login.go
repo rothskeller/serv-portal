@@ -92,46 +92,45 @@ func HandleLogin(r *request.Request) {
 		}
 	}
 	ui.Page(r, nil, ui.PageOpts{
-		Title:      "Login",
+		Title:      r.Loc("Login"),
 		Banner:     "Sunnyvale SERV",
 		StatusCode: statusCode,
 	}, func(main *htmlb.Element) {
 		main.A("class=login")
-		main.E("div class=loginBanner>Please log in.")
-		main.E("div class=loginExplain>This web site is for SERV volunteers only. If you are interested in joining one of the SERV volunteer organizations, send us email at <a href=mailto:serv@sunnyvaleserv.org>SERV@SunnyvaleSERV.org</a>.")
-		main.E("div class=loginBrowserwarn>Your browser is out of date and lacks features needed by this web site. The site may not look or behave correctly.")
+		main.E("div class=loginBanner").T(r.Loc("Please log in."))
+		main.E("div class=loginBrowserwarn").T(r.Loc("Your browser is out of date and lacks features needed by this web site. The site may not look or behave correctly."))
 		form := main.E("form class='form form-centered form-2col loginForm' method=POST up-target=body up-fail-target=form")
 
 		// Email row.
 		row := form.E("div class=formRow")
-		row.E("label for=loginEmail class=formLabel>Email address")
+		row.E("label for=loginEmail class=formLabel").T(r.Loc("Email address"))
 		row.E("input name=email type=text id=loginEmail autocomplete=email autocapitalize=none inputmode=email value=%s",
 			email, statusCode == http.StatusOK, "autofocus")
 
 		// Password row.
 		row = form.E("div class=formRow")
-		row.E("label for=loginPassword class=formLabel>Password")
+		row.E("label for=loginPassword class=formLabel").T(r.Loc("Password"))
 		row.E("input name=password type=password id=loginPassword autocomplete=password autocapitalize=none",
 			statusCode != http.StatusOK, "autofocus")
 
 		// Remember row.
 		row = form.E("div class=formRow")
-		row.Element("input type=checkbox class='s-check formInput' name=remember label='Remember me'", remember, "checked")
+		row.Element("input type=checkbox class='s-check formInput' name=remember label=%s", r.Loc("Remember me"), remember, "checked")
 
 		// Submit button row.
 		row = form.E("div class='formRow-3col loginSubmit'")
-		row.E("input type=submit class='sbtn sbtn-primary' value=%s", "Log in")
+		row.E("input type=submit class='sbtn sbtn-primary' value=%s", r.Loc("Log in"))
 
 		// Failure notice.
 		if statusCode != http.StatusOK {
-			form.E("div class='formRow-3col loginFailed'>Login incorrect. Please try again.")
+			form.E("div class='formRow-3col loginFailed'").T(r.Loc("Login incorrect. Please try again."))
 		}
 
 		// Reset password link.
-		main.E("div class=loginReset").E("a href=/password-reset up-follow>Reset my password")
+		main.E("div class=loginReset").E("a href=/password-reset up-follow").T(r.Loc("Reset my password"))
 
 		// Website information link.
-		main.E("div class=loginAbout").E("a href=/about up-follow>Web Site Information")
+		main.E("div class=loginAbout").E("a href=/about up-follow").T(r.Loc("Web Site Information"))
 	})
 }
 

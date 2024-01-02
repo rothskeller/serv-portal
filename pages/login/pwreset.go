@@ -30,14 +30,14 @@ func HandlePWReset(r *request.Request) {
 	if r.Method == http.MethodGet {
 		ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
 			main.A("class=login")
-			main.E("div class=loginBanner>Password Reset")
-			main.E("div class=loginExplain>To reset your password, please enter your email address.  If it’s one we have on file, we’ll send a password reset link to it.")
+			main.E("div class=loginBanner").T(r.Loc("Password Reset"))
+			main.E("div class=loginExplain").T(r.Loc("To reset your password, please enter your email address.  If it’s one we have on file, we’ll send a password reset link to it."))
 			form := main.E("form class='form form-centered form-2col loginForm' method=POST up-target=body")
 			row := form.E("div class=formRow")
-			row.E("label for=pwresetEmail class=formLabel>Email address")
+			row.E("label for=pwresetEmail class=formLabel").T(r.Loc("Email address"))
 			row.E("input type=text id=pwresetEmail name=email autocomplete=email autocapitalize=none inputmode=email autofocus")
 			row = form.E("div class='formRow-3col loginSubmit'")
-			row.E("input type=submit class='sbtn sbtn-primary' value='Reset Password'")
+			row.E("input type=submit class='sbtn sbtn-primary' value=%s", r.Loc("Reset Password"))
 		})
 		return
 	}
@@ -77,7 +77,7 @@ func HandlePWReset(r *request.Request) {
 		}
 		fmt.Fprint(&body, &mail.Address{Name: p.InformalName(), Address: e})
 	}
-	fmt.Fprintf(&body, "\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n",
+	fmt.Fprintf(&body, r.Loc("\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n"),
 		p.InformalName(), config.Get("siteURL"), p.PWResetToken())
 	if err := sendmail.SendMessage(config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
 		panic(err)
@@ -85,10 +85,10 @@ func HandlePWReset(r *request.Request) {
 RESPOND:
 	ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
 		main.A("class=login")
-		main.E("div class=loginBanner>Password Reset")
+		main.E("div class=loginBanner").T(r.Loc("Password Reset"))
 		exp := main.E("div class=loginExplain")
-		exp.E("p>We have sent a password reset link to the email address you provided. It is valid for one hour. Please check your email and follow the link we sent to reset your password.")
-		exp.E("p>If you do not receive an email with a password reset link, it may be that the email address you provided is not the one we have on file for you. Contact <a href=\"mailto:admin@sunnyvaleserv.org\">admin@SunnyvaleSERV.org</a> for assistance.")
+		exp.E("p").T(r.Loc("We have sent a password reset link to the email address you provided. It is valid for one hour. Please check your email and follow the link we sent to reset your password."))
+		exp.E("p").R(r.Loc("If you do not receive an email with a password reset link, it may be that the email address you provided is not the one we have on file for you. Contact <a href=\"mailto:admin@sunnyvaleserv.org\">admin@SunnyvaleSERV.org</a> for assistance."))
 	})
 }
 
@@ -103,9 +103,6 @@ func HandlePWResetToken(r *request.Request, token string) {
 	if held, _ := personrole.PersonHasRole(r, p.ID(), role.Disabled); held {
 		goto INVALID // person is disabled
 	}
-	if !p.HasPrivLevel(0, enum.PrivStudent) {
-		goto INVALID // person belongs to no orgs
-	}
 	if time.Now().After(p.PWResetTime().Add(pwresetThreshold)) {
 		goto INVALID // token has expired
 	}
@@ -118,22 +115,22 @@ func HandlePWResetToken(r *request.Request, token string) {
 INVALID:
 	ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
 		main.A("class=login")
-		main.E("div class=loginBanner>Password Reset")
-		main.E("div class=loginExplain>This password reset link is invalid or has expired.")
-		main.E("div class=loginSubmit").E("a class='sbtn sbtn-primary' href=/password-reset up-target=body>Try Again")
+		main.E("div class=loginBanner").T(r.Loc("Password Reset"))
+		main.E("div class=loginExplain").T(r.Loc("This password reset link is invalid or has expired."))
+		main.E("div class=loginSubmit").E("a class='sbtn sbtn-primary' href=/password-reset up-target=body").T(r.Loc("Try Again"))
 	})
 }
 
 func getPWResetToken(r *request.Request, p *person.Person) {
 	ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
 		main.A("class=login")
-		main.E("div class=loginBanner>Password Reset")
+		main.E("div class=loginBanner").T(r.Loc("Password Reset"))
 		form := main.E("form class='form form-centered form-2col loginForm pwResetForm' method=POST up-target=body")
 		row := form.E("div class=formRow")
-		row.E("label for=pwresetNewPassword>New Password")
+		row.E("label for=pwresetNewPassword").T(r.Loc("New Password"))
 		row.E("s-password id=pwresetNewPassword name=newpwd hints=%s", strings.Join(auth.StrongPasswordHints(p), ","))
 		row = form.E("div class='formRow-3col loginSubmit'")
-		row.E("input type=submit class='sbtn sbtn-primary' value='Reset Password'")
+		row.E("input type=submit class='sbtn sbtn-primary' value=%s", r.Loc("Reset Password"))
 	})
 }
 

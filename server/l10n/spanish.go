@@ -6,7 +6,8 @@ import (
 )
 
 // spanish maps English phrases used in the UI into Spanish phrases.
-// Note:  the files in pages/static also have Spanish text in them.
+// Note:  the files in pages/static also have Spanish text in them, and so does
+// ui/s-password/s-password.js.
 var spanish = map[string]string{
 
 	// common
@@ -77,8 +78,13 @@ var spanish = map[string]string{
 	"This is not a valid email address.":         "Esta dirección de correo electrónico no es válida.",
 	"To register for this class, please log in.": "Para inscribirse en esta clase, inicie sesión.",
 	"Login":                              "Iniciar sesión",
+	"Your name is required.":             "Se requiere su nombre y apellido.",
 	"Your password is required.":         "Se requiere su contraseña.",
-	"Login incorrect. Please try again.": "Acceso incorrecto. Por favor, inténtelo de nuevo.",
+	"Login incorrect. Please try again.": "Acceso incorrecto. Por favor, inténtelo de nuevo.",
+	"To register for this class, please create an account.":                                                                  "Para inscribirse en esta clase, cree una cuenta.",
+	"We do not have an account with this email address.  To create a new account, please provide the following information.": "No tenemos una cuenta con esta dirección de correo electrónico.  Para crear una cuenta nueva, facilite la siguiente información.",
+	"The cell phone is used only for urgent notifications, such as last-minute cancellation of a class.  It is optional.":    "El teléfono móvil sólo se utiliza para notificaciones urgentes, como la cancelación de una clase en el último momento.  Es opcional.",
+	"Create Account": "Crear cuenta",
 
 	// errpage/errpage.go
 	"No Such Page": "No existe esa página",
@@ -169,12 +175,10 @@ var spanish = map[string]string{
 	"Volunteer Login": "Iniciar sesión",
 	// "Profile": "Perfil",
 	"Classes and Training":                                     "Clases y capacitación",
-	"Preparedness for\nhomes and families":                     "Preparación para su\nfamilia y casa",
-	"2 hours\nEnglish and Spanish":                             "2 horas\nespañol e inglés",
-	"2 hours\nEnglish Jan. 25\nSpanish Jan. 13":                "2 horas\nespañol 13 enero\ninglés 25 enero",
-	"Helping others safely\nin a disaster":                     "Ayudar a otros\nen un desastre",
-	"7 weeks\nEnglish only":                                    "7 semanas\ninglés solamente",
-	"7 weeks\nEnglish only\nFeb–Mar 2024":                      "7 semanas\ninglés solamente\nfeb–mar 2024",
+	"Disaster preparedness for homes and families":             "Cómo preparar su hogar y su familia para un desastre",
+	"2 hours, English or Spanish":                              "2 horas, español o inglés",
+	"Helping others safely in a disaster":                      "Ayudar a otros de forma segura en un desastre",
+	"7 weeks, English only":                                    "7 semanas, sólo en inglés",
 	"Volunteer Programs":                                       "Programas de voluntariado",
 	"Emergency Response Team":                                  "Respuesta en emergencias",
 	"Community Emergency Response Team":                        "Equipo comunitario de respuesta a emergencias",
@@ -191,6 +195,29 @@ var spanish = map[string]string{
 	"Web Site Information": "Información del sitio web",
 	// Asset URL for logo for PEP class:
 	"pep-logo.png": "ppde-logo.png",
+
+	// login/login.go
+	"Please log in.": "Por favor, inicie sesión.",
+	"Your browser is out of date and lacks features needed by this web site. The site may not look or behave correctly.": "Su navegador no está actualizado y carece de las funciones necesarias para este sitio web. El sitio puede no verse o comportarse correctamente.",
+	"Email address": "Email",
+	"Password":      "Contraseña",
+	"Remember me":   "Recuérdeme",
+	"Log in":        "Iniciar sesión",
+	// "Login incorrect. Please try again.": "",
+	"Reset my password": "Restablecer contraseña",
+	// "Web Site Information": "",
+
+	// login/pwreset.go
+	"Password Reset": "Restablecer contraseña",
+	"To reset your password, please enter your email address.  If it’s one we have on file, we’ll send a password reset link to it.": "Para restablecer su contraseña, introduzca su dirección de correo electrónico.  Si es una de las que tenemos archivadas, le enviaremos un enlace para restablecer la contraseña.",
+	// "Email address": "",
+	"Reset Password": "Restablecer contraseña",
+	"\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n": "\r\nSubject: Restablecer contraseña de SunnyvaleSERV.org\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nSaludos, %s:\r\n\r\nPara restablecer su contraseña de SunnyvaleSERV.org, haga clic en este enlace:\r\n    %s/password-reset/%s\r\n\r\nSi tiene algún problema, responda a este mensaje.  Si no ha solicitado un restablecimiento de contraseña, puede ignorar este mensaje.\r\n",
+	"We have sent a password reset link to the email address you provided. It is valid for one hour. Please check your email and follow the link we sent to reset your password.":                                                                                                                               "Hemos enviado un enlace para restablecer la contraseña a la dirección de correo electrónico que nos ha facilitado. Es válido durante una hora. Compruebe su correo electrónico y siga el enlace que le hemos enviado para restablecer su contraseña.",
+	"If you do not receive an email with a password reset link, it may be that the email address you provided is not the one we have on file for you. Contact <a href=\"mailto:admin@sunnyvaleserv.org\">admin@SunnyvaleSERV.org</a> for assistance.":                                                           "Si no recibe un mensaje con un enlace para restablecer la contraseña, es posible que la dirección de correo electrónico que nos ha facilitado no sea la que tenemos registrada. Póngase en contacto con <a href=\"mailto:admin@sunnyvaleserv.org\">admin@SunnyvaleSERV.org</a> para obtener ayuda.",
+	"This password reset link is invalid or has expired.": "Este enlace para restablecer la contraseña no es válido o ha caducado.",
+	"Try Again":    "Inténtalo de nuevo",
+	"New Password": "Nueva contraseña",
 
 	// people/*
 	"(all)":    "(todos)", // as in, all roles, everyone
@@ -216,7 +243,7 @@ var spanish = map[string]string{
 	"%d people listed.": "%d personas en la lista.",
 
 	// people/peoplemap/peoplemap.go:
-	"Home":             "En casa",
+	"Home[ADDR]":       "En casa",
 	"Business":         "A trabajo",
 	"(Business Hours)": "(Horas de trabajo)",
 
@@ -298,15 +325,15 @@ var spanish = map[string]string{
 	"Notes": "Notas",
 
 	// people/personview/password.go
-	"Change Password":                       "Cambiar contraseña", // Button label
-	"Password":                              "Contraseña",
+	"Change Password": "Cambiar contraseña", // Button label
+	// "Password":                              "Contraseña",
 	"Password Change":                       "Cambiar de contraseña",
 	"Old Password":                          "Contraseña anterior",
 	"Please specify your old password.":     "Por favor ingrese su contraseña anterior.",
 	"This is not the correct old password.": "Esta no es la contraseña anterior correcta.",
-	"New Password":                          "Contraseña nueva",
-	"Please specify a valid new password.":  "Por favor ingrese una nueva contraseña válida.",
-	"The new password is too weak.":         "La nueva contraseña es demasiado débil.",
+	// "New Password":                          "Contraseña nueva",
+	"Please specify a valid new password.": "Por favor ingrese una nueva contraseña válida.",
+	"The new password is too weak.":        "La nueva contraseña es demasiado débil.",
 
 	// people/personedit/pwreset.go
 	// Email sent when a password is reset by an administrator.  "\n" is a newline.
@@ -374,6 +401,9 @@ var spanish = map[string]string{
 	// static/calendar.go
 	"SERV Calendar Subscription": "Suscripción al calendario de SERV",
 
+	// static/cert.go
+	"Sunnyvale CERT": "CERT de Sunnyvale",
+
 	// static/emaillists.go
 	"SERV Email Lists": "Listas de correo electrónico de SERV",
 
@@ -390,13 +420,15 @@ var spanish = map[string]string{
 	// ui/page.go
 	// Main menu items:
 	"Welcome":         "Bienvenido",
+	"Guest":           "Visitante",
 	"View in English": "Vea en español",
+	"Home[PAGE]":      "Inicio",
 	// "Events":  "Eventos",
 	// "People": "Personas",
 	"Files":         "Archivos",
 	"Profile":       "Perfil",
-	"Logout":        "Cerrar",
-	"Web Site Info": "Info. del sitio",
+	"Logout":        "Cerrar sesión",
+	"Web Site Info": "Información del sitio",
 }
 
 func spanishDate(day time.Time) string {

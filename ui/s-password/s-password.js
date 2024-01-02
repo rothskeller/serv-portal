@@ -31,6 +31,76 @@ class SPassword extends HTMLElement {
     script.src = '/assets/zxcvbn--62c8cb55.js'
     document.head.appendChild(script)
   }
+  static crackTimeMessage(ct) {
+    const lang = document.documentElement.lang
+    let message = lang == 'es' ? 'Esta contraseña tardaría ' : 'This password would take '
+    if (ct < 1) {
+      message += lang == 'es' ? 'menos que un segundo' : 'less than a second'
+    } else if (ct < 60) {
+      ct = Math.round(ct)
+      if (ct === 1) message += lang == 'es' ? '1 segundo' : '1 second'
+      else message += lang == 'es' ? `${ct} segundos` : `${ct} seconds`
+    } else if (ct < 60 * 60) {
+      ct = Math.round(ct / 60)
+      if (ct === 1) message += lang == 'es' ? '1 minuto' : '1 minute'
+      else message += lang == 'es' ? `${ct} minutos` : `${ct} minutes`
+    } else if (ct < 60 * 60 * 24) {
+      ct = Math.round(ct / (60 * 60))
+      if (ct === 1) message += lang == 'es' ? '1 hora' : '1 hour'
+      else message += lang == 'es' ? `${ct} horas` : `${ct} hours`
+    } else if (ct < 60 * 60 * 24 * 31) {
+      ct = Math.round(ct / (60 * 60 * 24))
+      if (ct === 1) message += lang == 'es' ? '1 día' : '1 day'
+      else message += lang == 'es' ? `${ct} días` : `${ct} days`
+    } else if (ct < 60 * 60 * 24 * 31 * 12) {
+      ct = Math.round(ct / (60 * 60 * 24 * 31))
+      if (ct === 1) message += lang == 'es' ? '1 mes' : '1 month'
+      else message += lang == 'es' ? `${ct} meses` : `${ct} months`
+    } else if (ct < 60 * 60 * 24 * 31 * 12 * 100) {
+      ct = Math.round(ct / (60 * 60 * 24 * 31 * 12))
+      if (ct === 1) message += lang == 'es' ? '1 año' : '1 year'
+      else message += lang == 'es' ? `${ct} años` : `${ct} years`
+    } else {
+      ct = Math.round(ct / (60 * 60 * 24 * 31 * 12 * 100))
+      if (ct === 1) message += lang == 'es' ? '1 siglo' : '1 century'
+      else message += lang == 'es' ? `${ct} siglos` : `${ct} centuries`
+    }
+    message += lang == 'es' ? ' en descifrarse.' : ' to crack.'
+    return message
+  }
+  static translateFeedback(m) {
+    if (document.documentElement.lang != 'es') return m
+    const s = {
+      'A word by itself is easy to guess': 'Una palabra por sí sola es fácil de adivinar',
+      'Add another word or two. Uncommon words are better.': 'Añada una o dos palabras más. Las palabras poco comunes son mejores.',
+      'All-uppercase is almost as easy to guess as all-lowercase': 'Todas las mayúsculas son casi tan fáciles de adivinar como todas las minúsculas',
+      'Avoid dates and years that are associated with you': 'Evite fechas y años que estén asociados con usted',
+      'Avoid recent years': 'Evite años recientes',
+      'Avoid repeated words and characters': 'Evite palabras y caracteres repetidos',
+      'Avoid sequences': 'Evite secuencias',
+      'Avoid years that are associated with you': 'Evite años que se asocien con usted',
+      'Capitalization doesn\'t help very much': 'Las mayúsculas no ayudan mucho',
+      'Common names and surnames are easy to guess': 'Los nombres y apellidos comunes son fáciles de adivinar',
+      'Dates are often easy to guess': 'Las fechas suelen ser fáciles de adivinar',
+      'Names and surnames by themselves are easy to guess': 'Los nombres y apellidos por sí solos son fáciles de adivinar',
+      'No need for symbols, digits, or uppercase letters': 'No necesita símbolos, dígitos ni mayúsculas',
+      'Predictable substitutions like \'@\' instead of \'a\' don\'t help very much': 'Las sustituciones predecibles como "@" en lugar de "a" no ayudan mucho.',
+      'Recent years are easy to guess': 'Los años recientes son fáciles de adivinar',
+      'Repeats like "aaa" are easy to guess': 'Las repeticiones como "aaa" son fáciles de adivinar',
+      'Repeats like "abcabcabc" are only slightly harder to guess than "abc"': 'Las repeticiones como "abcabcabc" son un poco más difíciles de adivinar que "abc".',
+      'Reversed words aren\'t much harder to guess': 'Las palabras invertidas no son mucho más difíciles de adivinar',
+      'Sequences like abc or 6543 are easy to guess': 'Secuencias como "abc" o "6543" son fáciles de adivinar.',
+      'Short keyboard patterns are easy to guess': 'Los patrones de teclado cortos son fáciles de adivinar',
+      'Straight rows of keys are easy to guess': 'Las filas rectas de teclas son fáciles de adivinar',
+      'This is a top-10 common password': 'Esta es una de las 10 contraseñas más comunes',
+      'This is a top-100 common password': 'Esta es una de las 100 contraseñas más comunes',
+      'This is a very common password': 'Esta es una contraseña muy común',
+      'This is similar to a commonly used password': 'Es similar a una contraseña común',
+      'Use a few words, avoid common phrases': 'Use pocas palabras, evite frases comunes',
+      'Use a longer keyboard pattern with more turns': 'Utilice un patrón de teclado más largo y con más vueltas.',
+    }[m]
+    return s || m
+  }
 
   constructor() {
     super()
@@ -114,8 +184,8 @@ class SPassword extends HTMLElement {
     this.message.textContent = [
       analysis.feedback.warning,
       ...analysis.feedback.suggestions,
-      `This password would take ${analysis.crack_times_display.offline_slow_hashing_1e4_per_second} to crack.`
-    ].filter(s => !!s).join('\n')
+      SPassword.crackTimeMessage(analysis.crack_times_seconds.offline_slow_hashing_1e4_per_second)
+    ].filter(s => !!s).map(s => SPassword.translateFeedback(s)).join('\n')
     // If the password is valid (or the override flag is set), put the password
     // into the form field for submission with the form.  Otherwise, clear the
     // form field.  Note that we check for mismatch between the two fields

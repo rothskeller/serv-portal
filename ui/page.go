@@ -31,6 +31,9 @@ type PageOpts struct {
 	// Tabs is the list of tabs to be shown in the tab bar on the page.  If
 	// the list is empty, no tab bar is shown.
 	Tabs []PageTab
+	// NoHome is a flag indicating that the home page icon should not be
+	// displayed.  (It is true when showing the home page itself.)
+	NoHome bool
 }
 
 // A PageTab describes one tab on a page with a tab bar.
@@ -56,7 +59,7 @@ func Page(r *request.Request, user *person.Person, opts PageOpts, fn func(*htmlb
 	pageHead(html, opts.Title)
 
 	body := html.E("body class=page", user == nil, "class=page-noMenu")
-	pageTitle(r, body, user, opts.Banner, opts.Title)
+	pageTitle(r, body, user, opts.Banner, opts.Title, opts.NoHome)
 	if user != nil {
 		pageMenu(body, r, user, opts.MenuItem)
 	}
@@ -94,10 +97,12 @@ func pageHead(h *htmlb.Element, title string) {
 		R("window.algoliaIndex='").R(config.Get("algoliaIndex")).R("';\n")
 }
 
-func pageTitle(r *request.Request, h *htmlb.Element, user *person.Person, banner, title string) {
+func pageTitle(r *request.Request, h *htmlb.Element, user *person.Person, banner, title string, noHome bool) {
 	h = h.E("div class=pageTitle")
 	if user != nil {
 		h.E("div id=pageMenuTrigger class=pageTitleMenu").E("s-icon icon=menu")
+	} else if !noHome {
+		h.E("div class=pageTitleMenu").E("a href=/ up-target=.pageCanvas").E("s-icon icon=home")
 	}
 	switch {
 	case banner != "":
@@ -107,24 +112,22 @@ func pageTitle(r *request.Request, h *htmlb.Element, user *person.Person, banner
 	default:
 		h.E("div class=pageTitleText up-hungry>Sunnyvale SERV")
 	}
-	if user != nil {
-		h.E("div class=pageTitleSearch").E("a class=nolink href=/search").E("s-icon icon=search")
-	} else if r.Language == "es" {
-		h.E("div class=pageTitleLanguage").E("a href=%s>View in\nEnglish", "/en"+r.Path)
-	} else {
-		h.E("div class=pageTitleLanguage").E("a href=%s>Ver en\nespañol", "/es"+r.Path)
-	}
+	h.E("div class=pageTitleSearch").E("a class=nolink href=/search").E("s-icon icon=search")
 }
 
 func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuItem string) {
-	// Note: any changes to the list of menu items, or the conditions for
-	// showing them, need to be reflected in the userhome page as well.
 	h = h.E("nav class=pageMenu")
-	h.E("div class=pageMenuWelcome").R(r.Loc("Welcome") + "<br>").E("b").T(user.InformalName())
+	welcome := h.E("div class=pageMenuWelcome").R(r.Loc("Welcome") + "<br>").E("b").T(user.InformalName())
+	if r.Language == "es" {
+		welcome.E("a href=/en%s class='sbtn sbtn-xsmall sbtn-primary pageMenuLangSel' up-target=body", r.Path).R("View in English")
+	} else {
+		welcome.E("a href=/es%s class='sbtn sbtn-xsmall sbtn-primary pageMenuLangSel' up-target=body", r.Path).R("Ver en español")
+	}
 	ul := h.E("ul class=pageMenuList up-nav")
-	ul.E("li").E("a href=%s up-target=.pageCanvas up-alias=/events/* class=pageMenuItem", state.GetEventsURL(r),
-		menuItem == "events", "class=up-current").R(r.Loc("Events"))
+	ul.E("li").E("a href=/ up-target=.pageCanvas class=pageMenuItem", menuItem == "home", "class=up-current").R(r.Loc("Home[PAGE]"))
 	if user.HasPrivLevel(0, enum.PrivStudent) {
+		ul.E("li").E("a href=%s up-target=.pageCanvas up-alias=/events/* class=pageMenuItem", state.GetEventsURL(r),
+			menuItem == "events", "class=up-current").R(r.Loc("Events"))
 		ul.E("li").E("a href=/people up-target=.pageCanvas up-alias='/people/* -/people/%d -/people/%d/*' class=pageMenuItem", user.ID(), user.ID(),
 			menuItem == "people", "class=up-current").R(r.Loc("People"))
 	}

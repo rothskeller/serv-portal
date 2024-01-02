@@ -8,11 +8,15 @@ import (
 
 // Localize returns the translation of the specified string into the specified
 // language.
-func Localize(s, lang string) string {
+func Localize(s, lang string) (tr string) {
+	var ok bool
 	if lang == "es" {
-		if tr, ok := spanish[s]; ok {
-			return tr
-		}
+		tr, ok = spanish[s]
+	} else {
+		tr, ok = english[s]
+	}
+	if ok {
+		return tr
 	}
 	return s
 }

@@ -12,7 +12,7 @@ import (
 // Serve handles "/" requests.
 func Serve(r *request.Request) {
 	var user = auth.SessionUser(r, 0, false)
-	ui.Page(r, user, ui.PageOpts{}, func(main *htmlb.Element) {
+	ui.Page(r, user, ui.PageOpts{NoHome: true}, func(main *htmlb.Element) {
 		main.A("class=home")
 		homeHeading(r, main)
 		homeTopButtons(r, main, user)
@@ -52,13 +52,13 @@ func homeClasses(r *request.Request, blocks *htmlb.Element) {
 	pep := classes.E("a href=/pep class=homeClass id=homeClassPEP")
 	pep.E("div class=homeClassImg").E("img id=homeClassImgPEP src=%s", ui.AssetURL(r.Loc("pep-logo.png")))
 	text := pep.E("div class=homeClassText")
-	text.E("div class=homeClassTitle>Cómo preparar su hogar y su familia para un desastre")
-	text.E("div class=homeClassInfo>2 horas, español o inglés")
+	text.E("div class=homeClassTitle").T(r.Loc("Disaster preparedness for homes and families"))
+	text.E("div class=homeClassInfo").T(r.Loc("2 hours, English or Spanish"))
 	cert := classes.E("a href=/cert-basic class=homeClass id=homeClassCERT")
 	cert.E("div class=homeClassImg").E("img id=homeClassImgCERT src=%s", ui.AssetURL("cert-logo.png"))
 	text = cert.E("div class=homeClassText")
-	text.E("div class=homeClassTitle>Ayudar a otros de forma segura en un desastre")
-	text.E("div class=homeClassInfo>7 semanas, inglés solamente")
+	text.E("div class=homeClassTitle").T(r.Loc("Helping others safely in a disaster"))
+	text.E("div class=homeClassInfo").T(r.Loc("7 weeks, English only"))
 }
 
 func homePrograms(r *request.Request, blocks *htmlb.Element) {

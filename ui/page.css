@@ -53,13 +53,13 @@ canvas is restricted to the CANVAS area.
 }
 
 /*
-The title bar has a title, possibly surrounded by buttons at either end.
-+---------------+  +---+-------+---+
-|     TITLE     |  | M | TITLE | S |
-+---------------+  +---+-------+---+
-The second form is used when a user is logged in, which is detected from the
-.page-noMenu class on the ancestor page.  In the second form, the menu icon is
-hidden (but still takes up space) on wide devices.
+The title bar has a title, surrounded by buttons at either end.
++---+-------+---+
+| M | TITLE | S |
++---+-------+---+
+If there is no user logged in, and we are on some page other than the home page,
+the menu icon is replaced with a home icon.  Otherwise, the menu icon is hidden
+(but still takes up space) on wide devices.
 */
 .pageTitle {
   display: grid;
@@ -68,12 +68,11 @@ hidden (but still takes up space) on wide devices.
   background-color: #006600;
   color: #fff;
 }
-.page-noMenu .pageTitle {
-  padding: 0 0.75rem;
-  grid: 'unused title language' auto / 4rem 1fr 4rem;
-}
 .pageTitleMenu {
   grid-area: menu;
+}
+.pageTitleMenu a {
+  color: white;
 }
 .pageTitleText {
   grid-area: title;
@@ -87,14 +86,6 @@ hidden (but still takes up space) on wide devices.
 .pageTitleSearch {
   grid-area: search;
 }
-.pageTitleLanguage {
-  grid-area: language;
-  text-align: center;
-}
-.pageTitleLanguage a {
-  white-space: pre;
-  color: white;
-}
 .pageTitleMenu,
 .pageTitleSearch {
   display: flex;
@@ -104,7 +95,7 @@ hidden (but still takes up space) on wide devices.
   user-select: none;
 }
 @media (min-width: 36em /* must match above */) {
-  .pageTitleMenu {
+  .page:not(.page-noMenu) .pageTitleMenu {
     visibility: hidden;
     cursor: default;
   }
@@ -138,6 +129,10 @@ an about link at the bottom.
   font-size: 0.75rem;
   line-height: 1.5;
 }
+.pageMenuLangSel {
+  display: block;
+  margin-top: 0.75rem;
+}
 .pageMenuList {
   grid-area: links;
   list-style: none;
@@ -157,7 +152,7 @@ an about link at the bottom.
 }
 .pageMenuItem.up-current {
   color: #fff;
-  background-color: #007bff;
+  background-color: #006600;
 }
 .pageMenuAbout {
   grid-area: about;
