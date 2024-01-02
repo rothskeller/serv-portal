@@ -89,8 +89,8 @@ func pageHead(h *htmlb.Element, title string) {
 	} else {
 		h.E("title>Sunnyvale SERV")
 	}
-	h.E("link rel=stylesheet href=/assets/styles.css")
-	h.E("script src=/assets/script.js")
+	h.E("link rel=stylesheet href=%s", AssetURL("styles.css"))
+	h.E("script src=%s", AssetURL("script.js"))
 	h.E("script").
 		R("window.algoliaApplicationID='").R(config.Get("algoliaApplicationID")).R("';\n").
 		R("window.algoliaSearchKey='").R(config.Get("algoliaSearchKey")).R("';\n").

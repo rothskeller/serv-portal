@@ -42,7 +42,7 @@ func ServeAsset(r *request.Request, asset string) {
 	// course, if it's truly a nonexistent asset, this code will return an
 	// error.
 	//
-	// During development, when schola8m is running as a full web server,
+	// During development, when the portal is running as a full web server,
 	// this code handles all asset requests.
 	var info *assetInfo
 
