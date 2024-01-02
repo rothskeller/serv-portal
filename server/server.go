@@ -167,6 +167,8 @@ func route(r *request.Request) {
 		static.CERTPage(r)
 	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":
 		classes.GetCERT(r)
+	case (strings.EqualFold(c[0], "classes") || strings.EqualFold(c[0], "clases")) && c[1] == "":
+		classes.GetClasses(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "cert") || strings.EqualFold(c[1], "cert-basic")) && c[2] == "":
 		classes.GetCERT(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "pep") || strings.EqualFold(c[1], "ppde")) && c[2] == "":
@@ -275,7 +277,7 @@ func chooseLanguage(r *request.Request) (redirected bool) {
 	if r.Path == "/en" || r.Path == "/es" || strings.HasPrefix(r.Path, "/en/") || strings.HasPrefix(r.Path, "/es/") {
 		r.Language = r.Path[1:3]
 		redirected = true
-	} else if r.Path == "/clases" || r.Path == "/Clases" || r.Path == "/CLASES" {
+	} else if strings.EqualFold(r.Path, "/clases") {
 		// Special case:  if the URL is "/clases", language is Spanish.
 		r.Language = "es"
 	} else if c, err := r.Request.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {

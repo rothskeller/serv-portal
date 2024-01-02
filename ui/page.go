@@ -128,6 +128,10 @@ func pageMenu(h *htmlb.Element, r *request.Request, user *person.Person, menuIte
 	if user.HasPrivLevel(0, enum.PrivStudent) {
 		ul.E("li").E("a href=%s up-target=.pageCanvas up-alias=/events/* class=pageMenuItem", state.GetEventsURL(r),
 			menuItem == "events", "class=up-current").R(r.Loc("Events"))
+	}
+	ul.E("li").E("a href=/classes up-target=.pageCanvas up-alias='/clases /pep /cert-basic' class=pageMenuItem",
+		menuItem == "classes", "class=up-current").R(r.Loc("Classes"))
+	if user.HasPrivLevel(0, enum.PrivStudent) {
 		ul.E("li").E("a href=/people up-target=.pageCanvas up-alias='/people/* -/people/%d -/people/%d/*' class=pageMenuItem", user.ID(), user.ID(),
 			menuItem == "people", "class=up-current").R(r.Loc("People"))
 	}
