@@ -26,7 +26,7 @@ the Washington State Emergency Management Division.  We help the neighbors
 build a map and a common understanding of the resources and skills available in
 their neighborhood in a disaster, and any special challenges or people with
 particular needs.  In the process, the neighbors get to know each other better
-and a more prepared to face a disaster together.
+and are more prepared to face a disaster together.
 <p>For more information about SNAP, or to arrange an event for your
 neighborhood, write to
 <a href="mailto:snap@sunnyvale.ca.gov" target="_blank">snap@sunnyvale.ca.gov</a>.
