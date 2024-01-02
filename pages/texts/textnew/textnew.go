@@ -175,7 +175,7 @@ func sendMessage(r *request.Request, utm *textmsg.Updater) (tm *textmsg.TextMess
 			p         = rmap[id]
 		)
 		if p.CellPhone() == "" {
-			return
+			continue
 		}
 		params.Set("To", textrecip.FormatNumberForTwilio(p.CellPhone()))
 		request, _ = http.NewRequest(http.MethodPost, href, strings.NewReader(params.Encode()))
