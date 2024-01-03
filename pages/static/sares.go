@@ -24,13 +24,12 @@ radio, when regular communications methods are unavailable or saturated.
 are working, they will be unable to keep up with demand.  Radio communications
 serve as an effective backup because they do not rely on massive, fragile
 infrastructure.  SARES operators can provide essential emergency communications
-when no other methods are working.  Outside of emergencies, SARES operators also
-provide communications services at public events to keep themselves in practice.
+when no other methods are working.  Outside of emergencies, SARES operators
+provide ongoing community service by supplying communications assistance at
+public events on request.
 <p>Membership in SARES requires a current FCC amateur radio license.  If you are
-interested in emergency communications but do not have a license, you should
-pursue getting your license first before trying to join SARES.  However, the
-members of SARES will be happy to connect you with resources to help you get
-your license.
+interested in emergency communications but do not have a license, SARES members
+will connect you with resources to help you get one.
 <p>For more information about SARES or amateur radio, write to
 <a href="mailto:sares@sunnyvale.ca.gov" target="_blank">sares@sunnyvale.ca.gov</a>.
 <div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Back</button></div>`)
@@ -49,13 +48,12 @@ O, si funcionan, serán incapaces de satisfacer la demanda.  Las comunicaciones
 por radio son un medio de reserva eficaz porque no dependen de infraestructuras
 masivas y frágiles.  Los operadores de SARES pueden proporcionar comunicaciones
 de emergencia esenciales cuando no funcionan otros métodos.  Fuera de las
-emergencias, los operadores de SARES también prestan servicios de comunicaciones
-en eventos públicos para mantenerse en activo.
+emergencias, los operadores de SARES prestan un servicio continuo a la comunidad
+proporcionando asistencia de comunicaciones en actos públicos a pedido.
 <p>Para ser miembro de SARES se requiere una licencia de radioaficionado de la
 FCC en vigor.  Si se interesan las comunicaciones de emergencia pero no tiene
-licencia, primero debe obtenerla antes de intentar unirte a SARES.  No obstante,
-los miembros de SARES estarán encantados de ponerle en contacto con recursos que
-le ayuden a obtener su licencia.
+licencia, los miembros de SARES le pondrán en contacto con recursos que le
+ayudarán a conseguirla.
 <p>Para más información sobre SARES or radioafición, escriba a
 <a href="mailto:sares@sunnyvale.ca.gov" target="_blank">sares@sunnyvale.ca.gov</a>.
 <div style="margin:1.5rem 0"><button class="sbtn sbtn-primary" onclick="history.back()">Regresar</button></div>`)
