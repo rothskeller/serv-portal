@@ -31,7 +31,7 @@ func GetClasses(r *request.Request) {
 		cert := classes.E("div class=classesBlock")
 		cert.E("div class=classesBlockHeading").R(r.Loc("CERT Basic Training"))
 		cert.E("div class=certHeading").
-			E("img class=certLogo src=%s", ui.AssetURL(r.Loc("cert-logo.png"))).P().
+			E("img class=certLogo src=%s", ui.AssetURL("cert-logo.png")).P().
 			E("div class=certSlogan").R(r.Loc("How to help your community after a disaster"))
 		text = cert.E("div class=certIntro")
 		text.E("p").R(r.Loc("In a disaster, professional emergency responders will be overwhelmed, and people will have to rely on their neighbors for help.  If you want to be one of the helpers, the <b>Community Emergency Response Team (CERT) Basic Training</b> class is for you.  It teaches basic emergency response skills, and how to use them safely."))

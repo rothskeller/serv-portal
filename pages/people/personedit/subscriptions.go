@@ -3,11 +3,11 @@ package personedit
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/people/personview"
 	"sunnyvaleserv.org/portal/server/auth"
+	"sunnyvaleserv.org/portal/server/l10n"
 	"sunnyvaleserv.org/portal/store/list"
 	"sunnyvaleserv.org/portal/store/listperson"
 	"sunnyvaleserv.org/portal/store/listrole"
@@ -76,9 +76,9 @@ func getSubscriptions(r *request.Request, p *person.Person) {
 		}
 		if sm == listrole.WarnOnUnsubscribe {
 			if rl.Title() != "" {
-				found.warnroles = append(found.warnroles, rl.Title())
+				found.warnroles = append(found.warnroles, fmt.Sprintf("“%s”", rl.Title()))
 			} else {
-				found.warnroles = append(found.warnroles, rl.Name())
+				found.warnroles = append(found.warnroles, fmt.Sprintf("“%s”", rl.Name()))
 			}
 		}
 	})
@@ -102,16 +102,13 @@ func getSubscriptions(r *request.Request, p *person.Person) {
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked")
 		case 1:
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles=%s", r.Loc("Messages sent to %s are considered required for the “%s” role.  Unsubscribing from it may cause you to lose that role."),
+				"data-warnroles=%s", r.Loc("Messages sent to %s are considered required for the %s role.  Unsubscribing from it may cause you to lose that role."),
 				name, ld.warnroles[0])
-		case 2:
-			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles=%s", r.Loc("Messages sent to %s are considered required for the “%s” and “%s” roles.  Unsubscribing from it may cause you to lose those roles."),
-				name, ld.warnroles[0], ld.warnroles[1])
 		default:
+			rolelist := l10n.Conjoin(ld.warnroles, "and", r.Language)
 			ldiv.E("div").E("input type=checkbox class=s-check name=list%d label=%s", ld.list.ID, name, subscribed[ld.list.ID], "checked",
-				"data-warnroles=%s", r.Loc("Messages sent to %s are considered required for the “%s”, and “%s” roles.  Unsubscribing from it may cause you to lose those roles."),
-				name, strings.Join(ld.warnroles[:len(ld.warnroles)-1], "”, “"), ld.warnroles[len(ld.warnroles)-1])
+				"data-warnroles=%s", r.Loc("Messages sent to %s are considered required for the %s roles.  Unsubscribing from it may cause you to lose those roles."),
+				name, rolelist)
 		}
 	}
 	form.E("div id=personeditSubscriptionsWarnings class=formRow-3col")

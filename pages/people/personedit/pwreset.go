@@ -80,24 +80,23 @@ func postPWReset(r *request.Request, user, p *person.Person) {
 		emails = append(emails, p.Email2())
 		fmt.Fprintf(crlf, "To: %s\n", (&mail.Address{Name: p.InformalName(), Address: p.Email2()}).String())
 	}
-	fmt.Fprintf(crlf, r.Loc(`From: %s
-Subject: SunnyvaleSERV.org Password Reset
-Content-Type: text/plain; charset=utf8
-
-Hello, %s,
-
-%s has reset the password for your account on SunnyvaleSERV.org.  Your new login information is:
-
-    Email:    %s
-    Password: %s
-
-This password is three words chosen randomly from a dictionary — a method that generally produces a very secure and often memorable password.  If the resulting phrase has any meaning, it’s unintentional coincidence.
-
-You can change this password by logging into SunnyvaleSERV.org and clicking the “Change Password” button on your Profile page.  If you have any questions, just reply to this email.
-
-Regards,
-SunnyvaleSERV.org
-`), config.Get("fromEmail"), p.InformalName(), user.InformalName(), p.Email(), password)
+	fmt.Fprintf(crlf, "From: %s\r\nSubject: ", config.Get("fromEmail"))
+	fmt.Fprint(crlf, r.Loc("SunnyvaleSERV.org Password Reset"))
+	fmt.Fprint(crlf, "\r\nContent-Type: text/plain; charset=utf8\r\n\r\n")
+	fmt.Fprintf(crlf, r.Loc("Greetings, %s,"), p.InformalName())
+	fmt.Fprint(crlf, "\r\n\r\n")
+	fmt.Fprintf(crlf, r.Loc("%s has reset the password for your account on SunnyvaleSERV.org.  Your new login information is:"), user.InformalName())
+	fmt.Fprint(crlf, "\r\n\r\n    ")
+	fmt.Fprintf(crlf, r.Loc("Email:    %s"), p.Email())
+	fmt.Fprint(crlf, "\r\n    ")
+	fmt.Fprintf(crlf, r.Loc("Password: %s"), password)
+	fmt.Fprint(crlf, "\r\n\r\n")
+	fmt.Fprint(crlf, r.Loc("This password is three words chosen randomly from a dictionary — a method that generally produces a very secure and often memorable password.  If the resulting phrase has any meaning, it’s unintentional coincidence."))
+	fmt.Fprint(crlf, "\r\n\r\n")
+	fmt.Fprint(crlf, r.Loc("You can change this password by logging into SunnyvaleSERV.org and clicking the “Change Password” button on your Profile page.  If you have any questions, just reply to this email."))
+	fmt.Fprint(crlf, "\r\n\r\n")
+	fmt.Fprint(crlf, r.Loc("Regards,"))
+	fmt.Fprint(crlf, "\r\nSunnyvaleSERV.org\r\n")
 	if err := sendmail.SendMessage(config.Get("fromAddr"), emails, body.Bytes()); err != nil {
 		panic(err)
 	}

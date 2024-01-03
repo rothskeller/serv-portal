@@ -20,3 +20,5 @@ Defects / Cleanup:
   Improve efficiency of Attendance report with custom queries
   Attendance report visual detailing and horizontal scrolling
   Need cleanup of exactly what is being up-targeted, not always precise
+  Add /subscribe-calendar, /email-lists to a menu somewhere
+  Set the Vary header appropriately

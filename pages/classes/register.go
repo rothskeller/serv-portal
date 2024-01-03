@@ -214,7 +214,7 @@ func readForm(r *request.Request, max int) (uregs []*classreg.Updater, errors []
 			err += r.Loc("The email address is not valid. ")
 		}
 		if !fmtPhone(&cellPhone) {
-			err += r.Loc("The cell phone number is not valid. ")
+			err += r.Loc("The cell phone number is not valid.") + " "
 		}
 		if max > 0 && len(uregs) >= max {
 			err += r.Loc("The class does not have this many spaces left.")

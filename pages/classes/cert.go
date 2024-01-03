@@ -16,7 +16,7 @@ func GetCERT(r *request.Request) {
 		MenuItem: "classes",
 	}, func(main *htmlb.Element) {
 		main.E("div class=certHeading").
-			E("img class=certLogo src=%s", ui.AssetURL(r.Loc("cert-logo.png"))).P().
+			E("img class=certLogo src=%s", ui.AssetURL("cert-logo.png")).P().
 			E("div class=certSlogan").R(r.Loc("How to help your community after a disaster"))
 		text := main.E("div class=certIntro")
 		text.E("p").R(r.Loc("In a disaster, professional emergency responders will be overwhelmed, and people will have to rely on their neighbors for help.  If you want to be one of the helpers, the <b>Community Emergency Response Team (CERT) Basic Training</b> class is for you.  It teaches basic emergency response skills, and how to use them safely."))

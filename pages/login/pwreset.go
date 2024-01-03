@@ -77,8 +77,15 @@ func HandlePWReset(r *request.Request) {
 		}
 		fmt.Fprint(&body, &mail.Address{Name: p.InformalName(), Address: e})
 	}
-	fmt.Fprintf(&body, r.Loc("\r\nSubject: SunnyvaleSERV.org Password Reset\r\n\r\nGreetings, %s,\r\n\r\nTo reset your password on SunnyvaleSERV.org, click this link:\r\n    %s/password-reset/%s\r\n\r\nIf you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email.\r\n"),
-		p.InformalName(), config.Get("siteURL"), p.PWResetToken())
+	fmt.Fprint(&body, "\r\nSubject: ")
+	fmt.Fprint(&body, r.Loc("SunnyvaleSERV.org Password Reset"))
+	fmt.Fprint(&body, "\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n")
+	fmt.Fprintf(&body, r.Loc("Greetings, %s,"), p.InformalName())
+	fmt.Fprint(&body, "\r\n\r\n")
+	fmt.Fprint(&body, r.Loc("To reset your password on SunnyvaleSERV.org, click this link:"))
+	fmt.Fprintf(&body, "\r\n    %s/password-reset/%s\r\n\r\n", config.Get("siteURL"), p.PWResetToken())
+	fmt.Fprint(&body, r.Loc("If you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email."))
+	fmt.Fprint(&body, "\r\n")
 	if err := sendmail.SendMessage(config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
 		panic(err)
 	}
