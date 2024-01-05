@@ -25,5 +25,8 @@ func (ctype Type) String() string {
 	}
 }
 
+// Int returns the specified Type as an integer.
+func (ctype Type) Int() int { return int(ctype) }
+
 // AllTypes is the list of all class types.
 var AllTypes = []Type{CERTBasic, PEP}

@@ -31,6 +31,7 @@ var spanish = map[string]string{
 	"pep-logo.png":                       "ppde-logo.png",
 	"Personal Emergency Preparedness":    "Preparación para desastres y emergencias",
 	"Profile":                            "Perfil",
+	"%q is not a valid YYYY-MM-DD date.": "%q no es una fecha válida AAAA-MM-DD.",
 	"Save":                               "Guardar",
 	"SunnyvaleSERV.org Password Reset":   "Restablecimiento de contraseña de SunnyvaleSERV.org",
 	"Web Site Information":               "Información del sitio web",
@@ -273,7 +274,6 @@ var spanish = map[string]string{
 	"Another person has the call sign %q.":              "Otra persona tiene el indicativo %q.",
 	"Call sign":                                         "Indicativo",
 	"FCC amateur radio license (if any)":                "Indicativo de licencia de radioaficionado de la FCC (si corresponde)",
-	"%q is not a valid YYYY-MM-DD date.":                "%q no es una fecha válida AAAA-MM-DD.",
 	"Birthdate":                                         "Fecha de nacimiento",
 	"Pronouns":                                          "Pronumbres",
 	"he/him/his":                                        "él/lo",
@@ -503,6 +503,10 @@ var spanish = map[string]string{
 	"The shift has already started.":             "El turno ya ha comenzado.",
 	"The shift is full.":                         "El turno está completo.",
 	"No person selected.":                        "Ninguna persona seleccionada.",
+
+	// ui/form/formrow.go:
+	"%q is not a valid number.":       "%q no es un número válido.",
+	"%q is not a valid value for %s.": "%q no es un valor válido para %s.",
 
 	// ui/page.go:
 	"Welcome":       "Bienvenido",

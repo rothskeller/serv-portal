@@ -7,6 +7,15 @@ import (
 	"sunnyvaleserv.org/portal/store/internal/phys"
 )
 
+// ClassHasSignups returns whether there are any registrations for the class.
+func ClassHasSignups(storer phys.Storer, cid class.ID) (found bool) {
+	phys.SQL(storer, "SELECT 1 FROM classreg WHERE class=? LIMIT 1", func(stmt *phys.Stmt) {
+		stmt.BindInt(int(cid))
+		found = stmt.Step()
+	})
+	return found
+}
+
 // ClassIsFull returns whether the number of registrations for the class is
 // >= its limit.
 func ClassIsFull(storer phys.Storer, cid class.ID) bool {

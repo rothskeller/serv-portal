@@ -1,16 +1,13 @@
 package classedit
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
-
 	"sunnyvaleserv.org/portal/pages/admin/classlist"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store/class"
+	"sunnyvaleserv.org/portal/store/classreg"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
@@ -19,16 +16,11 @@ import (
 // Handle handles /admin/classes/$id requests, where $id may be "NEW".
 func Handle(r *request.Request, idstr string) {
 	var (
-		user        *person.Person
-		c           *class.Class
-		uc          *class.Updater
-		canDelete   bool
-		typeError   string
-		startError  string
-		enDescError string
-		esDescError string
-		limitError  string
-		hasError    bool
+		user      *person.Person
+		c         *class.Class
+		uc        *class.Updater
+		f         form.Form
+		canDelete bool
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil || !auth.CheckCSRF(r, user) {
 		return
@@ -41,179 +33,151 @@ func Handle(r *request.Request, idstr string) {
 			return
 		}
 		uc = c.Updater()
-		canDelete = false // TODO
+		canDelete = !classreg.ClassHasSignups(r, c.ID())
 	}
-	if r.Method == http.MethodPost {
-		if canDelete && r.FormValue("delete") != "" {
-			deleteClass(r, c)
-			classlist.Render(r, user)
-			return
-		}
-		typeError = readType(r, uc)
-		startError = readStart(r, uc)
-		enDescError = readEnDesc(r, uc)
-		esDescError = readEsDesc(r, uc)
-		limitError = readLimit(r, uc)
-		hasError = typeError != "" || startError != "" || enDescError != "" || esDescError != "" || limitError != ""
-		if !hasError {
-			saveClass(r, c, uc)
-			classlist.Render(r, user)
-			return
-		}
-	}
-	r.HTMLNoCache()
-	if hasError {
-		r.WriteHeader(http.StatusUnprocessableEntity)
-	}
-	html := htmlb.HTML(r)
-	defer html.Close()
-	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=main")
+	f.Attrs = "method=POST up-target=main"
+	f.Dialog = true
 	if c == nil {
-		form.E("div class='formTitle formTitle-primary'>New Class")
+		f.Title = "New Class"
 	} else {
-		form.E("div class='formTitle formTitle-primary'>Edit Class")
+		f.Title = "Edit Class"
 	}
-	form.E("input type=hidden name=csrf value=%s", r.CSRF)
-	emitType(form, uc, typeError)
-	emitStart(form, uc, startError)
-	emitEnDesc(form, uc, enDescError)
-	emitEsDesc(form, uc, esDescError)
-	emitLimit(form, uc, limitError)
-	emitReferrals(form, uc)
-	emitButtons(form, canDelete)
+	f.Rows = []form.Row{
+		&typeRow{form.SelectRow[class.Type]{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditType",
+				Label: "Type",
+			},
+			Name:        "type",
+			ValueP:      &uc.Type,
+			Options:     class.AllTypes,
+			Placeholder: "(select type)",
+			Validate:    "#classeditType,#classeditStart",
+		}},
+		&startRow{form.DateRow{InputRow: form.InputRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditStart",
+				Label: "Start Date",
+				Help:  "Use 2999-12-31 for a waiting list placeholder.",
+			},
+			Name:   "start",
+			ValueP: &uc.Start,
+		}}, uc},
+		&reqDescRow{form.TextAreaRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditEnDesc",
+				Label: "English Desc.",
+				Help:  "Include date(s), time(s), location(s), maybe language",
+			},
+			Name:   "enDesc",
+			ValueP: &uc.EnDesc,
+		}},
+		&reqDescRow{form.TextAreaRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditEsDesc",
+				Label: "Spanish Desc.",
+			},
+			Name:   "esDesc",
+			ValueP: &uc.EsDesc,
+		}},
+		&form.IntegerRow[uint]{
+			InputRow: form.InputRow{
+				LabeledRow: form.LabeledRow{
+					RowID: "classeditLimit",
+					Label: "Enrollment Limit",
+					Help:  "0 = unlimited",
+				},
+				Name: "limit",
+			},
+			ValueP: &uc.Limit,
+		},
+		&referralsRow{form.LabeledRow{Label: "Referrals"}, uc},
+	}
+	f.Buttons = []*form.Button{{
+		Label:   "Save",
+		OnClick: func() bool { return saveClass(r, user, c, uc) },
+	}}
+	if canDelete {
+		f.Buttons = append(f.Buttons, &form.Button{
+			Name: "delete", Label: "Delete", Style: "danger",
+			OnClick: func() bool { return deleteClass(r, user, c) },
+		})
+	}
+	f.Handle(r)
 }
 
-func emitType(form *htmlb.Element, uc *class.Updater, err string) {
-	row := form.E("div class=formRow")
-	row.E("label for=classeditType>Type")
-	sel := row.E("select id=classeditType name=type class=formInput")
-	if uc.Type == 0 {
-		sel.E("option value=''>(select type)")
+type typeRow struct{ form.SelectRow[class.Type] }
+
+func (tr *typeRow) Read(r *request.Request) bool {
+	if !tr.SelectRow.Read(r) {
+		return false
 	}
-	for _, t := range class.AllTypes {
-		sel.E("option value=%d", t, uc.Type == t, "selected").T(t.String())
+	if *tr.ValueP == 0 {
+		tr.Error = "The class type is required."
+		return false
 	}
-	if err != "" {
-		row.E("div class=formError>%s", err)
-	}
-}
-func readType(r *request.Request, uc *class.Updater) string {
-	uc.Type = class.Type(util.ParseID(r.FormValue("type")))
-	if uc.Type == 0 {
-		return "The class type is required."
-	}
-	for _, t := range class.AllTypes {
-		if uc.Type == t {
-			return ""
-		}
-	}
-	uc.Type = 0
-	return "The selected type is not valid."
+	return true
 }
 
-func emitStart(form *htmlb.Element, uc *class.Updater, err string) {
-	row := form.E("div class=formRow")
-	row.E("label for=classeditStart>Start Date")
-	row.E("input type=date id=classeditStart name=start class=formInput value=%s", uc.Start)
-	if err != "" {
-		row.E("div class=formError>%s", err)
-	}
-	row.E("div class=formHelp>Use 2999-12-31 for a waiting list placeholder.")
-}
-func readStart(r *request.Request, uc *class.Updater) string {
-	uc.Start = r.FormValue("start")
-	if uc.Start == "" {
-		return "The class starting date is required."
-	} else if d, err := time.Parse("2006-01-02", uc.Start); err != nil || d.Format("2006-01-02") != uc.Start {
-		return "The date is not a valid YYYY-MM-DD date."
-	} else if uc.DuplicateStart(r) {
-		return "Another class has the same type and start date."
-	} else {
-		return ""
-	}
+type startRow struct {
+	form.DateRow
+	uc *class.Updater
 }
 
-func emitEnDesc(form *htmlb.Element, uc *class.Updater, err string) {
-	row := form.E("div class=formRow")
-	row.E("label for=classeditEnDesc>English Desc.")
-	row.E("textarea id=classeditEnDesc name=enDesc class=formInput").T(uc.EnDesc)
-	if err != "" {
-		row.E("div class=formError>%s", err)
-	}
-	row.E("div class=formHelp>Include date(s), time(s), location(s), maybe language")
-}
-func readEnDesc(r *request.Request, uc *class.Updater) string {
-	if uc.EnDesc = strings.TrimSpace(r.FormValue("enDesc")); uc.EnDesc == "" {
-		return "The English description is required."
-	} else {
-		return ""
-	}
+func (sr *startRow) ShouldEmit(vl request.ValidationList) bool {
+	return vl.ValidatingAny("type", "start")
 }
 
-func emitEsDesc(form *htmlb.Element, uc *class.Updater, err string) {
-	row := form.E("div class=formRow")
-	row.E("label for=classeditEsDesc>Spanish Desc.")
-	row.E("textarea id=classeditEsDesc name=esDesc class=formInput").T(uc.EsDesc)
-	if err != "" {
-		row.E("div class=formError>%s", err)
+func (sr *startRow) Read(r *request.Request) bool {
+	if !sr.DateRow.Read(r) {
+		return false
 	}
-}
-func readEsDesc(r *request.Request, uc *class.Updater) string {
-	if uc.EsDesc = strings.TrimSpace(r.FormValue("esDesc")); uc.EsDesc == "" {
-		return "The Spanish description is required."
-	} else {
-		return ""
+	if sr.uc.Start == "" {
+		sr.Error = "The class starting date is required."
+		return false
 	}
-}
-
-func emitLimit(form *htmlb.Element, uc *class.Updater, err string) {
-	row := form.E("div class=formRow")
-	row.E("label for=classeditLimit>Enrollment Limit")
-	row.E("input type=number id=classeditLimit name=limit class=formInput value=%d min=0", uc.Limit)
-	if err != "" {
-		row.E("div class=formError>%s", err)
+	if sr.uc.DuplicateStart(r) {
+		sr.Error = "Another class has the same type and start date."
+		return false
 	}
-	row.E("div class=formHelp>0 = unlimited")
-}
-func readLimit(r *request.Request, uc *class.Updater) string {
-	if lstr := r.FormValue("limit"); lstr == "" {
-		uc.Limit = 0
-		return ""
-	} else if lint, err := strconv.Atoi(lstr); err == nil && lint >= 0 {
-		uc.Limit = uint(lint)
-		return ""
-	} else {
-		return "The specified limit is not a valid integer."
-	}
+	return true
 }
 
-func emitReferrals(form *htmlb.Element, uc *class.Updater) {
-	if uc.Referrals == nil {
-		return
+type reqDescRow struct{ form.TextAreaRow }
+
+func (rdr *reqDescRow) Read(r *request.Request) bool {
+	if !rdr.TextAreaRow.Read(r) {
+		return false
 	}
-	row := form.E("div class=formRow")
-	row.E("label>Referrals")
+	if *rdr.ValueP == "" {
+		rdr.Error = "The description is required."
+		return false
+	}
+	return true
+}
+
+type referralsRow struct {
+	form.LabeledRow
+	uc *class.Updater
+}
+
+func (rr *referralsRow) ShouldEmit(_ request.ValidationList) bool {
+	return len(rr.uc.Referrals) != 0
+}
+
+func (rr *referralsRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) {
+	row := rr.EmitPrefix(r, parent, "")
 	grid := row.E("div class='classeditReferrals formInput'")
 	for _, ref := range class.AllReferrals {
-		grid.E("div>%d", uc.Referrals[ref])
+		grid.E("div>%d", rr.uc.Referrals[ref])
 		grid.E("div>%s", ref.String())
 	}
+	rr.EmitSuffix(r, row)
 }
 
-func emitButtons(form *htmlb.Element, canDelete bool) {
-	buttons := form.E("div class=formButtons")
-	buttons.E("div class=formButtonSpace")
-	buttons.E("button type=button class='sbtn sbtn-secondary' up-dismiss>Cancel")
-	buttons.E("input type=submit name=save class='sbtn sbtn-primary' value=Save")
-	// This button must appear lexically after Save, even though it appears
-	// visually before it, so that Save is the default button when the user
-	// presses Enter.  The formButton-beforeAll class implements that.
-	if canDelete {
-		buttons.E("input type=submit name=delete class='sbtn sbtn-danger formButton-beforeAll' value=Delete")
-	}
-}
+func (rr *referralsRow) Read(r *request.Request) bool { return true }
 
-func saveClass(r *request.Request, c *class.Class, ur *class.Updater) {
+func saveClass(r *request.Request, user *person.Person, c *class.Class, ur *class.Updater) bool {
 	r.Transaction(func() {
 		if c == nil {
 			c = class.Create(r, ur)
@@ -221,10 +185,14 @@ func saveClass(r *request.Request, c *class.Class, ur *class.Updater) {
 			c.Update(r, ur)
 		}
 	})
+	classlist.Render(r, user)
+	return true
 }
 
-func deleteClass(r *request.Request, c *class.Class) {
+func deleteClass(r *request.Request, user *person.Person, c *class.Class) bool {
 	r.Transaction(func() {
 		c.Delete(r)
 	})
+	classlist.Render(r, user)
+	return true
 }
