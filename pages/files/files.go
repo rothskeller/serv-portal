@@ -237,7 +237,10 @@ func GetFolder(r *request.Request, user *person.Person, flist []*folder.Folder, 
 				canEdit, "editable deletable draggable=true")
 			if doc.URL != "" {
 				ddiv.E("s-icon icon=link")
-				ddiv.E("a href=%s target=_blank", doc.URL, canEdit, "draggable=false").T(doc.Name)
+				ddiv.E("a href=%s", doc.URL,
+					strings.HasPrefix(doc.URL, "/"), "up-target=.pageCanvas",
+					!strings.HasPrefix(doc.URL, "/"), "target=_blank",
+					canEdit, "draggable=false").T(doc.Name)
 				return
 			}
 			switch strings.ToLower(filepath.Ext(doc.Name)) {
