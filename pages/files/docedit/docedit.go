@@ -105,7 +105,7 @@ func handleURL(r *request.Request, user *person.Person, f *folder.Folder, doc *d
 
 	if r.Method == http.MethodPost {
 		nameError = readNameForURL(r, ud)
-		urlError = readURL(r, ud)
+		urlError = readURL(r, user, ud)
 		if len(validate) == 0 && nameError == "" && urlError == "" {
 			r.Transaction(func() {
 				if ud.ID == 0 {
@@ -219,13 +219,13 @@ func emitNameForURL(form *htmlb.Element, ud *document.Updater, focus bool, err s
 	}
 }
 
-func readURL(r *request.Request, ud *document.Updater) string {
+func readURL(r *request.Request, user *person.Person, ud *document.Updater) string {
 	if ud.URL = strings.TrimSpace(r.FormValue("url")); ud.URL == "" {
 		return "The web link URL is required."
 	}
 	if u, err := url.Parse(ud.URL); err != nil {
 		return fmt.Sprintf("%q is not a valid URL.", ud.URL)
-	} else if u.Scheme != "http" && u.Scheme != "https" {
+	} else if u.Scheme != "http" && u.Scheme != "https" && (u.Scheme != "" || !user.IsAdminLeader()) {
 		return fmt.Sprintf("The %q URL scheme is not supported.  Only \"http\" and \"https\" are supported.", u.Scheme)
 	}
 	return ""
