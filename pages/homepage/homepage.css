@@ -16,6 +16,7 @@ main.home {
   display: flex;
   justify-content: space-around;
   width: 100%;
+  max-width: 40rem;
   margin-top: 0.5rem;
 }
 .homeTButtons a {
@@ -146,8 +147,12 @@ main.home {
   height: 3.6rem;
 }
 @media (min-width: 36em) {
-  .homeTButtons {
+  .page:not(.page-noMenu) .homeTButtons {
     display: none;
+  }
+  .page.page-noMenu .homeTButtons a {
+    padding: 0.25rem 0.5rem;
+    line-height: 1.5;
   }
   .homeLinks {
     display: none;
