@@ -245,6 +245,8 @@ func route(r *request.Request) {
 		personedit.HandleVRegister(r, c[1])
 	case (strings.EqualFold(c[0], "pep") || strings.EqualFold(c[0], "ppde")) && c[1] == "":
 		classes.GetPEP(r)
+	case c[0] == "privacy-policy" && c[1] == "":
+		static.PrivacyPage(r)
 	case c[0] == "reports" && c[1] == "attendance" && c[2] == "":
 		attrep.Get(r)
 	case c[0] == "reports" && c[1] == "clearance" && c[2] == "":
@@ -253,6 +255,8 @@ func route(r *request.Request) {
 		static.SARESPage(r)
 	case c[0] == "search" && c[1] == "":
 		search.Handle(r)
+	case c[0] == "site-credits" && c[1] == "":
+		static.CreditsPage(r)
 	case strings.EqualFold(c[0], "snap") && c[1] == "":
 		static.SNAPPage(r)
 	case c[0] == "subscribe-calendar" && c[1] == "":
