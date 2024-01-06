@@ -1,5 +1,5 @@
 up.on('input', '#attrepParamsDaterange', (evt, elm) => {
-  up.element.all(elm, 'option').forEach(opt => {
+  elm.querySelectorAll('option').forEach(opt => {
     if (opt.selected) {
       const dates = document.getElementById('attrepParamsDates')
       dates.textContent = `${opt.dataset.from} to\n${opt.dataset.to}`
