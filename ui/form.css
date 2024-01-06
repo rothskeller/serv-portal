@@ -93,7 +93,7 @@ With this in mind, our breakpoints are:
   display: flex;
   flex-direction: row-reverse;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 .formButtonGroup {
   display: flex;

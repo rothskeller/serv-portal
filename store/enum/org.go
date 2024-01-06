@@ -88,6 +88,8 @@ func ParseOrg(s string) (Org, error) {
 	}
 }
 
+func (o Org) Int() int { return int(o) }
+
 // Valid returns whether an Org value is valid.
 func (o Org) Valid() bool {
 	return o > 0 && o < NumOrgs

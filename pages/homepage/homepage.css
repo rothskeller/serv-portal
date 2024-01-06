@@ -150,10 +150,6 @@ main.home {
   .page:not(.page-noMenu) .homeTButtons {
     display: none;
   }
-  .page.page-noMenu .homeTButtons a {
-    padding: 0.25rem 0.5rem;
-    line-height: 1.5;
-  }
   .homeLinks {
     display: none;
   }
@@ -161,6 +157,10 @@ main.home {
 @media (min-width: 50em) {
   main.home {
     padding: 1rem;
+  }
+  .homeTButtons a {
+    padding: 0.25rem 0.5rem;
+    line-height: 1.5;
   }
   .homeBlocks {
     grid: auto-flow / 1fr 1fr;

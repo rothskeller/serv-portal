@@ -15,6 +15,9 @@ type Form struct {
 	// Dialog indicates whether the form appears in a dialog box.  This
 	// changes the styling, adds a Cancel button, etc.
 	Dialog bool
+	// NoSubmit indicates that the form is never submitted to the server;
+	// its submit is trapped by Javascript and handled client-side.
+	NoSubmit bool
 	// TwoCol forces the form to use a two-column layout even when there is
 	// space for three.
 	TwoCol bool
@@ -69,7 +72,7 @@ func (f *Form) Handle(r *request.Request) {
 	if f.Centered {
 		form.A("class=form-centered")
 	}
-	if f.Dialog {
+	if f.Dialog && !f.NoSubmit {
 		form.A("up-layer=parent")
 	}
 	if r.CSRF != "" {

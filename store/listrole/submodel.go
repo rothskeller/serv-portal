@@ -23,7 +23,7 @@ const (
 )
 
 // AllSubscriptionModels is a list of all list subscription models values.
-var AllSubscriptionModels = []SubscriptionModel{AllowSubscription, AutoSubscribe, WarnOnUnsubscribe}
+var AllSubscriptionModels = []SubscriptionModel{NoSubscription, AllowSubscription, AutoSubscribe, WarnOnUnsubscribe}
 
 func (sm SubscriptionModel) String() string {
 	switch sm {
@@ -37,6 +37,23 @@ func (sm SubscriptionModel) String() string {
 		return ""
 	}
 }
+
+func (sm SubscriptionModel) LongString() string {
+	switch sm {
+	case 0:
+		return "Not allowed"
+	case AllowSubscription:
+		return "Manual"
+	case AutoSubscribe:
+		return "Automatic"
+	case WarnOnUnsubscribe:
+		return "Automatic, warn on unsubscribe"
+	default:
+		return ""
+	}
+}
+
+func (sm SubscriptionModel) Int() int { return int(sm) }
 
 func (sm SubscriptionModel) Valid() bool {
 	return sm == 0 || sm == AllowSubscription || sm == AutoSubscribe || sm == WarnOnUnsubscribe

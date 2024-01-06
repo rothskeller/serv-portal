@@ -3,11 +3,61 @@ package roleselect
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"sunnyvaleserv.org/portal/store/role"
+	"sunnyvaleserv.org/portal/ui/form"
+	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
+
+// NewRoleSelectRow creates and returns a form row with a role selection control
+// in it.
+func NewRoleSelectRow(
+	r *request.Request, fields role.Fields, filter func(*role.Role) bool, label, name string, valueP *[]role.ID, rollup bool,
+) form.Row {
+	var rsr = roleSelectRow{
+		LabeledRow: form.LabeledRow{Label: label},
+		name:       name, valueP: valueP, rollup: rollup,
+	}
+	rsr.treedesc = MakeRoleTree(r, fields, filter)
+	return &rsr
+}
+
+type roleSelectRow struct {
+	form.LabeledRow
+	name     string
+	valueP   *[]role.ID
+	rollup   bool
+	treedesc string
+}
+
+func (rsr *roleSelectRow) Read(r *request.Request) bool {
+	*rsr.valueP = (*rsr.valueP)[:0]
+	for _, ridstr := range strings.Fields(r.FormValue(rsr.name)) {
+		*rsr.valueP = append(*rsr.valueP, role.ID(util.ParseID(ridstr)))
+		// We could check for existence, duplicates, etc., but it's not
+		// worth bothering.
+	}
+	return true
+}
+
+func (rsr *roleSelectRow) ShouldEmit(vl request.ValidationList) bool {
+	return !vl.Enabled()
+}
+
+func (rsr *roleSelectRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) {
+	row := rsr.EmitPrefix(r, parent, "")
+	var vstrs = make([]string, len(*rsr.valueP))
+	for i, rid := range *rsr.valueP {
+		vstrs[i] = strconv.Itoa(int(rid))
+	}
+	row.E("s-seltree name=%s class=formInput value=%s", rsr.name, strings.Join(vstrs, " "),
+		rsr.rollup, "rollup").R(rsr.treedesc)
+	rsr.EmitSuffix(r, row)
+}
 
 type node struct {
 	role      *role.Role

@@ -7,8 +7,8 @@ import (
 	"sunnyvaleserv.org/portal/store/listrole"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/role"
+	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
-	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
 
@@ -17,35 +17,48 @@ import (
 func Get(r *request.Request, lidstr, ridstr string) {
 	var (
 		user     *person.Person
+		ridlist  []role.ID
 		sender   bool
 		submodel listrole.SubscriptionModel
-		treedesc string
+		f        form.Form
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil || !auth.CheckCSRF(r, user) {
 		return
 	}
+	if rid := role.ID(util.ParseID(ridstr)); rid > 0 {
+		ridlist = append(ridlist, rid)
+	}
 	sender, submodel = listrole.Get(r, list.ID(util.ParseID(lidstr)), role.ID(util.ParseID(ridstr)))
-	treedesc = roleselect.MakeRoleTree(r, role.FID|role.FName, nil)
-	r.HTMLNoCache()
-	html := htmlb.HTML(r)
-	defer html.Close()
-	form := html.E("form class='form form-2col listeditRoleForm' up-main")
-	form.E("div class='formTitle formTitle-primary'>Role Privileges")
-	row := form.E("div class=formRow")
-	row.E("label>Role(s)")
-	row.E("s-seltree name=roles class=formInput value=%s", ridstr).R(treedesc)
-	row = form.E("div class=formRow")
-	row.E("label>Subscription")
-	box := row.E("div class=formInput")
-	box.E("s-radio name=submodel value=0 label='Not allowed'", submodel == 0, "checked")
-	box.E("s-radio name=submodel value=%d label='Manual'", listrole.AllowSubscription, submodel == listrole.AllowSubscription, "checked")
-	box.E("s-radio name=submodel value=%d label='Automatic'", listrole.AutoSubscribe, submodel == listrole.AutoSubscribe, "checked")
-	box.E("s-radio name=submodel value=%d label='Automatic, warn on unsubscribe'", listrole.WarnOnUnsubscribe, submodel == listrole.WarnOnUnsubscribe, "checked")
-	box.E("div> ")
-	row = form.E("div class=formRow")
-	row.E("label>Sender")
-	row.E("div class=formInput").E("input type=checkbox name=sender class=s-check label='Can send without moderation'", sender, "checked")
-	row = form.E("div class=formButtons")
-	row.E("button type=button class='sbtn sbtn-secondary' up-dismiss>Cancel")
-	row.E("input type=submit name=save class='sbtn sbtn-primary' value=OK")
+
+	f.Attrs = "class=listeditRoleForm"
+	f.Dialog, f.NoSubmit, f.TwoCol = true, true, true
+	f.Title = "Role Privileges"
+	f.Buttons = []*form.Button{{Label: "OK"}}
+	f.Rows = []form.Row{
+		roleselect.NewRoleSelectRow(r, 0, nil, "Role(s)", "roles", &ridlist, false),
+		&form.RadioGroupRow[listrole.SubscriptionModel]{
+			LabeledRow: form.LabeledRow{
+				RowID: "listroleSubmodel",
+				Label: "Subscription",
+			},
+			Name:    "submodel",
+			ValueP:  &submodel,
+			Options: listrole.AllSubscriptionModels,
+			LabelFunc: func(r *request.Request, sm listrole.SubscriptionModel) string {
+				return r.Loc(sm.LongString())
+			},
+		},
+		&form.CheckboxesRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "listroleSender",
+				Label: "Sender",
+			},
+			Boxes: []*form.Checkbox{{
+				Name:     "sender",
+				Label:    "Can send without moderation",
+				CheckedP: &sender,
+			}},
+		},
+	}
+	f.Handle(r)
 }

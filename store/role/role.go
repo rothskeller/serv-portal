@@ -13,7 +13,7 @@ const (
 )
 
 // Flags is a bitmask of flags describing a Role.
-type Flags uint8
+type Flags uint
 
 // Values for Flags:
 const (

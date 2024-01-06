@@ -22,3 +22,113 @@ Defects / Cleanup:
   Need cleanup of exactly what is being up-targeted, not always precise
   Add /subscribe-calendar, /email-lists to a menu somewhere
   Set the Vary header appropriately
+  Clean up attendance report params, clearance report params for single-org leaders
+
+
+
+
+There are 45 forms on the site at present.
+
+Many of them do not use class=form; thay are special purpose.  I need not
+consider them further when designing a form infrastructure.
+  pages/events/eventview/eventview.go
+  pages/events/eventview/task.go (2)
+  pages/events/signups/signups.go
+  pages/files/files.go
+  pages/people/activity/activity.go
+  pages/people/peoplelist/peoplelist.go
+  pages/people/peoplemap/peoplemap.go
+  pages/reports/attendance/params.go
+  pages/reports/clearance/params.go
+  pages/search/search.go
+
+4 forms have been converted to use the new form infrastructure.
+  pages/admin/classedit/classedit.go
+  pages/admin/listedit/listedit.go
+  pages/admin/listrole/listrole.go
+  pages/admin/roleedit/roleedit.go
+
+That leaves 30 forms that use the old form infrastructure.
+  pages/classes/register.go (2)
+  pages/classes/reglogin.go (5)
+  pages/events/eventattend/attendance.go
+  pages/events/eventcopy/eventcopy.go
+  pages/events/eventedit/create.go
+  pages/events/eventedit/details.go
+  pages/events/eventedit/shift.go
+  pages/events/eventedit/task.go
+  pages/events/proxysignup/proxy.go
+  pages/files/docedit/docedit.go (2)
+  pages/files/folderedit/folderedit.go
+  pages/login/login.go
+  pages/login/pwreset.go (2)
+  pages/people/personedit/contact.go
+  pages/people/personedit/names.go
+  pages/people/personedit/note.go
+  pages/people/personedit/password.go
+  pages/people/personedit/pwreset.go
+  pages/people/personedit/roles.go
+  pages/people/personedit/status.go
+  pages/people/personedit/subscriptions.go
+  pages/people/personedit/vregister.go
+  pages/texts/textnew/textnew.go
+
+Of those:
+  30 are left-aligned, 2-column forms (some of which perhaps could be 3-col)
+  2 are left-aligned, 3-column forms
+  2 are centered, 2-column forms
+and:
+  32 are method=POST
+  2 are implicit method=GET:
+    listeditRole returns a value through JavaScript and is never submitted
+    register#2 displays a message and is only ever dismissed, never submitted
+and:
+  23 are up-layer=parent, with various targets
+  5 target themselves (continuations of reglogin)
+  3 have no unpoly behavior
+    listeditRole returns a value through JavaScript and is never submitted
+    register#2 displays a message and is only ever dismissed, never submitted
+    eventeditCreate redirects to the newly created event
+  3 target body (changing page)
+    login and pwreset
+
+Field types and behaviors:
+  - select from an enum
+  - date
+  - textarea
+  - integer
+  - integer with blank for zero
+  - "field" that displays non-editable information
+  - radio button list
+  - input text
+  - list of roles, each of which opens a link, plus an Add button
+  - validation dependent on value of other field
+  - field presence dependent on value of other field
+  - role selection tree
+  - single checkbox with label
+  - select from non-enum list
+  - multiple checkboxes with labels
+  - dividers between labeled sections
+  - dividers between labeled sections, with "Clear" button at right
+  - multiple sets of the same fields, in labeled sections, indeterminate number
+  - message box with message and "OK"
+  - form whose fields change progressing through a sequence
+  - password entry
+  - new password entry with strength meter
+  - all entries in a single formRow-3col with special formatting (attendance)
+  - grid of checkboxes with labels above (SMTWTFS)
+  - fields used by multiple forms, sometimes with different validation
+  - time of day
+  - time range
+  - search combo (venue, person)
+  - operations other than save, which may or may not read the form first
+  - Need [xx] limit [xx] on one row (integers)
+  - Hidden values
+  - File upload with enctype
+  - single checkbox with its own label but nothing in the label column
+  - form-wide error message
+  - street address with verification and geolocation
+  - text input with data list
+  - date with button next to it for Javascript use
+
+

@@ -19,10 +19,12 @@ var AllTypes = []Type{Email, SMS}
 func (t Type) String() string {
 	switch t {
 	case Email:
-		return "email"
+		return "Email"
 	case SMS:
 		return "SMS"
 	default:
 		return ""
 	}
 }
+
+func (t Type) Int() int { return int(t) }
