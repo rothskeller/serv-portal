@@ -56,7 +56,7 @@ func HandleCreate(r *request.Request) {
 		dateError = readDate(r, ue)
 		timesError = readEventTimes(r, ue)
 		venueError = readEventVenue(r, ue)
-		orgError = readOrg(r, ut)
+		orgError = readOrg(r, user, ut)
 		roles = readRoles(r, user, roles)
 		readTaskFlags(r, ut)
 		readEventDetails(r, ue)

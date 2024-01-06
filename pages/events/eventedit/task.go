@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -58,7 +59,7 @@ func HandleTask(r *request.Request, tidstr string) {
 	if te.op != "get" {
 		te.copyShifts = task.ID(util.ParseID(r.FormValue("copyShifts")))
 		te.nameError = readTaskName(r, te.ut)
-		te.orgError = readOrg(r, te.ut)
+		te.orgError = readOrg(r, te.user, te.ut)
 		te.roles = readRoles(r, te.user, te.roles)
 		readTaskFlags(r, te.ut)
 		readTaskDetails(r, te.ut)
@@ -215,7 +216,18 @@ var orgNames = map[enum.Org]string{
 	enum.OrgSNAP:   "SNAP",
 }
 
-func readOrg(r *request.Request, ut *task.Updater) string {
+func readOrg(r *request.Request, user *person.Person, ut *task.Updater) string {
+	var allowed []enum.Org
+
+	for _, org := range enum.AllOrgs {
+		if user.HasPrivLevel(org, enum.PrivLeader) {
+			allowed = append(allowed, org)
+		}
+	}
+	if len(allowed) == 1 {
+		ut.Org = allowed[0]
+		return ""
+	}
 	orgstr := r.FormValue("org")
 	if orgstr == "" {
 		return "The task organization is required."
@@ -223,6 +235,9 @@ func readOrg(r *request.Request, ut *task.Updater) string {
 	ut.Org = enum.Org(util.ParseID(orgstr))
 	if !ut.Org.Valid() {
 		return "The task organization is not valid."
+	}
+	if !slices.Contains(allowed, ut.Org) {
+		return "You do not have privilege to schedule tasks for this organization."
 	}
 	return ""
 }
