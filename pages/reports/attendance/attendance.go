@@ -68,6 +68,7 @@ func Get(r *request.Request) {
 			{Name: "Clearance", URL: "/reports/clearance", Alias: "/reports/clearance?*", Target: "main"},
 		},
 	}, func(e *htmlb.Element) {
+		e.Attr("class=attrep")
 		renderParams(e, params)
 		renderReport(e, rows, columns, params, pcount)
 	})

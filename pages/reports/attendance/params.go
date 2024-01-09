@@ -118,7 +118,7 @@ func renderParams(main *htmlb.Element, params parameters) {
 	box.E("div class=attrepParamsBoxTitle>Orgs")
 	for _, org := range enum.AllOrgs {
 		if params.allowedOrgs[org] {
-			box.E("input type=checkbox class=s-check name=orgs value=%d label=%s", org, org.Label(),
+			box.E("div").E("input type=checkbox class=s-check name=orgs value=%d label=%s", org, org.Label(),
 				params.orgs[org] || len(params.orgs) == 0, "checked")
 		}
 	}

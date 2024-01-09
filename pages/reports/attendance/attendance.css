@@ -1,3 +1,9 @@
+main.attrep {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: auto;
+}
 .attrepForm {
   display: flex;
   flex-direction: column;
