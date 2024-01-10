@@ -23,6 +23,8 @@ Defects / Cleanup:
   Add /subscribe-calendar, /email-lists to a menu somewhere
   Set the Vary header appropriately
   Clean up attendance report params, clearance report params for single-org leaders
+  Title bar doesn't change when people list role selection is changed
+  Delete button doesn't go away from event page when attendance recorded
 
 
 

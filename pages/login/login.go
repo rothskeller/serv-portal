@@ -115,7 +115,7 @@ func HandleLogin(r *request.Request) {
 
 		// Remember row.
 		row = form.E("div class=formRow")
-		row.Element("input type=checkbox class='s-check formInput' name=remember label=%s", r.Loc("Remember me"), remember, "checked")
+		row.E("div class=formInput").E("input type=checkbox class=s-check name=remember label=%s", r.Loc("Remember me"), remember, "checked")
 
 		// Submit button row.
 		row = form.E("div class='formRow-3col loginSubmit'")
