@@ -73,7 +73,7 @@ That leaves 30 forms that use the old form infrastructure.
   pages/people/personedit/vregister.go
   pages/texts/textnew/textnew.go
 
-Of those:
+Of the 34 forms using the infrastructure:
   30 are left-aligned, 2-column forms (some of which perhaps could be 3-col)
   2 are left-aligned, 3-column forms
   2 are centered, 2-column forms

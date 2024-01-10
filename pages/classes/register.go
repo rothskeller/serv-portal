@@ -263,7 +263,7 @@ func applyForm(
 	// Determine adds, cancels, and changes.
 	adds, changesTo, changesFrom, cancels := splitForm(regs, uregs, user, c)
 	// Save the changes.
-	saveRegistrations(r, adds, changesTo, changesFrom, cancels, c)
+	saveRegistrations(r, adds, changesTo, changesFrom, cancels, c, referral)
 	// Send the confirmation emails.  (We don't send confirmation emails for
 	// changes, only for adds and cancels.)
 	sendUserConfirmation(r, user, c, uregs, cancels)
@@ -305,7 +305,10 @@ func splitForm(
 	return
 }
 
-func saveRegistrations(r *request.Request, adds, changesTo []*classreg.Updater, changesFrom, cancels []*classreg.ClassReg, c *class.Class) {
+func saveRegistrations(
+	r *request.Request, adds, changesTo []*classreg.Updater, changesFrom, cancels []*classreg.ClassReg, c *class.Class,
+	referral class.Referral,
+) {
 	r.Transaction(func() {
 		for i, to := range changesTo {
 			changesFrom[i].Update(r, to)
@@ -315,6 +318,11 @@ func saveRegistrations(r *request.Request, adds, changesTo []*classreg.Updater, 
 		}
 		for _, add := range adds {
 			classreg.Create(r, add)
+		}
+		if referral.Valid() {
+			uc := c.Updater()
+			uc.Referrals[referral]++
+			c.Update(r, uc)
 		}
 	})
 }
