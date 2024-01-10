@@ -26,6 +26,6 @@ func GetCERT(r *request.Request) {
 		if r.Language != "en" {
 			text.E("p").R(r.Loc("<b>IMPORTANT:</b>  This class is taught only in English.  However, the printed materials are available in Spanish."))
 		}
-		getClassesCommon(r, main, class.CERTBasic)
+		getClassesCommon(r, user, main, class.CERTBasic)
 	})
 }

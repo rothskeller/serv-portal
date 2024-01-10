@@ -3,11 +3,13 @@ package classes
 import (
 	"sunnyvaleserv.org/portal/store/class"
 	"sunnyvaleserv.org/portal/store/classreg"
+	"sunnyvaleserv.org/portal/store/enum"
+	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-func getClassesCommon(r *request.Request, main *htmlb.Element, ctype class.Type) {
+func getClassesCommon(r *request.Request, user *person.Person, main *htmlb.Element, ctype class.Type) {
 	var (
 		classes  *htmlb.Element
 		langFlag = class.FEnDesc
@@ -24,7 +26,9 @@ func getClassesCommon(r *request.Request, main *htmlb.Element, ctype class.Type)
 		} else {
 			classes.E("div").R(c.EnDesc())
 		}
-		if classreg.ClassIsFull(r, c.ID()) {
+		if user.HasPrivLevel(ctype.Org(), enum.PrivLeader) {
+			classes.E("div").E("a href=/classes/%d/reglist up-target=main class='sbtn sbtn-primary sbtn-small'>Registrations", c.ID())
+		} else if classreg.ClassIsFull(r, c.ID()) {
 			classes.E("div class=classesFull").R(r.Loc("This session is full."))
 		} else {
 			classes.E("div").E("a href=/classes/%d/register up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-primary sbtn-small'", c.ID()).R(r.Loc("Sign Up"))

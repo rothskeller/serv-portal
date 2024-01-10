@@ -175,6 +175,8 @@ func route(r *request.Request) {
 		classes.GetPEP(r)
 	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
 		classes.HandleRegister(r, c[1])
+	case c[0] == "classes" && c[1] != "" && c[2] == "reglist" && c[3] == "":
+		classes.GetRegList(r, c[1])
 	case c[0] == "contact" && c[1] == "":
 		static.ContactUsPage(r)
 	case c[0] == "docedit" && c[1] != "" && c[2] != "" && c[3] == "":

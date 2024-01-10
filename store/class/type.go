@@ -1,5 +1,7 @@
 package class
 
+import "sunnyvaleserv.org/portal/store/enum"
+
 // A Type is a type of class (i.e., a curriculum).
 type Type uint8
 
@@ -22,6 +24,18 @@ func (ctype Type) String() string {
 		return "Personal Emergency Preparedness"
 	default:
 		return ""
+	}
+}
+
+// Org returns the organization for the specified class type.
+func (ctype Type) Org() enum.Org {
+	switch ctype {
+	case CERTBasic:
+		return enum.OrgCERTT
+	case PEP:
+		return enum.OrgListos
+	default:
+		return 0
 	}
 }
 

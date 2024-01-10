@@ -27,7 +27,7 @@ func GetClasses(r *request.Request) {
 		more := pep.E("div id=classesPEPMore class=classesMore")
 		text = more.E("div class=pepIntro")
 		text.E("p").R(r.Loc("Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize."))
-		getClassesCommon(r, more, class.PEP)
+		getClassesCommon(r, user, more, class.PEP)
 		cert := classes.E("div class=classesBlock")
 		cert.E("div class=classesBlockHeading").R(r.Loc("CERT Basic Training"))
 		cert.E("div class=certHeading").
@@ -44,6 +44,6 @@ func GetClasses(r *request.Request) {
 		if r.Language != "en" {
 			text.E("p").R(r.Loc("<b>IMPORTANT:</b>  This class is taught only in English.  However, the printed materials are available in Spanish."))
 		}
-		getClassesCommon(r, more, class.CERTBasic)
+		getClassesCommon(r, user, more, class.CERTBasic)
 	})
 }

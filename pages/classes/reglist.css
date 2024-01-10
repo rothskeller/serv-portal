@@ -1,0 +1,50 @@
+.reglistClass {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.reglistStart {
+  font-size: 1.25rem;
+}
+.reglistSize {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+}
+.reglistSizeBar {
+  position: relative;
+  width: 16rem;
+  height: 1rem;
+  border: 1px solid #888;
+}
+.reglistSizeBar div {
+  position: absolute;
+  height: 1rem;
+  border-left: 1px solid #888;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #888;
+  background-color: #060;
+}
+.reglistGrid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid: auto-flow / repeat(4, max-content);
+  gap: 0.25rem 0.5rem;
+}
+.reglistName {
+  grid-column: 2;
+}
+.reglistCellPhone {
+  font-variant-numeric: tabular-nums;
+}
+.reglistReferralsHeading {
+  margin-top: 0.75rem;
+  font-weight: bold;
+}
+.reglistReferrals {
+  display: grid;
+  grid: auto-flow / repeat(2, max-content);
+  column-gap: 0.5rem;
+}
+.reglistReferrals :nth-child(odd) {
+  align-self: end;
+}

@@ -120,6 +120,7 @@ var stylesheets = []string{
 	"pages/classes/common.css",
 	"pages/classes/pep.css",
 	"pages/classes/register.css",
+	"pages/classes/reglist.css",
 	"pages/errpage/errpage.css",
 	"pages/events/eventattend/attendance.css",
 	"pages/events/eventcopy/eventcopy.css",
