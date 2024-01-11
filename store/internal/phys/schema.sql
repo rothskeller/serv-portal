@@ -101,7 +101,7 @@ CREATE TABLE person (
   sort_name          text    NOT NULL,
   call_sign          text,
   pronouns           text,
-  email              text,
+  email              text    COLLATE NOCASE,
   email2             text,
   cell_phone         text,
   home_phone         text,
@@ -117,6 +117,7 @@ CREATE TABLE person (
   birthdate          text,            -- YYYY-MM-DD
   flags              integer NOT NULL DEFAULT 0
 );
+CREATE INDEX person_email_idx ON person (email);
 CREATE INDEX person_sort_name_idx ON person (sort_name);
 
 DROP TABLE IF EXISTS person_address;

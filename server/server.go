@@ -209,6 +209,8 @@ func route(r *request.Request) {
 		files.Handle(r)
 	case c[0] == "folderedit" && c[1] != "" && c[2] == "":
 		folderedit.Handle(r, c[1])
+	case c[0] == "jserror":
+		errpage.PostJSError(r)
 	case strings.EqualFold(c[0], "listos") && c[1] == "":
 		static.ListosPage(r)
 	case c[0] == "login":

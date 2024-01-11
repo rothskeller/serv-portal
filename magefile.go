@@ -208,6 +208,8 @@ func Styles() error {
 }
 
 var scripts = []string{
+	// Error reporting.
+	"ui/jserror.js",
 	// Third party libraries.
 	"ui/unpoly.js",
 	// Web components.
