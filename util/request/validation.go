@@ -1,12 +1,10 @@
 package request
 
-import "strings"
-
 type ValidationList map[string]struct{}
 
 // ValidationList returns the list of fields being validated in the request.
 func (r *Request) ValidationList() (vl ValidationList) {
-	list := strings.Fields(r.Request.Header.Get("X-Up-Validate"))
+	list := r.LogEntry.Validate
 	if len(list) == 0 {
 		return nil
 	}

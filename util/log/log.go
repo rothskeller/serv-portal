@@ -18,6 +18,7 @@ type Entry struct {
 	Session   string
 	Request   string
 	Params    map[string][]string
+	Validate  []string
 	Status    int
 	Problems  problem.List
 	Stack     []byte
@@ -127,6 +128,16 @@ func (e *Entry) ToJSON(out *jwriter.Writer) {
 			}
 		}
 		out.RawByte('}')
+	}
+	if len(e.Validate) != 0 {
+		out.RawString(`,"validate":[`)
+		for i, v := range e.Validate {
+			if i != 0 {
+				out.RawByte(',')
+			}
+			out.String(v)
+		}
+		out.RawByte(']')
 	}
 	if e.Status != 0 {
 		out.RawString(`,"status":`)

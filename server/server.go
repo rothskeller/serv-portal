@@ -89,6 +89,9 @@ func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// chewing up a connection while we're still reading from the client.
 	r.ParseMultipartForm(1048576)
 	req.LogEntry.Params = req.Form
+	if v := r.Header.Get("X-Up-Validate"); v != "" {
+		req.LogEntry.Validate = strings.Fields(v)
+	}
 	// If we have a session token, save it.
 	if c, err := req.Cookie("auth"); err == nil {
 		req.LogEntry.Session = c.Value
