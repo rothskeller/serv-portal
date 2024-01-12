@@ -356,45 +356,6 @@ func (mr *MessageRow) Emit(r *request.Request, parent *htmlb.Element, focus bool
 }
 func (mr *MessageRow) Read(r *request.Request) bool { return true }
 
-type NewPasswordRow struct {
-	LabeledRow
-	FocusID  string
-	Name     string
-	ValueP   *string
-	Hints    string
-	Override bool
-}
-
-var _ Row = (*NewPasswordRow)(nil) // interface check
-
-func (npr *NewPasswordRow) ShouldEmit(vl request.ValidationList) bool {
-	return !vl.Enabled()
-}
-func (npr *NewPasswordRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) {
-	if npr.FocusID == "" && npr.RowID != "" {
-		npr.FocusID = npr.RowID + "-in"
-	}
-	row := npr.EmitPrefix(r, parent, npr.FocusID)
-	row.E("div class=formInput-2col").
-		E("s-password name=%s hints=%s", npr.Name, npr.Hints,
-			npr.FocusID != "", "id=%s", npr.FocusID,
-			*npr.ValueP != "", "value=%s", *npr.ValueP,
-			npr.Override, "override",
-		)
-	// intentionally omitting:  npr.EmitSuffix(r, row)
-}
-func (npr *NewPasswordRow) Read(r *request.Request) bool {
-	*npr.ValueP = r.FormValue(npr.Name)
-	if *npr.ValueP == "" {
-		npr.Error = "password strength error"
-		// The above string is never displayed, since Emit doesn't call
-		// EmitSuffix.  But it's non-empty so that the surrounding code
-		// sees that the row isn't valid.
-		return false
-	}
-	return true
-}
-
 type RadioGroupRow[T comparable] struct {
 	LabeledRow
 	FocusID   string

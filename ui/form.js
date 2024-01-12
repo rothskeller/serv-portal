@@ -11,7 +11,7 @@
     elm.addEventListener('input', () => {
       rowsChanged.add(row)
       const error = up.element.get(row, '.formError')
-      if (error) up.element.remove(error)
+      if (error) error.remove()
     })
     elm.addEventListener('blur', (evt) => {
       // If the field value hasn't changed, we don't need to validate.

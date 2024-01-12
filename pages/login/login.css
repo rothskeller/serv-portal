@@ -30,6 +30,9 @@ main.login {
 .loginForm {
   margin-top: 0.5rem;
 }
+.loginForm .formButtons2 {
+  justify-content: center;
+}
 .loginSubmit {
   text-align: center;
   margin-top: 1rem;

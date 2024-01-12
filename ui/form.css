@@ -91,9 +91,11 @@ With this in mind, our breakpoints are:
 .formButtons2 {
   margin-top: 2rem;
   display: flex;
-  flex-direction: row-reverse;
   flex-wrap: wrap;
   gap: 1.5rem;
+}
+.form.form-dialog .formButtons2 {
+  flex-direction: row-reverse;
 }
 .formButtonGroup {
   display: flex;

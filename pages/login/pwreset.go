@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/mail"
-	"strings"
 	"time"
 
 	"sunnyvaleserv.org/portal/server/auth"
@@ -15,6 +14,7 @@ import (
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/store/session"
 	"sunnyvaleserv.org/portal/ui"
+	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/htmlb"
@@ -102,7 +102,12 @@ RESPOND:
 // HandlePWResetToken handles /password-reset/${token} requests.
 func HandlePWResetToken(r *request.Request, token string) {
 	const personFields = person.FID | person.FPrivLevels | person.FPWResetToken | person.FPWResetTime | auth.StrongPasswordPersonFields
-	var p *person.Person
+	var (
+		p       *person.Person
+		f       form.Form
+		newpwd1 string
+		newpwd2 string
+	)
 
 	if p = person.WithPWResetToken(r, token, personFields); p == nil {
 		goto INVALID // unknown token
@@ -113,11 +118,38 @@ func HandlePWResetToken(r *request.Request, token string) {
 	if time.Now().After(p.PWResetTime().Add(pwresetThreshold)) {
 		goto INVALID // token has expired
 	}
-	if r.Method == http.MethodPost {
-		postPWResetToken(r, p)
-	} else {
-		getPWResetToken(r, p)
+	f.PageWrapper = func(r *request.Request, fn func(*htmlb.Element)) {
+		ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
+			main.A("class=login")
+			main.E("div class=loginBanner").T(r.Loc("Password Reset"))
+			fn(main)
+		})
 	}
+	f.Attrs = "class='loginForm pwResetForm' method=POST up-target=body"
+	f.Centered, f.TwoCol = true, true
+	f.Buttons = []*form.Button{{
+		Label: "Reset Password", OnClick: func() bool {
+			r.Transaction(func() {
+				auth.SetPassword(r, p, newpwd1)
+				auth.CreateSession(r, p, false)
+			})
+			http.Redirect(r, r.Request, "/", http.StatusSeeOther)
+			return true
+		},
+	}}
+	f.Rows = []form.Row{
+		&NewPasswordPairRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "pwresetNewPassword",
+				Label: "New Password",
+			},
+			Name:    "newpwd",
+			Person:  p,
+			ValueP1: &newpwd1,
+			ValueP2: &newpwd2,
+		},
+	}
+	f.Handle(r)
 	return
 INVALID:
 	ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
@@ -126,30 +158,4 @@ INVALID:
 		main.E("div class=loginExplain").T(r.Loc("This password reset link is invalid or has expired."))
 		main.E("div class=loginSubmit").E("a class='sbtn sbtn-primary' href=/password-reset up-target=body").T(r.Loc("Try Again"))
 	})
-}
-
-func getPWResetToken(r *request.Request, p *person.Person) {
-	ui.Page(r, nil, ui.PageOpts{}, func(main *htmlb.Element) {
-		main.A("class=login")
-		main.E("div class=loginBanner").T(r.Loc("Password Reset"))
-		form := main.E("form class='form form-centered form-2col loginForm pwResetForm' method=POST up-target=body")
-		row := form.E("div class=formRow")
-		row.E("label for=pwresetNewPassword").T(r.Loc("New Password"))
-		row.E("s-password id=pwresetNewPassword name=newpwd hints=%s", strings.Join(auth.StrongPasswordHints(p), ","))
-		row = form.E("div class='formRow-3col loginSubmit'")
-		row.E("input type=submit class='sbtn sbtn-primary' value=%s", r.Loc("Reset Password"))
-	})
-}
-
-func postPWResetToken(r *request.Request, p *person.Person) {
-	var newpwd = r.FormValue("newpwd")
-	if newpwd == "" || !auth.StrongPassword(p, newpwd) {
-		getPWResetToken(r, p) // somehow a weak password got through
-		return
-	}
-	r.Transaction(func() {
-		auth.SetPassword(r, p, newpwd)
-		auth.CreateSession(r, p, false)
-	})
-	http.Redirect(r, r.Request, "/", http.StatusSeeOther)
 }
