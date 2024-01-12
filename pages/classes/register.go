@@ -26,16 +26,15 @@ const registerPersonFields = person.FID | person.FInformalName | person.FSortNam
 // HandleRegister handles /classes/$id/register requests.
 func HandleRegister(r *request.Request, cidstr string) {
 	var (
-		user      *person.Person
-		c         *class.Class
-		langfield class.Fields
-		regs      []*classreg.ClassReg
-		uregs     []*classreg.Updater
-		errors    []string
-		referral  class.Referral
-		others    uint
-		forceGet  bool
-		max       = -1
+		user     *person.Person
+		c        *class.Class
+		regs     []*classreg.ClassReg
+		uregs    []*classreg.Updater
+		errors   []string
+		referral class.Referral
+		others   uint
+		forceGet bool
+		max      = -1
 	)
 	// Get the user information.
 	if user = auth.SessionUser(r, registerPersonFields, false); user == nil {
@@ -48,12 +47,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		return
 	}
 	// Get the class information and the current registrations by this user.
-	if r.Language == "es" {
-		langfield = class.FEsDesc
-	} else {
-		langfield = class.FEnDesc
-	}
-	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), class.FLimit|class.FReferrals|class.FStart|class.FType|langfield); c == nil {
+	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), class.UpdaterFields); c == nil {
 		errpage.NotFound(r, user)
 		return
 	}
