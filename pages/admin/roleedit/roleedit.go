@@ -123,6 +123,7 @@ func Handle(r *request.Request, idstr string) {
 			CheckboxesRow: form.CheckboxesRow{
 				LabeledRow: form.LabeledRow{Label: "Flags"},
 				Validate:   form.NoValidate,
+				Name:       "flags",
 			},
 			ValueP: &ur.Flags,
 			Flags:  []role.Flags{role.Filter, role.ImplicitOnly, role.Archived},

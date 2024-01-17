@@ -59,6 +59,7 @@ class SSelTree extends HTMLElement {
     }
   }
   attributeChangedCallback(name, oldValue, newValue) {
+    if (!this.firstChild || this.firstChild.nodeType === Node.TEXT_NODE) return
     if (name === 'value') this.setValue(newValue)
   }
   initialSetup() {
