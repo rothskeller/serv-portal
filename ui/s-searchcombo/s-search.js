@@ -93,21 +93,22 @@ up.compiler('input.s-search', elm => {
     while (dropdown.firstChild) dropdown.removeChild(dropdown.firstChild)
     highlight = null
     const rect = elm.getBoundingClientRect()
+    let bottom = rect.bottom, left = rect.left
     // If the input is in an up-modal (as it usually will be), we'll create the
     // dropdown as a child of the modal viewport, and offset the input rectangle
     // to reflect unpoly's margins on the modal viewport.  Ugh.  Otherwise we'll
     // create it as a child of the <body> with no offset to the input rectangle.
     let parent = elm.closest('up-modal-viewport')
-    if (parent) rect.bottom += 25, rect.left += 15
+    if (parent) bottom += 25, left += 15
     else parent = document.body
-    rect.bottom += parent.scrollTop
+    bottom += parent.scrollTop
     if (!dropdown.parentElement) parent.appendChild(dropdown)
     // Position the dropdown below the input rectangle.  This sort of absolute
     // positioning is ugly, and fragile if someone resizes or changes
     // orientation while the dropdown is open.  But it's the only way to
     // position the dropdown adjacent to the input without a wrapper element.
-    dropdown.style.top = `${rect.bottom}px`
-    dropdown.style.left = `${rect.left}px`
+    dropdown.style.top = `${bottom}px`
+    dropdown.style.left = `${left}px`
     // If we didn't find anything, display "no match".
     if (!hits.length) {
       const nm = document.createElement('div')
