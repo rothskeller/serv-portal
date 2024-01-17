@@ -100,7 +100,7 @@ up.compiler('input.s-search', elm => {
     let parent = elm.closest('up-modal-viewport')
     if (parent) rect.bottom += 25, rect.left += 15
     else parent = document.body
-    rect.bottom += parent.scrollY
+    rect.bottom += parent.scrollTop
     if (!dropdown.parentElement) parent.appendChild(dropdown)
     // Position the dropdown below the input rectangle.  This sort of absolute
     // positioning is ugly, and fragile if someone resizes or changes
