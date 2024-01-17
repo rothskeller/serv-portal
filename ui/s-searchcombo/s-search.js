@@ -95,12 +95,9 @@ up.compiler('input.s-search', elm => {
     const rect = elm.getBoundingClientRect()
     let bottom = rect.bottom, left = rect.left
     // If the input is in an up-modal (as it usually will be), we'll create the
-    // dropdown as a child of the modal viewport, and offset the input rectangle
-    // to reflect unpoly's margins on the modal viewport.  Ugh.  Otherwise we'll
-    // create it as a child of the <body> with no offset to the input rectangle.
-    let parent = elm.closest('up-modal-viewport')
-    if (parent) bottom += 25, left += 15
-    else parent = document.body
+    // dropdown as a child of the modal viewport.  Otherwise we'll create it as
+    // a child of the <body>.
+    const parent = elm.closest('up-modal-viewport') || document.body
     bottom += parent.scrollTop
     if (!dropdown.parentElement) parent.appendChild(dropdown)
     // Position the dropdown below the input rectangle.  This sort of absolute
