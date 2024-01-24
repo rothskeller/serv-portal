@@ -87,7 +87,7 @@ func Handle(r *request.Request, token string) {
 					ediv.E("div class=signupEventName>%s", e.Name())
 					ediv.E("div class=signupEventDate>%s", l10n.LocalizeDate(date, r.Language))
 					if e.Details() != "" {
-						form.E("div class=signupEventDetails").R(e.Details())
+						ediv.E("div class=signupEventDetails").R(e.Details())
 					}
 					laste = e.ID()
 				}
