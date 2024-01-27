@@ -51,9 +51,9 @@ func showVolgistics(r *request.Request, section *htmlb.Element, user, p *person.
 		if p.Flags()&person.VolgisticsPending != 0 {
 			section.E("div").R(r.Loc("Registration pending"))
 		} else if user.ID() == p.ID() {
-			section.E("div").E("a href=/people/%d/vregister up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Inscribirse", p.ID())
+			section.E("div").E("a href=/people/%d/vregister up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Register", p.ID())
 		} else {
-			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("No se inscribido")
+			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("Not registered")
 		}
 	}
 }
