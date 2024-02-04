@@ -79,7 +79,7 @@ func Handle(r *request.Request, idstr string) {
 			Name:   "name",
 			ValueP: &ul.Name,
 		}, ul},
-		&rolesRow{form.LabeledRow{Label: "Roles"}, ul, roles},
+		&rolesRow{form.LabeledRow{Label: "Roles"}, ul, &roles},
 	}
 	f.Handle(r)
 }
@@ -130,7 +130,7 @@ func (nr *nameRow) Read(r *request.Request) bool {
 type rolesRow struct {
 	form.LabeledRow
 	ul    *list.Updater
-	roles []*roleData
+	roles *[]*roleData
 }
 
 func (rr *rolesRow) Read(r *request.Request) bool {
@@ -158,14 +158,14 @@ func (rr *rolesRow) Read(r *request.Request) bool {
 		rr.Error = "At least one role must have privileges."
 		return false
 	}
-	for _, or := range rr.roles {
+	for _, or := range *rr.roles {
 		if !slices.ContainsFunc(roles, func(rd *roleData) bool { return rd.rl.ID() == or.rl.ID() }) {
 			or.submodel, or.sender = 0, false
 			roles = append(roles, or)
 		}
 	}
 	sort.Slice(roles, func(i, j int) bool { return roles[i].rl.Name() < roles[j].rl.Name() })
-	rr.roles = roles
+	*rr.roles = roles
 	rr.Error = ""
 	return true
 }
@@ -177,7 +177,7 @@ func (rr *rolesRow) ShouldEmit(vl request.ValidationList) bool {
 func (rr *rolesRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) {
 	row := rr.EmitPrefix(r, parent, "")
 	box := row.E("div class=formInput")
-	for _, rd := range rr.roles {
+	for _, rd := range *rr.roles {
 		if rd.submodel == 0 && !rd.sender {
 			continue
 		}
