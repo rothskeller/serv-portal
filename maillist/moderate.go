@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"log"
 	"net/mail"
 	"slices"
 	"strings"
@@ -55,6 +56,7 @@ func sendForModeration(
 	ctx context.Context, client *ses.Client, msgid string, hdr mail.Header, body, raw []byte,
 	listname string, list *ListData, reasons []string,
 ) (err error) {
+	log.Printf("- sending to moderation for %s", listname)
 	var from = fmt.Sprintf("%s Moderator <%s.mod@mx.sunnyvaleserv.org>", listname, listname)
 	var subject = fmt.Sprintf("[MOD] %s", hdr.Get("Subject"))
 	var comment = "<p>This message needs moderation because:<br>• " + strings.Join(reasons, "<br>• ") + "</p><p>To approve, reply to this message.  To reject, ignore this message.</p><p>[MOD]MSGID: " + msgid + "</p>"
@@ -84,6 +86,7 @@ func handleModerationResponse(
 			msgid = string(body[idx+12 : idx+12+idx2])
 		}
 	}
+	log.Printf("- moderation approval for %s on %s", msgid, listname)
 	if hdr, body, raw, err = readMail(ctx, s3Client, msgid); err != nil {
 		return fmt.Errorf("reading moderated message %s: %s", msgid, err)
 	}

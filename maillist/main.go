@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/mail"
 	"strings"
 
@@ -41,6 +42,7 @@ func handleMail(ctx context.Context, input *SESInput) (err error) {
 	s3Client = s3.NewFromConfig(conf)
 	sesClient = ses.NewFromConfig(conf)
 	msgid = input.Records[0].SES.Mail.MessageID
+	log.Printf("handleMail(%s):", msgid)
 	if hdr, body, raw, err = readMail(ctx, s3Client, msgid); err != nil {
 		return fmt.Errorf("reading message: %s", err)
 	}
@@ -70,6 +72,7 @@ func unknownRecipient(ctx context.Context, client *ses.Client, hdr mail.Header, 
 		subject string
 		comment string
 	)
+	log.Printf("- sending to admin, unknown recipient %s", recip)
 	if s := hdr.Get("Subject"); s != "" {
 		subject = "ADMIN: " + s
 	} else {

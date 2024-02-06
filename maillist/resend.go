@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/mail"
 	"net/textproto"
 	"net/url"
@@ -20,6 +21,7 @@ import (
 func resendMessageToList(
 	ctx context.Context, client *ses.Client, hdr mail.Header, body, raw []byte, list string, recipients []Receiver,
 ) (err error) {
+	log.Printf("- sending to %s", list)
 	var rewr = newMessageRewriter(textproto.MIMEHeader(hdr), body)
 	var last time.Time
 	for i := range recipients {
