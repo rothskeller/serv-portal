@@ -137,7 +137,7 @@ func (mr *messageRewriter) parseMultipartBody(subtype, boundary string) {
 	mr.boundary = boundary
 	mr.alternative = subtype == "alternative"
 	mpr = multipart.NewReader(bytes.NewReader(mr.prefix), boundary)
-	for part, err = mpr.NextPart(); err == nil; part, err = mpr.NextPart() {
+	for part, err = mpr.NextRawPart(); err == nil; part, err = mpr.NextRawPart() {
 		if pbody, err = io.ReadAll(part); err != nil {
 			return
 		}
