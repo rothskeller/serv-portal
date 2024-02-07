@@ -147,7 +147,7 @@ func readEmail(r *request.Request, up *person.Updater) string {
 }
 
 func emitEmail(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=persoediEmailRow class=formRow")
 	row.E("label for=personeditEmail").R(r.Loc("Email"))
 	row.E("input id=personeditEmail name=email s-validate value=%s", up.Email, focus, "autofocus")
 	if err != "" {
@@ -168,7 +168,7 @@ func readEmail2(r *request.Request, up *person.Updater) string {
 }
 
 func emitEmail2(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditEmail2Row class=formRow")
 	row.E("label for=personeditEmail2").R(r.Loc("Alt. Email"))
 	row.E("input id=personeditEmail2 name=email2 s-validate value=%s", up.Email2, focus, "autofocus")
 	if err != "" {
@@ -190,7 +190,7 @@ func readCellPhone(r *request.Request, up *person.Updater) string {
 }
 
 func emitCellPhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditCellPhoneRow class=formRow")
 	row.E("label for=personeditCellPhone").R(r.Loc("Cell Phone"))
 	row.E("input id=personeditCellPhone name=cellPhone s-validate value=%s", up.CellPhone, focus, "autofocus")
 	if err != "" {
@@ -210,7 +210,7 @@ func readHomePhone(r *request.Request, up *person.Updater) string {
 }
 
 func emitHomePhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditHomePhoneRow class=formRow")
 	row.E("label for=personeditHomePhone").R(r.Loc("Home Phone"))
 	row.E("input id=personeditHomePhone name=homePhone s-validate value=%s", up.HomePhone, focus, "autofocus")
 	if err != "" {
@@ -230,7 +230,7 @@ func readWorkPhone(r *request.Request, up *person.Updater) string {
 }
 
 func emitWorkPhone(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditWorkPhoneRow class=formRow")
 	row.E("label for=personeditWorkPhone").R(r.Loc("Work Phone"))
 	row.E("input id=personeditWorkPhone name=workPhone s-validate value=%s", up.WorkPhone, focus, "autofocus")
 	if err != "" {
@@ -368,7 +368,7 @@ func emitAddress(r *request.Request, form *htmlb.Element, addr *person.Address, 
 			line2 = strings.TrimSpace(parts[1])
 		}
 	}
-	row := form.E("div class='formRow personeditAddress'")
+	row := form.E("div id=personedit%sAddressRow class='formRow personeditAddress'", name4)
 	if canSameAsHome {
 		row.E("label for=personedit%sSameAsHome>%s", name4, name)
 	} else {
