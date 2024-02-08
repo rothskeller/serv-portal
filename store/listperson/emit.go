@@ -1,6 +1,7 @@
 package listperson
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/mailru/easyjson/jwriter"
@@ -8,6 +9,11 @@ import (
 	"sunnyvaleserv.org/portal/store/list"
 	"sunnyvaleserv.org/portal/store/person"
 )
+
+var unmoderatedLists = []string{
+	"admin", "cert", "listos", "outreach", "sares", "snap",
+} // TODO this really shouldn't be hard-coded.  But then, the moderator email
+// address for everything else shouldn't be either.
 
 // ListData generates the JSON list data descriptor used by the mailing list
 // software.  The JSON schema is
@@ -96,11 +102,15 @@ func listData(storer phys.Storer, jw *jwriter.Writer, l *list.List) {
 		}
 	})
 	jw.RawString(`],"senders":[`)
-	for i, sender := range senders {
-		if i != 0 {
-			jw.RawByte(',')
+	if slices.Contains(unmoderatedLists, l.Name) {
+		jw.RawString(`"*"`)
+	} else {
+		for i, sender := range senders {
+			if i != 0 {
+				jw.RawByte(',')
+			}
+			jw.String(sender)
 		}
-		jw.String(sender)
 	}
 	jw.RawString(`]}`)
 }

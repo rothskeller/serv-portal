@@ -1,14 +1,9 @@
 Need to be notified when there are errors.
 
-Do we want to rely on SES's list management and subscription features?
-
-Some lists (admin, group info lists) should be essentially unmoderated.  Maybe
-still moderate them for spam, virus, etc., but not for sender.
-
-Clean up message files after we're done with them.
-
 Update list data synchonously with website change rather than periodically.
 
 Don't quote people's names on the From line.
 
 Need to decode base64 and qp to find [MOD]MSGID line.
+
+Extra line breaks in plain text messages.

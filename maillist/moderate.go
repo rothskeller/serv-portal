@@ -26,7 +26,9 @@ func maybeSendMessageToList(
 		froma    *mail.Address
 		problems []string
 	)
-	if froma, err = mail.ParseAddress(hdr.Get("From")); err != nil {
+	if len(list.Senders) == 1 && list.Senders[0] == "*" {
+		// nothing
+	} else if froma, err = mail.ParseAddress(hdr.Get("From")); err != nil {
 		problems = append(problems, "The message From address could not be parsed.")
 	} else if !slices.Contains(list.Senders, strings.ToLower(froma.Address)) {
 		problems = append(problems, fmt.Sprintf("The sender %s is not authorized to send to %s.", html.EscapeString(froma.String()), listname))
