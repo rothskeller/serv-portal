@@ -25,7 +25,7 @@ func resendMessageToList(
 	var rewr = newMessageRewriter(textproto.MIMEHeader(hdr), body)
 	var last time.Time
 	for i := range recipients {
-		time.Sleep(time.Until(last.Add(100 * time.Millisecond)))
+		time.Sleep(time.Until(last.Add(100 * time.Millisecond))) // TODO shouldn't be hard-coded
 		last = time.Now()
 		if err = resendMessageToOne(ctx, client, hdr, raw, rewr, list, &recipients[i]); err != nil {
 			return err

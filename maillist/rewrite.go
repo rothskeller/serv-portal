@@ -193,8 +193,6 @@ func (mr *messageRewriter) rewrite(w io.Writer, list string, recip *Receiver) (e
 		sw := NewSplit76Writer(w)
 		defer sw.Close()
 		w = base64.NewEncoder(base64.StdEncoding, sw)
-	} else {
-		w = NewCRLFWriter(w)
 	}
 	if _, err = w.Write(mr.prefix); err != nil {
 		return err
@@ -248,8 +246,6 @@ func (mr *messageRewriter) copy(w io.Writer) (err error) {
 		sw := NewSplit76Writer(w)
 		defer sw.Close()
 		w = base64.NewEncoder(base64.StdEncoding, sw)
-	} else {
-		w = NewCRLFWriter(w)
 	}
 	if _, err = w.Write(mr.prefix); err != nil {
 		return err
