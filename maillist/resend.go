@@ -113,7 +113,7 @@ func emitSelectedHeaders(out io.Writer, raw []byte) (sawReplyTo bool) {
 	}
 }
 
-var unquotedRE = regexp.MustCompile("^[-a-zA-Z0-9!#$%&'*+/=?^_`{}|~.]+$")
+var unquotedRE = regexp.MustCompile("^[-a-zA-Z0-9!#$%&'*+/=?^_`{}|~ ]+$")
 
 // quoteIfNeeded returns the string passed to it, quoted appropriately for
 // inclusion in an email header if quoting is needed.

@@ -2,8 +2,6 @@ Need to be notified when there are errors.
 
 Update list data synchonously with website change rather than periodically.
 
-Don't quote people's names on the From line.
-
 Need to decode base64 and qp to find [MOD]MSGID line.
 
 Extra line breaks in plain text messages.
