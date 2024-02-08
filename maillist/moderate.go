@@ -3,11 +3,17 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"html"
+	"io"
 	"log"
+	"mime"
+	"mime/multipart"
+	"mime/quotedprintable"
 	"net/mail"
+	"net/textproto"
 	"slices"
 	"strings"
 
@@ -66,18 +72,19 @@ func sendForModeration(
 }
 
 func handleModerationResponse(
-	ctx context.Context, s3Client *s3.Client, sesClient *ses.Client, listname string, ald AllListData, body []byte,
+	ctx context.Context, s3Client *s3.Client, sesClient *ses.Client, listname string, ald AllListData, hdr mail.Header, body []byte,
 ) (err error) {
 	var (
 		ld    *ListData
 		msgid string
-		hdr   mail.Header
 		raw   []byte
 	)
 	if ld = ald[listname]; ld == nil {
 		return fmt.Errorf("moderation response for unknown list %q", listname)
 	}
-	if idx := bytes.Index(body, []byte("[MOD]MSGID: ")); idx < 0 {
+	if body, err = extractPlainText(textproto.MIMEHeader(hdr), body); err != nil || body == nil {
+		return errors.New("no plain text content in moderation response")
+	} else if idx := bytes.Index(body, []byte("[MOD]MSGID: ")); idx < 0 {
 		return errors.New("[MOD]MSGID not found in moderation response")
 	} else {
 		if idx2 := bytes.IndexFunc(body[idx+12:], func(r rune) bool {
@@ -93,4 +100,76 @@ func handleModerationResponse(
 		return fmt.Errorf("reading moderated message %s: %s", msgid, err)
 	}
 	return resendMessageToList(ctx, sesClient, hdr, body, raw, listname, ld.Receivers)
+}
+
+// extractPlainText extracts the plain text portion of a message from its body.
+// It returns a nil body if there is none.  This is a recursive function, to
+// handled nested multipart bodies.
+func extractPlainText(header textproto.MIMEHeader, body []byte) (nbody []byte, err error) {
+	var (
+		mediatype string
+		params    map[string]string
+	)
+	// Decode any content transfer encoding.  If we come across an encoding
+	// we can't handle, or we have an error decoding, return an empty body
+	// with a notplain indicator.
+	switch strings.ToLower(header.Get("Content-Transfer-Encoding")) {
+	case "", "7bit", "8bit", "binary":
+		break // no decoding needed
+	case "quoted-printable":
+		if body, err = io.ReadAll(quotedprintable.NewReader(bytes.NewReader(body))); err != nil {
+			return nil, err
+		}
+	case "base64":
+		if body, err = io.ReadAll(base64.NewDecoder(base64.StdEncoding, bytes.NewReader(body))); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, nil
+	}
+	// Decode the content type.
+	if ct := header.Get("Content-Type"); ct != "" {
+		if mediatype, params, err = mime.ParseMediaType(header.Get("Content-Type")); err != nil {
+			return nil, err // can't decode Content-Type
+		}
+	} else {
+		mediatype, params = "text/plain", map[string]string{}
+	}
+	// If the content type is multipart, look for the last plain text part
+	// in it.  This is a recursive call.
+	if strings.HasPrefix(mediatype, "multipart/") {
+		var (
+			mr       *multipart.Reader
+			part     *multipart.Part
+			partbody []byte
+			found    []byte
+		)
+		mr = multipart.NewReader(bytes.NewReader(body), params["boundary"])
+		for {
+			part, err = mr.NextRawPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return nil, err // Can't decode multipart body
+			}
+			partbody, _ = io.ReadAll(part)
+			plain, err := extractPlainText(part.Header, partbody)
+			if err != nil {
+				return nil, err
+			}
+			if plain != nil {
+				found = plain
+			}
+		}
+		return found, nil
+	}
+	// If the content type is anything other than text/plain, we're out of
+	// luck.
+	if mediatype != "text/plain" {
+		return nil, nil
+	}
+	// In theory we also ought to check the charset, but we'll elide that
+	// until experience proves a need.
+	return body, nil
 }

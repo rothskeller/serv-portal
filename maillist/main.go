@@ -52,7 +52,7 @@ func handleMail(ctx context.Context, input *SESInput) (err error) {
 	for _, recip := range input.Records[0].SES.Receipt.Recipients {
 		recip, _, _ = strings.Cut(recip, "@")
 		if strings.HasSuffix(recip, ".mod") {
-			err = handleModerationResponse(ctx, s3Client, sesClient, recip[:len(recip)-4], listdata, body)
+			err = handleModerationResponse(ctx, s3Client, sesClient, recip[:len(recip)-4], listdata, hdr, body)
 		} else if ld := listdata[recip]; ld != nil {
 			err = maybeSendMessageToList(
 				ctx, sesClient, &input.Records[0].SES.Receipt, input.Records[0].SES.Mail.MessageID,
