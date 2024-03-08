@@ -60,7 +60,7 @@ func listData(storer phys.Storer, jw *jwriter.Writer, l *list.List) {
 		first   = true
 	)
 	jw.String(l.Name)
-	jw.RawString(`:{"moderators":["sroth@sunnyvale.ca.gov"],"receivers":[`)
+	jw.RawString(`:{"moderators":["sroth@sunnyvale.ca.gov","rothskeller@gmail.com"],"receivers":[`)
 	All(storer, l.ID, person.FInformalName|person.FEmail|person.FEmail2|person.FFlags|person.FUnsubscribeToken, func(p *person.Person, sender, sub, unsub bool) {
 		if sub && !unsub && p.Flags()&person.NoEmail == 0 {
 			if p.Email() != "" {
