@@ -63,6 +63,7 @@ func (cr *CompressedResponse) Write(buf []byte) (int, error) {
 	if cr.gz == nil {
 		cr.gz = gzip.NewWriter(cr.ResponseWriter)
 		cr.ResponseWriter.Header().Set("Content-Encoding", "gzip")
+		cr.ResponseWriter.Header().Del("Content-Length")
 	}
 	return cr.gz.Write(buf)
 }
@@ -72,6 +73,7 @@ func (cr *CompressedResponse) WriteHeader(statusCode int) {
 	if cr.gz == nil {
 		cr.gz = gzip.NewWriter(cr.ResponseWriter)
 		cr.ResponseWriter.Header().Set("Content-Encoding", "gzip")
+		cr.ResponseWriter.Header().Del("Content-Length")
 	}
 	cr.ResponseWriter.WriteHeader(statusCode)
 }
