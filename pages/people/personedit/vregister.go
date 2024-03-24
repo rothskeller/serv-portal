@@ -233,7 +233,7 @@ func readAgreement(r *request.Request) (err string) {
 func emitAgreement(r *request.Request, form *htmlb.Element, err string) {
 	form.E("div class='formRow-3col vregisterAgreement'").R(r.Loc("By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty."))
 	row := form.E("div class=formRow")
-	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label=%s").R(r.Loc("I agree"))
+	row.E("div class=formInput").E("input type=checkbox name=agreement class=s-check label=%s", r.Loc("I agree"))
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
