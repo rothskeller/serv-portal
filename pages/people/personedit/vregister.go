@@ -22,7 +22,7 @@ import (
 
 // HandleVRegister handles requests for /people/$id/vregister.
 func HandleVRegister(r *request.Request, idstr string) {
-	const personFields = person.FID | person.FInformalName | person.FVolgisticsID | person.FFlags | person.FFormalName | person.FSortName | person.FCallSign | person.FBirthdate | person.FEmail | person.FEmail2 | person.FCellPhone | person.FHomePhone | person.FWorkPhone | person.FAddresses | person.FEmContacts
+	const personFields = person.FInformalName | person.FVolgisticsID | person.FFlags | person.FFormalName | person.FSortName | person.FCallSign | person.FBirthdate | person.FEmail | person.FEmail2 | person.FCellPhone | person.FHomePhone | person.FWorkPhone | person.FAddresses | person.FEmContacts
 	var (
 		user                 *person.Person
 		p                    *person.Person
