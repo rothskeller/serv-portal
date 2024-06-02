@@ -46,7 +46,7 @@ const deleteDisallowedListReceiversSQL = `
 UPDATE list_person SET sub=FALSE
 WHERE  NOT EXISTS (
   SELECT 1 FROM list_role lr, person_role pr
-  WHERE  lr.role=pr.role AND lr.submodel > 0
+  WHERE  pr.person=list_person.person AND lr.list=list_person.list AND lr.role=pr.role AND lr.submodel > 0
 )`
 const addAutomaticListReceiversSQL = `
 INSERT INTO list_person
