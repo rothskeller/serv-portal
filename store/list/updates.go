@@ -65,7 +65,7 @@ func (l *List) Update(storer phys.Storer, u *Updater) {
 }
 
 func packModerators(mods sets.Set[string]) string {
-	if !mods.HasAny() {
+	if mods.Len() == 0 {
 		return ""
 	}
 	return strings.Join(mods.UnsortedList(), ",")

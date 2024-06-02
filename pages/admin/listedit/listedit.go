@@ -145,7 +145,7 @@ type moderatorsRow struct {
 }
 
 func (mr *moderatorsRow) Get() {
-	if !mr.ul.Moderators.HasAny() {
+	if mr.ul.Moderators.Len() == 0 {
 		*mr.TextAreaRow.ValueP = ""
 		return
 	}
