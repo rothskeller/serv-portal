@@ -11,7 +11,7 @@ import (
 )
 
 var unmoderatedLists = []string{
-	"admin", "cert", "listos", "outreach", "sares", "snap",
+	"admin",
 } // TODO this really shouldn't be hard-coded.  But then, the moderator email
 // address for everything else shouldn't be either.
 
