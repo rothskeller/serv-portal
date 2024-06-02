@@ -12,8 +12,8 @@
 #peoplelistRole {
   min-width: 0; /* allow select control to shrink */
 }
-.peopleListCount {
-  margin-top: 1.5rem;
+.peoplelistCount {
+  margin-block: 1.5rem;
 }
 /* The people list has several layout variations:
  *   - Call signs can be omitted, shown in a single column, or shown in two

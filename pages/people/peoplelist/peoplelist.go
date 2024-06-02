@@ -1,6 +1,7 @@
 package peoplelist
 
 import (
+	"encoding/csv"
 	"sort"
 	"strings"
 
@@ -74,6 +75,11 @@ func Handle(r *request.Request) {
 	if (focus == nil || focus.Org() != enum.OrgSARES) && currsort != "name" {
 		currsort = "priority"
 	}
+	// If export was requested, do that.
+	if r.FormValue("format") == "csv" {
+		renderCSV(r, user, focus, currsort)
+		return
+	}
 	// Show the page.
 	opts = ui.PageOpts{
 		Title:    title,
@@ -105,7 +111,66 @@ func Handle(r *request.Request) {
 		if user.HasPrivLevel(0, enum.PrivLeader) {
 			// TODO add user
 		}
+		form := main.E("form class=peoplelistExport method=POST")
+		form.E("input type=hidden name=csrf value=%s", r.CSRF)
+		if focus != nil {
+			form.E("input type=hidden name=role value=%d", focus.ID())
+		}
+		form.E("input type=hidden name=sort value=%s", currsort)
+		form.E("input type=hidden name=format value=csv")
+		form.E("input type=submit value=Export class='sbtn sbtn-primary sbtn-small'")
 	})
+}
+
+// renderCSV renders the people list in CSV format.
+func renderCSV(r *request.Request, user *person.Person, focus *role.Role, currsort string) {
+	r.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	r.Header().Set("Content-Disposition", `attachment; filename="people.csv"`)
+	var out = csv.NewWriter(r)
+	out.UseCRLF = true
+	var cols []string
+	if currsort == "suffix" {
+		cols = append(cols, "Prefix", "Suffix")
+	} else if focus != nil && focus.Org() == enum.OrgSARES {
+		cols = append(cols, "Call Sign")
+	}
+	cols = append(cols, "Name", "Formal Name", "Pronouns", "Role", "Email", "Email 2", "Cell Phone", "Home Phone", "Work Phone")
+	out.Write(cols)
+	people := getPeople(r, user, focus, currsort == "suffix")
+	sort.Slice(people, func(i, j int) bool {
+		return personDataLess(people[i], people[j], currsort)
+	})
+	for _, p := range people {
+		renderCSVPerson(out, p, focus, currsort)
+	}
+	out.Flush()
+}
+
+func renderCSVPerson(out *csv.Writer, p *personData, focus *role.Role, currsort string) {
+	var cols []string
+
+	// Render the call sign column(s) if needed.
+	if currsort == "suffix" {
+		cols = append(cols, p.callPrefix, p.callSuffix)
+	} else if focus != nil && focus.Org() == enum.OrgSARES {
+		cols = append(cols, p.CallSign())
+	}
+	// Render the names, pronouns, and principal role.
+	cols = append(cols, p.SortName(), p.FormalName(), p.Pronouns(), p.role1)
+	// Show the email and phone number if allowed.
+	if p.viewLevel >= person.ViewWorkContact {
+		cols = append(cols, p.Email(), p.Email2())
+	} else {
+		cols = append(cols, "", "")
+	}
+	if p.viewLevel == person.ViewFull {
+		cols = append(cols, p.CellPhone(), p.HomePhone(), p.WorkPhone())
+	} else if p.viewLevel == person.ViewWorkContact {
+		cols = append(cols, "", "", p.WorkPhone())
+	} else {
+		cols = append(cols, "", "", "")
+	}
+	out.Write(cols)
 }
 
 // listControls displays the controls bar (focus choice and sort order) at the
@@ -154,7 +219,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 // about the person that is needed for both sorting and display.  (Information
 // needed only for display is computed in showPerson.)
 func getPeople(r *request.Request, user *person.Person, focus *role.Role, splitCallSign bool) (people []*personData) {
-	const personFields = person.FID | person.FSortName | person.FInformalName | person.FCallSign | person.FHomePhone | person.FCellPhone | person.FWorkPhone | person.FEmail | person.FEmail2 | person.CanViewTargetFields
+	const personFields = person.FID | person.FSortName | person.FInformalName | person.FFormalName | person.FCallSign | person.FPronouns | person.FHomePhone | person.FCellPhone | person.FWorkPhone | person.FEmail | person.FEmail2 | person.CanViewTargetFields
 	person.All(r, personFields, func(p *person.Person) {
 		viewLevel := user.CanView(p)
 		if viewLevel == person.ViewNone {

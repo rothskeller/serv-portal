@@ -7,11 +7,9 @@ Features to add:
   Render links in iCal in plain text.
   Prefix iCal event titles with [ORG] when not obvious.
   Start event list scrolled to "today".
-  Class registrations
   Tie events to folders
   Automate monthly communications tests
   Venue editor
-  Synch email immediately on change that requires it
 
 Defects / Cleanup:
   send-signups
