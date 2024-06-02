@@ -289,6 +289,6 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 			}
 		})
 	})
-	form.E("div class=activityButtons hidden").
-		E("input type=submit class='sbtn sbtn-warning' value=%s", r.Loc("Save"))
+	form.E("div class=activityButtons").
+		E("input id=activitySave type=submit class='sbtn sbtn-secondary sbtn-disabled' disabled value=%s", r.Loc("Save"))
 }
