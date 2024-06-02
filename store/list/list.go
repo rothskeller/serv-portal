@@ -2,6 +2,8 @@
 // which people can be subscribed and to which messages can be sent.
 package list
 
+import "k8s.io/apimachinery/pkg/util/sets"
+
 // ID uniquely identifies a list.
 type ID int
 
@@ -15,10 +17,16 @@ type List struct {
 	// Name is the name of the list.  For email lists, it is also the
 	// local-part of the email address of the list.
 	Name string
+	// Moderators is the set of moderator email addresses for the list.
+	// It is nil for unmoderated lists (including all SMS lists).
+	Moderators sets.Set[string]
 }
 
 func (l *List) Clone() (c *List) {
 	c = new(List)
 	*c = *l
+	if l.Moderators != nil {
+		c.Moderators = l.Moderators.Clone()
+	}
 	return c
 }
