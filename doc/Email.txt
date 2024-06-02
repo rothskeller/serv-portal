@@ -1,0 +1,46 @@
+# SunnyvaleSERV.org Email Service
+
+## Incoming (i.e., Mailing Lists)
+
+Incoming mail to SunnyvaleSERV.org is delivered to Amazon Simple Email Service
+(SES), via MX DNS entries in the Dreamhost DNS servers.  SES has a ruleset for
+incoming email that stores the mail in a S3 bucket and then invokes the
+serv-mail Lambda function.
+
+The serv-mail Lambda function is a Go executable whose source code is in the
+maillist subdirectory of this repository.  It breaks the incoming messages into
+three types:
+  - Messages sent to known email lists.  These are handled as described below.
+  - Responses to moderation requests.  Also described below.
+  - Everything else gets forwarded to the administrative address.
+
+Messages that are sent to known email lists are checked for compliance with
+authorized sender rules, spam issues, etc.  If there are no issues, they are
+resent out to all subscribers of the target list(s).  Each message is rewritten
+for each subscriber with custom headers and footer.  If there are any issues
+with the mail, it is sent as an attachment to a moderation request, to the
+moderator(s) of the target list(s).
+
+To approve a message, the moderator(s) merely need to reply to the moderation
+request; when the lambda receives an incoming reply to a moderation request from
+a valid moderator, it resends the original message to all subscribers as above.
+To reject a message, the moderator(s) simply ignore the moderation request.
+
+The set of known email lists, the allowed senders, moderators, and subscribers
+of each, etc., are encoded in a single JSON file in the S3 bucket called
+list-data.json.  This file is updated by the SunnyvaleSERV.org code whenever
+list membership or configurations are changed.
+
+Every few months, old messages should be cleaned out of the S3 bucket, and old
+log files out of the repository.
+
+## Outgoing
+
+The SunnyvaleSERV.org website originates email in a number of cases:
+  - Invitations to sign up for shifts
+  - Daily log reports
+  - Volunteer hours reminders and reports
+  - Class registration confirmations
+  - Password reset requests
+All of these are sent through the same Amazon SES instance that handles the
+email lists.

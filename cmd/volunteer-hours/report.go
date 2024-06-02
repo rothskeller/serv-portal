@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"mime/quotedprintable"
@@ -153,7 +154,7 @@ func sendReport(report *rdata) {
 		toaddr = "volunteer-hours@sunnyvaleserv.org"
 	}
 	crlf := sendmail.NewCRLFWriter(&buf)
-	fmt.Fprintf(crlf, `From: Sunnyvale SERV <cert@sunnyvale.ca.gov>
+	fmt.Fprintf(crlf, `From: Sunnyvale SERV <admin@sunnyvaleserv.org>
 To: volunteer-hours@sunnyvaleserv.org
 Date: %s
 Subject: Sunnyvale SERV Volunteer Hours for %s
@@ -166,7 +167,7 @@ Content-Transfer-Encoding: quoted-printable
 		panic(err)
 	}
 	qpw.Close()
-	if err := sendmail.SendMessage(config.Get("fromAddr"), []string{toaddr}, buf.Bytes()); err != nil {
+	if err := sendmail.SendMessage(context.Background(), config.Get("fromAddr"), []string{toaddr}, buf.Bytes()); err != nil {
 		panic(err)
 	}
 }

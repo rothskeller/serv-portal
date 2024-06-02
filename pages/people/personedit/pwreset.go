@@ -97,7 +97,7 @@ func postPWReset(r *request.Request, user, p *person.Person) {
 	fmt.Fprint(crlf, "\r\n\r\n")
 	fmt.Fprint(crlf, r.Loc("Regards,"))
 	fmt.Fprint(crlf, "\r\nSunnyvaleSERV.org\r\n")
-	if err := sendmail.SendMessage(config.Get("fromAddr"), emails, body.Bytes()); err != nil {
+	if err := sendmail.SendMessage(r.Context(), config.Get("fromAddr"), emails, body.Bytes()); err != nil {
 		panic(err)
 	}
 	personview.Render(r, user, p, person.ViewFull, "password")

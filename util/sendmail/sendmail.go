@@ -1,27 +1,15 @@
 package sendmail
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	aconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
+	"github.com/aws/aws-sdk-go-v2/service/ses/types"
+	"sunnyvaleserv.org/portal/util/config"
 )
-
-var mailSenderPath string
-
-func init() {
-	var err error
-
-	if mailSenderPath, err = exec.LookPath("mail-sender"); err != nil {
-		home := os.Getenv("HOME")
-		if home == "" {
-			home = "/home/snyserv"
-			os.Setenv("HOME", home)
-		}
-		mailSenderPath = filepath.Join(home, "go", "bin", "mail-sender")
-	}
-}
 
 // A Mailer is a handler for sending email.  While the current email sending
 // method is stateless, other possible methods aren't (e.g. directly connecting
@@ -36,28 +24,29 @@ func OpenMailer() (m *Mailer, err error) {
 
 // SendMessage sends a single message through the Mailer.  If it returns an
 // error, the Mailer is no longer usable.
-func (m *Mailer) SendMessage(from string, to []string, body []byte) (err error) {
-	return SendMessage(from, to, body)
+func (m *Mailer) SendMessage(ctx context.Context, from string, to []string, body []byte) (err error) {
+	return SendMessage(ctx, from, to, body)
 }
 
 // Close closes the Mailer.  The Mailer may not be used after this is called.
 func (m *Mailer) Close() {}
 
 // SendMessage sends a single email message.
-func SendMessage(from string, to []string, body []byte) (err error) {
+func SendMessage(ctx context.Context, from string, to []string, body []byte) (err error) {
 	var (
-		args []string
-		cmd  *exec.Cmd
-		out  []byte
+		conf   aws.Config
+		client *ses.Client
 	)
-	args = make([]string, 0, len(to)+1)
-	args = append(args, from)
-	args = append(args, to...)
-	cmd = exec.Command(mailSenderPath, args...)
-	cmd.Stdin = bytes.NewReader(body)
-	out, err = cmd.CombinedOutput()
+	conf, _ = aconfig.LoadDefaultConfig(ctx, aconfig.WithCredentialsProvider(aws.CredentialsProviderFunc(func(_ context.Context) (aws.Credentials, error) {
+		return aws.Credentials{
+			AccessKeyID:     config.Get("sendmailAccessKey"),
+			SecretAccessKey: config.Get("sendmailSecretKey"),
+		}, nil
+	})))
+	client = ses.NewFromConfig(conf)
+	_, err = client.SendRawEmail(ctx, &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: body}})
 	if err != nil {
-		return fmt.Errorf("%s: %s", err, string(out))
+		return fmt.Errorf("AWS SendRawEmail: %s", err)
 	}
 	return nil
 }

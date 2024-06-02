@@ -77,6 +77,7 @@ func HandlePWReset(r *request.Request) {
 		}
 		fmt.Fprint(&body, &mail.Address{Name: p.InformalName(), Address: e})
 	}
+	fmt.Fprint(&body, "\r\nBcc: ", config.Get("adminEmail"))
 	fmt.Fprint(&body, "\r\nSubject: ")
 	fmt.Fprint(&body, r.Loc("SunnyvaleSERV.org Password Reset"))
 	fmt.Fprint(&body, "\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n")
@@ -86,7 +87,7 @@ func HandlePWReset(r *request.Request) {
 	fmt.Fprintf(&body, "\r\n    %s/password-reset/%s\r\n\r\n", config.Get("siteURL"), p.PWResetToken())
 	fmt.Fprint(&body, r.Loc("If you have any problems, reply to this email. If you did not request a password reset, you can safely ignore this email."))
 	fmt.Fprint(&body, "\r\n")
-	if err := sendmail.SendMessage(config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
+	if err := sendmail.SendMessage(r.Context(), config.Get("fromAddr"), append(emails, config.Get("adminEmail")), body.Bytes()); err != nil {
 		panic(err)
 	}
 RESPOND:

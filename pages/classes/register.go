@@ -338,6 +338,7 @@ func sendUserConfirmation(r *request.Request, user *person.Person, c *class.Clas
 	}
 	recips = append(recips, config.Get("adminEmail"))
 	fmt.Fprintf(&body, "From: %s\r\nTo: %s\r\n", config.Get("fromEmail"), strings.Join(toaddrs, ", "))
+	fmt.Fprintf(&body, "Bcc: %s\r\n", config.Get("adminEmail"))
 	fmt.Fprintf(&body, "Subject: %s: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n", r.Loc(c.Type().String()), r.Loc("Class Registration"))
 	fmt.Fprintf(&body, r.Loc("Greetings, %s,"), user.InformalName())
 	fmt.Fprint(&body, "\r\n\r\n")
@@ -395,7 +396,7 @@ func sendUserConfirmation(r *request.Request, user *person.Person, c *class.Clas
 		fmt.Fprint(&body, r.Loc("We hope to be able to accommodate you at some future class."))
 		fmt.Fprint(&body, "\r\n\r\nSunnyvale SERV\r\nserv@sunnyvale.ca.gov\r\n")
 	}
-	if err := sendmail.SendMessage(config.Get("fromAddr"), recips, body.Bytes()); err != nil {
+	if err := sendmail.SendMessage(r.Context(), config.Get("fromAddr"), recips, body.Bytes()); err != nil {
 		r.LogEntry.Problems.AddError(err)
 	}
 }
@@ -429,7 +430,7 @@ func sendAddConfirmations(r *request.Request, user *person.Person, c *class.Clas
 		fmt.Fprint(&body, "\r\n\r\n")
 		fmt.Fprint(&body, r.Loc("We look forward to seeing you!"))
 		fmt.Fprint(&body, "\r\nSunnyvale SERV\r\nserv@sunnyvale.ca.gov\r\n")
-		if err := sendmail.SendMessage(config.Get("fromAddr"), []string{add.Email}, body.Bytes()); err != nil {
+		if err := sendmail.SendMessage(r.Context(), config.Get("fromAddr"), []string{add.Email}, body.Bytes()); err != nil {
 			r.LogEntry.Problems.AddError(err)
 		}
 	}
@@ -462,7 +463,7 @@ func sendCancelConfirmations(r *request.Request, user *person.Person, c *class.C
 		fmt.Fprint(&body, "\r\n\r\n")
 		fmt.Fprint(&body, r.Loc("If this is incorrect, please reply to this email and let us know."))
 		fmt.Fprint(&body, "\r\n\r\nSunnyvale SERV\r\nserv@sunnyvale.ca.gov\r\n")
-		if err := sendmail.SendMessage(config.Get("fromAddr"), []string{can.Email()}, body.Bytes()); err != nil {
+		if err := sendmail.SendMessage(r.Context(), config.Get("fromAddr"), []string{can.Email()}, body.Bytes()); err != nil {
 			r.LogEntry.Problems.AddError(err)
 		}
 	}

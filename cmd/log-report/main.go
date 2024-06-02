@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -117,7 +118,7 @@ func main() {
 	}
 	reorder(changes)
 	reorder(authn)
-	fmt.Fprintf(&out, "From: SunnyvaleSERV.org <cert@sunnyvale.ca.gov>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: SunnyvaleSERV.org Usage Report for %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n", date)
+	fmt.Fprintf(&out, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: SunnyvaleSERV.org Usage Report for %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n", date)
 	qpw = quotedprintable.NewWriter(&out)
 	if requestElapsedCount != 0 {
 		requestElapsedAvg = requestElapsedSum / time.Duration(requestElapsedCount)
@@ -148,7 +149,7 @@ func main() {
 	showlist(qpw, authn, "Authentication Updates")
 	fmt.Fprintf(qpw, `</body></html>`)
 	qpw.Close()
-	if err = sendmail.SendMessage(config.Get("fromAddr"), []string{config.Get("adminEmail")}, out.Bytes()); err != nil {
+	if err = sendmail.SendMessage(context.Background(), config.Get("fromAddr"), []string{config.Get("adminEmail")}, out.Bytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: sendmail: %s\n", err)
 		os.Exit(1)
 	}
