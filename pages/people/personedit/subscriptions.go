@@ -12,6 +12,7 @@ import (
 	"sunnyvaleserv.org/portal/store/listperson"
 	"sunnyvaleserv.org/portal/store/listrole"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/recalc"
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
@@ -128,6 +129,7 @@ func postSubscriptions(r *request.Request, user, p *person.Person) {
 			up := p.Updater()
 			up.Flags |= person.NoEmail | person.NoText
 			p.Update(r, up, person.FFlags)
+			recalc.Recalculate(r)
 			return
 		}
 		var heldemail, heldsms bool
@@ -154,6 +156,7 @@ func postSubscriptions(r *request.Request, user, p *person.Person) {
 			}
 			p.Update(r, up, person.FFlags)
 		}
+		recalc.Recalculate(r)
 	})
 	personview.Render(r, user, p, person.ViewFull, "subscriptions")
 }
