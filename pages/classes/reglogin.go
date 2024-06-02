@@ -63,6 +63,13 @@ func (li *registerLogIn) createForm(r *request.Request) {
 			},
 			login: li,
 		},
+		&passwordMessageRow{
+			MessageRow: form.MessageRow{
+				LabeledRow: form.LabeledRow{Label: " "},
+				HTML:       `Welcome back!  We have an account on this system for that email address.  Please enter the corresponding password.`,
+			},
+			login: li,
+		},
 		&passwordRow{
 			PasswordRow: form.PasswordRow{
 				InputRow: form.InputRow{
@@ -74,6 +81,13 @@ func (li *registerLogIn) createForm(r *request.Request) {
 					ValueP: &li.password,
 				},
 				Autocomplete: "current-password",
+			},
+			login: li,
+		},
+		&passwordMessageRow{
+			MessageRow: form.MessageRow{
+				LabeledRow: form.LabeledRow{Label: " "},
+				HTML:       `If you don’t remember your password, you can <a href="/password-reset">reset it</a> and we’ll email you a new one.`,
 			},
 			login: li,
 		},
@@ -161,6 +175,15 @@ func (er *emailRow) Read(r *request.Request) bool {
 		er.login.f.Buttons[0].OnClick = er.login.logIn
 	}
 	return true
+}
+
+type passwordMessageRow struct {
+	form.MessageRow
+	login *registerLogIn
+}
+
+func (pmr *passwordMessageRow) ShouldEmit(_ request.ValidationList) bool {
+	return pmr.login.user != nil
 }
 
 type passwordRow struct {

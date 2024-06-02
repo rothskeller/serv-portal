@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"sunnyvaleserv.org/portal/server/auth"
-	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/personrole"
 	"sunnyvaleserv.org/portal/store/role"
@@ -53,9 +52,6 @@ func HandlePWReset(r *request.Request) {
 	}
 	if held, _ := personrole.PersonHasRole(r, p.ID(), role.Disabled); held {
 		goto RESPOND // person is disabled
-	}
-	if !p.HasPrivLevel(0, enum.PrivStudent) {
-		goto RESPOND // person belongs to no orgs
 	}
 	emails = append(emails, p.Email())
 	if p.Email2() != "" {
