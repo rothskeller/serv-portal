@@ -1,7 +1,8 @@
-package role
+package recalc
 
 import (
 	"sunnyvaleserv.org/portal/store/internal/phys"
+	"sunnyvaleserv.org/portal/store/listperson"
 )
 
 const (
@@ -61,6 +62,8 @@ ON CONFLICT DO UPDATE SET sub=TRUE`
 // roles are deleted, role privileges or memberships on a list are changed, or
 // explicit role assignments to people are changed.
 func Recalculate(storer phys.Storer) {
+	var listdata []byte
+
 	// Some of the cases listed above could be streamlined, acting on only a
 	// single person or a single list.  But recalculating everything is fast
 	// enough that there's no justification for the added code complexity.
@@ -77,5 +80,7 @@ func Recalculate(storer phys.Storer) {
 		phys.Exec(storer, deleteDisallowedListReceiversSQL)
 		phys.Exec(storer, addAutomaticListReceiversSQL)
 		phys.Exec(storer, deleteUnusedListPersonRowsSQL)
+		listdata = listperson.ListData(storer)
 	})
+	phys.UploadEmailListData(storer, listdata)
 }

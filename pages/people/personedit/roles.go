@@ -11,6 +11,7 @@ import (
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/personrole"
+	"sunnyvaleserv.org/portal/store/recalc"
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
@@ -114,7 +115,7 @@ func handlePostRoles(r *request.Request, user, p *person.Person) {
 		if user.IsAdminLeader() {
 			handlePostOrgRoles(r, p, held, enum.OrgAdmin)
 		}
-		role.Recalculate(r)
+		recalc.Recalculate(r)
 	})
 	personview.Render(r, user, p, person.ViewFull, "")
 }

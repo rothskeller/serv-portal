@@ -12,6 +12,7 @@ import (
 	"sunnyvaleserv.org/portal/store/listrole"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/store/personrole"
+	"sunnyvaleserv.org/portal/store/recalc"
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
@@ -254,7 +255,7 @@ func saveRole(r *request.Request, user *person.Person, rl *role.Role, ur *role.U
 		case prioBefore > rl.Priority()+1:
 			rl.Reorder(r, prioBefore-1)
 		}
-		role.Recalculate(r)
+		recalc.Recalculate(r)
 	})
 	rolelist.Render(r, user)
 	return true
@@ -263,7 +264,7 @@ func saveRole(r *request.Request, user *person.Person, rl *role.Role, ur *role.U
 func deleteRole(r *request.Request, user *person.Person, rl *role.Role) bool {
 	r.Transaction(func() {
 		rl.Delete(r)
-		role.Recalculate(r)
+		recalc.Recalculate(r)
 	})
 	rolelist.Render(r, user)
 	return true

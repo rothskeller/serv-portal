@@ -14,6 +14,7 @@ import (
 	"sunnyvaleserv.org/portal/store/list"
 	"sunnyvaleserv.org/portal/store/listrole"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/recalc"
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
@@ -273,7 +274,7 @@ func saveList(r *request.Request, user *person.Person, l *list.List, ul *list.Up
 		for _, rd := range roles {
 			listrole.SetListRole(r, l, rd.rl, rd.sender, rd.submodel)
 		}
-		role.Recalculate(r)
+		recalc.Recalculate(r)
 	})
 	listlist.Render(r, user)
 	return true
@@ -282,7 +283,7 @@ func saveList(r *request.Request, user *person.Person, l *list.List, ul *list.Up
 func deleteList(r *request.Request, user *person.Person, l *list.List) bool {
 	r.Transaction(func() {
 		l.Delete(r)
-		role.Recalculate(r)
+		recalc.Recalculate(r)
 	})
 	listlist.Render(r, user)
 	return true

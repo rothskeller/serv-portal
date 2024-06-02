@@ -72,6 +72,12 @@ CREATE TABLE list (
   moderators text
 );
 
+DROP TABLE IF EXISTS list_data;
+CREATE TABLE list_data (
+  data text NOT NULL
+);
+INSERT INTO list_data VALUES ('');
+
 DROP TABLE IF EXISTS list_person;
 CREATE TABLE list_person (
   list   integer NOT NULL REFERENCES list ON DELETE CASCADE,
