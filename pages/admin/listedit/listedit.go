@@ -1,11 +1,13 @@
 package listedit
 
 import (
+	"fmt"
 	"regexp"
 	"slices"
 	"sort"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sunnyvaleserv.org/portal/pages/admin/listlist"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/server/auth"
@@ -31,6 +33,7 @@ func Handle(r *request.Request, idstr string) {
 		user  *person.Person
 		l     *list.List
 		ul    *list.Updater
+		mods  string
 		roles []*roleData
 		f     form.Form
 	)
@@ -79,6 +82,15 @@ func Handle(r *request.Request, idstr string) {
 			Name:   "name",
 			ValueP: &ul.Name,
 		}, ul},
+		&moderatorsRow{form.TextAreaRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "listeditModerators",
+				Label: "Moderators",
+				Help:  "Moderator email addresses, one per line.",
+			},
+			Name:   "moderators",
+			ValueP: &mods,
+		}, ul},
 		&rolesRow{form.LabeledRow{Label: "Roles"}, ul, &roles},
 	}
 	f.Handle(r)
@@ -125,6 +137,54 @@ func (nr *nameRow) Read(r *request.Request) bool {
 		return false
 	}
 	return true
+}
+
+type moderatorsRow struct {
+	form.TextAreaRow
+	ul *list.Updater
+}
+
+func (mr *moderatorsRow) Get() {
+	if !mr.ul.Moderators.HasAny() {
+		*mr.TextAreaRow.ValueP = ""
+		return
+	}
+	var list = mr.ul.Moderators.UnsortedList()
+	sort.Strings(list)
+	*mr.TextAreaRow.ValueP = strings.Join(list, "\n")
+}
+
+var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func (mr *moderatorsRow) Read(r *request.Request) bool {
+	if !mr.TextAreaRow.Read(r) {
+		return false
+	}
+	var mods = *mr.TextAreaRow.ValueP
+	if mods == "" {
+		mr.Error = "At least one moderator email address is required."
+		return false
+	}
+	var modlist = strings.Split(mods, "\n")
+	for _, mod := range modlist {
+		if !emailRE.MatchString(mod) {
+			mr.Error = fmt.Sprintf("%q is not a valid email address.", mod)
+			return false
+		}
+	}
+	if mr.ul.Moderators == nil {
+		mr.ul.Moderators = sets.New[string]()
+	} else {
+		mr.ul.Moderators.Clear()
+	}
+	for _, mod := range modlist {
+		mr.ul.Moderators.Insert(mod)
+	}
+	return true
+}
+
+func (mr *moderatorsRow) ShouldEmit(_ request.ValidationList) bool {
+	return mr.ul.Type == list.Email
 }
 
 type rolesRow struct {
@@ -202,6 +262,9 @@ func (rr *rolesRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) 
 
 func saveList(r *request.Request, user *person.Person, l *list.List, ul *list.Updater, roles []*roleData) bool {
 	r.Transaction(func() {
+		if ul.Type != list.Email {
+			ul.Moderators = nil
+		}
 		if l == nil {
 			l = list.Create(r, ul)
 		} else {

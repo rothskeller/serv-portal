@@ -66,9 +66,10 @@ INSERT INTO folder VALUES (1, 1, 'Files', '', 0, 0, 1, 3);
 
 DROP TABLE IF EXISTS list;
 CREATE TABLE list (
-  id integer   PRIMARY KEY,
-  type integer NOT NULL CHECK (type IN (1, 2)),
-  name text    NOT NULL
+  id         integer PRIMARY KEY,
+  type       integer NOT NULL CHECK (type IN (1, 2)),
+  name       text    NOT NULL,
+  moderators text
 );
 
 DROP TABLE IF EXISTS list_person;

@@ -2,7 +2,9 @@ package list
 
 import (
 	"fmt"
+	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sunnyvaleserv.org/portal/store/internal/phys"
 )
 
@@ -16,14 +18,18 @@ type Updater List
 // Updater returns a new Updater for the specified list, with its data matching
 // the current data for the list.  The list must have fetched UpdaterFields.
 func (l *List) Updater() (u *Updater) {
-	return &Updater{
+	u = &Updater{
 		ID:   l.ID,
 		Type: l.Type,
 		Name: l.Name,
 	}
+	if l.Moderators != nil {
+		u.Moderators = l.Moderators.Clone()
+	}
+	return u
 }
 
-const createSQL = `INSERT INTO list (id, type, name) VALUES (?,?,?)`
+const createSQL = `INSERT INTO list (id, type, name, moderators) VALUES (?,?,?,?)`
 
 // Create creates a new list, with the data in the Updater.
 func Create(storer phys.Storer, u *Updater) (l *List) {
@@ -32,6 +38,7 @@ func Create(storer phys.Storer, u *Updater) (l *List) {
 		stmt.BindNullInt(int(u.ID))
 		stmt.BindInt(int(u.Type))
 		stmt.BindText(u.Name)
+		stmt.BindNullText(packModerators(u.Moderators))
 		stmt.Step()
 		if u.ID != 0 {
 			l.ID = u.ID
@@ -43,17 +50,25 @@ func Create(storer phys.Storer, u *Updater) (l *List) {
 	return l
 }
 
-const updateSQL = `UPDATE list SET type=?, name=? WHERE id=?`
+const updateSQL = `UPDATE list SET type=?, name=?, moderators=? WHERE id=?`
 
 // Update updates the existing list, with the data in the Updater.
 func (l *List) Update(storer phys.Storer, u *Updater) {
 	phys.SQL(storer, updateSQL, func(stmt *phys.Stmt) {
 		stmt.BindInt(int(u.Type))
 		stmt.BindText(u.Name)
+		stmt.BindNullText(packModerators(u.Moderators))
 		stmt.BindInt(int(u.ID))
 		stmt.Step()
 	})
 	l.auditAndUpdate(storer, u, false)
+}
+
+func packModerators(mods sets.Set[string]) string {
+	if !mods.HasAny() {
+		return ""
+	}
+	return strings.Join(mods.UnsortedList(), ",")
 }
 
 func (l *List) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
@@ -68,6 +83,11 @@ func (l *List) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
 	if u.Name != l.Name {
 		phys.Audit(storer, "%s:: name = %q", context, u.Name)
 		l.Name = u.Name
+	}
+	if u.Moderators != nil && (l.Moderators == nil || !u.Moderators.Equal(l.Moderators)) {
+		phys.Audit(storer, "%s:: moderators = %q", context, packModerators(u.Moderators))
+	} else if u.Moderators == nil && l.Moderators != nil {
+		phys.Audit(storer, "%s:: moderators = nil", context)
 	}
 }
 
