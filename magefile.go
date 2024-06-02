@@ -56,9 +56,6 @@ func Install() error {
 		os.Remove("received-text-hook")
 		return err
 	}
-	if err := sh.Run(mg.GoCmd(), "install", "./cmd/synch-email"); err != nil {
-		return err
-	}
 	if err := sh.Run(mg.GoCmd(), "build", "-o", "text-status-hook", "./cmd/text-status-hook"); err != nil {
 		return err
 	}
@@ -66,9 +63,9 @@ func Install() error {
 		os.Remove("text-status-hook")
 		return err
 	}
-	// if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
-	// 	return err
-	// }
+	if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
+		return err
+	}
 	if err := sh.Run(mg.GoCmd(), "build", "-o", "index.fcgi", "./cmd/portal.fcgi"); err != nil {
 		os.Remove("index.fcgi")
 		return err
