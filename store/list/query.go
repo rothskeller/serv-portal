@@ -24,7 +24,7 @@ func WithID(storer phys.Storer, id ID) (l *List) {
 	return l
 }
 
-const allSQL = `SELECT id, type, name FROM list ORDER BY name`
+const allSQL = `SELECT id, type, name, moderators FROM list ORDER BY name`
 
 // All reads each list from the database, in order by name.
 func All(storer phys.Storer, fn func(*List)) {
