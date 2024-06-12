@@ -71,9 +71,10 @@ func ShowTaskSignups(r *request.Request, form *htmlb.Element, t *task.Task, p *p
 		if s.End() != s.Start() {
 			label += "–" + s.End()[11:]
 		}
-		tdiv.E("input type=checkbox class='s-check signupShiftCheck' label=%s data-shift=%d", label, s.ID(),
-			signedup, "checked",
-			ineligibleReason != "", "disabled", ineligibleReason != "", "title=%s", string(ineligibleReason))
+		tdiv.E("div class=signupShiftCheck").
+			E("input type=checkbox class=s-check label=%s data-shift=%d", label, s.ID(),
+				signedup, "checked",
+				ineligibleReason != "", "disabled", ineligibleReason != "", "title=%s", string(ineligibleReason))
 		hdiv := tdiv.E("div class=signupShiftHave")
 		if len(people) != 0 {
 			hdiv.E("a href=#").TF(r.Loc("Have %d,"), len(people))
