@@ -28,7 +28,7 @@ func (p *Person) IndexEntry(_ phys.Storer) *phys.IndexEntry {
 
 // IndexAll indexes all people.
 func IndexAll(storer phys.Storer) {
-	All(storer, FID|FInformalName, func(p *Person) {
+	All(storer, FID|FInformalName|FCallSign, func(p *Person) {
 		phys.Index(storer, p)
 	})
 }
