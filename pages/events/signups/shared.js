@@ -12,6 +12,7 @@ up.on('click', '.signupShiftCheck[title] + .s-check-lb', (evt, elm) => {
 })
 up.on('change', '.signupShiftCheck', (evt, elm) => {
   evt.preventDefault()
+  elm = elm.querySelector('input')
   const signedup = elm.checked ? 'true' : 'false'
   elm.checked = false
   elm.indeterminate = true
