@@ -16,6 +16,8 @@ import (
 	"sunnyvaleserv.org/portal/pages/admin/listrole"
 	"sunnyvaleserv.org/portal/pages/admin/roleedit"
 	"sunnyvaleserv.org/portal/pages/admin/rolelist"
+	"sunnyvaleserv.org/portal/pages/admin/venueedit"
+	"sunnyvaleserv.org/portal/pages/admin/venuelist"
 	"sunnyvaleserv.org/portal/pages/classes"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/events/eventattend"
@@ -166,6 +168,10 @@ func route(r *request.Request) {
 		rolelist.Get(r)
 	case c[0] == "admin" && c[1] == "roles" && c[2] != "" && c[3] == "":
 		roleedit.Handle(r, c[2])
+	case c[0] == "admin" && c[1] == "venues" && c[2] == "":
+		venuelist.Get(r)
+	case c[0] == "admin" && c[1] == "venues" && c[2] != "" && c[3] == "":
+		venueedit.Handle(r, c[2])
 	case strings.EqualFold(c[0], "cert") && c[1] == "":
 		static.CERTPage(r)
 	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":

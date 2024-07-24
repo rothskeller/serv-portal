@@ -33,6 +33,7 @@ func Render(r *request.Request, user *person.Person) {
 		Tabs: []ui.PageTab{
 			{Name: "Roles", URL: "/admin/roles", Target: "main"},
 			{Name: "Lists", URL: "/admin/lists", Target: "main", Active: true},
+			{Name: "Venues", URL: "/admin/venues", Target: "main"},
 			{Name: "Classes", URL: "/admin/classes", Target: "main"},
 		},
 	}

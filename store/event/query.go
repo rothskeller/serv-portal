@@ -16,6 +16,16 @@ func Exists(storer phys.Storer, id ID) (found bool) {
 	return found
 }
 
+// ExistsWithVenue returns whether any event is scheduled at the specified
+// venue.
+func ExistsWithVenue(storer phys.Storer, venue venue.ID) (found bool) {
+	phys.SQL(storer, `SELECT 1 FROM event WHERE venue=?`, func(stmt *phys.Stmt) {
+		stmt.BindInt(int(venue))
+		found = stmt.Step()
+	})
+	return found
+}
+
 var withIDSQLCache map[Fields]string
 
 // WithID returns the event with the specified ID, or nil if it does not exist.

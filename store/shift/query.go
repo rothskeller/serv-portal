@@ -11,8 +11,18 @@ import (
 
 // Exists returns whether a Shift with the specified ID exists.
 func Exists(storer phys.Storer, id ID) (found bool) {
-	phys.SQL(storer, `SELECT 1 FROM task WHERE id=?`, func(stmt *phys.Stmt) {
+	phys.SQL(storer, `SELECT 1 FROM shift WHERE id=?`, func(stmt *phys.Stmt) {
 		stmt.BindInt(int(id))
+		found = stmt.Step()
+	})
+	return found
+}
+
+// ExistsWithVenue returns whether any Shift is scheduled at the specified
+// Venue.
+func ExistsWithVenue(storer phys.Storer, venue venue.ID) (found bool) {
+	phys.SQL(storer, `SELECT 1 FROM shift WHERE venue=?`, func(stmt *phys.Stmt) {
+		stmt.BindInt(int(venue))
 		found = stmt.Step()
 	})
 	return found

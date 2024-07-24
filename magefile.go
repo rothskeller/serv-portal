@@ -111,6 +111,7 @@ var stylesheets = []string{
 	"pages/admin/listpeople/listpeople.css",
 	"pages/admin/roleedit/roleedit.css",
 	"pages/admin/rolelist/rolelist.css",
+	"pages/admin/venuelist/venuelist.css",
 	"pages/classes/all.css",
 	"pages/classes/cert.css",
 	"pages/classes/common.css",
