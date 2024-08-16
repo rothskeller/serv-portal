@@ -155,7 +155,7 @@ func handleCommon(r *request.Request, user, p *person.Person, cy, cm, y, m int, 
 
 func saveHours(r *request.Request, user, p *person.Person, y, m int) {
 	const eventFields = event.FID | event.FName | event.FStart | event.FFlags
-	const taskFields = task.FID | task.FName | task.FEvent | task.FFlags
+	const taskFields = task.FID | task.FName | task.FEvent | task.FFlags | task.FOrg
 	type change struct {
 		e       *event.Event
 		t       *task.Task
