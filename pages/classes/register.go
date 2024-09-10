@@ -21,7 +21,7 @@ import (
 	"sunnyvaleserv.org/portal/util/sendmail"
 )
 
-const registerPersonFields = person.FID | person.FInformalName | person.FSortName | person.FEmail | person.FEmail2 | person.FCellPhone
+const registerPersonFields = person.FID | person.FInformalName | person.FSortName | person.FEmail | person.FEmail2 | person.FCellPhone | person.FCallSign
 
 // HandleRegister handles /classes/$id/register requests.
 func HandleRegister(r *request.Request, cidstr string) {

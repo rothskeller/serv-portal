@@ -29,7 +29,7 @@
       const id = cb.getAttribute('value')
       checks[id] = cb
       implies[id] = cb.dataset.implies ? cb.dataset.implies.split(',') : []
-      cb.querySelector('input').addEventListener('input', setImplies)
+      cb.addEventListener('input', setImplies)
     })
     setImplies()
     return () => { checks = implies = null }

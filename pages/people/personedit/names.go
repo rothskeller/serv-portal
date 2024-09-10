@@ -104,7 +104,7 @@ func readInformalName(r *request.Request, up *person.Updater) string {
 }
 
 func emitInformalName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditInformalNameRow class=formRow")
 	row.E("label for=personeditInformalName").R(r.Loc("Name"))
 	row.E("input id=personeditInformalName name=informalName s-validate value=%s", up.InformalName, focus, "autofocus")
 	if err != "" {
@@ -121,7 +121,7 @@ func readFormalName(r *request.Request, up *person.Updater) string {
 }
 
 func emitFormalName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditFormalNameRow class=formRow")
 	row.E("label for=personeditFormalName").R(r.Loc("Formal name"))
 	row.E("input id=personeditFormalName name=formalName s-validate value=%s", up.FormalName, focus, "autofocus")
 	if err != "" {
@@ -140,7 +140,7 @@ func readSortName(r *request.Request, up *person.Updater) string {
 }
 
 func emitSortName(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditSortNameRow class=formRow")
 	row.E("label for=personeditSortName").R(r.Loc("Sort name"))
 	row.E("input id=personeditSortName name=sortName s-validate value=%s", up.SortName, focus, "autofocus")
 	if err != "" {
@@ -165,7 +165,7 @@ func readCallSign(r *request.Request, up *person.Updater) string {
 }
 
 func emitCallSign(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditCallSignRow class=formRow")
 	row.E("label for=personeditCallSign").R(r.Loc("Call sign"))
 	row.E("input id=personeditCallSign name=callSign s-validate value=%s", up.CallSign, focus, "autofocus")
 	if err != "" {
@@ -185,7 +185,7 @@ func readBirthdate(r *request.Request, up *person.Updater) string {
 }
 
 func emitBirthdate(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div class='formRow'")
+	row := form.E("div id=personeditBirthdateRow class=formRow")
 	row.E("label for=personeditBirthdate").R(r.Loc("Birthdate"))
 	row.E("input type=date id=personeditBirthdate name=birthdate s-validate value=%s", up.Birthdate, focus, "autofocus")
 	if err != "" {
@@ -198,7 +198,7 @@ func readPronouns(r *request.Request, up *person.Updater) {
 }
 
 func emitPronouns(r *request.Request, form *htmlb.Element, up *person.Updater) {
-	row := form.E("div class='formRow'")
+	row := form.E("div class=formRow")
 	row.E("label for=personeditPronouns").R(r.Loc("Pronouns"))
 	row.E("input id=personeditPronouns name=pronouns list=personeditPronounChoices value=%s", up.Pronouns)
 	list := row.E("datalist id=personeditPronounChoices")
