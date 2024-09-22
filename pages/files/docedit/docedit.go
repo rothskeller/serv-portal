@@ -73,6 +73,14 @@ func handleFile(r *request.Request, user *person.Person, f *folder.Folder, doc *
 			r.Transaction(func() {
 				if ud.ID == 0 {
 					document.Create(r, ud)
+				} else if ud.Contents != nil {
+					// Archive the old file and create a new
+					// one.
+					arch := doc.Updater(r, f)
+					arch.Archived = true
+					doc.Update(r, arch)
+					ud.ID = 0
+					document.Create(r, ud)
 				} else {
 					doc.Update(r, ud)
 				}
