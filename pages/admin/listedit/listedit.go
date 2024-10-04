@@ -158,6 +158,10 @@ func (mr *moderatorsRow) Get() {
 var emailRE = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func (mr *moderatorsRow) Read(r *request.Request) bool {
+	if mr.ul.Type == list.SMS {
+		mr.ul.Moderators = nil
+		return true
+	}
 	if !mr.TextAreaRow.Read(r) {
 		return false
 	}
