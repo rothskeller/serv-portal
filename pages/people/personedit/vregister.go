@@ -183,7 +183,7 @@ func readVRegHomeAddress(r *request.Request, up *person.Updater) string {
 	if s := readHomeAddress(r, up); s != "" {
 		return s
 	}
-	if up.Addresses.Home.Address == "" {
+	if up.Addresses.Home == nil || up.Addresses.Home.Address == "" {
 		return r.Loc("Your home address is required.")
 	}
 	return ""
@@ -200,6 +200,7 @@ func readVRegECName(r *request.Request, up *person.Updater, num int) string {
 func readInterests(r *request.Request) (interests []string) {
 	return r.Form["interests"]
 }
+
 func emitInterests(r *request.Request, form *htmlb.Element, interests []string) {
 	row := form.E("div class=formRow")
 	row.E("label for=vregisterCERTD").R(r.Loc("Interests"))
@@ -230,6 +231,7 @@ func readAgreement(r *request.Request) (err string) {
 	}
 	return ""
 }
+
 func emitAgreement(r *request.Request, form *htmlb.Element, err string) {
 	form.E("div class='formRow-3col vregisterAgreement'").R(r.Loc("By submitting this application, I certify that all statements I have made on this application are true and correct and I hereby authorize the City of Sunnyvale to investigate the accuracy of this information.  I am aware that fingerprinting and a criminal records search is required for volunteers 18 years of age or older.  I understand that I am working at all times on a voluntary basis, without monetary compensation or benefits, and not as a paid employee.  I give the City of Sunnyvale permission to use any photographs or videos taken of me during my service without obligation or compensation to me.  I understand that the City of Sunnyvale reserves the right to terminate a volunteer's service at any time.  I understand that volunteers are covered under the City of Sunnyvale's Worker's Compensation Program for an injury or accident occurring while on duty."))
 	row := form.E("div class=formRow")
@@ -325,9 +327,9 @@ func SendVolunteerRegistration(p *person.Person, interests []string) (err error)
 	out.RawString(`,"g2f25c1l2":`)
 	out.Int(relationshipCode[p.EmContacts()[1].Relationship])
 	out.RawString(`,"g13f1":true,"g16f3c0l1":false,"g16f3c0l2":false,"g16f3c0l3":false,"g16f3c1l1":false,"g16f3c1l2":false,"g16f3c1l3":false,"g16f3c2l1":false,"g16f3c2l2":false,"g16f3c2l3":false,"g16f3c3l1":false,"g16f3c3l2":false,"g16f3c3l3":false,"g16f3c4l1":false,"g16f3c4l2":false,"g16f3c4l3":false,"g16f3c5l1":false,"g16f3c5l2":false,"g16f3c5l3":false,"g16f3c6l1":false,"g16f3c6l2":false,"g16f3c6l3":false,"appSignature":[],"id":"777028848"}`)
-	var body, _ = out.BuildBytes()
+	body, _ := out.BuildBytes()
 
-	var req, _ = http.NewRequest(http.MethodPost, "https://www.volgistics.com/ex/apForm.dll/AFR?Action=saveApplication", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, "https://www.volgistics.com/ex/apForm.dll/AFR?Action=saveApplication", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 
