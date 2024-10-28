@@ -273,7 +273,7 @@ type (
 var zip4RE = regexp.MustCompile(`-\d\d\d\d, USA`)
 
 func readHomeAddress(r *request.Request, up *person.Updater) string {
-	return readAddress(r, &up.Addresses.Home, "home", false, nil, false)
+	return readAddress(r, &up.Addresses.Home, "home", false, nil, true)
 }
 func readWorkAddress(r *request.Request, up *person.Updater) string {
 	return readAddress(r, &up.Addresses.Work, "work", true, up.Addresses.Home, true)
