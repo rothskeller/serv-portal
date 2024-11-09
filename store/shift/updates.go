@@ -148,7 +148,7 @@ func (s *Shift) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
 	}
 }
 
-const overlappingShiftSQL = `SELECT 1 FROM shift WHERE id!=? AND task=? AND venue IS ? AND ?<end AND ?>=start`
+const overlappingShiftSQL = `SELECT 1 FROM shift WHERE id!=? AND task=? AND venue IS ? AND ?<end AND ?>start`
 
 // OverlappingShift returns whether the data specified in the Updater would
 // overlap another Shift if applied.
