@@ -138,7 +138,7 @@ func allowedOrgs(user *person.Person) (orgs map[enum.Org]bool) {
 
 // dateRanges generates the set of date ranges supported by the reports.
 func dateRanges() (ranges []dateRange) {
-	var now = time.Now()
+	now := time.Now()
 	ranges = []dateRange{
 		{
 			tag:      "tm",
@@ -165,6 +165,12 @@ func dateRanges() (ranges []dateRange) {
 			dateTo:   time.Date(now.Year(), (now.Month()-1)/3*3+1, 0, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
 		},
 		{
+			tag:      "l3",
+			label:    "last three months",
+			dateFrom: time.Date(now.Year(), now.Month()-3, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			dateTo:   time.Date(now.Year(), now.Month(), 0, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+		},
+		{
 			tag:      "ty",
 			label:    "this year",
 			dateFrom: time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
@@ -175,6 +181,12 @@ func dateRanges() (ranges []dateRange) {
 			label:    "last year",
 			dateFrom: time.Date(now.Year()-1, 1, 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
 			dateTo:   time.Date(now.Year()-1, 12, 31, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+		},
+		{
+			tag:      "l12",
+			label:    "last 12 months",
+			dateFrom: time.Date(now.Year()-1, now.Month(), 1, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
+			dateTo:   time.Date(now.Year(), now.Month(), 0, 0, 0, 0, 0, time.Local).Format("2006-01-02"),
 		},
 	}
 	if now.Month() >= time.July {
