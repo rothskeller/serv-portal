@@ -14,14 +14,17 @@ import (
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/recalc"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const contactPersonFields = person.FInformalName | person.FCallSign | person.FEmail | person.FEmail2 | person.FCellPhone | person.FHomePhone | person.FWorkPhone | person.FAddresses | person.FEmContacts
-const addressVerificationAPI = "https://addressvalidation.googleapis.com/v1:validateAddress?key="
+const (
+	contactPersonFields    = person.FInformalName | person.FCallSign | person.FEmail | person.FEmail2 | person.FCellPhone | person.FHomePhone | person.FWorkPhone | person.FAddresses | person.FEmContacts
+	addressVerificationAPI = "https://addressvalidation.googleapis.com/v1:validateAddress?key="
+)
 
 // HandleContact handles requests for /people/$id/edcontact.
 func HandleContact(r *request.Request, idstr string) {
@@ -89,6 +92,7 @@ func HandleContact(r *request.Request, idstr string) {
 			up.EmContacts = slices.DeleteFunc(up.EmContacts, func(ec *person.EmContact) bool { return ec.Name == "" })
 			r.Transaction(func() {
 				p.Update(r, up, contactPersonFields)
+				recalc.Recalculate(r)
 			})
 			personview.Render(r, user, p, person.ViewFull, "contact")
 			return
@@ -275,12 +279,15 @@ var zip4RE = regexp.MustCompile(`-\d\d\d\d, USA`)
 func readHomeAddress(r *request.Request, up *person.Updater) string {
 	return readAddress(r, &up.Addresses.Home, "home", false, nil, true)
 }
+
 func readWorkAddress(r *request.Request, up *person.Updater) string {
 	return readAddress(r, &up.Addresses.Work, "work", true, up.Addresses.Home, true)
 }
+
 func readMailAddress(r *request.Request, up *person.Updater) string {
 	return readAddress(r, &up.Addresses.Mail, "mail", true, up.Addresses.Home, false)
 }
+
 func readAddress(
 	r *request.Request, addr **person.Address, name string, canBeSameAsHome bool, home *person.Address, canGeocode bool,
 ) string {
@@ -351,15 +358,18 @@ func readAddress(
 func emitHomeAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitAddress(r, form, up.Addresses.Home, "Home", r.Loc("Home Address"), false, focus, err)
 }
+
 func emitWorkAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitAddress(r, form, up.Addresses.Work, "Work", r.Loc("Work Address"), true, focus, err)
 }
+
 func emitMailAddress(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitAddress(r, form, up.Addresses.Mail, "Mail", r.Loc("Mailing Address"), true, focus, err)
 }
+
 func emitAddress(r *request.Request, form *htmlb.Element, addr *person.Address, name4, name string, canSameAsHome, focus bool, err string) {
 	var line1, line2 string
-	var lname = strings.ToLower(name4)
+	lname := strings.ToLower(name4)
 
 	if addr != nil {
 		parts := strings.SplitN(addr.Address, ",", 2)
@@ -401,11 +411,12 @@ func readECName(r *request.Request, up *person.Updater, num int) {
 	for len(up.EmContacts) <= num {
 		up.EmContacts = append(up.EmContacts, new(person.EmContact))
 	}
-	var ec = up.EmContacts[num]
+	ec := up.EmContacts[num]
 	ec.Name = strings.TrimSpace(r.FormValue(fmt.Sprintf("emcname%d", num)))
 }
+
 func readECHomePhone(r *request.Request, up *person.Updater, num int) string {
-	var ec = up.EmContacts[num]
+	ec := up.EmContacts[num]
 	ec.HomePhone = strings.TrimSpace(r.FormValue(fmt.Sprintf("emchome%d", num)))
 	if ec.Name == "" {
 		if ec.HomePhone != "" {
@@ -418,8 +429,9 @@ func readECHomePhone(r *request.Request, up *person.Updater, num int) string {
 	}
 	return ""
 }
+
 func readECCellPhone(r *request.Request, up *person.Updater, num int) string {
-	var ec = up.EmContacts[num]
+	ec := up.EmContacts[num]
 	ec.CellPhone = strings.TrimSpace(r.FormValue(fmt.Sprintf("emccell%d", num)))
 	if ec.Name == "" {
 		if ec.CellPhone != "" {
@@ -438,8 +450,9 @@ func readECCellPhone(r *request.Request, up *person.Updater, num int) string {
 	}
 	return ""
 }
+
 func readECRelationship(r *request.Request, up *person.Updater, num int) string {
-	var ec = up.EmContacts[num]
+	ec := up.EmContacts[num]
 	ec.Relationship = r.FormValue(fmt.Sprintf("emcrel%d", num))
 	if ec.Name == "" {
 		if ec.Relationship != "" {
