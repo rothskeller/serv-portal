@@ -42,6 +42,7 @@ var spanish = map[string]string{
 	"First":                               "nombre de pila",
 	"Last":                                "apellido(s)",
 	"Sign Up":                             "Inscribirse",
+	"Wait List":                           "Lista de espera",
 	"Submit":                              "Enviar",
 	"The cell phone number is not valid.": "El número de teléfono móvil no es válido.",
 	// CERT description:
@@ -64,7 +65,8 @@ var spanish = map[string]string{
 	"This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services.": "Esta clase es presentada por Voluntarios de Respuesta a Emergencias de Sunnyvale (SERV, en inglés), el brazo voluntario de la Oficina de Servicios de Emergencia de Sunnyvale.",
 
 	// pages/classes/register.go:
-	"This class is now full.":                "Esta clase ahora está llena.",
+	"This class is now full.": "Esta clase ahora está llena.",
+	"This class is now full.  You will be placed on a waiting list for the class and will be notified if space becomes available.": "Este curso ahora está llena.  Le incluiremos en una lista de espera para la clase y le notificaremos si hay espacio disponible.",
 	"Student %d":                             "Estudioso %d",
 	"Clear":                                  "Vaciar",
 	"How did you find out about this class?": "¿Cómo se enteró de esta clase?",
