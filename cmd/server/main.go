@@ -12,12 +12,12 @@ import (
 func main() {
 	var err error
 
-	ensureSingleton()
 	if err = os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
-	if err = http.ListenAndServe("localhost:3000", server.Server); err != nil {
+	ensureSingleton()
+	if err = http.ListenAndServe(":8000", server.Server); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
