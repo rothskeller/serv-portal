@@ -10,7 +10,7 @@ import (
 
 // GetClasses handles GET /classes or GET /clases requests.
 func GetClasses(r *request.Request) {
-	var user = auth.SessionUser(r, 0, false)
+	user := auth.SessionUser(r, 0, false)
 	ui.Page(r, user, ui.PageOpts{
 		Title:    r.Loc("Classes and Training"),
 		MenuItem: "classes",
@@ -27,6 +27,19 @@ func GetClasses(r *request.Request) {
 		more := pep.E("div id=classesPEPMore class=classesMore")
 		text = more.E("div class=pepIntro")
 		text.E("p").R(r.Loc("Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize."))
+		cgrid := main.E("div class=classesRegisterGrid")
+		if r.Language == "es" {
+			cgrid.E("div").R(`Domingo, el 2 de marzo, 2:00–4:00pm
+Impartido en inglés
+Biblioteca Pública de Sunnyvale
+665 W. Olive Avenue, Sunnyvale`)
+		} else {
+			cgrid.E("div").R(`Sunday, March 2, 2:00–4:00pm
+Taught in English
+Sunnyvale Public Library
+665 W. Olive Avenue, Sunnyvale`)
+		}
+		cgrid.E("div").E("a href=https://sunnyvale.libcal.com/event/14062764 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
 		getClassesCommon(r, user, more, class.PEP)
 		cert := classes.E("div class=classesBlock")
 		cert.E("div class=classesBlockHeading").R(r.Loc("CERT Basic Training"))
