@@ -27,7 +27,7 @@ func GetClasses(r *request.Request) {
 		more := pep.E("div id=classesPEPMore class=classesMore")
 		text = more.E("div class=pepIntro")
 		text.E("p").R(r.Loc("Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize."))
-		cgrid := main.E("div class=classesRegisterGrid")
+		cgrid := more.E("div class=classesRegisterGrid")
 		if r.Language == "es" {
 			cgrid.E("div").R(`Domingo, el 2 de marzo, 2:00–4:00pm
 Impartido en inglés
