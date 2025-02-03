@@ -77,7 +77,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		for i, reg := range regs {
 			uregs[i] = reg.Updater(r, c, nil, user)
 		}
-		if len(regs) == 0 && max != 0 {
+		if len(regs) == 0 {
 			uregs = append(uregs, &classreg.Updater{
 				Class:        c,
 				Person:       user,
@@ -89,9 +89,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 			})
 			referral = class.Referral(99) // a nonzero invalid value
 		}
-		if len(regs) < max {
-			uregs = append(uregs, new(classreg.Updater))
-		}
+		uregs = append(uregs, new(classreg.Updater))
 	}
 	r.HTMLNoCache()
 	if len(errors) != 0 || forceGet {
@@ -106,22 +104,19 @@ func HandleRegister(r *request.Request, cidstr string) {
 	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Class Registration"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if max == 0 {
-		form.E("div").R(r.Loc("This class is now full."))
-		buttons := form.E("div class=formButtons")
-		buttons.E("button type=button class='sbtn sbtn-primary' up-dismiss>OK")
-	} else {
-		for i := 0; i < len(uregs); i++ {
-			var err string
-			if i < len(errors) {
-				err = errors[i]
-			}
-			emitRow(r, form, uregs[i], err, i)
-		}
-		if referral != 0 {
-			emitReferral(r, form, referral)
-		}
-		emitButtons(r, form)
+		form.E("div").R(r.Loc("This class is now full.  You will be placed on a waiting list for the class and will be notified if space becomes available."))
 	}
+	for i := 0; i < len(uregs); i++ {
+		var err string
+		if i < len(errors) {
+			err = errors[i]
+		}
+		emitRow(r, form, uregs[i], err, i)
+	}
+	if referral != 0 {
+		emitReferral(r, form, referral)
+	}
+	emitButtons(r, form)
 }
 
 func emitRow(r *request.Request, form *htmlb.Element, reg *classreg.Updater, err string, idx int) {
