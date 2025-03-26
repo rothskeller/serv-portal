@@ -104,7 +104,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Class Registration"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if max == 0 {
-		form.E("div").R(r.Loc("This class is now full.  You will be placed on a waiting list for the class and will be notified if space becomes available."))
+		form.E("div class=formRow-3col").R(r.Loc("This class is now full.  You will be placed on a waiting list for the class and will be notified if space becomes available."))
 	}
 	for i := 0; i < len(uregs); i++ {
 		var err string
@@ -348,7 +348,9 @@ func sendUserConfirmation(r *request.Request, user *person.Person, c *class.Clas
 	}
 	if len(uregs) != 0 {
 		fmt.Fprint(&body, "\r\n\r\n")
-		if len(uregs) > 1 {
+		if classreg.ClassIsFull(r, c.ID()) {
+			fmt.Fprint(&body, r.Loc("This class is full, so you have been placed on a wait list.  We confirm the wait list for:"))
+		} else if len(uregs) > 1 {
 			fmt.Fprint(&body, r.Loc("We confirm the registrations of:"))
 		} else {
 			fmt.Fprint(&body, r.Loc("We confirm the registration of:"))
@@ -411,7 +413,11 @@ func sendAddConfirmations(r *request.Request, user *person.Person, c *class.Clas
 		fmt.Fprintf(&body, "Subject: %s: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n", r.Loc(c.Type().String()), r.Loc("Class Registration"))
 		fmt.Fprintf(&body, r.Loc("Greetings, %s,"), name)
 		fmt.Fprint(&body, "\r\n\r\n")
-		fmt.Fprintf(&body, r.Loc("%s has registered you for our “%s” class:"), user.InformalName(), r.Loc(c.Type().String()))
+		if classreg.ClassIsFull(r, c.ID()) {
+			fmt.Fprintf(&body, r.Loc("%s has added you to the waiting list for our “%s” class:"), user.InformalName(), r.Loc(c.Type().String()))
+		} else {
+			fmt.Fprintf(&body, r.Loc("%s has registered you for our “%s” class:"), user.InformalName(), r.Loc(c.Type().String()))
+		}
 		if r.Language == "es" {
 			desc = strings.Split(c.EsDesc(), "\n")
 		} else {
@@ -485,9 +491,9 @@ func showConfirmation(r *request.Request, user *person.Person, uregs []*classreg
 	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Class Registration"))
 	row := form.E("div class=formRow-3col")
 	if len(uregs) > 1 && len(cancels) == 0 {
-		row.E("p").E("b").T(r.Loc("Thank you!  Your class registrations are confirmed."))
+		row.E("p").E("b").T(r.Loc("Thank you!  Your class registrations requests are saved."))
 	} else if len(uregs) == 1 && len(cancels) == 0 {
-		row.E("p").E("b").T(r.Loc("Thank you!  Your class registration is confirmed."))
+		row.E("p").E("b").T(r.Loc("Thank you!  Your class registration request is saved."))
 	} else if len(uregs) == 0 && len(cancels) > 1 {
 		row.E("p").E("b").T(r.Loc("Thank you!  Your class registrations are canceled."))
 	} else if len(uregs) == 0 && len(cancels) == 1 {
