@@ -17,8 +17,10 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const setStatusPersonFields = person.FVolgisticsID | person.FIdentification | person.FBGChecks | person.FDSWRegistrations | person.FFlags
-const getStatusPersonFields = person.FInformalName | person.FCallSign | person.FPrivLevels | setStatusPersonFields
+const (
+	setStatusPersonFields = person.FVolgisticsID | person.FIdentification | person.FBGChecks | person.FDSWRegistrations | person.FFlags
+	getStatusPersonFields = person.FInformalName | person.FCallSign | person.FPrivLevels | setStatusPersonFields
+)
 
 // HandleStatus handles requests for /people/$id/edstatus.
 func HandleStatus(r *request.Request, idstr string) {
@@ -104,7 +106,6 @@ func HandleStatus(r *request.Request, idstr string) {
 
 func readVolgistics(r *request.Request, up *person.Updater) string {
 	if vstr := r.FormValue("volgistics"); vstr != "" {
-		up.Flags &^= person.VolgisticsPending
 		if v, err := strconv.Atoi(vstr); err == nil && v > 0 {
 			up.VolgisticsID = uint(v)
 			if up.DuplicateVolgisticsID(r) {
@@ -167,9 +168,11 @@ func emitIdents(form *htmlb.Element, up *person.Updater) {
 func readDSWCERT(r *request.Request, up *person.Updater) string {
 	return readDSW(r, &up.DSWRegistrations.CERT, "CERT")
 }
+
 func readDSWComm(r *request.Request, up *person.Updater) string {
 	return readDSW(r, &up.DSWRegistrations.Communications, "Comm")
 }
+
 func readDSW(r *request.Request, dsw **person.DSWRegistration, name string) string {
 	var (
 		dstr string
@@ -206,9 +209,11 @@ func readDSW(r *request.Request, dsw **person.DSWRegistration, name string) stri
 func emitDSWCERT(form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitDSW(form, up.DSWRegistrations.CERT, "CERT", focus, err)
 }
+
 func emitDSWComm(form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitDSW(form, up.DSWRegistrations.Communications, "Communications (SARES)", focus, err)
 }
+
 func emitDSW(form *htmlb.Element, dsw *person.DSWRegistration, name string, focus bool, err string) {
 	var date string
 	form.E("div class='formRow-3col personeditStatusHeading'>DSW for %s", name)
@@ -238,12 +243,15 @@ func emitDSW(form *htmlb.Element, dsw *person.DSWRegistration, name string, focu
 func readBGDOJ(r *request.Request, up *person.Updater) string {
 	return readBG(r, &up.BGChecks.DOJ, "DOJ", "NLI")
 }
+
 func readBGFBI(r *request.Request, up *person.Updater) string {
 	return readBG(r, &up.BGChecks.FBI, "FBI", "NLI")
 }
+
 func readBGPHS(r *request.Request, up *person.Updater) string {
 	return readBG(r, &up.BGChecks.PHS, "PHS", "Rescinded")
 }
+
 func readBG(r *request.Request, bg **person.BGCheck, tag, nliLabel string) string {
 	cleared := r.FormValue("bg" + tag + "Cleared")
 	nli := r.FormValue("bg" + tag + "NLI")
@@ -280,12 +288,15 @@ func readBG(r *request.Request, bg **person.BGCheck, tag, nliLabel string) strin
 func emitBGDOJ(form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitBG(form, up.BGChecks.DOJ, "LiveScan with CA DOJ", "DOJ", "NLI", focus, err)
 }
+
 func emitBGFBI(form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitBG(form, up.BGChecks.FBI, "LiveScan with FBI", "FBI", "NLI", focus, err)
 }
+
 func emitBGPHS(form *htmlb.Element, up *person.Updater, focus bool, err string) {
 	emitBG(form, up.BGChecks.PHS, "Full Background Check with PHS", "PHS", "Rescinded", focus, err)
 }
+
 func emitBG(form *htmlb.Element, bg *person.BGCheck, name, tag, nliLabel string, focus bool, err string) {
 	var date string
 	form.E("div class='formRow-3col personeditStatusHeading'>%s", name)

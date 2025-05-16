@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"time"
 
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/people/personview"
@@ -18,7 +17,7 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns | person.FBirthdate
+const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns
 
 // HandleNames handles requests for /people/$id/ednames.
 func HandleNames(r *request.Request, idstr string) {
@@ -30,7 +29,6 @@ func HandleNames(r *request.Request, idstr string) {
 		formalNameError   string
 		sortNameError     string
 		callSignError     string
-		birthdateError    string
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
@@ -53,12 +51,11 @@ func HandleNames(r *request.Request, idstr string) {
 		formalNameError = readFormalName(r, up)
 		sortNameError = readSortName(r, up)
 		callSignError = readCallSign(r, up)
-		birthdateError = readBirthdate(r, up)
 		readPronouns(r, up)
 		// If there were no errors *and* we're not validating, save the
 		// data and return to the view page.
 		if len(validate) == 0 && informalNameError == "" && formalNameError == "" &&
-			sortNameError == "" && callSignError == "" && birthdateError == "" {
+			sortNameError == "" && callSignError == "" {
 			r.Transaction(func() {
 				p.Update(r, up, namesPersonFields)
 			})
@@ -67,7 +64,7 @@ func HandleNames(r *request.Request, idstr string) {
 		}
 	}
 	r.HTMLNoCache()
-	if informalNameError != "" || formalNameError != "" || sortNameError != "" || callSignError != "" || birthdateError != "" {
+	if informalNameError != "" || formalNameError != "" || sortNameError != "" || callSignError != "" {
 		r.WriteHeader(http.StatusUnprocessableEntity)
 	}
 	html := htmlb.HTML(r)
@@ -86,9 +83,6 @@ func HandleNames(r *request.Request, idstr string) {
 	}
 	if len(validate) == 0 || slices.Contains(validate, "callSign") {
 		emitCallSign(r, form, up, callSignError != "", callSignError)
-	}
-	if len(validate) == 0 || slices.Contains(validate, "birthdate") {
-		emitBirthdate(r, form, up, birthdateError != "", birthdateError)
 	}
 	if len(validate) == 0 {
 		emitPronouns(r, form, up)
@@ -172,25 +166,6 @@ func emitCallSign(r *request.Request, form *htmlb.Element, up *person.Updater, f
 		row.E("div class=formError>%s", err)
 	}
 	row.E("div class=formHelp").R(r.Loc("FCC amateur radio license (if any)"))
-}
-
-func readBirthdate(r *request.Request, up *person.Updater) string {
-	if up.Birthdate = strings.ToUpper(strings.TrimSpace(r.FormValue("birthdate"))); up.Birthdate == "" {
-		return ""
-	}
-	if d, err := time.Parse("2006-01-02", up.Birthdate); err != nil || d.Format("2006-01-02") != up.Birthdate {
-		return fmt.Sprintf(r.Loc("%q is not a valid YYYY-MM-DD date."), up.Birthdate)
-	}
-	return ""
-}
-
-func emitBirthdate(r *request.Request, form *htmlb.Element, up *person.Updater, focus bool, err string) {
-	row := form.E("div id=personeditBirthdateRow class=formRow")
-	row.E("label for=personeditBirthdate").R(r.Loc("Birthdate"))
-	row.E("input type=date id=personeditBirthdate name=birthdate s-validate value=%s", up.Birthdate, focus, "autofocus")
-	if err != "" {
-		row.E("div class=formError>%s", err)
-	}
 }
 
 func readPronouns(r *request.Request, up *person.Updater) {

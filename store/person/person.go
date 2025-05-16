@@ -31,9 +31,7 @@ const (
 	// month.  This flag is set for all eligible volunteers on the 1st of
 	// the month, and cleared when they actually record hours.
 	HoursReminder
-	// VolgisticsPending indicates that the Person has submitted a volunteer
-	// application that is outstanding.
-	VolgisticsPending
+	_ // obsolete flag
 	// VisibleToAll indicates that the Person, and their work contact info,
 	// is visible to anyone with a login, bypassing the normal visibility
 	// rules.  (This is primarily used for the SERV coordinator.)

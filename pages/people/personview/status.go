@@ -41,16 +41,12 @@ func showVolgistics(r *request.Request, section *htmlb.Element, user, p *person.
 		section.E("div>Volgistics")
 		if p.VolgisticsID() != 0 {
 			section.E("div>#%d", p.VolgisticsID())
-		} else if p.Flags()&person.VolgisticsPending != 0 {
-			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("Registration pending")
 		} else {
 			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("Not registered")
 		}
 	} else if p.VolgisticsID() == 0 {
 		section.E("div").R(r.Loc("City volunteer"))
-		if p.Flags()&person.VolgisticsPending != 0 {
-			section.E("div").R(r.Loc("Registration pending"))
-		} else if user.ID() == p.ID() {
+		if user.ID() == p.ID() {
 			section.E("div").E("a href=/people/%d/vregister up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-small sbtn-primary'>Register", p.ID())
 		} else {
 			section.E("div", !p.HasPrivLevel(0, enum.PrivMember), "class=personviewStatus-needed").R("Not registered")
@@ -107,6 +103,7 @@ func showBGChecksAL(section *htmlb.Element, p *person.Person) {
 	showBGCheck(div, bg.FBI, p.HasPrivLevel(0, enum.PrivMember), "FBI", "NLI")
 	showBGCheck(div, bg.PHS, p.Identification()&person.IDCardKey != 0, "PHS", "rescinded")
 }
+
 func showBGCheck(div *htmlb.Element, check *person.BGCheck, needed bool, label, nliLabel string) {
 	if !needed && check == nil {
 		return
