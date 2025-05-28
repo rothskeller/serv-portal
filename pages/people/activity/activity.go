@@ -22,12 +22,14 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const userFields = person.FID | person.FInformalName | person.FPrivLevels
-const personFields = person.FID | person.FInformalName | person.FFlags | person.FCallSign | person.FPrivLevels
+const (
+	userFields   = person.FID | person.FInformalName | person.FPrivLevels
+	personFields = person.FID | person.FInformalName | person.FFlags | person.FCallSign | person.FPrivLevels
+)
 
 // HandleVolunteerHours handles /volunteer-hours/$token requests.
 func HandleVolunteerHours(r *request.Request, token string) {
-	var p = person.WithHoursToken(r, token, personFields)
+	p := person.WithHoursToken(r, token, personFields)
 	if p == nil {
 		errpage.NotFound(r, nil)
 		return
@@ -121,7 +123,7 @@ func handleCommon(r *request.Request, user, p *person.Person, cy, cm, y, m int, 
 
 	// Just visiting the page is enough to clear the hours reminder.
 	if user.ID() == p.ID() && p.Flags()&person.HoursReminder != 0 && y == cy && m == cm {
-		var up = p.Updater()
+		up := p.Updater()
 		up.Flags &^= person.HoursReminder
 		r.Transaction(func() {
 			p.Update(r, up, person.FFlags)
@@ -254,6 +256,25 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 	const eventFields = event.FID | event.FName | event.FStart | event.FFlags
 	const taskFields = task.FID | task.FName | task.FOrg | task.FFlags
 
+	guide := main.E("details id=activityGuide")
+	guide.E("summary>What counts as hours that should be reported?")
+	gtable := guide.E("table")
+	gtable.E("thead").E("tr").E("th>Volunteer Hours").P().E("th>Not Volunteer Hours")
+	gtable = gtable.E("tbody")
+	gtable.E("tr").E("td>In general, time you spend helping or preparing to help the community as part of SERV.  For example:").
+		P().E("td>In general, time you spend preparing yourself or your household; or time you spend becoming a SERV volunteer. For example:")
+	gtable.E("tr").E("td>Organizing or teaching CERT Basic, Listos, PEP, or SNAP events").
+		P().E("td>Attending CERT Basic, Listos, PEP, or ham cram classes")
+	gtable.E("tr").E("td>Preparing and maintaining a CERT or SARES “go kit” for deployment").
+		P().E("td>Preparing and maintaining a personal or household evacuation kit")
+	gtable.E("tr").E("td>SERV team meetings, radio nets, and drills; CERT continuing education seminars; SARES or county ARES training classes").
+		P().E("td>SERV team social gatherings")
+	gtable.E("tr").E("td>Responding in an emergency when activated by the city").
+		P().E("td>Responding in an emergency when not activated by the city")
+	gtable.E("tr").E("td>Travel to and from the above").
+		P().E("td")
+	gtable.E("tr").E("td>SERV administration activities").
+		P().E("td")
 	form := main.E("form class=activity method=POST up-target=.activity")
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	form.E("s-month value=%d-%02d", y, m)

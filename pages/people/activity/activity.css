@@ -3,6 +3,31 @@
   grid: max-content 1fr max-content / auto-flow;
   height: 100%;
 }
+#activityGuide {
+    margin-bottom: 1rem;
+}
+#activityGuide summary {
+    color: #007bff;
+}
+#activityGuide table {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+#activityGuide thead tr {
+    border-bottom: 1px solid black;
+    background-color: #eee;
+}
+#activityGuide td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #ccc;
+    max-width: 30rem;
+    vertical-align: top;
+}
+#activityGuide td:first-child,
+#activityGuide th:first-child {
+    border-right: 1px solid #ccc;
+}
 .activityGrid {
   display: grid;
   grid: auto-flow / repeat(3, max-content) 1fr;
