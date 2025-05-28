@@ -2,7 +2,9 @@ package peoplemap
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
+	"slices"
 	"sort"
 
 	"github.com/paulmach/orb"
@@ -96,14 +98,27 @@ func Handle(r *request.Request) {
 				Lng:  h.Longitude,
 			})
 		}
-		if w := p.Addresses().Work; w != nil && w.Latitude != 0 && work {
+		if w := p.Addresses().Work; w != nil && w.Latitude != 0 && work &&
+			(!home || p.Addresses().Home == nil || p.Addresses().Home.Latitude != w.Latitude || p.Addresses().Home.Longitude != w.Longitude) {
 			people = append(people, &personData{
-				Name: p.InformalName() + " " + r.Loc("(Business Hours)"),
+				Name: p.InformalName() + " (W)",
 				Lat:  w.Latitude,
 				Lng:  w.Longitude,
 			})
 		}
 	})
+	// Where two entries have the exact same latitude and longitude, merge
+	// the names.
+	for i := 0; i < len(people); i++ {
+		for j := i + 1; j < len(people); {
+			if sameLocation(people[i], people[j]) {
+				people[i].Name += "\n" + people[j].Name
+				people = slices.Delete(people, j, j+1)
+			} else {
+				j++
+			}
+		}
+	}
 	// Show the page.
 	opts = ui.PageOpts{
 		Title: title,
@@ -153,4 +168,11 @@ func mapControls(r *request.Request, user *person.Person, main *htmlb.Element, f
 	}
 	form.E("input type=checkbox class=s-check id=peoplemapHome name=home label=%s", r.Loc("Home[ADDR]"), home, "checked")
 	form.E("input type=checkbox class=s-check id=peoplemapWork name=work label=%s", r.Loc("Business"), work, "checked")
+}
+
+func sameLocation(a, b *personData) bool {
+	// To be considered the same location, they need to be within 30 feet
+	// in each direction.  (Yes, that's totally arbitrary.)  That means
+	// within .00008 degree latitude and .0001 degree longitude.
+	return math.Abs(a.Lat-b.Lat) < 0.00008 && math.Abs(a.Lng-b.Lng) < 0.0001
 }

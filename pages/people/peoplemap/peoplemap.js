@@ -1,23 +1,20 @@
 ; (function () {
-  let loadp, mapp, mapresolve, map, markers = []
-  function loadMapScript() {
-    if (!loadp) loadp = new Promise(resolve => {
-      const tag = document.createElement('script')
-      tag.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCi9J9RDZh5ouo3zk23yDmtY5Pp-NNBsBo'
-      document.head.appendChild(tag)
-      tag.addEventListener('load', () => { resolve() })
-    })
-    return loadp
-  }
+  (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+    key: "AIzaSyBPhAKNiwzI4ETL1pw0Nd-I2df1A-Rnp9g",
+    v: "weekly",
+  });
+  let map, markers = []
   up.compiler('#peoplemapCanvas', () => {
     return () => { map = null }
   })
   up.compiler('.peoplemapData', async (elm, people) => {
-    await loadMapScript()
+    await google.maps.importLibrary('maps')
+    const { AdvancedMarkerElement } = await google.maps.importLibrary('marker')
     if (!map) {
       const mapOptions = {
         center: new google.maps.LatLng(37.3801648, -122.032706),
         zoom: 13,
+        mapId: 'e6a741577eadbdd028704e63',
       }
       map = new google.maps.Map(up.element.get('#peoplemapCanvas'), mapOptions)
       const districts = up.element.jsonAttr(up.element.get('.peoplemapDistricts'), 'up-data')
@@ -32,7 +29,12 @@
       })
     }
     markers.forEach(m => { m.setMap(null) })
-    markers = people.map(p => new google.maps.Marker({ map, title: p.name, position: p }))
+    markers = people.map(p => {
+      const box = document.createElement('div')
+      box.className = 'peoplemapMarker'
+      box.textContent = p.name
+      return new AdvancedMarkerElement({ map, content: box, position: p })
+    })
   })
 })()
 up.on('change', '.peoplemapForm *', (evt, elm) => {
