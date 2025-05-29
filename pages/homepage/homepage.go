@@ -11,7 +11,7 @@ import (
 
 // Serve handles "/" requests.
 func Serve(r *request.Request) {
-	var user = auth.SessionUser(r, 0, false)
+	user := auth.SessionUser(r, 0, false)
 	ui.Page(r, user, ui.PageOpts{NoHome: true}, func(main *htmlb.Element) {
 		main.A("class=home")
 		homeHeading(r, main)
@@ -59,6 +59,11 @@ func homeClasses(r *request.Request, blocks *htmlb.Element) {
 	text = cert.E("div class=homeClassText")
 	text.E("div class=homeClassTitle").T(r.Loc("Helping others safely in a disaster"))
 	text.E("div class=homeClassInfo").T(r.Loc("7 weeks, English only"))
+	myn := classes.E("a href=/myn class=homeClass id=homeClassMYN")
+	myn.E("div class=homeClassImg").E("img id=homeClassImgMYN src=%s", ui.AssetURL("myn-logo.png"))
+	text = myn.E("div class=homeClassText")
+	text.E("div class=homeClassTitle").T(r.Loc("Planning for disasters with your neighbors"))
+	text.E("div class=homeClassInfo").T(r.Loc("2 hours, English or Spanish"))
 }
 
 func homePrograms(r *request.Request, blocks *htmlb.Element) {

@@ -1,0 +1,22 @@
+.mynHeading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  max-width: 40rem;
+}
+img.mynLogo {
+  max-width: 50%;
+}
+.mynSlogan {
+  font-weight: bold;
+  font-size: 1.125rem;
+  white-space: pre-wrap;
+}
+.mynIntro {
+  margin-top: 0.75rem;
+  text-align: justify;
+  hyphens: auto;
+  max-width: 40rem;
+  white-space: pre-wrap;
+}

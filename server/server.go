@@ -73,7 +73,7 @@ func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Method = http.MethodGet
 	}
 	// Create the request structure.
-	var req = &request.Request{
+	req := &request.Request{
 		Request:        r,
 		ResponseWriter: request.NewUncompressedResponse(w),
 		Path:           reqpath,
@@ -180,6 +180,8 @@ func route(r *request.Request) {
 		classes.GetClasses(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "cert") || strings.EqualFold(c[1], "cert-basic")) && c[2] == "":
 		classes.GetCERT(r)
+	case c[0] == "classes" && strings.EqualFold(c[1], "myn") && c[2] == "":
+		classes.GetMYN(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "pep") || strings.EqualFold(c[1], "ppde")) && c[2] == "":
 		classes.GetPEP(r)
 	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
@@ -226,6 +228,8 @@ func route(r *request.Request) {
 		login.HandleLogin(r)
 	case c[0] == "logout":
 		login.HandleLogout(r)
+	case strings.EqualFold(c[0], "myn") && c[1] == "":
+		classes.GetMYN(r)
 	case c[0] == "password-reset" && c[1] == "":
 		login.HandlePWReset(r)
 	case c[0] == "password-reset" && c[1] != "" && c[2] == "":
