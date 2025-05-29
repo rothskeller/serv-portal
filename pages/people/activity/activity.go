@@ -202,6 +202,7 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 	const eventFields = event.FID | event.FName | event.FStart | event.FFlags
 	const taskFields = task.FID | task.FName | task.FOrg
 	var grid *htmlb.Element
+	var total uint
 
 	main.E("s-year class=activityYear value=%d", y)
 	taskperson.AllBetween(r, fmt.Sprintf("%d-01-01", y), fmt.Sprintf("%d-01-01", y+1), p.ID(), eventFields, taskFields,
@@ -209,6 +210,7 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 			if grid == nil {
 				grid = main.E("div class=activityYearGrid")
 			}
+			total += minutes
 			if minutes != 0 {
 				var half bool
 
@@ -249,14 +251,20 @@ func showYearView(r *request.Request, main *htmlb.Element, p *person.Person, y i
 		})
 	if grid == nil {
 		main.E("div").R(r.Loc("No activity."))
+	} else {
+		main.E("div class=activityTotal>TOTAL: %s", ui.MinutesToHours(total))
 	}
 }
 
 func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Person, y, m int) {
 	const eventFields = event.FID | event.FName | event.FStart | event.FFlags
 	const taskFields = task.FID | task.FName | task.FOrg | task.FFlags
+	var total uint
 
-	guide := main.E("details id=activityGuide")
+	form := main.E("form class=activity method=POST up-target=.activity")
+	form.E("input type=hidden name=csrf value=%s", r.CSRF)
+	form.E("s-month value=%d-%02d", y, m)
+	guide := form.E("details id=activityGuide")
 	guide.E("summary>What counts as hours that should be reported?")
 	gtable := guide.E("table")
 	gtable.E("thead").E("tr").E("th>Volunteer Hours").P().E("th>Not Volunteer Hours")
@@ -275,9 +283,6 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 		P().E("td")
 	gtable.E("tr").E("td>SERV administration activities").
 		P().E("td")
-	form := main.E("form class=activity method=POST up-target=.activity")
-	form.E("input type=hidden name=csrf value=%s", r.CSRF)
-	form.E("s-month value=%d-%02d", y, m)
 	grid := form.E("div class=activityGrid")
 	tomorrow := time.Now().AddDate(0, 0, 1).Format("2006-01-02T00:00")
 	event.AllBetween(r, fmt.Sprintf("%d-%02d-01", y, m), fmt.Sprintf("%d-%02d-32", y, m), eventFields, 0, func(e *event.Event, _ *venue.Venue) {
@@ -290,6 +295,7 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 			}
 			editable := user.ID() == p.ID() || user.HasPrivLevel(t.Org(), enum.PrivLeader)
 			minutes, flags := taskperson.Get(r, t.ID(), p.ID())
+			total += minutes
 			grid.E("s-hours class=activityHours name=t%d value=%s", t.ID(), ui.MinutesToHours(minutes), !editable, "disabled")
 			if flags&taskperson.Attended != 0 {
 				grid.E("s-icon class=activityAttended icon=signature title=%s", r.Loc("Signed In"))
@@ -310,6 +316,7 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 			}
 		})
 	})
-	form.E("div class=activityButtons").
-		E("input id=activitySave type=submit class='sbtn sbtn-secondary sbtn-disabled' disabled value=%s", r.Loc("Save"))
+	bottom := form.E("div class=activityButtons")
+	bottom.E("input id=activitySave type=submit class='sbtn sbtn-secondary sbtn-disabled' disabled value=%s", r.Loc("Save"))
+	bottom.E("span id=activityTotal>%s", ui.MinutesToHours(total))
 }

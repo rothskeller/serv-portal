@@ -1,6 +1,6 @@
 .activity {
   display: grid;
-  grid: max-content 1fr max-content / auto-flow;
+  grid: max-content max-content 1fr max-content / auto-flow;
   height: 100%;
 }
 #activityGuide {
@@ -57,6 +57,12 @@
 .activityButtons {
   margin-top: 1.5rem;
 }
+#activityTotal {
+    margin-left: 3rem;
+}
+#activityTotal::before {
+    content: "TOTAL: ";
+}
 
 .activityYearGrid {
   display: grid;
@@ -98,4 +104,7 @@
 }
 .activityYearTaskName:before {
   content: ": "
+}
+.activityTotal {
+  margin-top: 1rem;
 }
