@@ -41,19 +41,20 @@ func Conjoin(list []string, conjunction, lang string) string {
 	}
 	if lang == "es" {
 		last := list[len(list)-1]
-		if conjunction == "and" {
+		switch conjunction {
+		case "and":
 			if strings.HasPrefix(last, "i") || (strings.HasPrefix(last, "hi") && !strings.HasPrefix(last, "hie")) {
 				conjunction = "e"
 			} else {
 				conjunction = "y"
 			}
-		} else if conjunction == "or" {
+		case "or":
 			if strings.HasPrefix(last, "o") || strings.HasPrefix(last, "ho") {
 				conjunction = "u"
 			} else {
 				conjunction = "o"
 			}
-		} else {
+		default:
 			conjunction = Localize(conjunction, lang)
 		}
 	}

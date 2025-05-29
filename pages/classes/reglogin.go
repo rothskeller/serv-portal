@@ -22,6 +22,7 @@ const badLoginThreshold = 20 * time.Minute
 
 type registerLogIn struct {
 	r         *request.Request
+	notify    bool
 	f         form.Form
 	email     string
 	haveEmail bool
@@ -35,9 +36,9 @@ type registerLogIn struct {
 	loggedIn  bool
 }
 
-func handleRegisterNotLoggedIn(r *request.Request, cidstr string) *person.Person {
-	var login = registerLogIn{r: r}
-	login.createForm(r)
+func handleRegisterNotLoggedIn(r *request.Request, notify bool) *person.Person {
+	login := registerLogIn{r: r, notify: notify}
+	login.createForm()
 	login.f.Handle(r)
 	if login.loggedIn {
 		return login.user
@@ -45,10 +46,14 @@ func handleRegisterNotLoggedIn(r *request.Request, cidstr string) *person.Person
 	return nil
 }
 
-func (li *registerLogIn) createForm(r *request.Request) {
+func (li *registerLogIn) createForm() {
 	li.f.Attrs = "method=POST up-target=form"
 	li.f.Dialog = true
-	li.f.Title = "Class Registration"
+	if li.notify {
+		li.f.Title = "Class Notifications"
+	} else {
+		li.f.Title = "Class Registration"
+	}
 	li.f.Buttons = []*form.Button{{Label: "Submit", OnClick: func() bool { return false }}}
 	li.f.Rows = []form.Row{
 		&introRow{login: li},
@@ -134,12 +139,22 @@ type introRow struct {
 func (ir *introRow) Read(r *request.Request) bool { return true }
 func (ir *introRow) Emit(r *request.Request, parent *htmlb.Element, _ bool) {
 	div := parent.E("div class=formRow-3col")
-	if !ir.login.haveEmail {
-		div.T(r.Loc("To register for this class, please enter your email address."))
-	} else if ir.login.user == nil {
-		div.T(r.Loc("To register for this class, please create an account."))
+	if ir.login.notify {
+		if !ir.login.haveEmail {
+			div.T(r.Loc("To subscribe to notifications of new classes, please enter your email address."))
+		} else if ir.login.user == nil {
+			div.T(r.Loc("To subscribe to notifications of new classes, please create an account."))
+		} else {
+			div.T(r.Loc("To subscribe to notifications of new classes, please log in."))
+		}
 	} else {
-		div.T(r.Loc("To register for this class, please log in."))
+		if !ir.login.haveEmail {
+			div.T(r.Loc("To register for this class, please enter your email address."))
+		} else if ir.login.user == nil {
+			div.T(r.Loc("To register for this class, please create an account."))
+		} else {
+			div.T(r.Loc("To register for this class, please log in."))
+		}
 	}
 }
 
@@ -166,7 +181,7 @@ func (er *emailRow) Read(r *request.Request) bool {
 		er.login.f.Buttons[0].OnClick = er.login.submitEmail
 		return false
 	}
-	er.login.user = person.WithEmail(r, *er.ValueP, registerPersonFields|person.FBadLoginCount|person.FBadLoginTime|person.FPassword)
+	er.login.user = person.WithEmail(r, *er.ValueP, notifyPersonFields|person.FBadLoginCount|person.FBadLoginTime|person.FPassword)
 	if er.login.user == nil {
 		er.login.f.Buttons[0].Label = "Create Account"
 		er.login.f.Buttons[0].OnClick = er.login.createAccount
@@ -194,8 +209,9 @@ type passwordRow struct {
 func (pr *passwordRow) ShouldEmit(vl request.ValidationList) bool {
 	return pr.login.user != nil
 }
+
 func (pr *passwordRow) Read(r *request.Request) bool {
-	var valid = true
+	valid := true
 
 	if pr.login.user == nil {
 		return true
@@ -234,9 +250,11 @@ type createMessageRow struct {
 func (cmr *createMessageRow) Read(r *request.Request) bool {
 	return true
 }
+
 func (cmr *createMessageRow) ShouldEmit(_ request.ValidationList) bool {
 	return cmr.login.haveEmail && cmr.login.user == nil
 }
+
 func (cmr *createMessageRow) Emit(r *request.Request, parent *htmlb.Element, _ bool) {
 	parent.E("div class=formRow-3col").T(r.Loc("We do not have an account with this email address.  To create a new account, please provide the following information."))
 }
@@ -261,9 +279,11 @@ func (nr *namesRow) Read(r *request.Request) bool {
 	}
 	return true
 }
+
 func (nr *namesRow) ShouldEmit(_ request.ValidationList) bool {
 	return nr.login.haveEmail && nr.login.user == nil
 }
+
 func (nr *namesRow) Emit(r *request.Request, parent *htmlb.Element, focus bool) {
 	var focusID string
 	if nr.RowID != "" {
@@ -294,6 +314,7 @@ func (cpr *cellPhoneRow) Read(r *request.Request) bool {
 	}
 	return true
 }
+
 func (cpr *cellPhoneRow) ShouldEmit(_ request.ValidationList) bool {
 	return cpr.login.haveEmail && cpr.login.user == nil
 }
@@ -313,6 +334,7 @@ func (npr *newPasswordRow) Read(r *request.Request) bool {
 	}
 	return npr.NewPasswordPairRow.Read(r)
 }
+
 func (npr *newPasswordRow) ShouldEmit(_ request.ValidationList) bool {
 	return npr.login.haveEmail && npr.login.user == nil
 }

@@ -35,11 +35,13 @@ var spanish = map[string]string{
 	"Request Information":                "Solicitar información",
 	"%q is not a valid YYYY-MM-DD date.": "%q no es una fecha válida AAAA-MM-DD.",
 	"Save":                               "Guardar",
+	"Subscribe":                          "Suscribirse",
 	"SunnyvaleSERV.org Password Reset":   "Restablecimiento de contraseña de SunnyvaleSERV.org",
 	"Web Site Information":               "Información del sitio web",
 
 	// pages/classes/*:
 	"Class Registration":                  "Inscripción de clase",
+	"Class Notifications":                 "Notificaciones de nuevas clases",
 	"Email":                               "Email",
 	"First":                               "nombre de pila",
 	"Last":                                "apellido(s)",
@@ -53,7 +55,8 @@ var spanish = map[string]string{
 	"Topics include:<ul><li>Disaster Preparedness<li>The CERT Organization<li>Usage of Personal Protective Equipment (PPE)<li>Disaster Medical Operations<li>Triaging, Assessing, and Treating Patients<li>Disaster Psychology<li>Fire Safety and Utility Control<li>Extinguishing Small Fires<li>Light Search and Rescue<li>Terrorism and CERT<li>Disaster Simulation Exercise</ul>": "Los temas incluyen:<ul><li>Preparación para desastres<li>La organización CERT<li>Uso de equipo de protección personal<li>Operaciones médicas en casos de desastre<li>Selección, evaluación y tratamiento de pacientes<li >Psicología de desastres<li>Seguridad contra incendios y control de servicios públicos<li>Extinción de pequeños incendios<li>Búsqueda y rescate ligeros<li>Terrorismo y CERT<li>Ejercicio de simulación de desastres</ul>",
 	"This class meets for seven weekday evenings and one full Saturday (see dates below).  On successful completion of the class, you will be invited to join the Sunnyvale CERT Deployment Team, which supports the professional responders in Sunnyvale's Department of Public Safety.":                                                                                             "Esta clase se reúne durante siete tardes entre semana y un sábado completo (ver fechas a continuación).  Al completar exitosamente la clase, se le invitará a unirse al equipo de despliegue de Sunnyvale CERT, que apoya a los socorristas profesionales del Departamento de Seguridad Pública de Sunnyvale.",
 	"<b>IMPORTANT:</b>  Space in this class is limited.  Please do not sign up unless you fully expect to attend all of the sessions.  This class is open to anyone aged 18 or over, but preference will be given to Sunnyvale residents.  High school students under age 18 are welcome if their parent or other responsible adult is also in the class.":                            "<b>IMPORTANTE:</b>  El espacio en esta clase es limitado.  No se registre a menos que espere asistir a todas las sesiones.  Esta clase está abierta a cualquier persona mayor de 18 años, pero se dará preferencia a los residentes de Sunnyvale.  Los estudiantes de secundaria menores de 18 años son bienvenidos si sus padres u otro adulto responsable también están en la clase.",
-	"<b>IMPORTANT:</b>  This class is taught only in English.  However, the printed materials are available in Spanish.": "<b>IMPORTANTE:</b> Esta clase se imparte únicamenta en inglés.  Sin embargo, los materiales impresos están disponibles en español.",
+	"<b>IMPORTANT:</b>  This class is taught only in English.  However, the printed materials are available in Spanish.":                             "<b>IMPORTANTE:</b> Esta clase se imparte únicamenta en inglés.  Sin embargo, los materiales impresos están disponibles en español.",
+	"Subscribe to our email list to be notified when additional classes are scheduled.<br>Tip: also check scc-cert.org for classes in other cities.": "Suscribirse a nuestra lista para recibir notificaciones cuando se programen más clases.<br>Consejo: consulte también scc-cert.org para conocer los cursos que se imparten en otras ciudades.",
 	// MYN description:
 	"Planning for disasters\nwith your neighbors": "Planificar los desastres\ncon sus vecinos",
 	"Following a disaster, Sunnyvale residents will need to rely on each other for several days if city and county services are overwhelmed.  The “Map Your Neighborhood” (MYN) program prepares neighbors to organize a timely response and to support each other in a disaster.":                                                                                                                                                               "Tras un desastre, los residentes de Sunnyvale tendrán que depender unos de otros durante varios días si los servicios de la ciudad y el condado se ven desbordados.  El programa MYN (“Mapear su vecindario”, por sus siglas en inglés) prepara a los vecinos para organizar una respuesta oportuna y apoyarse mutuamente en caso de desastre.",
@@ -64,6 +67,7 @@ var spanish = map[string]string{
 	"Earthquakes, fires, floods, pandemics, power outages, chemical spills ... these are just some of the disasters than can strike our area without warning.  After a disaster strikes, professional emergency services may not be available to help you for several days.  Are you fully prepared to take care of yourself and your family if the need arises?": "Terremotos, incendios, inundaciones, pandemias, cortes de energía, derrames químicos ... estos son solo algunos de los desastres que pueden afectarnos sin aviso.  Después de un desastre, es posible que los servicios de emergencia profesionales no estén disponibles durante varios días.  ¿Está completamente preparado para cuidar de usted y de su familia si se necesita?",
 	"Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize.":                                                                                                                                         "Nuestra clase <b>Preparación para desastres y emergencias</b> puede ayudarle a prepararse para desastres.  Enseñaremos sobre los diversos desastres que podría enfrentar, qué preparativos puede hacer para ellos y cómo establecer prioridades.",
 	"We also teach tailored versions of the class for private groups such as apartment complexes, churches, and businesses.  To arrange a class for your group, please contact us at pep@sunnyvaleserv.org.":                                                                                                                                                      "También impartimos versiones adaptadas de la clase para grupos privados, como complejos de apartamentos, iglesias y empresas.  Para organizar una clase para su grupo, póngase en contacto con nosotros en pep@sunnyvaleserv.org.",
+	"Subscribe to our email list to be notified when additional classes are scheduled (English or Spanish).":                                                                                                                                                                                                                                                      "Suscribirse a nuestra lista para recibir notificaciones cuando se programen más clases (en español o inglés).",
 
 	// pages/classes/all.go:
 	"View More": "Ver más",
@@ -71,6 +75,12 @@ var spanish = map[string]string{
 	// pages/classes/common.go:
 	"This session is full.": "Esta sesión está llena.",
 	"This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services.": "Esta clase es presentada por Voluntarios de Respuesta a Emergencias de Sunnyvale (SERV, en inglés), el brazo voluntario de la Oficina de Servicios de Emergencia de Sunnyvale.",
+
+	// pages/classes/notify.go:
+	"You are now subscribed to the %s@SunnyvaleSERV.org notification list.":                                                             "Ya está suscrito a la lista de notificaciones de %s@SunnyvaleSERV.org.",
+	"You have been removed from the %s@SunnyvaleSERV.org notification list.":                                                            "Ha sido eliminado de la lista de notificaciones de %s@SunnyvaleSERV.org.",
+	"You are already subscribed to the %s@SunnyvaleSERV.org notification list.  To remove yourself from the list, click “Unsubscribe”.": "Ya está suscrito a la lista de notificaciones de %s@SunnyvaleSERV.org.  Para darse de baja de la lista, haga clic en “Cancelar suscripción”.",
+	"Unsubscribe": "Cancelar suscripción",
 
 	// pages/classes/register.go:
 	"This class is now full.": "Esta clase ahora está llena.",
@@ -105,13 +115,16 @@ var spanish = map[string]string{
 	"A confirmation message has been sent to %s.": "Se ha enviado un mensaje de confirmación a %s.",
 
 	// pages/classes/reglogin.go:
-	"To register for this class, please enter your email address.": "Para inscribirse en esta clase, introduzca su dirección de correo electrónico.",
-	"Your email address is required.":                              "Se requiere su dirección de correo electrónico.",
-	"This is not a valid email address.":                           "Esta dirección de correo electrónico no es válida.",
-	"To register for this class, please log in.":                   "Para inscribirse en esta clase, inicie sesión.",
-	"Your password is required.":                                   "Se requiere su contraseña.",
-	"Your name is required.":                                       "Se requiere su nombre y apellido.",
-	"To register for this class, please create an account.":        "Para inscribirse en esta clase, cree una cuenta.",
+	"To register for this class, please enter your email address.":                   "Para inscribirse en esta clase, introduzca su dirección de correo electrónico.",
+	"To subscribe to notifications of new classes, please enter your email address.": "Para suscribirse a las notificaciones de nuevas clases, introduzca su dirección de correo electrónico.",
+	"Your email address is required.":                                                "Se requiere su dirección de correo electrónico.",
+	"This is not a valid email address.":                                             "Esta dirección de correo electrónico no es válida.",
+	"To register for this class, please log in.":                                     "Para inscribirse en esta clase, inicie sesión.",
+	"To subscribe to notifications of new classes, please log in.":                   "Para suscribirse a las notificaciones de nuevas clases, inicie sesión.",
+	"Your password is required.":                                                     "Se requiere su contraseña.",
+	"Your name is required.":                                                         "Se requiere su nombre y apellido.",
+	"To register for this class, please create an account.":                          "Para inscribirse en esta clase, cree una cuenta.",
+	"To subscribe to notifications of new classes, please create an account.":        "Para suscribirse a las notificaciones de nuevas clases, cree una cuenta.",
 	"We do not have an account with this email address.  To create a new account, please provide the following information.": "No tenemos una cuenta con esta dirección de correo electrónico.  Para crear una cuenta nueva, facilite la siguiente información.",
 	"The cell phone is used only for urgent notifications, such as last-minute cancellation of a class.  It is optional.":    "El teléfono móvil sólo se utiliza para notificaciones urgentes, como la cancelación de una clase en el último momento.  Es opcional.",
 	"Create Account": "Crear cuenta",

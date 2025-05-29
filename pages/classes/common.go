@@ -39,5 +39,4 @@ func getClassesCommon(r *request.Request, user *person.Person, main *htmlb.Eleme
 	if classes == nil {
 		main.E("div").R("No sessions of this class are currently scheduled.")
 	}
-	main.E("div class=classesSERV").R(r.Loc("This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services."))
 }

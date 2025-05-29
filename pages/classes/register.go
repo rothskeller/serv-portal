@@ -38,7 +38,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 	)
 	// Get the user information.
 	if user = auth.SessionUser(r, registerPersonFields, false); user == nil {
-		if user = handleRegisterNotLoggedIn(r, cidstr); user == nil {
+		if user = handleRegisterNotLoggedIn(r, false); user == nil {
 			return
 		}
 		forceGet = true

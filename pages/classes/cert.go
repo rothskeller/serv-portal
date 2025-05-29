@@ -10,7 +10,7 @@ import (
 
 // GetCERT handles GET /cert-basic requests.
 func GetCERT(r *request.Request) {
-	var user = auth.SessionUser(r, 0, false)
+	user := auth.SessionUser(r, 0, false)
 	ui.Page(r, user, ui.PageOpts{
 		Title:    r.Loc("CERT Basic Training"),
 		MenuItem: "classes",
@@ -27,5 +27,9 @@ func GetCERT(r *request.Request) {
 			text.E("p").R(r.Loc("<b>IMPORTANT:</b>  This class is taught only in English.  However, the printed materials are available in Spanish."))
 		}
 		getClassesCommon(r, user, main, class.CERTBasic)
+		classes := main.E("div class=classesRegisterGrid")
+		classes.E("div").R(r.Loc("Subscribe to our email list to be notified when additional classes are scheduled.<br>Tip: also check scc-cert.org for classes in other cities."))
+		classes.E("div").E("a href=/cert-basic/notify up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Subscribe"))
+		main.E("div class=classesSERV").R(r.Loc("This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services."))
 	})
 }

@@ -24,6 +24,23 @@ func WithID(storer phys.Storer, id ID) (l *List) {
 	return l
 }
 
+const withNameSQL = `SELECT id, type, moderators FROM list WHERE name=?`
+
+// WithName returns the list with the specified name, or nil if it does not exist.
+func WithName(storer phys.Storer, name string) (l *List) {
+	phys.SQL(storer, withNameSQL, func(stmt *phys.Stmt) {
+		stmt.BindText(name)
+		if stmt.Step() {
+			l = new(List)
+			l.Name = name
+			l.ID = ID(stmt.ColumnInt())
+			l.Type = Type(stmt.ColumnInt())
+			l.Moderators = unpackModerators(stmt.ColumnText())
+		}
+	})
+	return l
+}
+
 const allSQL = `SELECT id, type, name, moderators FROM list ORDER BY name`
 
 // All reads each list from the database, in order by name.

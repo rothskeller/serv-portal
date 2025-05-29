@@ -176,6 +176,8 @@ func route(r *request.Request) {
 		static.CERTPage(r)
 	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":
 		classes.GetCERT(r)
+	case c[0] == "cert-basic" && c[1] == "notify" && c[2] == "":
+		classes.HandleNotify(r, "cert-basic")
 	case (strings.EqualFold(c[0], "classes") || strings.EqualFold(c[0], "clases")) && c[1] == "":
 		classes.GetClasses(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "cert") || strings.EqualFold(c[1], "cert-basic")) && c[2] == "":
@@ -262,6 +264,8 @@ func route(r *request.Request) {
 		personedit.HandleVRegister(r, c[1])
 	case (strings.EqualFold(c[0], "pep") || strings.EqualFold(c[0], "ppde")) && c[1] == "":
 		classes.GetPEP(r)
+	case c[0] == "pep" && c[1] == "notify" && c[2] == "":
+		classes.HandleNotify(r, "pep")
 	case c[0] == "privacy-policy" && c[1] == "":
 		static.PrivacyPage(r)
 	case c[0] == "reports" && c[1] == "attendance" && c[2] == "":
@@ -301,7 +305,7 @@ func chooseLanguage(r *request.Request) (redirected bool) {
 	} else if strings.EqualFold(r.Path, "/clases") {
 		// Special case:  if the URL is "/clases", language is Spanish.
 		r.Language = "es"
-	} else if c, err := r.Request.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {
+	} else if c, err := r.Cookie("lang"); err == nil && (c.Value == "en" || c.Value == "es") {
 		r.Language = c.Value
 		return false // no need to set cookie
 	} else if accept := r.Request.Header.Get("Accept-Language"); accept != "" {

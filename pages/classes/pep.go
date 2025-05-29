@@ -35,7 +35,11 @@ Sunnyvale Public Library
 		}
 		classes.E("div").E("a href=https://sunnyvale.libcal.com/event/14553820 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
 		getClassesCommon(r, user, main, class.PEP)
+		classes = main.E("div class=classesRegisterGrid")
+		classes.E("div").R(r.Loc("Subscribe to our email list to be notified when additional classes are scheduled (English or Spanish)."))
+		classes.E("div").E("a href=/pep/notify up-layer=new up-size=grow up-dismissable=key up-history=false class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Subscribe"))
 		text = main.E("div class=pepIntro")
 		text.E("p").R(r.Loc("We also teach tailored versions of the class for private groups such as apartment complexes, churches, and businesses.  To arrange a class for your group, please contact us at pep@sunnyvaleserv.org."))
+		main.E("div class=classesSERV").R(r.Loc("This class is presented by Sunnyvale Emergency Response Volunteers (SERV), the volunteer arm of the Sunnyvale Office of Emergency Services."))
 	})
 }
