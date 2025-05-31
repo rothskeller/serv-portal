@@ -19,8 +19,7 @@ up.on('change', '.activityHours', () => {
       halves++
       v = v.substring(0, v.length-1)
     }
-    v = parseInt(v)
-    hours += v
+    if (v) hours += parseInt(v)
   })
   if (halves >= 2) {
     wholes = Math.floor(halves/2)
