@@ -40,7 +40,7 @@ func Handle(r *request.Request, idstr string) {
 		if handleDelete(r, e) {
 			return
 		}
-		handleSignup(r, user, e)
+		handleSignup(r, user)
 		handleHours(r, user, e)
 	}
 	Render(r, user, e, "")
@@ -52,12 +52,12 @@ func Handle(r *request.Request, idstr string) {
 func Render(r *request.Request, user *person.Person, e *event.Event, section string) {
 	const taskFields = task.FID | task.FOrg | identTaskFields | detailsTaskFields | taskTaskFields
 	var ts []*task.Task
-	var canDelete = !shiftperson.EventHasSignups(r, e.ID()) && !taskperson.ExistsForEvent(r, e.ID())
-	var canAddTask = user.HasPrivLevel(0, enum.PrivLeader)
-	var canCopy = user.HasPrivLevel(0, enum.PrivLeader)
+	canDelete := !shiftperson.EventHasSignups(r, e.ID()) && !taskperson.ExistsForEvent(r, e.ID())
+	canAddTask := user.HasPrivLevel(0, enum.PrivLeader)
+	canCopy := user.HasPrivLevel(0, enum.PrivLeader)
 
 	task.AllForEvent(r, e.ID(), taskFields, func(t *task.Task) {
-		var clone = *t
+		clone := *t
 		ts = append(ts, &clone)
 		if !user.HasPrivLevel(t.Org(), enum.PrivLeader) {
 			canDelete, canCopy = false, false
@@ -81,7 +81,7 @@ func Render(r *request.Request, user *person.Person, e *event.Event, section str
 		}
 		for _, t := range ts {
 			if section == "" || section == fmt.Sprintf("task%d", t.ID()) {
-				showTask(r, box, user, e, t, len(ts) > 1)
+				showTask(r, box, user, e, t)
 			}
 		}
 		if section == "" && (canAddTask || canDelete || canCopy) {

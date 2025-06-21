@@ -1,5 +1,0 @@
-#!/bin/bash
-set -o errexit
-GOOS=linux GOARCH=arm64 go build -o bootstrap -tags lambda.norpc .
-zip maillist.zip bootstrap
-aws lambda update-function-code --function-name serv-mail --zip-file fileb://maillist.zip

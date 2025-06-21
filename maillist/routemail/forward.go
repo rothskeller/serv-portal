@@ -23,8 +23,7 @@ import (
 // the specified addresses.  The body of the forward contains the specified
 // comment (HTML format) and a summary of the structure of the incoming message.
 func forwardMessage(
-	ctx context.Context, client *ses.Client, hdr mail.Header, body, raw []byte,
-	from, replyTo string, to []string, subject, comment string,
+	hdr mail.Header, body, raw []byte, from, replyTo string, to []string, subject, comment string,
 ) (err error) {
 	var (
 		buf      bytes.Buffer
@@ -65,7 +64,7 @@ Content-Type: message/rfc822
 
 --%s--
 `, boundary)
-	_, err = client.SendRawEmail(ctx, &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: buf.Bytes()}})
+	_, err = sesClient.SendRawEmail(context.Background(), &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: buf.Bytes()}})
 	return err
 }
 
@@ -79,9 +78,10 @@ func addMessageHeaders(qp *quotedprintable.Writer, hdrs mail.Header) {
 }
 
 func addMessageStructure(qp *quotedprintable.Writer, hdr mail.Header, body []byte) {
-	var header = textproto.MIMEHeader(hdr)
+	header := textproto.MIMEHeader(hdr)
 	addMessageStructureInner(qp, header, body)
 }
+
 func addMessageStructureInner(qp *quotedprintable.Writer, header textproto.MIMEHeader, body []byte) {
 	var (
 		ct        string

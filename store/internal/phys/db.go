@@ -2,7 +2,6 @@ package phys
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"zombiezen.com/go/sqlite"
@@ -21,8 +20,10 @@ var pool = make(chan *sqlite.Conn, poolSize)
 
 // numOpened is the number of connections opened, access controlled by
 // numOpenedMutex.
-var numOpened int
-var numOpenedMutex sync.Mutex
+var (
+	numOpened      int
+	numOpenedMutex sync.Mutex
+)
 
 // dbconnect returns an open database connection.  It may wait until one becomes
 // available if the maximum number of connections have been created.  The
@@ -100,7 +101,7 @@ func dbrelease(conn *sqlite.Conn, withPanic bool) {
 // runtime issues.  Note that SQL takes the store as an argument, not a
 // receiver, which means it is accessible only within the store packages.
 func SQL(storer Storer, sql string, fn func(*Stmt)) {
-	var stmt = NewStmt(storer, sql)
+	stmt := NewStmt(storer, sql)
 	fn(stmt)
 	stmt.Reset()
 }
@@ -108,7 +109,7 @@ func SQL(storer Storer, sql string, fn func(*Stmt)) {
 // Exec is a shortcut for a SQL statement that has no bindings and returns no
 // rows.
 func Exec(storer Storer, sql string) {
-	var stmt = NewStmt(storer, sql)
+	stmt := NewStmt(storer, sql)
 	stmt.Step()
 	stmt.Reset()
 }
@@ -120,11 +121,18 @@ func RowsAffected(storer Storer) int { return storer.AsStore().conn.Changes() }
 // LastInsertRowID returns the row ID of the last row inserted.
 func LastInsertRowID(storer Storer) int64 { return storer.AsStore().conn.LastInsertRowID() }
 
+// DBConn returns the raw database connection.  It should not be used, but is
+// here to allow the connection to be passed to external libraries (e.g.
+// maillist).
+func (store *Store) DBConn() *sqlite.Conn {
+	return store.conn
+}
+
 // createSavepoint creates a savepoint in the database.
 func (store *Store) createSavepoint() (err error) {
 	var stmt *sqlite.Stmt
 
-	if stmt, err = store.conn.Prepare(fmt.Sprintf("SAVEPOINT x")); err != nil {
+	if stmt, err = store.conn.Prepare("SAVEPOINT x"); err != nil {
 		return err
 	}
 	if _, err = stmt.Step(); err != nil {
@@ -137,7 +145,7 @@ func (store *Store) createSavepoint() (err error) {
 func (store *Store) releaseSavepoint() (err error) {
 	var stmt *sqlite.Stmt
 
-	if stmt, err = store.conn.Prepare(fmt.Sprintf("RELEASE x")); err != nil {
+	if stmt, err = store.conn.Prepare("RELEASE x"); err != nil {
 		return err
 	}
 	if _, err = stmt.Step(); err != nil {
@@ -155,7 +163,7 @@ func (store *Store) rollbackSavepoint() (err error) {
 		// whatever error occurred.
 		return nil
 	}
-	if stmt, err = store.conn.Prepare(fmt.Sprintf("ROLLBACK TO x")); err == nil {
+	if stmt, err = store.conn.Prepare("ROLLBACK TO x"); err == nil {
 		return err
 	}
 	if _, err = stmt.Step(); err != nil {

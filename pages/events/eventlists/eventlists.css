@@ -1,0 +1,11 @@
+.eventListsList {
+  margin: 1rem 0 0.5rem;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+.eventListsAddrs {
+  margin: 0.5rem 0 0 2rem;
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.875rem;
+}

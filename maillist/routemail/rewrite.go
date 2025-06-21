@@ -11,6 +11,8 @@ import (
 	"mime/quotedprintable"
 	"net/textproto"
 	"strings"
+
+	"sunnyvaleserv.org/portal/maillist"
 )
 
 type messageRewriter struct {
@@ -164,7 +166,7 @@ func (mr *messageRewriter) parseMultipartBody(subtype, boundary string) {
 
 // rewrite rewrites a message part (or a whole message) for distribution to an
 // individual list recipient.  It writes the result to the provided Writer.
-func (mr *messageRewriter) rewrite(w io.Writer, list string, recip *Receiver) (err error) {
+func (mr *messageRewriter) rewrite(w io.Writer, list *maillist.List, email string, rdata *maillist.RecipientData) (err error) {
 	if len(mr.parts) != 0 {
 		var (
 			mpw    *multipart.Writer
@@ -177,7 +179,7 @@ func (mr *messageRewriter) rewrite(w io.Writer, list string, recip *Receiver) (e
 				return err
 			}
 			if mr.alternative || mr.primaryPart == childmr {
-				err = childmr.rewrite(childp, list, recip)
+				err = childmr.rewrite(childp, list, email, rdata)
 			} else {
 				err = childmr.copy(childp)
 			}
@@ -198,12 +200,18 @@ func (mr *messageRewriter) rewrite(w io.Writer, list string, recip *Receiver) (e
 		return err
 	}
 	if mr.plain {
-		fmt.Fprintf(w, "\n________\nThis message was sent to %s <%s> via the %s@SunnyvaleSERV.org mailing list.\nTo unsubscribe, visit https://SunnyvaleSERV.org/unsubscribe/%s.\n",
-			recip.Name, recip.Addr, list, recip.Token)
+		fmt.Fprintf(w, "\n________\nThis message was sent to %s <%s> %s.\n", rdata.Name, email, list.Reason)
+		if rdata.UnsubscribeToken != "" && !list.NoUnsubscribe {
+			fmt.Fprintf(w, "To unsubscribe, visit https://SunnyvaleSERV.org/unsubscribe/%s.\n", rdata.UnsubscribeToken)
+		}
 	}
 	if mr.html {
-		fmt.Fprintf(w, `<div style="height:1em;width:5em;border-bottom:1px solid #888"></div><div style="color:#888">This message was sent to %s &lt;<a style="color:#888">%s</a>&gt; via the <a style="color:#888">%s@SunnyvaleSERV.org</a> mailing list.<br>To unsubscribe, visit our <a style="color:#888" href="https://SunnyvaleSERV.org/unsubscribe/%s">unsubscribe page</a>.</div>`,
-			html.EscapeString(recip.Name), html.EscapeString(recip.Addr), list, recip.Token)
+		fmt.Fprintf(w, `<div style="height:1em;width:5em;border-bottom:1px solid #888"></div><div style="color:#888">This message was sent to %s &lt;<a style="color:#888">%s</a>&gt; %s.`,
+			html.EscapeString(rdata.Name), html.EscapeString(email), strings.ReplaceAll(html.EscapeString(list.Reason), "@", "<span>@</span>"))
+		if rdata.UnsubscribeToken != "" && !list.NoUnsubscribe {
+			fmt.Fprintf(w, `<br>To unsubscribe, visit our <a style="color:#888" href="https://SunnyvaleSERV.org/unsubscribe/%s">unsubscribe page</a>.`, rdata.UnsubscribeToken)
+		}
+		fmt.Fprint(w, `</div>`)
 	}
 	if _, err = w.Write(mr.suffix); err != nil {
 		return err
@@ -220,6 +228,18 @@ func (mr *messageRewriter) rewrite(w io.Writer, list string, recip *Receiver) (e
 	}
 	return nil
 }
+
+// Named lists:
+// This message was sent to %s <%s> via the %s@SunnyvaleSERV.org mailing list.\nTo unsubscribe, visit https://SunnyvaleSERV.org/unsubscribe/%s.\n",
+//
+// Event lists:
+// This message was sent to %s <%s> because they {are invited to [sign up for] | are signed up for | signed in at} [{taskname} at] {eventname} on {date}.
+//
+// Role lists:
+// This message was sent to %s <%s> because they are a {role} [with X], [without Y], and [with Z].
+//
+// Class lists:
+// This message was sent to %s <%s> because they are {registered | on the waiting list} for the {classname} class on {date}.
 
 // copy copies a message or message part to the provided Writer, without change.
 func (mr *messageRewriter) copy(w io.Writer) (err error) {

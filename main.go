@@ -9,7 +9,7 @@ import (
 
 func main() {
 	os.Chdir("/Users/stever/src/serv-portal/data")
-	if err := http.ListenAndServe("localhost:3000", server.Server); err != nil {
+	if err := http.ListenAndServe("localhost:3001", server.Server); err != nil {
 		panic(err)
 	}
 }

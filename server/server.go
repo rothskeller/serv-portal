@@ -19,15 +19,18 @@ import (
 	"sunnyvaleserv.org/portal/pages/admin/venueedit"
 	"sunnyvaleserv.org/portal/pages/admin/venuelist"
 	"sunnyvaleserv.org/portal/pages/classes"
+	"sunnyvaleserv.org/portal/pages/classes/classlists"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/events/eventattend"
 	"sunnyvaleserv.org/portal/pages/events/eventcopy"
 	"sunnyvaleserv.org/portal/pages/events/eventedit"
+	"sunnyvaleserv.org/portal/pages/events/eventlists"
 	"sunnyvaleserv.org/portal/pages/events/eventscal"
 	"sunnyvaleserv.org/portal/pages/events/eventslist"
 	"sunnyvaleserv.org/portal/pages/events/eventview"
 	"sunnyvaleserv.org/portal/pages/events/proxysignup"
 	"sunnyvaleserv.org/portal/pages/events/signups"
+	"sunnyvaleserv.org/portal/pages/events/tasklists"
 	"sunnyvaleserv.org/portal/pages/files"
 	"sunnyvaleserv.org/portal/pages/files/docedit"
 	"sunnyvaleserv.org/portal/pages/files/folderedit"
@@ -186,6 +189,8 @@ func route(r *request.Request) {
 		classes.GetMYN(r)
 	case c[0] == "classes" && (strings.EqualFold(c[1], "pep") || strings.EqualFold(c[1], "ppde")) && c[2] == "":
 		classes.GetPEP(r)
+	case c[0] == "classes" && c[1] != "" && c[2] == "lists" && c[3] == "":
+		classlists.Handle(r, c[1])
 	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
 		classes.HandleRegister(r, c[1])
 	case c[0] == "classes" && c[1] != "" && c[2] == "reglist" && c[3] == "":
@@ -206,12 +211,16 @@ func route(r *request.Request) {
 		eventedit.HandleShift(r, c[2])
 	case c[0] == "events" && c[1] == "edtask" && c[2] != "" && c[3] == "":
 		eventedit.HandleTask(r, c[2])
+	case c[0] == "events" && c[1] == "eventlists" && c[3] == "":
+		eventlists.Handle(r, c[2])
 	case c[0] == "events" && c[1] == "list" && c[2] != "" && c[3] == "":
 		eventslist.Get(r, c[2])
 	case c[0] == "events" && c[1] == "proxysignup" && c[2] != "" && c[3] == "":
 		proxysignup.Handle(r, c[2])
 	case c[0] == "events" && c[1] == "signups" && c[3] == "":
 		signups.Handle(r, c[2])
+	case c[0] == "events" && c[1] == "tasklists" && c[3] == "":
+		tasklists.Handle(r, c[2])
 	case c[0] == "events" && c[1] != "" && c[2] == "":
 		eventview.Handle(r, c[1])
 	case c[0] == "events" && c[1] != "" && c[2] == "copy" && c[3] == "":

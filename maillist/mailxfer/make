@@ -1,0 +1,5 @@
+#!/bin/bash
+set -o errexit
+GOOS=linux GOARCH=arm64 go build -o bootstrap -tags lambda.norpc .
+zip mailxfer.zip bootstrap
+aws lambda update-function-code --function-name mailxfer --zip-file fileb://mailxfer.zip

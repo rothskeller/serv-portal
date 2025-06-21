@@ -7,21 +7,28 @@ import (
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/event"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/shift"
 	"sunnyvaleserv.org/portal/store/task"
 	"sunnyvaleserv.org/portal/store/venue"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const detailsEventFields = event.FID | event.FStart | event.FEnd | event.FVenueURL | event.FDetails
-const detailsTaskFields = task.FOrg
-const detailsVenueFields = venue.FName | venue.FURL
+const (
+	detailsEventFields = event.FID | event.FStart | event.FEnd | event.FVenueURL | event.FDetails
+	detailsTaskFields  = task.FOrg
+	detailsVenueFields = venue.FName | venue.FURL
+)
 
 func showDetails(r *request.Request, main *htmlb.Element, user *person.Person, e *event.Event, ts []*task.Task) {
-	var editable = user.HasPrivLevel(ts[0].Org(), enum.PrivLeader)
+	var hasShifts bool
+	editable := user.HasPrivLevel(ts[0].Org(), enum.PrivLeader)
 	for _, t := range ts {
 		if !user.HasPrivLevel(t.Org(), enum.PrivLeader) {
 			editable = false
+		}
+		if !hasShifts && shift.ExistsForTask(r, t.ID()) {
+			hasShifts = true
 		}
 	}
 	if e.Start() == "00:00" && e.End() == "00:00" && e.Venue() == 0 && e.Details() == "" && !editable {
@@ -62,4 +69,20 @@ func showDetails(r *request.Request, main *htmlb.Element, user *person.Person, e
 	if e.Details() != "" {
 		bdiv.E("div class=eventviewDetailsDetails").R(e.Details())
 	}
+	if editable {
+		bdiv.E("div class=eventviewDetailsButtons").
+			E("a href=/events/eventlists/%d up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", e.ID())
+	}
+}
+
+// showEventEmailLists displays the email lists for the event.
+func showEventEmailLists(r *request.Request, body *htmlb.Element, e *event.Event, hasShifts bool) {
+	heading := body.E("div class=eventviewTaskHeading").R(r.Loc("Email Lists"))
+	heading.E("a href=/events/eventlists/%d up-layer=new up-size=grow up-dismissable=false up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Explanation", e.ID())
+	addrs := body.E("div class=eventviewEmails")
+	addrs.E("div>event-%d-invited@SunnyvaleSERV.org", e.ID())
+	if hasShifts {
+		addrs.E("div>event-%d-signedup@SunnyvaleSERV.org", e.ID())
+	}
+	addrs.E("div>event-%d-signedin@SunnyvaleSERV.org", e.ID())
 }

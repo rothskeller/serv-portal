@@ -36,6 +36,9 @@
 .reglistCellPhone {
   font-variant-numeric: tabular-nums;
 }
+.reglistButtons {
+  margin-top: 0.75rem;
+}
 .reglistReferralsHeading {
   margin-top: 0.75rem;
   font-weight: bold;

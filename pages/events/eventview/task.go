@@ -23,11 +23,13 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const taskEventFields = event.FID | event.FStart | event.FDetails | taskperson.SetEventFields
-const taskTaskFields = task.FID | task.FName | task.FOrg | task.FFlags | task.FDetails
-const taskPersonFields = shiftperson.EligibilityCheckerPersonFields | taskperson.SetPersonFields
+const (
+	taskEventFields  = event.FID | event.FStart | event.FDetails | taskperson.SetEventFields
+	taskTaskFields   = task.FID | task.FName | task.FOrg | task.FFlags | task.FDetails
+	taskPersonFields = shiftperson.EligibilityCheckerPersonFields | taskperson.SetPersonFields
+)
 
-func showTask(r *request.Request, main *htmlb.Element, user *person.Person, e *event.Event, t *task.Task, multiple bool) {
+func showTask(r *request.Request, main *htmlb.Element, user *person.Person, e *event.Event, t *task.Task) {
 	const shiftFields = shift.FID | shift.FStart | shift.FEnd | shift.FVenue | shift.FMin | shift.FMax
 	var (
 		roles    []string
@@ -51,7 +53,7 @@ func showTask(r *request.Request, main *htmlb.Element, user *person.Person, e *e
 			signedUpAny = true
 		}
 	})
-	var editable = user.HasPrivLevel(t.Org(), enum.PrivLeader)
+	editable := user.HasPrivLevel(t.Org(), enum.PrivLeader)
 	// If the viewer isn't involved in any way, don't show the task.
 	if !editable && !hasrole && !signedUpAny && minutes == 0 && flags == 0 {
 		return
@@ -74,7 +76,7 @@ func showTask(r *request.Request, main *htmlb.Element, user *person.Person, e *e
 	}
 	// Display signups if there are any shifts.
 	if len(shifts) != 0 {
-		showTaskSignups(r, bdiv, user, t, shifts, signedUp, roles, editable, hasrole, signedUpAny)
+		showTaskSignups(r, bdiv, user, t, roles, editable, hasrole, signedUpAny)
 	}
 	// Display tracking if the user signed in, got credit, can edit, has an
 	// associated role and anyone got credit, or has an associated role in a
@@ -91,10 +93,15 @@ func showTask(r *request.Request, main *htmlb.Element, user *person.Person, e *e
 		(hoursTracked && (minutes != 0 || hasrole)) {
 		showTaskTracking(r, bdiv, t, editable, len(shifts) != 0, hasrole, attended, credited, anyAttended, anyCredited, hoursTracked, canRecordHours, minutes)
 	}
+	// Display email lists button if the task is editable.
+	if editable {
+		bdiv.E("div class=eventviewTaskButtons").
+			E("a href=/events/tasklists/%d up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", t.ID())
+	}
 }
 
 // showTaskSignups shows the signups for shifts.
-func showTaskSignups(r *request.Request, body *htmlb.Element, user *person.Person, t *task.Task, shifts []*shift.Shift, signedUp []bool, roles []string, editable, hasrole, signedUpAny bool) {
+func showTaskSignups(r *request.Request, body *htmlb.Element, user *person.Person, t *task.Task, roles []string, editable, hasrole, signedUpAny bool) {
 	form := body.E("form method=POST up-target=.eventview")
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	form.E("input type=hidden name=shift")
@@ -138,7 +145,7 @@ func showTaskSignups(r *request.Request, body *htmlb.Element, user *person.Perso
 	}
 }
 
-func handleSignup(r *request.Request, user *person.Person, e *event.Event) {
+func handleSignup(r *request.Request, user *person.Person) {
 	signups.HandleShiftSignup(r, user, user)
 }
 
@@ -176,7 +183,7 @@ func showTaskTracking(r *request.Request, body *htmlb.Element, t *task.Task, edi
 			line.E("s-hours name=hours value=%s", ui.MinutesToHours(minutes))
 			line.E("input type=submit name=edhours%d class='sbtn sbtn-warning eventviewTaskHoursSave' hidden value=%s>", t.ID(), r.Loc("Save"))
 		} else if minutes != 0 {
-			var m = ui.MinutesToHours(minutes)
+			m := ui.MinutesToHours(minutes)
 			if m != "½" && m != "1" {
 				box.E("div").TF(r.Loc("You spent %s volunteer hours."), m)
 			} else {
@@ -219,4 +226,16 @@ func handleHours(r *request.Request, user *person.Person, e *event.Event) {
 			taskperson.Set(r, e, t, user, wantmin, haveflags)
 		})
 	})
+}
+
+// showTaskEmailLists displays the email lists for the task.
+func showTaskEmailLists(r *request.Request, body *htmlb.Element, t *task.Task, hasshifts bool) {
+	heading := body.E("div class=eventviewTaskHeading").R(r.Loc("Email Lists"))
+	heading.E("a href=/events/tasklists/%d up-layer=new up-size=grow up-dismissable=false up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Explanation", t.ID())
+	addrs := body.E("div class=eventviewEmails")
+	addrs.E("div>task-%d-invited@SunnyvaleSERV.org", t.ID())
+	if hasshifts {
+		addrs.E("div>task-%d-signedup@SunnyvaleSERV.org", t.ID())
+	}
+	addrs.E("div>task-%d-signedin@SunnyvaleSERV.org", t.ID())
 }

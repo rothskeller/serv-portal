@@ -73,6 +73,8 @@ func GetRegList(r *request.Request, cidstr string) {
 				grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
 				grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
 			}
+			main.E("div class=reglistButtons").
+				E("a href=/classes/%d/lists up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", c.ID())
 			main.E("div class=reglistReferralsHeading>Referred by:")
 			grid = main.E("div class=reglistReferrals")
 			for _, ref := range class.AllReferrals {

@@ -5,34 +5,110 @@
 Incoming mail to SunnyvaleSERV.org is delivered to Amazon Simple Email Service
 (SES), via MX DNS entries in the Dreamhost DNS servers.  SES has a ruleset for
 incoming email that stores the mail in a S3 bucket and then invokes the
-serv-mail Lambda function.
+mailxfer Lambda function.
 
-The serv-mail Lambda function is a Go executable whose source code is in the
-maillist subdirectory of this repository.  It breaks the incoming messages into
-three types:
-  - Messages sent to known email lists.  These are handled as described below.
-  - Responses to moderation requests.  Also described below.
-  - Everything else gets forwarded to the administrative address.
+The mailxfer Lambda function is a Go executable whose source code is in the
+maillist/mailxfer subdirectory of this repository.  It extracts the mail from
+the S3 bucket and sends it, along with metadata, to
+https://SunnyvaleSERV.org/mailrecv.cgi.  Once the CGI successfully receives it,
+the mailxfer Lambda function removes the mail from S3.
 
-Messages that are sent to known email lists are checked for compliance with
-authorized sender rules, spam issues, etc.  If there are no issues, they are
-resent out to all subscribers of the target list(s).  Each message is rewritten
-for each subscriber with custom headers and footer.  If there are any issues
-with the mail, it is sent as an attachment to a moderation request, to the
-moderator(s) of the target list(s).
+mailrecv.cgi is a Go executable whose source code is in the
+maillist/mailrecv.cgi subdirectory of this repository.  It saves the mail in a
+file in data/maillist/QUEUE, named with the hashed message ID of the message.
+(An MD5 hash with base64 URL encoding is used to ensure that the result is a
+valid filename and has no characters that mailers might treat as a URL.)  The
+CGI saves the metadata in a sidecar file named with the hashed message ID and
+a ".data" extension.  If the sidecar file already exists (because we received
+multiple copies of the mail at different addresses), the new metadata are
+appended to it, and its user-read mode bit is turned on.  Before returning,
+mailrecv.cgi starts a background process running the bin/routemail command.
 
-To approve a message, the moderator(s) merely need to reply to the moderation
-request; when the lambda receives an incoming reply to a moderation request from
-a valid moderator, it resends the original message to all subscribers as above.
-To reject a message, the moderator(s) simply ignore the moderation request.
+The bin/routemail command is a Go executable whose source code is in the
+maillist/routemail subdirectory of this repository.  It locks
+data/maillist/LOCK in order to ensure that only one instance is running at a
+time.  It then looks for any ".data" files in data/maillist/QUEUE that have
+the user-read mode bit set.  This bit is used to indicate a message that needs
+processing.  It processes each such message as described below, and if
+processed successfully, it clears the user-read mode bit.  Notations are added
+to the sidecar file to indicate what has happened with the message.  Log
+entries are added to data/maillist/log/YYYY-MM to describe actions as well.
 
-The set of known email lists, the allowed senders, moderators, and subscribers
-of each, etc., are encoded in a single JSON file in the S3 bucket called
-list-data.json.  This file is updated by the SunnyvaleSERV.org code whenever
-list membership or configurations are changed.
+Fundamentally, routemail handles three types of messages:
+  - Mails sent to SERV mailing lists.  These are handled as described below.
+  - Mails sent to a moderator address.  These constitute approval from a
+    moderator for a message that needs moderation.  After the approval is
+    validated, a notation of the approval is added to the sidecar for the
+    message that was approved, and the user-read mode bit is turned on for
+    that sidecar.  The moderation approval message is discarded.
+  - Anything else is considered unrecognized, and is forwarded to the admin
+    for manual handling.
 
-Every few months, old messages should be cleaned out of the S3 bucket, and old
-log files out of the repository.
+For mails sent to SERV mailing lists, each destination list is handled
+separately.  There are several possible outcomes for a list:
+  - It has already been handled by a previous routemail invocation.  Nothing
+    more is done.
+  - It has not been approved, but a moderation request has been sent for it.
+    Nothing more is done.
+  - It has not been approved, and it needs moderation.  (Moderation is required
+    if it doesn't have a passing DKIM, DMARC, SPF, Spam, or Virus score from
+    AWS/SES, or if it's sent by someone not authorized to send to the list.)
+    A moderation request is sent for it.  To approve a message, the moderator
+    merely needs to reply to the moderation request.  To reject a message, the
+    moderator simply ignores the request.
+  - It has been approved, or it doesn't need moderation.  It is delivered to
+    the recipients of the target lists.  Each email address of each recipient
+    gets a custom-rewritten copy of the message with tailored header and
+    footer.  Only one copy of the message is sent to each email address, even
+    if the message is addressed to multiple lists and a recipient is on more
+    than one of those lists.
+
+The sidecar file is a line-based file with the following lines:
+  R timestamp destination...
+    Message received for specified destination address(es)
+  V dkim dmarc spf spam virus
+    AWS/SES mail scores for the message
+  X timestamp destination
+    Message was for unknown destination and has been sent to admin
+  M timestamp list
+    Message needs moderation for list; moderation request has been sent
+  A timestamp list approver
+    Message has been approved by approver for list
+  L timestamp list
+    Message has been sent to list
+  S timestamp recipient
+    Message has been sent to recipient (email address)
+As noted above, the user-read mode bit on the file indicates that it needs
+processing.
+
+### List Definitions and Membership
+
+The above mechanism works with two kinds of email lists:  named lists and
+dynamic lists.  Name lists are the lists defined on the Lists tab of the
+Admin section of the site, and fundamentally are based on role membership.
+Dynamic lists are more ephemeral, looking up the applicable recipients
+based on criteria encoded in the list name.  There are currently three
+types of dynmic lists:
+
+(event|task)-#-(invited|signedup|signedin)
+  These lists send to the people who are invited to, signed up for, or
+  signed in (or credited for) the event or task with the specified ID.
+  They bcc: to the leaders of the relevant organization(s).
+
+class-#-(registered|waitlist)
+  These lists send to the people registered for, or on the waiting list
+  for, the class with the specified ID.  They bcc: the leaders of the
+  class organization.
+
+role-#([-+]cardkey|bgcheck|dswCERT|dswComm|photoID|volreg)*
+  These lists send to people holding the role with the specified ID,
+  optionally filtered by the suffixed criteria:  having a card key,
+  having valid DOJ and FBI background checks, being registered for
+  DSW for CERT or Communications, having a photo ID, and being 
+  registered as a volunteer, respectively.  A criterion preceded by a
+  "+" filters for people who satisfy that criterion; a criterion
+  preceded by a "-" filters for people who do not satisfy it.  The
+  lists bcc: the leaders of the organization that the role belongs to.
 
 ## Outgoing
 
