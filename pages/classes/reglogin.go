@@ -10,6 +10,7 @@ import (
 	"sunnyvaleserv.org/portal/store/personrole"
 	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/ui/form"
+	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
 )
@@ -361,11 +362,12 @@ func (login *registerLogIn) logIn() bool {
 func (login *registerLogIn) createAccount() bool {
 	login.r.Transaction(func() {
 		up := &person.Updater{
-			InformalName: login.firstName + " " + login.lastName,
-			FormalName:   login.firstName + " " + login.lastName,
-			SortName:     login.lastName + ", " + login.firstName,
-			Email:        login.email,
-			CellPhone:    login.cellPhone,
+			InformalName:     login.firstName + " " + login.lastName,
+			FormalName:       login.firstName + " " + login.lastName,
+			SortName:         login.lastName + ", " + login.firstName,
+			Email:            login.email,
+			CellPhone:        login.cellPhone,
+			UnsubscribeToken: util.RandomToken(),
 		}
 		login.user = person.Create(login.r, up)
 		auth.SetPassword(login.r, login.user, login.newpwd1)
