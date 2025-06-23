@@ -1,6 +1,8 @@
 package personedit
 
 import (
+	"bytes"
+	"fmt"
 	"net/http"
 	"regexp"
 	"slices"
@@ -12,8 +14,10 @@ import (
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store/person"
 	"sunnyvaleserv.org/portal/util"
+	"sunnyvaleserv.org/portal/util/config"
 	"sunnyvaleserv.org/portal/util/htmlb"
 	"sunnyvaleserv.org/portal/util/request"
+	"sunnyvaleserv.org/portal/util/sendmail"
 	"sunnyvaleserv.org/portal/util/volgistics"
 )
 
@@ -91,7 +95,7 @@ func HandleVRegister(r *request.Request, idstr string) {
 			r.Transaction(func() {
 				p.Update(r, up, personFields)
 			})
-			confirmRegistration(r)
+			confirmRegistration(r, p)
 			return
 		}
 	}
@@ -230,7 +234,7 @@ func sendVolunteerRegistration(p *person.Person) (vid int, err error) {
 	return vid, nil
 }
 
-func confirmRegistration(r *request.Request) {
+func confirmRegistration(r *request.Request, p *person.Person) {
 	r.HTMLNoCache()
 	html := htmlb.HTML(r)
 	defer html.Close()
@@ -240,4 +244,8 @@ func confirmRegistration(r *request.Request) {
 	form.E("div class='formRow-3col vregisterIntro'").R(r.Loc("Thank you for volunteering with the City of Sunnyvale, Office of Emergency Services.  One of our staff will contact you to schedule a fingerprinting appointment.  (Criminal history checks are required by city policy for all public-facing volunteers.)  If you have not heard from us within a few days, please email us at oes@sunnyvale.ca.gov to follow up.  We look forward to working with you!"))
 	buttons := form.E("div class=formButtons")
 	buttons.E("button type=submit name=confirm class='sbtn sbtn-primary' value=%s", r.Loc("OK"))
+	// Also want to send an email to the admin.
+	var body bytes.Buffer
+	fmt.Fprintf(&body, "From: SunnyvaleSERV.org <admin@sunnyvaleserv.org>\r\nTo: admin@sunnyvaleserv.org\r\nSubject: New Volunteer Registration\r\n\r\n%s has submitted a volunteer registration.\r\n", p.InformalName())
+	sendmail.SendMessage(r.Context(), config.Get("fromaddr"), []string{config.Get("adminEmail")}, body.Bytes())
 }

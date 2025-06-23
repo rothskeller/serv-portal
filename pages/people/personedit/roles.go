@@ -46,7 +46,7 @@ func HandleRoles(r *request.Request, idstr string) {
 }
 
 func handleGetRoles(r *request.Request, user, p *person.Person) {
-	var held = make(map[role.ID]bool)
+	held := make(map[role.ID]bool)
 
 	personrole.RolesForPerson(r, p.ID(), role.FID, func(r *role.Role, explicit bool) {
 		if explicit {
@@ -61,11 +61,11 @@ func handleGetRoles(r *request.Request, user, p *person.Person) {
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	for _, org := range enum.AllOrgs {
 		if org != enum.OrgAdmin && (user.HasPrivLevel(org, enum.PrivLeader) || user.IsAdminLeader()) {
-			handleGetOrgRoles(r, form, p, held, org)
+			handleGetOrgRoles(r, form, held, org)
 		}
 	}
 	if user.IsAdminLeader() {
-		handleGetOrgRoles(r, form, p, held, enum.OrgAdmin)
+		handleGetOrgRoles(r, form, held, enum.OrgAdmin)
 	}
 	emitButtons(r, form)
 }
@@ -79,7 +79,7 @@ var orgLabels = map[enum.Org]string{
 	enum.OrgSNAP:   "SNAP Roles",
 }
 
-func handleGetOrgRoles(r *request.Request, form *htmlb.Element, p *person.Person, held map[role.ID]bool, org enum.Org) {
+func handleGetOrgRoles(r *request.Request, form *htmlb.Element, held map[role.ID]bool, org enum.Org) {
 	row := form.E("div class=formRow-3col")
 	row.E("div class=personeditRolesOrg>%s", orgLabels[org])
 	role.AllWithOrg(r, role.FID|role.FFlags|role.FImplies|role.FName, org, func(rl *role.Role) {
@@ -101,7 +101,7 @@ func handleGetOrgRoles(r *request.Request, form *htmlb.Element, p *person.Person
 }
 
 func handlePostRoles(r *request.Request, user, p *person.Person) {
-	var held = make(map[role.ID]bool)
+	held := make(map[role.ID]bool)
 
 	for _, v := range r.Form["role"] {
 		held[role.ID(util.ParseID(v))] = true
