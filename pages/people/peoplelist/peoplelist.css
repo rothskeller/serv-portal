@@ -15,6 +15,9 @@
 .peoplelistCount {
   margin-block: 1.5rem;
 }
+.peoplelistNewUser {
+  margin-left: 0.5rem;
+}
 /* The people list has several layout variations:
  *   - Call signs can be omitted, shown in a single column, or shown in two
  *     columns to align the suffixes.

@@ -249,6 +249,8 @@ func route(r *request.Request) {
 		peoplelist.Handle(r)
 	case c[0] == "people" && c[1] == "map" && c[2] == "":
 		peoplemap.Handle(r)
+	case c[0] == "people" && c[1] == "newuser" && c[2] == "":
+		peoplelist.HandleNewUser(r)
 	case c[0] == "people" && c[1] != "" && c[2] == "":
 		personview.Get(r, c[1])
 	case c[0] == "people" && c[1] != "" && c[2] == "activity" && c[3] != "" && c[4] == "":

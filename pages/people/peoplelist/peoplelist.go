@@ -91,8 +91,8 @@ func Handle(r *request.Request) {
 	}
 	ui.Page(r, user, opts, func(main *htmlb.Element) {
 		main.A("class=peoplelist")
-		listControls(r, user, main, focus, roleOptions, currsort)
-		people := getPeople(r, user, focus, currsort == "suffix")
+		listControls(r, main, focus, roleOptions, currsort)
+		people := getPeople(r, user, focus)
 		sort.Slice(people, func(i, j int) bool {
 			return personDataLess(people[i], people[j], currsort)
 		})
@@ -108,9 +108,6 @@ func Handle(r *request.Request) {
 		} else {
 			main.E("div class=peoplelistCount").TF(r.Loc("%d people listed."), len(people))
 		}
-		if user.HasPrivLevel(0, enum.PrivLeader) {
-			// TODO add user
-		}
 		form := main.E("form class=peoplelistExport method=POST")
 		form.E("input type=hidden name=csrf value=%s", r.CSRF)
 		if focus != nil {
@@ -119,6 +116,9 @@ func Handle(r *request.Request) {
 		form.E("input type=hidden name=sort value=%s", currsort)
 		form.E("input type=hidden name=format value=csv")
 		form.E("input type=submit value=Export class='sbtn sbtn-primary sbtn-small'")
+		if user.HasPrivLevel(0, enum.PrivLeader) {
+			form.E("a href=/people/newuser class='sbtn sbtn-primary sbtn-small peoplelistNewUser' up-layer=new up-size=grow up-dismissable=key up-history=false up->New User")
+		}
 	})
 }
 
@@ -126,7 +126,7 @@ func Handle(r *request.Request) {
 func renderCSV(r *request.Request, user *person.Person, focus *role.Role, currsort string) {
 	r.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	r.Header().Set("Content-Disposition", `attachment; filename="people.csv"`)
-	var out = csv.NewWriter(r)
+	out := csv.NewWriter(r)
 	out.UseCRLF = true
 	var cols []string
 	if currsort == "suffix" {
@@ -136,7 +136,7 @@ func renderCSV(r *request.Request, user *person.Person, focus *role.Role, currso
 	}
 	cols = append(cols, "Name", "Formal Name", "Pronouns", "Role", "Email", "Email 2", "Cell Phone", "Home Phone", "Work Phone")
 	out.Write(cols)
-	people := getPeople(r, user, focus, currsort == "suffix")
+	people := getPeople(r, user, focus)
 	sort.Slice(people, func(i, j int) bool {
 		return personDataLess(people[i], people[j], currsort)
 	})
@@ -163,11 +163,12 @@ func renderCSVPerson(out *csv.Writer, p *personData, focus *role.Role, currsort 
 	} else {
 		cols = append(cols, "", "")
 	}
-	if p.viewLevel == person.ViewFull {
+	switch p.viewLevel {
+	case person.ViewFull:
 		cols = append(cols, p.CellPhone(), p.HomePhone(), p.WorkPhone())
-	} else if p.viewLevel == person.ViewWorkContact {
+	case person.ViewWorkContact:
 		cols = append(cols, "", "", p.WorkPhone())
-	} else {
+	default:
 		cols = append(cols, "", "", "")
 	}
 	out.Write(cols)
@@ -175,7 +176,7 @@ func renderCSVPerson(out *csv.Writer, p *personData, focus *role.Role, currsort 
 
 // listControls displays the controls bar (focus choice and sort order) at the
 // top of the list.
-func listControls(r *request.Request, user *person.Person, main *htmlb.Element, focus *role.Role, roleOptions []*role.Role, currsort string) {
+func listControls(r *request.Request, main *htmlb.Element, focus *role.Role, roleOptions []*role.Role, currsort string) {
 	var nextsort string
 
 	form := main.E("form class=peoplelistForm method=POST")
@@ -218,7 +219,7 @@ func listControls(r *request.Request, user *person.Person, main *htmlb.Element, 
 // the calling user and who have the focus role).  It also computes information
 // about the person that is needed for both sorting and display.  (Information
 // needed only for display is computed in showPerson.)
-func getPeople(r *request.Request, user *person.Person, focus *role.Role, splitCallSign bool) (people []*personData) {
+func getPeople(r *request.Request, user *person.Person, focus *role.Role) (people []*personData) {
 	const personFields = person.FID | person.FSortName | person.FInformalName | person.FFormalName | person.FCallSign | person.FPronouns | person.FHomePhone | person.FCellPhone | person.FWorkPhone | person.FEmail | person.FEmail2 | person.CanViewTargetFields
 	person.All(r, personFields, func(p *person.Person) {
 		viewLevel := user.CanView(p)

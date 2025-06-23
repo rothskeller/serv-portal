@@ -1,4 +1,4 @@
-package personedit
+package peoplelist
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"sunnyvaleserv.org/portal/pages/errpage"
-	"sunnyvaleserv.org/portal/pages/people/personview"
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
@@ -17,14 +16,12 @@ import (
 	"sunnyvaleserv.org/portal/util/request"
 )
 
-const namesPersonFields = person.FInformalName | person.FFormalName | person.FSortName | person.FCallSign | person.FPronouns
-
-// HandleNames handles requests for /people/$id/ednames.
-func HandleNames(r *request.Request, idstr string) {
+// HandleNewUser handles requests for /people/newuser
+func HandleNewUser(r *request.Request) {
 	var (
 		user              *person.Person
 		p                 *person.Person
-		up                *person.Updater
+		up                person.Updater
 		informalNameError string
 		formalNameError   string
 		sortNameError     string
@@ -36,23 +33,18 @@ func HandleNames(r *request.Request, idstr string) {
 	if !auth.CheckCSRF(r, user) {
 		return
 	}
-	if p = person.WithID(r, person.ID(util.ParseID(idstr)), namesPersonFields|person.CanViewTargetFields); p == nil {
-		errpage.NotFound(r, user)
-		return
-	}
-	if user.ID() != p.ID() && !user.HasPrivLevel(0, enum.PrivLeader) {
+	if !user.HasPrivLevel(0, enum.PrivLeader) {
 		errpage.Forbidden(r, user)
 		return
 	}
-	up = p.Updater()
 	validate := strings.Fields(r.Request.Header.Get("X-Up-Validate"))
 	if r.Method == http.MethodPost {
 		informalWas := up.InformalName
-		informalNameError = readInformalName(r, up)
-		formalNameError = readFormalName(r, up)
-		sortNameError = readSortName(r, up)
-		callSignError = readCallSign(r, up)
-		readPronouns(r, up)
+		informalNameError = readInformalName(r, &up)
+		formalNameError = readFormalName(r, &up)
+		sortNameError = readSortName(r, &up)
+		callSignError = readCallSign(r, &up)
+		readPronouns(r, &up)
 		if slices.Contains(validate, "informalName") {
 			if up.FormalName == "" || up.FormalName == informalWas {
 				up.FormalName = up.InformalName
@@ -65,10 +57,11 @@ func HandleNames(r *request.Request, idstr string) {
 		// data and return to the view page.
 		if len(validate) == 0 && informalNameError == "" && formalNameError == "" &&
 			sortNameError == "" && callSignError == "" {
+			up.UnsubscribeToken = util.RandomToken()
 			r.Transaction(func() {
-				p.Update(r, up, namesPersonFields)
+				p = person.Create(r, &up)
 			})
-			personview.Render(r, user, p, user.CanView(p), "names")
+			http.Redirect(r, r.Request, fmt.Sprintf("/people/%d", p.ID()), http.StatusSeeOther)
 			return
 		}
 	}
@@ -78,23 +71,23 @@ func HandleNames(r *request.Request, idstr string) {
 	}
 	html := htmlb.HTML(r)
 	defer html.Close()
-	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=.personviewNames")
-	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Edit Names"))
+	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent")
+	form.E("div class='formTitle formTitle-primary'").R(r.Loc("Create User"))
 	form.E("input type=hidden name=csrf value=%s", r.CSRF)
 	if len(validate) == 0 || slices.Contains(validate, "informalName") {
-		emitInformalName(r, form, up, informalNameError != "" || (formalNameError == "" && sortNameError == "" && callSignError == ""), informalNameError)
+		emitInformalName(r, form, &up, informalNameError != "" || (formalNameError == "" && sortNameError == "" && callSignError == ""), informalNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "informalName") || slices.Contains(validate, "formalName") {
-		emitFormalName(r, form, up, formalNameError != "", formalNameError)
+		emitFormalName(r, form, &up, formalNameError != "", formalNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "informalName") || slices.Contains(validate, "sortName") {
-		emitSortName(r, form, up, sortNameError != "", sortNameError)
+		emitSortName(r, form, &up, sortNameError != "", sortNameError)
 	}
 	if len(validate) == 0 || slices.Contains(validate, "callSign") {
-		emitCallSign(r, form, up, callSignError != "", callSignError)
+		emitCallSign(r, form, &up, callSignError != "", callSignError)
 	}
 	if len(validate) == 0 {
-		emitPronouns(r, form, up)
+		emitPronouns(r, form, &up)
 		emitButtons(r, form)
 	}
 }
