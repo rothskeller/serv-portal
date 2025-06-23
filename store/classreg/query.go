@@ -7,7 +7,8 @@ import (
 	"sunnyvaleserv.org/portal/store/internal/phys"
 )
 
-// ClassHasSignups returns whether there are any registrations for the class.
+// ClassHasSignups returns whether there are any registrations for the class
+// (even if on the waitlist).
 func ClassHasSignups(storer phys.Storer, cid class.ID) (found bool) {
 	phys.SQL(storer, "SELECT 1 FROM classreg WHERE class=? LIMIT 1", func(stmt *phys.Stmt) {
 		stmt.BindInt(int(cid))
@@ -16,11 +17,21 @@ func ClassHasSignups(storer phys.Storer, cid class.ID) (found bool) {
 	return found
 }
 
-// ClassIsFull returns whether the number of registrations for the class is
-// >= its limit.
+// ClassHasWaitlist returns whether there is anyone on the waitlist for the
+// class.
+func ClassHasWaitlist(storer phys.Storer, cid class.ID) (found bool) {
+	phys.SQL(storer, "SELECT 1 FROM classreg WHERE class=? AND waitlist LIMIT 1", func(stmt *phys.Stmt) {
+		stmt.BindInt(int(cid))
+		found = stmt.Step()
+	})
+	return found
+}
+
+// ClassIsFull returns whether the number of non-waitlist registrations for the
+// class is >= its limit.
 func ClassIsFull(storer phys.Storer, cid class.ID) bool {
 	var count, limit int
-	phys.SQL(storer, "SELECT COUNT(*) FROM classreg WHERE class=?", func(stmt *phys.Stmt) {
+	phys.SQL(storer, "SELECT COUNT(*) FROM classreg WHERE class=? AND NOT waitlist", func(stmt *phys.Stmt) {
 		stmt.BindInt(int(cid))
 		stmt.Step()
 		count = stmt.ColumnInt()
@@ -63,20 +74,10 @@ func WithID(storer phys.Storer, id ID, fields Fields) (cr *ClassReg) {
 	return cr
 }
 
-// CountForClass returns the number of people registered for the specified class.
-func CountForClass(storer phys.Storer, cid class.ID) (count uint) {
-	phys.SQL(storer, "SELECT COUNT(*) FROM classreg WHERE class=?", func(stmt *phys.Stmt) {
-		stmt.BindInt(int(cid))
-		stmt.Step()
-		count = uint(stmt.ColumnInt())
-	})
-	return count
-}
-
 var allForClassSQLCache map[Fields]string
 
 // AllForClass reads the list of people registered for the specified class, in
-// the order that they were registered.
+// the order that they were registered.  It includes the waitlisted students.
 func AllForClass(storer phys.Storer, cid class.ID, fields Fields, fn func(*ClassReg)) {
 	if allForClassSQLCache == nil {
 		allForClassSQLCache = make(map[Fields]string)

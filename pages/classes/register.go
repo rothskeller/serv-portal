@@ -52,7 +52,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		return
 	}
 	classreg.AllForClass(r, c.ID(), classreg.UpdaterFields, func(cr *classreg.ClassReg) {
-		if cr.RegisteredBy() != user.ID() {
+		if cr.RegisteredBy() != user.ID() && !cr.Waitlist() {
 			others++
 			return
 		}
@@ -205,16 +205,14 @@ func readForm(r *request.Request, max int) (uregs []*classreg.Updater, errors []
 		if !fmtPhone(&cellPhone) {
 			err += r.Loc("The cell phone number is not valid.") + " "
 		}
-		if max > 0 && len(uregs) >= max {
-			err += r.Loc("The class does not have this many spaces left.")
-		}
 		if err != "" {
 			for len(errors) < len(uregs) {
 				errors = append(errors, "")
 			}
 			errors = append(errors, err)
 		}
-		uregs = append(uregs, &classreg.Updater{FirstName: first, LastName: last, Email: email, CellPhone: cellPhone})
+		uregs = append(uregs, &classreg.Updater{FirstName: first, LastName: last, Email: email, CellPhone: cellPhone, Waitlist: max <= 0})
+		max--
 	}
 	if _, ok := r.Form["referral"]; ok {
 		if referral = class.Referral(util.ParseID(r.FormValue("referral"))); !referral.Valid() {
@@ -348,7 +346,7 @@ func sendUserConfirmation(r *request.Request, user *person.Person, c *class.Clas
 	}
 	if len(uregs) != 0 {
 		fmt.Fprint(&body, "\r\n\r\n")
-		if classreg.ClassIsFull(r, c.ID()) {
+		if uregs[len(uregs)-1].Waitlist {
 			fmt.Fprint(&body, r.Loc("This class is full, so you have been placed on a wait list.  We confirm the wait list for:"))
 		} else if len(uregs) > 1 {
 			fmt.Fprint(&body, r.Loc("We confirm the registrations of:"))
@@ -413,7 +411,7 @@ func sendAddConfirmations(r *request.Request, user *person.Person, c *class.Clas
 		fmt.Fprintf(&body, "Subject: %s: %s\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n", r.Loc(c.Type().String()), r.Loc("Class Registration"))
 		fmt.Fprintf(&body, r.Loc("Greetings, %s,"), name)
 		fmt.Fprint(&body, "\r\n\r\n")
-		if classreg.ClassIsFull(r, c.ID()) {
+		if add.Waitlist {
 			fmt.Fprintf(&body, r.Loc("%s has added you to the waiting list for our “%s” class:"), user.InformalName(), r.Loc(c.Type().String()))
 		} else {
 			fmt.Fprintf(&body, r.Loc("%s has registered you for our “%s” class:"), user.InformalName(), r.Loc(c.Type().String()))

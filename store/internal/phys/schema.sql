@@ -19,7 +19,8 @@ CREATE TABLE classreg (
   first_name    text    NOT NULL,
   last_name     text    NOT NULL,
   email         text,
-  cell_phone    text
+  cell_phone    text,
+  waitlist      boolean NOT NULL DEFAULT false
 );
 CREATE INDEX classreg_class_index ON classreg (class);
 CREATE INDEX classreg_person_index ON classreg (person);

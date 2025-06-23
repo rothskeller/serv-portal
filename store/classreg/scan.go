@@ -44,6 +44,10 @@ func ColumnList(sb *strings.Builder, fields Fields) {
 		sb.WriteString(sep())
 		sb.WriteString("cr.cell_phone")
 	}
+	if fields&FWaitlist != 0 {
+		sb.WriteString(sep())
+		sb.WriteString("cr.waitlist")
+	}
 }
 
 // Scan reads columns corresponding to the specified fields from the specified
@@ -72,6 +76,9 @@ func (cr *ClassReg) Scan(stmt *phys.Stmt, fields Fields) {
 	}
 	if fields&FCellPhone != 0 {
 		cr.cellPhone = stmt.ColumnText()
+	}
+	if fields&FWaitlist != 0 {
+		cr.waitlist = stmt.ColumnBool()
 	}
 	cr.fields |= fields
 }

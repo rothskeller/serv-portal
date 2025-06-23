@@ -10,7 +10,7 @@ import (
 
 // UpdaterFields are the fields that must be fetched prior to creating an
 // Updater.
-const UpdaterFields = FID | FClass | FPerson | FRegisteredBy | FFirstName | FLastName | FEmail | FCellPhone
+const UpdaterFields = FID | FClass | FPerson | FRegisteredBy | FFirstName | FLastName | FEmail | FCellPhone | FWaitlist
 
 // Updater is a structure that can be filled with data for a new or changed
 // class, and then later applied.  For creating new classes, it can simply be
@@ -26,6 +26,7 @@ type Updater struct {
 	LastName     string
 	Email        string
 	CellPhone    string
+	Waitlist     bool
 }
 
 // Updater returns a new Updater for the specified class, with its data matching
@@ -58,10 +59,11 @@ func (cr *ClassReg) Updater(storer phys.Storer, c *class.Class, p, rb *person.Pe
 		LastName:     cr.lastName,
 		Email:        cr.email,
 		CellPhone:    cr.cellPhone,
+		Waitlist:     cr.waitlist,
 	}
 }
 
-const createSQL = `INSERT INTO classreg (id, class, person, registered_by, first_name, last_name, email, cell_phone) VALUES (?,?,?,?,?,?,?,?)`
+const createSQL = `INSERT INTO classreg (id, class, person, registered_by, first_name, last_name, email, cell_phone, waitlist) VALUES (?,?,?,?,?,?,?,?,?)`
 
 // Create creates a new class registration with the data in the Updater.
 func Create(storer phys.Storer, u *Updater) (cr *ClassReg) {
@@ -81,7 +83,7 @@ func Create(storer phys.Storer, u *Updater) (cr *ClassReg) {
 	return cr
 }
 
-const updateSQL = `UPDATE classreg SET class=?, person=?, registered_by=?, first_name=?, last_name=?, email=?, cell_phone=? WHERE id=?`
+const updateSQL = `UPDATE classreg SET class=?, person=?, registered_by=?, first_name=?, last_name=?, email=?, cell_phone=?, waitlist=? WHERE id=?`
 
 // Update updates the existing class, with the data in the Updater.
 func (cr *ClassReg) Update(storer phys.Storer, u *Updater) {
@@ -104,6 +106,7 @@ func bindUpdater(stmt *phys.Stmt, u *Updater) {
 	stmt.BindText(u.LastName)
 	stmt.BindText(u.Email)
 	stmt.BindText(u.CellPhone)
+	stmt.BindBool(u.Waitlist)
 }
 
 func (cr *ClassReg) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
@@ -144,6 +147,10 @@ func (cr *ClassReg) auditAndUpdate(storer phys.Storer, u *Updater, create bool) 
 	if u.CellPhone != cr.cellPhone {
 		phys.Audit(storer, "%s:: cellPhone = %s", context, u.CellPhone)
 		cr.cellPhone = u.CellPhone
+	}
+	if u.Waitlist != cr.waitlist {
+		phys.Audit(storer, "%s:: waitlist = %v", context, u.Waitlist)
+		cr.waitlist = u.Waitlist
 	}
 }
 

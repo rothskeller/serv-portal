@@ -30,6 +30,9 @@
   grid: auto-flow / repeat(4, max-content);
   gap: 0.25rem 0.5rem;
 }
+.reglistGrid + .reglistStart {
+  margin-top: 0.75rem;
+}
 .reglistName {
   grid-column: 2;
 }

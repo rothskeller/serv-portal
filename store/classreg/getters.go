@@ -80,3 +80,12 @@ func (c *ClassReg) CellPhone() string {
 	}
 	return c.cellPhone
 }
+
+// Waitlist is a flag indicating whether the person was put on a waitlist for
+// the class.
+func (c *ClassReg) Waitlist() bool {
+	if c.fields&FWaitlist == 0 {
+		panic("ClassReg.Waitlist called without having fetched FWaitlist")
+	}
+	return c.waitlist
+}

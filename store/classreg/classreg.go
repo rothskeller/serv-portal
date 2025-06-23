@@ -24,6 +24,7 @@ const (
 	FLastName
 	FEmail
 	FCellPhone
+	FWaitlist
 )
 
 // ClassReg describes a registration for a class.
@@ -40,6 +41,7 @@ type ClassReg struct {
 	lastName     string
 	email        string
 	cellPhone    string
+	waitlist     bool
 }
 
 // Clone creates a clone of the class registration.
