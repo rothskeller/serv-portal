@@ -68,10 +68,10 @@ func transferOneMail(ctx context.Context, s3Client *s3.Client, record SESInputRe
 			return err
 		}
 	}
-	if w, err := mpw.CreateFormField("message"); err != nil {
-		return fmt.Errorf("CreateFormField message: %w", err)
+	if w, err := mpw.CreateFormFile("message", "message.eml"); err != nil {
+		return fmt.Errorf("CreateFormFile message: %w", err)
 	} else if _, err = w.Write(raw); err != nil {
-		return fmt.Errorf("CreateFormField message: copy: %w", err)
+		return fmt.Errorf("CreateFormFile message: copy: %w", err)
 	}
 	if err = mpw.Close(); err != nil {
 		return fmt.Errorf("multipart.Writer.Close: %w", err)

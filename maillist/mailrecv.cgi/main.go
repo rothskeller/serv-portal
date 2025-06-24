@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/cgi"
 	"net/mail"
@@ -34,6 +35,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var (
 		sesID   string
 		sesHash string
+		raw     multipart.File
 		mf      *os.File
 		msg     *mail.Message
 		mid     string
@@ -65,13 +67,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		sendError(w, "403 Incorrect Hash", http.StatusForbidden)
 		return
 	}
+	if raw, _, err = r.FormFile("message"); err != nil || raw == nil {
+		sendError(w, "400 message Required", http.StatusBadRequest)
+		return
+	}
 	// Open a temporary file and read the message into it.
 	if mf, err = os.CreateTemp(".", ""); err != nil {
 		sendError(w, "500 CreateTemp "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.Remove(mf.Name())
-	if _, err = io.WriteString(mf, r.FormValue("message")); err != nil {
+	if _, err = io.Copy(mf, raw); err != nil {
 		sendError(w, "500 copy message "+err.Error(), http.StatusInternalServerError)
 		return
 	}
