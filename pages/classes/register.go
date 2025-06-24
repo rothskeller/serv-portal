@@ -52,8 +52,10 @@ func HandleRegister(r *request.Request, cidstr string) {
 		return
 	}
 	classreg.AllForClass(r, c.ID(), classreg.UpdaterFields, func(cr *classreg.ClassReg) {
-		if cr.RegisteredBy() != user.ID() && !cr.Waitlist() {
-			others++
+		if cr.RegisteredBy() != user.ID() {
+			if !cr.Waitlist() {
+				others++
+			}
 			return
 		}
 		regs = append(regs, cr.Clone())
