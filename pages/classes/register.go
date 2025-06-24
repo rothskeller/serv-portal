@@ -26,15 +26,16 @@ const registerPersonFields = person.FID | person.FInformalName | person.FSortNam
 // HandleRegister handles /classes/$id/register requests.
 func HandleRegister(r *request.Request, cidstr string) {
 	var (
-		user     *person.Person
-		c        *class.Class
-		regs     []*classreg.ClassReg
-		uregs    []*classreg.Updater
-		errors   []string
-		referral class.Referral
-		others   uint
-		forceGet bool
-		max      = -1
+		user         *person.Person
+		c            *class.Class
+		regs         []*classreg.ClassReg
+		uregs        []*classreg.Updater
+		errors       []string
+		referral     class.Referral
+		others       uint
+		forceGet     bool
+		haveWaitlist bool
+		max          = -1
 	)
 	// Get the user information.
 	if user = auth.SessionUser(r, registerPersonFields, false); user == nil {
@@ -52,6 +53,9 @@ func HandleRegister(r *request.Request, cidstr string) {
 		return
 	}
 	classreg.AllForClass(r, c.ID(), classreg.UpdaterFields, func(cr *classreg.ClassReg) {
+		if cr.Waitlist() {
+			haveWaitlist = true
+		}
 		if cr.RegisteredBy() != user.ID() {
 			if !cr.Waitlist() {
 				others++
@@ -66,6 +70,9 @@ func HandleRegister(r *request.Request, cidstr string) {
 		if max < len(regs) {
 			max = len(regs)
 		}
+	}
+	if haveWaitlist {
+		max = len(regs)
 	}
 	// Determine what to display in the form.
 	if r.Method == http.MethodPost && !forceGet {
