@@ -22,9 +22,6 @@ const (
 	FReferrals
 )
 
-// Value for Start for a waiting list placeholder.
-const WaitingList = "2999-12-31"
-
 // Class describes an instance of a class that we offer.
 type Class struct {
 	// NOTE: documentation of the fields is on the getter functions in

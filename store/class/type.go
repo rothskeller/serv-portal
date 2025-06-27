@@ -13,6 +13,8 @@ const (
 	// PEP is a Personal Emergency Preparedness class (or its Spanish
 	// equivalent, Preparación para desastres y emergencias).
 	PEP
+	// Moulage is a class on how to moulage "victims" for exercises.
+	Moulage = 3
 )
 
 // String returns the name of the specified Type.
@@ -22,6 +24,8 @@ func (ctype Type) String() string {
 		return "CERT Basic Training"
 	case PEP:
 		return "Personal Emergency Preparedness"
+	case Moulage:
+		return "Moulage Training"
 	default:
 		return ""
 	}
@@ -34,6 +38,8 @@ func (ctype Type) Org() enum.Org {
 		return enum.OrgCERTT
 	case PEP:
 		return enum.OrgListos
+	case Moulage:
+		return enum.OrgCERTT
 	default:
 		return 0
 	}
@@ -43,4 +49,4 @@ func (ctype Type) Org() enum.Org {
 func (ctype Type) Int() int { return int(ctype) }
 
 // AllTypes is the list of all class types.
-var AllTypes = []Type{CERTBasic, PEP}
+var AllTypes = []Type{CERTBasic, PEP, Moulage}

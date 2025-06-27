@@ -215,6 +215,8 @@ func route(r *request.Request) {
 		eventlists.Handle(r, c[2])
 	case c[0] == "events" && c[1] == "list" && c[2] != "" && c[3] == "":
 		eventslist.Get(r, c[2])
+	case strings.EqualFold(c[0], "moulage") && c[1] == "":
+		classes.GetMoulage(r)
 	case c[0] == "events" && c[1] == "proxysignup" && c[2] != "" && c[3] == "":
 		proxysignup.Handle(r, c[2])
 	case c[0] == "events" && c[1] == "signups" && c[3] == "":

@@ -115,6 +115,7 @@ var stylesheets = []string{
 	"pages/classes/all.css",
 	"pages/classes/cert.css",
 	"pages/classes/common.css",
+	"pages/classes/moulage.css",
 	"pages/classes/myn.css",
 	"pages/classes/pep.css",
 	"pages/classes/register.css",
