@@ -49,6 +49,20 @@ func Install() error {
 	if err := sh.Run(mg.GoCmd(), "install", "./cmd/rebuild-search-index"); err != nil {
 		return err
 	}
+	if err := sh.Run(mg.GoCmd(), "build", "-o", "routemail", "./maillist/routemail"); err != nil {
+		return err
+	}
+	if err := os.Rename("routemail", "/home/snyserv/bin/routemail"); err != nil {
+		os.Remove("routemail")
+		return err
+	}
+	if err := sh.Run(mg.GoCmd(), "build", "-o", "mailrecv.cgi", "./maillist/mailrecv.cgi"); err != nil {
+		return err
+	}
+	if err := os.Rename("mailrecv.cgi", "/home/snyserv/sunnyvaleserv.org/mailrecv.cgi"); err != nil {
+		os.Remove("mailrecv.cgi")
+		return err
+	}
 	if err := sh.Run(mg.GoCmd(), "build", "-o", "received-text-hook", "./cmd/received-text-hook"); err != nil {
 		return err
 	}
