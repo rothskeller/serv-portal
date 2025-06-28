@@ -135,9 +135,11 @@ func resendMessageToOne(
 	if err = rewr.rewrite(&buf, list, email, rdata); err != nil {
 		return err
 	}
+	cset := "serv-outgoing"
 	_, err = sesClient.SendRawEmail(context.Background(), &ses.SendRawEmailInput{
-		RawMessage:   &types.RawMessage{Data: buf.Bytes()},
-		Destinations: []string{email},
+		RawMessage:           &types.RawMessage{Data: buf.Bytes()},
+		Destinations:         []string{email},
+		ConfigurationSetName: &cset,
 	})
 	if err != nil {
 		log.Printf("    Sending to %s:", email)

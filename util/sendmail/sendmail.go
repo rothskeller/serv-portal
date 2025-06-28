@@ -44,7 +44,8 @@ func SendMessage(ctx context.Context, from string, to []string, body []byte) (er
 		}, nil
 	})))
 	client = ses.NewFromConfig(conf)
-	_, err = client.SendRawEmail(ctx, &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: body}})
+	cset := "serv-outgoing"
+	_, err = client.SendRawEmail(ctx, &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: body}, ConfigurationSetName: &cset})
 	if err != nil {
 		return fmt.Errorf("AWS SendRawEmail: %s", err)
 	}

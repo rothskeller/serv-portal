@@ -64,7 +64,8 @@ Content-Type: message/rfc822
 
 --%s--
 `, boundary)
-	_, err = sesClient.SendRawEmail(context.Background(), &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: buf.Bytes()}})
+	cset := "serv-outgoing"
+	_, err = sesClient.SendRawEmail(context.Background(), &ses.SendRawEmailInput{RawMessage: &types.RawMessage{Data: buf.Bytes()}, ConfigurationSetName: &cset})
 	return err
 }
 
