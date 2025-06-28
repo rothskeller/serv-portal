@@ -164,6 +164,10 @@ func handleMailToList(tf *os.File, messageID string, mail *mailMetadata, listadd
 		log.Printf("  Already handled destination %s.", listname)
 		return nil
 	}
+	if listname == "dmarc" {
+		log.Printf("  DMARC report, ignoring.")
+		return nil
+	}
 	if strings.HasSuffix(listname, ".mod") {
 		return handleModerationResponse(messageID, strings.TrimSuffix(listname, ".mod"))
 	}
