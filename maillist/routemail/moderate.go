@@ -166,7 +166,7 @@ func handleModerationResponse(messageID, listname string) (err error) {
 	if addr, err := mail.ParseAddress(from); err == nil {
 		from = addr.Address
 	}
-	if !slices.Contains(strings.Split(config.Get("listModerators"), ","), from) {
+	if !slices.Contains(strings.Split(config.Get("listModerators"), ","), strings.ToLower(from)) {
 		log.Printf("  WARNING: ignoring moderation response from non-moderator %s", from)
 		return nil
 	}
