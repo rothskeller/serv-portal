@@ -86,7 +86,7 @@ func (list *List) addRecipient2(informalName, email, email2, unsubToken string, 
 			delete(list.Bcc, email)
 		}
 	}
-	if email2 != "" && list.Recipients[email2] == nil && set[email] == nil {
+	if email2 != "" && list.Recipients[email2] == nil && set[email2] == nil {
 		set[email2] = &RecipientData{
 			Name:             informalName,
 			UnsubscribeToken: unsubToken,
