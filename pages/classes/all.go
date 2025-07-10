@@ -29,17 +29,17 @@ func GetClasses(r *request.Request) {
 		text.E("p").R(r.Loc("Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize."))
 		cgrid := more.E("div class=classesRegisterGrid")
 		if r.Language == "es" {
-			cgrid.E("div").R(`Miércoles, el 25 de junio, 6:30–8:30pm
+			cgrid.E("div").R(`Jueves, el 7 de agosto, 6:00–8:00pm
 Impartido en inglés
 Biblioteca Pública de Sunnyvale
 665 W. Olive Avenue, Sunnyvale`)
 		} else {
-			cgrid.E("div").R(`Wednesday, June 25, 6:30–8:30pm
+			cgrid.E("div").R(`Thursday, August 7, 6:00–8:00pm
 Taught in English
 Sunnyvale Public Library
 665 W. Olive Avenue, Sunnyvale`)
 		}
-		cgrid.E("div").E("a href=https://sunnyvale.libcal.com/event/14553820 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
+		cgrid.E("div").E("a href=https://sunnyvale.libcal.com/event/14905319 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
 		getClassesCommon(r, user, more, class.PEP)
 		cgrid = more.E("div class=classesRegisterGrid")
 		cgrid.E("div").R(r.Loc("Subscribe to our email list to be notified when additional classes are scheduled (English or Spanish)."))
