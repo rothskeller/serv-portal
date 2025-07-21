@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"slices"
@@ -321,7 +322,10 @@ func readAddress(
 	// Send the address to the address verification service.
 	var answer addressVerifyResponse
 	body, _ := json.Marshal(addressVerifyRequest{addressVerifyRequestAddress{[]string{line1, line2}}})
-	resp, err := http.Post(addressVerificationAPI+config.Get("addressVerificationKey"), "application/json", bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, addressVerificationAPI+config.Get("addressVerificationKey"), bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Referer", "https://sunnyvaleserv.org/people")
+	resp, err := http.DefaultClient.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
 	}
@@ -333,6 +337,8 @@ func readAddress(
 			r.LogEntry.Problems.AddF("address verification failure %s", err)
 		} else {
 			r.LogEntry.Problems.AddF("address verification failure %s", resp.Status)
+			by, _ := io.ReadAll(resp.Body)
+			r.LogEntry.Problems.Add(string(by))
 		}
 		return r.Loc("Address changes cannot be accepted right now because the address verification service is offline.")
 	}
