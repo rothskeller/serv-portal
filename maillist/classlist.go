@@ -50,23 +50,22 @@ func getClassList(dbconn *sqlite.Conn, listname string) (list *List) {
 	list.Reason += fmt.Sprintf("%s %s class", start, ctype)
 	list.addLeaderRecipients(dbconn, int64(ctype.Org()))
 	// Next, get the recipients.
-	stmt = dbconn.Prep("SELECT first_name, last_name, email FROM classreg WHERE class=? ORDER BY id")
+	stmt = dbconn.Prep("SELECT first_name, last_name, email, waitlist FROM classreg WHERE class=? ORDER BY id")
 	stmt.BindInt64(1, int64(id))
-	var count int
 	for {
 		if found, err := stmt.Step(); err != nil {
 			log.Fatalf("ERROR: class registration lookup: %s", err)
 		} else if !found {
 			break
 		}
-		count++
 		firstName := stmt.ColumnText(0)
 		lastName := stmt.ColumnText(1)
 		email := stmt.ColumnText(2)
+		waitlist := stmt.ColumnBool(3)
 		if email == "" {
 			continue
 		}
-		if (match[2] == "registered" && count <= elimit) || (match[2] != "registered" && count > elimit) {
+		if (match[2] == "registered" && !waitlist) || (match[2] != "registered" && waitlist) {
 			list.addRecipient(firstName+" "+lastName, email, "", "", 0)
 		}
 	}
