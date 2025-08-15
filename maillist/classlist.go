@@ -20,7 +20,7 @@ func getClassList(dbconn *sqlite.Conn, listname string) (list *List) {
 	// First get the class type and the enrollment limit.  This also
 	// verifies that the class exists.
 	id, _ := strconv.Atoi(match[1])
-	stmt := dbconn.Prep("SELECT type, start, elimit FROM class WHERE id=?")
+	stmt := dbconn.Prep("SELECT type, start FROM class WHERE id=?")
 	stmt.BindInt64(1, int64(id))
 	if found, err := stmt.Step(); err != nil {
 		log.Fatalf("ERROR: class type lookup: %s", err)
@@ -29,10 +29,6 @@ func getClassList(dbconn *sqlite.Conn, listname string) (list *List) {
 	}
 	ctype := class.Type(stmt.ColumnInt64(0))
 	start := stmt.ColumnText(1)
-	elimit := stmt.ColumnInt(2)
-	if stmt.ColumnType(1) == sqlite.TypeNull {
-		elimit = 1000
-	}
 	stmt.Reset()
 	// Set up the list.
 	list = &List{
