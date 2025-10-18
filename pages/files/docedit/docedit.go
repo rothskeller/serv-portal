@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"slices"
 	"strings"
 
@@ -21,7 +22,7 @@ import (
 )
 
 // Handle handles /docedit/${folderid}/${docid} requests.  ${docid} may be a
-// document ID, or it may be the word "NEWURL" or "NEWFILE".
+// document ID, or it may be the words "NEWURL", "NEWFILE", or "FETCHFILE".
 func Handle(r *request.Request, fidstr, didstr string) {
 	var (
 		user *person.Person
@@ -43,7 +44,10 @@ func Handle(r *request.Request, fidstr, didstr string) {
 		errpage.Forbidden(r, user)
 		return
 	}
-	if didstr == "NEWURL" || didstr == "NEWFILE" {
+	if didstr == "FETCHFILE" && !user.IsWebmaster() {
+		errpage.Forbidden(r, user)
+	}
+	if didstr == "NEWURL" || didstr == "NEWFILE" || didstr == "FETCHFILE" {
 		ud = &document.Updater{Folder: f}
 	} else {
 		if doc = document.WithID(r, document.ID(util.ParseID(didstr))); doc == nil || doc.Archived || doc.Folder != f.ID() {
@@ -56,10 +60,55 @@ func Handle(r *request.Request, fidstr, didstr string) {
 		}
 		ud = doc.Updater(r, f)
 	}
-	if ud.URL != "" || didstr == "NEWURL" {
+	if didstr == "FETCHFILE" {
+		handleFetch(r, user, f, doc, ud)
+	} else if ud.URL != "" || didstr == "NEWURL" {
 		handleURL(r, user, f, doc, ud)
 	} else {
 		handleFile(r, user, f, doc, ud)
+	}
+}
+
+func handleFetch(r *request.Request, user *person.Person, f *folder.Folder, doc *document.Document, ud *document.Updater) {
+	var nameError, urlError string
+	var validate = strings.Fields(r.Request.Header.Get("X-Up-Validate"))
+
+	if r.Method == http.MethodPost {
+		nameError = readNameForFile(r, ud)
+		urlError = readURL(r, user, ud)
+		if len(validate) == 0 && nameError == "" && urlError == "" {
+			urlError = fetchFile(ud)
+		}
+		if len(validate) == 0 && nameError == "" && urlError == "" {
+			r.Transaction(func() {
+				if ud.ID == 0 {
+					document.Create(r, ud)
+				} else {
+					doc.Update(r, ud)
+				}
+			})
+			files.GetFolder(r, user, f.FolderPath(r, files.FolderFields), 0, map[document.ID]bool{ud.ID: true})
+			os.Remove(ud.LinkTo)
+			return
+		}
+	}
+	r.HTMLNoCache()
+	if nameError != "" || urlError != "" {
+		r.WriteHeader(http.StatusUnprocessableEntity)
+	}
+	html := htmlb.HTML(r)
+	defer html.Close()
+	form := html.E("form class='form form-2col' method=POST up-main up-layer=parent up-target=main")
+	form.E("div class='formTitle formTitle-primary'>Add File (Fetch from URL)")
+	form.E("input type=hidden name=csrf value=%s", r.CSRF)
+	if len(validate) == 0 || slices.Contains(validate, "name") {
+		emitNameForFile(form, ud, nameError != "" || urlError == "", nameError)
+	}
+	if len(validate) == 0 || slices.Contains(validate, "url") {
+		emitURL(form, ud, urlError != "", urlError)
+	}
+	if len(validate) == 0 {
+		emitButtons(form, ud.ID != 0)
 	}
 }
 
@@ -206,6 +255,37 @@ func emitFile(form *htmlb.Element, focus bool, err string) {
 	if err != "" {
 		row.E("div class=formError>%s", err)
 	}
+}
+
+func fetchFile(ud *document.Updater) string {
+	var (
+		req  *http.Request
+		resp *http.Response
+		fh   *os.File
+		err  error
+	)
+	if req, err = http.NewRequest(http.MethodGet, ud.URL, nil); err != nil {
+		return fmt.Sprintf("Invalid URL: %s", err)
+	}
+	if resp, err = http.DefaultClient.Do(req); err != nil {
+		return fmt.Sprintf("Unable to fetch: %s", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Sprintf("Unable to fetch: %03d %s", resp.StatusCode, resp.Status)
+	}
+	if fh, err = os.CreateTemp(".", "fetch*"); err != nil {
+		return fmt.Sprintf("Unable to store: %s", err)
+	}
+	if _, err = io.Copy(fh, resp.Body); err != nil {
+		fh.Close()
+		os.Remove(fh.Name())
+		return fmt.Sprintf("Unable to fetch: %s", err)
+	}
+	fh.Close()
+	ud.LinkTo = fh.Name()
+	ud.URL = ""
+	return ""
 }
 
 func readNameForURL(r *request.Request, ud *document.Updater) string {

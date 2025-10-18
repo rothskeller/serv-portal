@@ -268,6 +268,9 @@ func GetFolder(r *request.Request, user *person.Person, flist []*folder.Folder, 
 		if canEdit {
 			buttons := main.E("div id=folderButtons class=formButtons")
 			buttons.E("a href=/docedit/%d/NEWFILE class='sbtn sbtn-primary' up-layer=new up-size=grow up-dismissable=key up-history=false>Add File", f.ID())
+			if user.IsWebmaster() {
+				buttons.E("a href=/docedit/%d/FETCHFILE class='sbtn sbtn-primary' up-layer=new up-size=grow up-dismissable=key up-history=false>Fetch File", f.ID())
+			}
 			buttons.E("a href=/docedit/%d/NEWURL class='sbtn sbtn-primary' up-layer=new up-size=grow up-dismissable=key up-history=false>Add Web Link", f.ID())
 			buttons.E("a href=/folderedit/NEW?parent=%d class='sbtn sbtn-primary' up-layer=new up-size=grow up-dismissable=key up-history=false>Add Folder", f.ID())
 			deltarget := main.E("div id=folderDelete style=display:none")
