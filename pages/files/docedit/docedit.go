@@ -77,7 +77,7 @@ func handleFetch(r *request.Request, user *person.Person, f *folder.Folder, doc 
 		nameError = readNameForFile(r, ud)
 		urlError = readURL(r, user, ud)
 		if len(validate) == 0 && nameError == "" && urlError == "" {
-			urlError = fetchFile(ud)
+			urlError = fetchFile(r, ud)
 		}
 		if len(validate) == 0 && nameError == "" && urlError == "" {
 			r.Transaction(func() {
@@ -257,27 +257,54 @@ func emitFile(form *htmlb.Element, focus bool, err string) {
 	}
 }
 
-func fetchFile(ud *document.Updater) string {
+func fetchFile(r *request.Request, ud *document.Updater) string {
 	var (
 		req  *http.Request
 		resp *http.Response
+		in   io.Reader
 		fh   *os.File
 		err  error
 	)
-	if req, err = http.NewRequest(http.MethodGet, ud.URL, nil); err != nil {
-		return fmt.Sprintf("Invalid URL: %s", err)
-	}
-	if resp, err = http.DefaultClient.Do(req); err != nil {
-		return fmt.Sprintf("Unable to fetch: %s", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Sprintf("Unable to fetch: %03d %s", resp.StatusCode, resp.Status)
+	// It's possible the URL is to one of our own files:  a way of copying
+	// a file from one folder to another, that's too big to download and
+	// re-upload.
+	if strings.HasPrefix(ud.URL, "https://sunnyvaleserv.org/files/") {
+		var (
+			flist   []*folder.Folder
+			docname string
+			doc     *document.Document
+		)
+		// Try to find the folder with that path.
+		if flist, docname = folder.WithPath(r, strings.TrimPrefix(ud.URL, "https://sunnyvaleserv.org"), folder.FID|folder.FName|folder.FURLName); flist == nil {
+			return "Unable to fetch: folder does not exist"
+		} else if docname == "" {
+			return "Unable to fetch: URL is not a document"
+		} else if doc = document.WithName(r, flist[len(flist)-1].ID(), docname); doc == nil {
+			return "Unable to fetch: no such document"
+		} else if doc.URL != "" {
+			return "Unable to fetch: URL is not a document"
+		} else {
+			docFH := document.Open(doc.ID)
+			in = docFH
+			defer docFH.Close()
+		}
+	} else {
+		if req, err = http.NewRequest(http.MethodGet, ud.URL, nil); err != nil {
+			return fmt.Sprintf("Invalid URL: %s", err)
+		}
+		if resp, err = http.DefaultClient.Do(req); err != nil {
+			return fmt.Sprintf("Unable to fetch: %s", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Sprintf("Unable to fetch: %03d %s", resp.StatusCode, resp.Status)
+		}
+		in = resp.Body
 	}
 	if fh, err = os.CreateTemp(".", "fetch*"); err != nil {
 		return fmt.Sprintf("Unable to store: %s", err)
 	}
-	if _, err = io.Copy(fh, resp.Body); err != nil {
+	if _, err = io.Copy(fh, in); err != nil {
 		fh.Close()
 		os.Remove(fh.Name())
 		return fmt.Sprintf("Unable to fetch: %s", err)
