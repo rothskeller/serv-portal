@@ -278,6 +278,20 @@ func (nr *namesRow) Read(r *request.Request) bool {
 		}
 		return false
 	}
+	// 2025-11 we've been seeing a bunch of spam accounts created with
+	// gibberish names.  Try to filter those out.
+	var lc, uc int
+	for _, r := range nr.login.firstName {
+		if r >= 'a' && r <= 'z' {
+			lc++
+		} else if r >= 'A' && r <= 'Z' {
+			uc++
+		}
+	}
+	if lc != 0 && uc > 2 {
+		nr.Error = "This name is invalid."
+		return false
+	}
 	return true
 }
 
