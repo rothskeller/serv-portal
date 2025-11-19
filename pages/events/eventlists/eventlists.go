@@ -52,7 +52,7 @@ func Handle(r *request.Request, eidstr string) {
 	// First, the signed-in list.
 	list := maillist.GetList(r.DBConn(), fmt.Sprintf("event-%d-signedin", eventID))
 	if list != nil && len(list.Recipients) != 0 {
-		main.E("div class=eventListsList>task-%d-signedin@SunnyvaleSERV.org", eventID)
+		main.E("div class=eventListsList>event-%d-signedin@SunnyvaleSERV.org", eventID)
 		main.E("div>This list goes to all volunteers who are recorded as having signed in for, and/or credited with participation in, any of the event tasks.")
 		emails := make([]string, 0, len(list.Recipients))
 		for email, recip := range list.Recipients {
@@ -67,7 +67,7 @@ func Handle(r *request.Request, eidstr string) {
 	// Next, the signed-up list.
 	list = maillist.GetList(r.DBConn(), fmt.Sprintf("event-%d-signedup", eventID))
 	if list != nil && len(list.Recipients) != 0 {
-		main.E("div class=eventListsList>task-%d-signedup@SunnyvaleSERV.org", eventID)
+		main.E("div class=eventListsList>event-%d-signedup@SunnyvaleSERV.org", eventID)
 		main.E("div>This list goes to all volunteers signed up for the event (any task, any shift).")
 		emails := make([]string, 0, len(list.Recipients))
 		for email, recip := range list.Recipients {
@@ -82,7 +82,7 @@ func Handle(r *request.Request, eidstr string) {
 	// Finally, the invited list.
 	list = maillist.GetList(r.DBConn(), fmt.Sprintf("event-%d-invited", eventID))
 	if list != nil && len(list.Recipients) != 0 {
-		main.E("div class=eventListsList>task-%d-invited@SunnyvaleSERV.org", eventID)
+		main.E("div class=eventListsList>event-%d-invited@SunnyvaleSERV.org", eventID)
 		main.E("div>This list goes to all volunteers in the role(s) invited to any of the event tasks.")
 		emails := make([]string, 0, len(list.Recipients))
 		for email, recip := range list.Recipients {
