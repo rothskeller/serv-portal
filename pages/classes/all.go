@@ -39,7 +39,7 @@ Taught in English
 Sunnyvale Public Library
 665 W. Olive Avenue, Sunnyvale`)
 		}
-		cgrid.E("div").E("a href=https://sunnyvale.libcal.com/event/15516589 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
+		cgrid.E("div").E("a href=https://sunnyvale.libcal.com/event/15686104 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
 		getClassesCommon(r, user, more, class.PEP)
 		cgrid = more.E("div class=classesRegisterGrid")
 		cgrid.E("div").R(r.Loc("Subscribe to our email list to be notified when additional classes are scheduled (English or Spanish)."))
