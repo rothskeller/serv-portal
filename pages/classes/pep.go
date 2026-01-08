@@ -23,17 +23,17 @@ func GetPEP(r *request.Request) {
 		text.E("p").R(r.Loc("Our <b>Personal Emergency Preparedness</b> class can help you prepare for disasters.  It will teach you about the various disasters you might face, what preparations you can make for them, and how to prioritize."))
 		classes := main.E("div class=classesRegisterGrid")
 		if r.Language == "es" {
-			classes.E("div").R(`Lunes, el 6 de enero, 6:00–8:00pm
+			classes.E("div").R(`Domingo, el 15 de marzo, 10:30am–12:30pm
 Impartido en inglés
 Biblioteca Pública de Sunnyvale
 665 W. Olive Avenue, Sunnyvale`)
 		} else {
-			classes.E("div").R(`Monday, January 5, 6:00–8:00pm
+			classes.E("div").R(`Sunday, March 15, 10:30am–12:30pm
 Taught in English
 Sunnyvale Public Library
 665 W. Olive Avenue, Sunnyvale`)
 		}
-		classes.E("div").E("a href=https://sunnyvale.libcal.com/event/15686104 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
+		classes.E("div").E("a href=https://sunnyvale.libcal.com/event/16160497 target=_blank class='sbtn sbtn-primary sbtn-small'").R(r.Loc("Sign Up"))
 		getClassesCommon(r, user, main, class.PEP)
 		classes = main.E("div class=classesRegisterGrid")
 		classes.E("div").R(r.Loc("Subscribe to our email list to be notified when additional classes are scheduled (English or Spanish)."))
