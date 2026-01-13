@@ -207,7 +207,7 @@ var possibleEditors = []struct {
 }
 
 func readEditor(r *request.Request, user *person.Person, uf *folder.Updater) {
-	vstr := r.FormValue("viewer")
+	vstr := r.FormValue("editor")
 	for _, pe := range possibleEditors {
 		if vstr == fmt.Sprintf("%d.%d", pe.org, pe.priv) {
 			if !user.HasPrivLevel(pe.org, pe.priv) {
