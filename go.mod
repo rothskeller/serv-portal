@@ -1,6 +1,6 @@
 module sunnyvaleserv.org/portal
 
-go 1.24.4
+go 1.26
 
 require (
 	github.com/arran4/golang-ical v0.0.0-20200125013057-acb7a6972c90
@@ -50,7 +50,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/tdewolff/minify/v2 v2.12.1
 	github.com/tdewolff/parse/v2 v2.6.3 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/sys v0.41.0
 	k8s.io/apimachinery v0.29.0
 	modernc.org/libc v1.16.7 // indirect
 	modernc.org/mathutil v1.4.1 // indirect

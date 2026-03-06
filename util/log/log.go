@@ -3,10 +3,10 @@ package log
 import (
 	"fmt"
 	"os"
-	"syscall"
 	"time"
 
 	"github.com/mailru/easyjson/jwriter"
+	"sunnyvaleserv.org/portal/osdep"
 	"sunnyvaleserv.org/portal/util/problem"
 )
 
@@ -47,6 +47,7 @@ func (e *Entry) Change(s string, a ...interface{}) {
 // Log saves the log entry to the log file, atomically.  If it is unable to do
 // so, it emits it to stderr instead.
 func (e *Entry) Log() {
+	const allBytes = ^uint32(0)
 	var (
 		out      jwriter.Writer
 		filename string
@@ -59,15 +60,17 @@ func (e *Entry) Log() {
 		goto FAIL
 	}
 	defer logfile.Close()
-	if err = syscall.Flock(int(logfile.Fd()), syscall.LOCK_EX); err != nil {
+	if err = osdep.WriteLock(logfile); err != nil {
 		goto FAIL
 	}
 	if _, err = out.DumpTo(logfile); err != nil {
+		osdep.Unlock(logfile)
 		// There won't be anything left in out if this fails, so we need
 		// to re-render the entry before sending it to stderr.
 		e.ToJSON(&out)
 		goto FAIL
 	}
+	osdep.Unlock(logfile)
 	if err = logfile.Close(); err != nil {
 		e.ToJSON(&out)
 		return
