@@ -27,17 +27,10 @@ var Default = Run
 func Run() {
 	mg.Deps(Assets)
 	println("Running...")
-	sh.Run(mg.GoCmd(), "run", ".")
+	sh.Run(mg.GoCmd(), "run", ".", "standalone")
 }
 
-// Build runs all build steps, resulting in a compiled portal executable.
-func Build() {
-	mg.Deps(Assets)
-	sh.Run(mg.GoCmd(), "build", ".")
-}
-
-// Install builds the server (as an FCGI executable) and all associated commands
-// and installs them.
+// Install builds the server and all associated commands and installs them.
 func Install() error {
 	mg.Deps(Assets)
 	if err := sh.Run(mg.GoCmd(), "install", "./cmd/gen-ical"); err != nil {
@@ -49,47 +42,49 @@ func Install() error {
 	if err := sh.Run(mg.GoCmd(), "install", "./cmd/rebuild-search-index"); err != nil {
 		return err
 	}
-	if err := sh.Run(mg.GoCmd(), "build", "-o", "routemail", "./maillist/routemail"); err != nil {
+	/*
+		if err := sh.Run(mg.GoCmd(), "build", "-o", "routemail", "./maillist/routemail"); err != nil {
+			return err
+		}
+		if err := os.Rename("routemail", "/home/snyserv/bin/routemail"); err != nil {
+			os.Remove("routemail")
+			return err
+		}
+		if err := sh.Run(mg.GoCmd(), "build", "-o", "mailrecv.cgi", "./maillist/mailrecv.cgi"); err != nil {
+			return err
+		}
+		if err := os.Rename("mailrecv.cgi", "/home/snyserv/sunnyvaleserv.org/mailrecv.cgi"); err != nil {
+			os.Remove("mailrecv.cgi")
+			return err
+		}
+		if err := sh.Run(mg.GoCmd(), "build", "-o", "received-text-hook", "./cmd/received-text-hook"); err != nil {
+			return err
+		}
+		if err := os.Rename("received-text-hook", "/home/snyserv/sunnyvaleserv.org/received-text-hook"); err != nil {
+			os.Remove("received-text-hook")
+			return err
+		}
+		if err := sh.Run(mg.GoCmd(), "build", "-o", "text-status-hook", "./cmd/text-status-hook"); err != nil {
+			return err
+		}
+		if err := os.Rename("text-status-hook", "/home/snyserv/sunnyvaleserv.org/text-status-hook"); err != nil {
+			os.Remove("text-status-hook")
+			return err
+		}
+		if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
+			return err
+		}
+	*/
+	if err := sh.Run("sc.exe", "stop", "serv-portal"); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s (ignored)\n", err)
+	}
+	if err := sh.Run(mg.GoCmd(), "build", "-o", `c:\serv\bin\portal.exe`, "."); err != nil {
 		return err
 	}
-	if err := os.Rename("routemail", "/home/snyserv/bin/routemail"); err != nil {
-		os.Remove("routemail")
+	sh.Run(`c:\serv\bin\portal.exe`, "-writeassets")
+	if err := sh.Run("sc.exe", "start", "serv-portal"); err != nil {
 		return err
 	}
-	if err := sh.Run(mg.GoCmd(), "build", "-o", "mailrecv.cgi", "./maillist/mailrecv.cgi"); err != nil {
-		return err
-	}
-	if err := os.Rename("mailrecv.cgi", "/home/snyserv/sunnyvaleserv.org/mailrecv.cgi"); err != nil {
-		os.Remove("mailrecv.cgi")
-		return err
-	}
-	if err := sh.Run(mg.GoCmd(), "build", "-o", "received-text-hook", "./cmd/received-text-hook"); err != nil {
-		return err
-	}
-	if err := os.Rename("received-text-hook", "/home/snyserv/sunnyvaleserv.org/received-text-hook"); err != nil {
-		os.Remove("received-text-hook")
-		return err
-	}
-	if err := sh.Run(mg.GoCmd(), "build", "-o", "text-status-hook", "./cmd/text-status-hook"); err != nil {
-		return err
-	}
-	if err := os.Rename("text-status-hook", "/home/snyserv/sunnyvaleserv.org/text-status-hook"); err != nil {
-		os.Remove("text-status-hook")
-		return err
-	}
-	if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
-		return err
-	}
-	if err := sh.Run(mg.GoCmd(), "build", "-o", "index.fcgi", "./cmd/portal.fcgi"); err != nil {
-		os.Remove("index.fcgi")
-		return err
-	}
-	if err := os.Rename("index.fcgi", "/home/snyserv/sunnyvaleserv.org/index.fcgi"); err != nil {
-		os.Remove("index.fcgi")
-		return err
-	}
-	sh.Run("killall", "-USR1", "-q", "index.fcgi")
-	sh.Run("/home/snyserv/sunnyvaleserv.org/index.fcgi", "-writeassets")
 	return nil
 }
 
@@ -375,7 +370,6 @@ import _ "embed"
 
 // Clean removes all transient build files and build products.
 func Clean() {
-	os.Remove("portal")
 	os.Remove("ui/assets/styles.css.gz")
 	os.Remove("ui/assets/script.js.gz")
 	os.Remove("ui/ui.assets.go")
