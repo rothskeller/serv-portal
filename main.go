@@ -51,7 +51,9 @@ STOP:
 
 func main() {
 	os.Chdir(`C:\SERV`)
-	if err := svc.Run("serv-portal", service{}); err != nil {
+	if len(os.Args) > 1 {
+		http.ListenAndServe("localhost:7190", server.Server)
+	} else if err := svc.Run("serv-portal", service{}); err != nil {
 		log.Fatalf("svc.Run: %s", err)
 	}
 }

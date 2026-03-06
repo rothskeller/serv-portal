@@ -60,9 +60,9 @@ func (e *Entry) Log() {
 		goto FAIL
 	}
 	defer logfile.Close()
-	if err = osdep.WriteLock(logfile); err != nil {
-		goto FAIL
-	}
+	// if err = osdep.WriteLock(logfile); err != nil {
+	// 	goto FAIL
+	// }
 	if _, err = out.DumpTo(logfile); err != nil {
 		osdep.Unlock(logfile)
 		// There won't be anything left in out if this fails, so we need
