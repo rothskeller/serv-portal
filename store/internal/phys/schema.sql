@@ -195,6 +195,13 @@ CREATE TABLE person_role (
 ) WITHOUT ROWID;
 CREATE INDEX person_role_role_idx ON person_role (role);
 
+DROP TABLE IF EXISTS redirect;
+CREATE TABLE redirect (
+  id      integer PRIMARY KEY,
+  entry   text    NOT NULL UNIQUE COLLATE NOCASE,
+  target  text    NOT NULL
+);
+
 DROP TABLE IF EXISTS role;
 CREATE TABLE role (
   id        integer PRIMARY KEY,

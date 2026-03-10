@@ -117,6 +117,7 @@ var stylesheets = []string{
 	"pages/admin/listedit/listedit.css",
 	"pages/admin/listlist/listlist.css",
 	"pages/admin/listpeople/listpeople.css",
+	"pages/admin/redirlist/redirlist.css",
 	"pages/admin/roleedit/roleedit.css",
 	"pages/admin/rolelist/rolelist.css",
 	"pages/admin/venuelist/venuelist.css",
