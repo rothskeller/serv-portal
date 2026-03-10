@@ -14,6 +14,8 @@ import (
 	"sunnyvaleserv.org/portal/pages/admin/listlist"
 	"sunnyvaleserv.org/portal/pages/admin/listpeople"
 	"sunnyvaleserv.org/portal/pages/admin/listrole"
+	"sunnyvaleserv.org/portal/pages/admin/rediredit"
+	"sunnyvaleserv.org/portal/pages/admin/redirlist"
 	"sunnyvaleserv.org/portal/pages/admin/roleedit"
 	"sunnyvaleserv.org/portal/pages/admin/rolelist"
 	"sunnyvaleserv.org/portal/pages/admin/venueedit"
@@ -50,6 +52,7 @@ import (
 	"sunnyvaleserv.org/portal/pages/texts/textview"
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store"
+	"sunnyvaleserv.org/portal/store/redirect"
 	"sunnyvaleserv.org/portal/ui"
 	"sunnyvaleserv.org/portal/util/log"
 	"sunnyvaleserv.org/portal/util/request"
@@ -141,6 +144,10 @@ func (s server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // router sends the request to the appropriate handler given its method and
 // path.
 func route(r *request.Request) {
+	if redir := redirect.WithEntry(r, r.Path); redir != nil {
+		http.Redirect(r, r.Request, redir.Target, http.StatusSeeOther)
+		return
+	}
 	c := strings.Split(r.Path[1:], "/")
 	for len(c) < 6 {
 		c = append(c, "")
@@ -167,6 +174,10 @@ func route(r *request.Request) {
 		listpeople.Get(r, c[2], c[3])
 	case c[0] == "admin" && c[1] == "lists" && c[2] != "" && c[3] == "roleedit" && c[4] != "" && c[5] == "":
 		listrole.Get(r, c[2], c[4])
+	case c[0] == "admin" && c[1] == "redirects" && c[2] == "":
+		redirlist.Get(r)
+	case c[0] == "admin" && c[1] == "redirects" && c[2] != "" && c[3] == "":
+		rediredit.Handle(r, c[2])
 	case c[0] == "admin" && c[1] == "roles" && c[2] == "":
 		rolelist.Get(r)
 	case c[0] == "admin" && c[1] == "roles" && c[2] != "" && c[3] == "":

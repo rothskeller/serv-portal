@@ -34,6 +34,7 @@ func Render(r *request.Request, user *person.Person) {
 			{Name: "Lists", URL: "/admin/lists", Target: "main"},
 			{Name: "Venues", URL: "/admin/venues", Target: "main", Active: true},
 			{Name: "Classes", URL: "/admin/classes", Target: "main"},
+			{Name: "Redirects", URL: "/admin/redirects", Target: "main"},
 		},
 	}
 	r.HTMLNoCache()
