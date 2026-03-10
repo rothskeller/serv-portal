@@ -81,7 +81,6 @@ func Install() error {
 	if err := sh.Run(mg.GoCmd(), "build", "-o", `c:\serv\bin\portal.exe`, "."); err != nil {
 		return err
 	}
-	sh.Run(`c:\serv\bin\portal.exe`, "-writeassets")
 	if err := sh.Run("sc.exe", "start", "serv-portal"); err != nil {
 		return err
 	}
