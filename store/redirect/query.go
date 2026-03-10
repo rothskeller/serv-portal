@@ -21,7 +21,7 @@ func WithID(storer phys.Storer, id ID) (r *Redirect) {
 	return r
 }
 
-const withEntrySQL = `SELECT id, target FROM redirect WHERE name=?`
+const withEntrySQL = `SELECT id, target FROM redirect WHERE entry=?`
 
 // WithEntry returns the redirect with the specified entry URL, or nil if it
 // does not exist.
