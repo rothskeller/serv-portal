@@ -27,7 +27,7 @@ func Get(r *request.Request) {
 
 func Render(r *request.Request, user *person.Person) {
 	var opts = ui.PageOpts{
-		Title:    "RedirectS",
+		Title:    "Redirects",
 		MenuItem: "admin",
 		Tabs: []ui.PageTab{
 			{Name: "Roles", URL: "/admin/roles", Target: "main"},
