@@ -271,8 +271,8 @@ func showMonthView(r *request.Request, main *htmlb.Element, user, p *person.Pers
 	gtable = gtable.E("tbody")
 	gtable.E("tr").E("td>In general, time you spend helping or preparing to help the community as part of SERV.  For example:").
 		P().E("td>In general, time you spend preparing yourself or your household; or time you spend becoming a SERV volunteer. For example:")
-	gtable.E("tr").E("td>Organizing or teaching CERT Basic, Listos, PEP, or SNAP events").
-		P().E("td>Attending CERT Basic, Listos, PEP, or ham cram classes")
+	gtable.E("tr").E("td>Organizing or teaching CERT Basic, PEP, or SNAP events").
+		P().E("td>Attending CERT Basic, PEP, or ham cram classes")
 	gtable.E("tr").E("td>Preparing and maintaining a CERT or SARES “go kit” for deployment").
 		P().E("td>Preparing and maintaining a personal or household evacuation kit")
 	gtable.E("tr").E("td>SERV team meetings, radio nets, and drills; CERT continuing education seminars; SARES or county ARES training classes").

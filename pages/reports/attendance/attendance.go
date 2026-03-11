@@ -434,10 +434,10 @@ func renderReport(main *htmlb.Element, rows []row, columns []column, params para
 }
 
 var orgNames = map[enum.Org]string{
-	enum.OrgAdmin:  "Admin",
-	enum.OrgCERTD:  "CERT-D",
-	enum.OrgCERTT:  "CERT-T",
-	enum.OrgListos: "Listos",
-	enum.OrgSARES:  "SARES",
-	enum.OrgSNAP:   "SNAP",
+	enum.OrgAdmin: "Admin",
+	enum.OrgCERTD: "CERT-D",
+	enum.OrgCERTT: "CERT-T",
+	enum.OrgPEP:   "PEP",
+	enum.OrgSARES: "SARES",
+	enum.OrgSNAP:  "SNAP",
 }

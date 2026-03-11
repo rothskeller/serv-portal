@@ -16,8 +16,8 @@ const (
 	OrgCERTD
 	// OrgCERTT is the CERT Training Committee.
 	OrgCERTT
-	// OrgListos is the Listos Team.
-	OrgListos
+	// OrgPEP is the PEP Team.
+	OrgPEP
 	// OrgSARES is the SARES organization.
 	OrgSARES
 	// OrgSNAP is the SNAP Team.
@@ -36,8 +36,8 @@ func (o Org) String() string {
 		return "CERT-D"
 	case OrgCERTT:
 		return "CERT-T"
-	case OrgListos:
-		return "Listos"
+	case OrgPEP:
+		return "PEP"
 	case OrgSARES:
 		return "SARES"
 	case OrgSNAP:
@@ -56,8 +56,8 @@ func (o Org) Label() string {
 		return "CERT Deployment"
 	case OrgCERTT:
 		return "CERT Training"
-	case OrgListos:
-		return "Listos Team"
+	case OrgPEP:
+		return "PEP Team"
 	case OrgSARES:
 		return "SARES Members"
 	case OrgSNAP:
@@ -77,8 +77,8 @@ func ParseOrg(s string) (Org, error) {
 		return OrgCERTD, nil
 	case "CERT-T":
 		return OrgCERTT, nil
-	case "Listos":
-		return OrgListos, nil
+	case "PEP":
+		return OrgPEP, nil
 	case "SARES":
 		return OrgSARES, nil
 	case "SNAP":
@@ -96,7 +96,7 @@ func (o Org) Valid() bool {
 }
 
 // AllOrgs is the ordered list of Orgs, which is used for iteration.
-var AllOrgs = []Org{OrgAdmin, OrgCERTD, OrgCERTT, OrgListos, OrgSARES, OrgSNAP}
+var AllOrgs = []Org{OrgAdmin, OrgCERTD, OrgCERTT, OrgPEP, OrgSARES, OrgSNAP}
 
 // MembersCanViewContactInfo returns whether Members of the receiver Org can
 // view contact info for members of the Org.

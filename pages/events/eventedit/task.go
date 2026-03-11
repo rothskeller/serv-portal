@@ -208,12 +208,12 @@ func emitTaskName(form *htmlb.Element, ut *task.Updater, focus bool, err string)
 }
 
 var orgNames = map[enum.Org]string{
-	enum.OrgAdmin:  "SERV Admin",
-	enum.OrgCERTD:  "CERT Deployment",
-	enum.OrgCERTT:  "CERT Training",
-	enum.OrgListos: "Listos",
-	enum.OrgSARES:  "SARES",
-	enum.OrgSNAP:   "SNAP",
+	enum.OrgAdmin: "SERV Admin",
+	enum.OrgCERTD: "CERT Deployment",
+	enum.OrgCERTT: "CERT Training",
+	enum.OrgPEP:   "PEP",
+	enum.OrgSARES: "SARES",
+	enum.OrgSNAP:  "SNAP",
 }
 
 func readOrg(r *request.Request, user *person.Person, ut *task.Updater) string {

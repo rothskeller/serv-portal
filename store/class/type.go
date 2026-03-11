@@ -37,7 +37,7 @@ func (ctype Type) Org() enum.Org {
 	case CERTBasic:
 		return enum.OrgCERTT
 	case PEP:
-		return enum.OrgListos
+		return enum.OrgPEP
 	case Moulage:
 		return enum.OrgCERTT
 	default:

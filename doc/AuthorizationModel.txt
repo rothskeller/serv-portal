@@ -4,7 +4,7 @@ organizations, privilege levels, roles, and lists.
 People are individuals who are, or have at some point been, affiliated with
 SERV.  Each person holds zero or more roles, and is on zero or more lists.
 
-Organizations are the SERV organizations: CERT, Listos, SARES, and SNAP.  For
+Organizations are the SERV organizations: CERT, PEP, SARES, and SNAP.  For
 convenience, CERT is separated into CERT-Deployment and CERT-Training.  There is
 also a special "Admin" organization.
 

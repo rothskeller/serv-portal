@@ -43,8 +43,8 @@ func showRoles(r *request.Request, main *htmlb.Element, user, p *person.Person) 
 			}
 		case enum.OrgCERTD, enum.OrgCERTT:
 			badge = "cert"
-		case enum.OrgListos:
-			badge = "listos"
+		case enum.OrgPEP:
+			badge = "pep-team"
 		case enum.OrgSARES:
 			badge = "sares"
 		case enum.OrgSNAP:

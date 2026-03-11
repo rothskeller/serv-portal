@@ -190,9 +190,9 @@ func emitInterests(r *request.Request, form *htmlb.Element, interests []string) 
 	box.E("input type=checkbox name=interests value=SNAP class=s-check label=%s",
 		r.Loc("Neighborhood Preparedness Facilitator"),
 		slices.Contains(interests, "SNAP"), "checked")
-	box.E("input type=checkbox name=interests value=Listos class=s-check label=%s",
+	box.E("input type=checkbox name=interests value=PEP class=s-check label=%s",
 		r.Loc("Preparedness Class Instructor"),
-		slices.Contains(interests, "Listos"), "checked")
+		slices.Contains(interests, "PEP"), "checked")
 	box.E("input type=checkbox name=interests value=CERT-T class=s-check label=%s",
 		r.Loc("CERT Basic Training Instructor"),
 		slices.Contains(interests, "CERT-T"), "checked")

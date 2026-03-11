@@ -71,12 +71,12 @@ func handleGetRoles(r *request.Request, user, p *person.Person) {
 }
 
 var orgLabels = map[enum.Org]string{
-	enum.OrgAdmin:  "Administrative Roles",
-	enum.OrgCERTD:  "CERT Deployment Team Roles",
-	enum.OrgCERTT:  "CERT Training Roles",
-	enum.OrgListos: "Listos Roles",
-	enum.OrgSARES:  "SARES Roles",
-	enum.OrgSNAP:   "SNAP Roles",
+	enum.OrgAdmin: "Administrative Roles",
+	enum.OrgCERTD: "CERT Deployment Team Roles",
+	enum.OrgCERTT: "CERT Training Roles",
+	enum.OrgPEP:   "PEP Roles",
+	enum.OrgSARES: "SARES Roles",
+	enum.OrgSNAP:  "SNAP Roles",
 }
 
 func handleGetOrgRoles(r *request.Request, form *htmlb.Element, held map[role.ID]bool, org enum.Org) {
