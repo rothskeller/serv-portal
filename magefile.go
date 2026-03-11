@@ -33,9 +33,6 @@ func Run() {
 // Install builds the server and all associated commands and installs them.
 func Install() error {
 	mg.Deps(Assets)
-	if err := sh.Run(mg.GoCmd(), "install", "./cmd/gen-ical"); err != nil {
-		return err
-	}
 	if err := sh.Run(mg.GoCmd(), "install", "./cmd/log-report"); err != nil {
 		return err
 	}
