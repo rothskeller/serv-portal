@@ -67,12 +67,12 @@ func (a Assignment) label() string {
 var allAssignments = []Assignment{Admin, CERT, Listos, SARES, SNAP}
 
 var OrgToAssignment = map[enum.Org]Assignment{
-	enum.OrgAdmin:  Admin,
-	enum.OrgCERTD:  CERT,
-	enum.OrgCERTT:  CERT,
-	enum.OrgListos: Listos,
-	enum.OrgSARES:  SARES,
-	enum.OrgSNAP:   SNAP,
+	enum.OrgAdmin: Admin,
+	enum.OrgCERTD: CERT,
+	enum.OrgCERTT: CERT,
+	enum.OrgPEP:   Listos,
+	enum.OrgSARES: SARES,
+	enum.OrgSNAP:  SNAP,
 }
 
 var httpClient http.Client

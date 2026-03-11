@@ -38,7 +38,7 @@ func AboutPage(r *request.Request) {
 		l2 = l1.E("ul")
 		l2.E("li").R(r.Loc("logs of web site visits and actions taken"))
 		main.E("p").R(r.Loc("All of the above information is available to the paid and volunteer staff of OES and their delegates, including the web site maintainers.  Private information is not available to anyone else."))
-		main.E("p").R(r.Loc("If you are a student in an OES-organized class, such as CERT, Listos, or PEP, your basic and restricted information may be shared with the class instructors as long as the class is in progress."))
+		main.E("p").R(r.Loc("If you are a student in an OES-organized class, such as CERT or PEP, your basic and restricted information may be shared with the class instructors as long as the class is in progress."))
 		main.E("p").R(r.Loc("If you are a volunteer in a SERV volunteer group, your basic information may be shared with other volunteers in that group, and your restricted information may be shared with the leaders of that group."))
 		main.E("p").R(r.Loc("If you are a volunteer in a SERV volunteer group, and you have successfully completed Live Scan fingerprinting and/or background checks, that fact (with no detail other than the date) may be shared with the leaders of your volunteer group.  A negative result will not be shared with them."))
 		main.E("p").R(r.Loc("If you have sent any email or text messages (targeted information) through the site, they may be shared with any member of the group(s) to which you sent them, including members who join those groups after you send the messages."))

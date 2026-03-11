@@ -23,7 +23,7 @@ var orgToAssignment = map[enum.Org]int{
 	enum.OrgAdmin:  1052,
 	enum.OrgCERTD:  1047,
 	enum.OrgCERTT:  1047,
-	enum.OrgListos: 1048,
+	enum.OrgPEP: 1048,
 	enum.OrgSARES:  399,
 	enum.OrgSNAP:   373,
 }
@@ -32,7 +32,7 @@ var assnToName = map[int]string{
 	373:  "SNAP",
 	399:  "SARES",
 	1047: "CERT",
-	1048: "LISTOS",
+	1048: "PEP",
 	1052: "Admin",
 }
 var assnToLabel = map[int]string{ // as shown in Volgistics
@@ -193,7 +193,7 @@ var reportTemplate = template.Must(template.New("").Parse(`
         <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ index .ByGroup 1047 }}</td>
       </tr>{{ $even = not $even }}
       <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">
-        <td style="padding:0.2em">LISTOS</td>
+        <td style="padding:0.2em">PEP</td>
         <td style="text-align:right;padding:0.2em 0.2em 0.2em 1em">{{ index .ByGroup 1048 }}</td>
       </tr>{{ $even = not $even }}
       <tr style="background-color:{{ if $even }}#A8D08D{{ else }}#BFBFBF{{ end }}">

@@ -375,10 +375,10 @@ func renderCSVButton(main *htmlb.Element, data []*rowdata) {
 }
 
 var orgBadgeLabels = map[enum.Org]string{
-	enum.OrgAdmin:  "A",
-	enum.OrgCERTD:  "D",
-	enum.OrgCERTT:  "T",
-	enum.OrgListos: "L",
-	enum.OrgSARES:  "S",
-	enum.OrgSNAP:   "S",
+	enum.OrgAdmin: "A",
+	enum.OrgCERTD: "D",
+	enum.OrgCERTT: "T",
+	enum.OrgPEP:   "P",
+	enum.OrgSARES: "S",
+	enum.OrgSNAP:  "S",
 }

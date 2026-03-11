@@ -74,10 +74,10 @@ func homePrograms(r *request.Request, blocks *htmlb.Element) {
 	cert.E("div class=homeProgramBadge").
 		E("img id=homeProgramBadgeCERT src=%s", ui.AssetURL("cert-badge.png"))
 	cert.E("div class=homeProgramSlug id=homeProgramSlugCERT").R(r.Loc("Community Emergency Response Team"))
-	listos := programs.E("a href=/listos class=homeProgram id=homeProgramListos")
-	listos.E("div class=homeProgramBadge").
-		E("img id=homeProgramBadgeListos src=%s", ui.AssetURL("listos-badge.png"))
-	listos.E("div class=homeProgramSlug id=homeProgramSlugListos").R(r.Loc("Listos California: Preparedness Education"))
+	pep := programs.E("a href=/pep-program class=homeProgram id=homeProgramPEP")
+	pep.E("div class=homeProgramBadge").
+		E("img id=homeProgramBadgePEP src=%s", ui.AssetURL("pep-team-badge.png"))
+	pep.E("div class=homeProgramSlug id=homeProgramSlugPEP").R(r.Loc("PEP: Preparedness Education"))
 	sares := programs.E("a href=/sares class=homeProgram id=homeProgramSARES")
 	sares.E("div class=homeProgramBadge").
 		E("img id=homeProgramBadgeSARES src=%s", ui.AssetURL("sares-badge.png"))

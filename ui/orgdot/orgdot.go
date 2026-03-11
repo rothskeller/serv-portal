@@ -16,8 +16,8 @@ func OrgDot(r *request.Request, elm *htmlb.Element, org enum.Org) {
 		elm.E("span class=orgdot style='border:2px solid #3cb44b;background-color:white' title=%s", r.Loc("CERT Deployment"))
 	case enum.OrgCERTT:
 		elm.E("span class=orgdot style=background-color:#3cb44b title=%s", r.Loc("CERT Training"))
-	case enum.OrgListos:
-		elm.E("span class=orgdot style=background-color:#f58231 title=Listos")
+	case enum.OrgPEP:
+		elm.E("span class=orgdot style=background-color:#f58231 title=PEP")
 	case enum.OrgSARES:
 		elm.E("span class=orgdot style=background-color:#ffe119 title=SARES")
 	case enum.OrgSNAP:

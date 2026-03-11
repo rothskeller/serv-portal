@@ -250,7 +250,7 @@ func route(r *request.Request) {
 	case c[0] == "jserror":
 		errpage.PostJSError(r)
 	case strings.EqualFold(c[0], "listos") && c[1] == "":
-		static.ListosPage(r)
+		static.PEPProgramPage(r)
 	case c[0] == "login":
 		login.HandleLogin(r)
 	case c[0] == "logout":
@@ -291,6 +291,8 @@ func route(r *request.Request) {
 		personedit.HandleVRegister(r, c[1])
 	case (strings.EqualFold(c[0], "pep") || strings.EqualFold(c[0], "ppde")) && c[1] == "":
 		classes.GetPEP(r)
+	case c[0] == "pep-program" && c[1] == "":
+		static.PEPProgramPage(r)
 	case c[0] == "pep" && c[1] == "notify" && c[2] == "":
 		classes.HandleNotify(r, "pep")
 	case c[0] == "privacy-policy" && c[1] == "":
