@@ -30,6 +30,7 @@ import (
 	"sunnyvaleserv.org/portal/pages/events/eventscal"
 	"sunnyvaleserv.org/portal/pages/events/eventslist"
 	"sunnyvaleserv.org/portal/pages/events/eventview"
+	"sunnyvaleserv.org/portal/pages/events/icsfile"
 	"sunnyvaleserv.org/portal/pages/events/proxysignup"
 	"sunnyvaleserv.org/portal/pages/events/signups"
 	"sunnyvaleserv.org/portal/pages/events/tasklists"
@@ -186,6 +187,8 @@ func route(r *request.Request) {
 		venuelist.Get(r)
 	case c[0] == "admin" && c[1] == "venues" && c[2] != "" && c[3] == "":
 		venueedit.Handle(r, c[2])
+	case c[0] == "calendar.ics" && c[1] == "":
+		icsfile.Get(r)
 	case strings.EqualFold(c[0], "cert") && c[1] == "":
 		static.CERTPage(r)
 	case strings.EqualFold(c[0], "cert-basic") && c[1] == "":

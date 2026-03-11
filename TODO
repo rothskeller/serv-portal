@@ -1,3 +1,10 @@
+Migration into city infrastructure:
+  Generate and mail log reports
+  Email list handling
+  Text message handling
+  Volgistics interactions and volunteer hours
+  Some sort of backup solution
+
 Features to add:
   Unsubscribe page
   Create person
