@@ -34,19 +34,7 @@ func main() {
 		qpw                 *quotedprintable.Writer
 		err                 error
 	)
-	switch os.Getenv("HOME") {
-	case "/home/snyserv":
-		if err = os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
-		}
-	case "/Users/stever":
-		if err = os.Chdir("/Users/stever/src/serv-portal/data"); err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
-		}
-	}
-	if err != nil {
+	if err = os.Chdir(`C:\SERV`); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}

@@ -33,7 +33,7 @@ func Run() {
 // Install builds the server and all associated commands and installs them.
 func Install() error {
 	mg.Deps(Assets)
-	if err := sh.Run(mg.GoCmd(), "install", "./cmd/log-report"); err != nil {
+	if err := sh.Run(mg.GoCmd(), "build", "-o", `C:\serv\bin\log-report.exe`, "./cmd/log-report"); err != nil {
 		return err
 	}
 	if err := sh.Run(mg.GoCmd(), "install", "./cmd/rebuild-search-index"); err != nil {
