@@ -9,7 +9,7 @@ import (
 
 // UpdaterFields are the fields that must be fetched prior to creating an
 // Updater.
-const UpdaterFields = FID | FType | FStart | FEnDesc | FEsDesc | FLimit | FReferrals
+const UpdaterFields = FID | FType | FStart | FEnDesc | FEsDesc | FLimit | FReferrals | FRegURL
 
 // Updater is a structure that can be filled with data for a new or changed
 // class, and then later applied.  For creating new classes, it can simply be
@@ -24,6 +24,7 @@ type Updater struct {
 	EsDesc    string
 	Limit     uint
 	Referrals []uint
+	RegURL    string
 }
 
 // Updater returns a new Updater for the specified class, with its data matching
@@ -40,10 +41,11 @@ func (c *Class) Updater() *Updater {
 		EsDesc:    c.esDesc,
 		Limit:     c.limit,
 		Referrals: slices.Clone(c.referrals),
+		RegURL:    c.regURL,
 	}
 }
 
-const createSQL = `INSERT INTO class (id, type, start, en_desc, es_desc, elimit, referrals) VALUES (?,?,?,?,?,?,?)`
+const createSQL = `INSERT INTO class (id, type, start, en_desc, es_desc, elimit, referrals, regurl) VALUES (?,?,?,?,?,?,?,?)`
 
 // Create creates a new class, with the data in the Updater.
 func Create(storer phys.Storer, u *Updater) (c *Class) {
@@ -63,7 +65,7 @@ func Create(storer phys.Storer, u *Updater) (c *Class) {
 	return c
 }
 
-const updateSQL = `UPDATE class SET type=?, start=?, en_desc=?, es_desc=?, elimit=?, referrals=? WHERE id=?`
+const updateSQL = `UPDATE class SET type=?, start=?, en_desc=?, es_desc=?, elimit=?, referrals=?, regurl=? WHERE id=?`
 
 // Update updates the existing class, with the data in the Updater.
 func (c *Class) Update(storer phys.Storer, u *Updater) {
@@ -91,6 +93,7 @@ func bindUpdater(stmt *phys.Stmt, u *Updater) {
 		}
 	}
 	stmt.BindInt(int(refmask))
+	stmt.BindText(u.RegURL)
 }
 
 func (c *Class) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
@@ -133,6 +136,9 @@ func (c *Class) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
 			}
 			c.referrals[ref] = ur
 		}
+	}
+	if u.RegURL != c.regURL {
+		phys.Audit(storer, "%s:: regURL = %q", context, u.RegURL)
 	}
 }
 

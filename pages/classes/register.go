@@ -48,7 +48,7 @@ func HandleRegister(r *request.Request, cidstr string) {
 		return
 	}
 	// Get the class information and the current registrations by this user.
-	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), class.UpdaterFields); c == nil {
+	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), class.UpdaterFields); c == nil || c.RegURL() != "" {
 		errpage.NotFound(r, user)
 		return
 	}

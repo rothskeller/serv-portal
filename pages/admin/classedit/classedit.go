@@ -91,6 +91,15 @@ func Handle(r *request.Request, idstr string) {
 			},
 			ValueP: &uc.Limit,
 		},
+		&form.InputRow{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditRegURL",
+				Label: "External URL",
+				Help:  "URL to external registration page",
+			},
+			Name:   "regURL",
+			ValueP: &uc.RegURL,
+		},
 		&referralsRow{form.LabeledRow{Label: "Referrals"}, uc},
 	}
 	f.Buttons = []*form.Button{{
@@ -101,6 +110,15 @@ func Handle(r *request.Request, idstr string) {
 		f.Buttons = append(f.Buttons, &form.Button{
 			Name: "delete", Label: "Delete", Style: "danger",
 			OnClick: func() bool { return deleteClass(r, user, c) },
+		})
+	}
+	if uc.ID != 0 {
+		f.Buttons = append(f.Buttons, &form.Button{
+			Name: "copy", Label: "Save Copy", Style: "secondary",
+			OnClick: func() bool {
+				uc.ID = 0
+				return saveClass(r, user, nil, uc)
+			},
 		})
 	}
 	f.Handle(r)

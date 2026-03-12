@@ -20,6 +20,7 @@ const (
 	FEsDesc
 	FLimit
 	FReferrals
+	FRegURL
 )
 
 // Class describes an instance of a class that we offer.
@@ -35,6 +36,7 @@ type Class struct {
 	esDesc    string
 	limit     uint
 	referrals []uint
+	regURL    string
 }
 
 // Clone creates a clone of the class.

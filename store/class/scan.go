@@ -38,6 +38,10 @@ func ColumnList(sb *strings.Builder, fields Fields) {
 		sb.WriteString(sep())
 		sb.WriteString("c.referrals")
 	}
+	if fields&FRegURL != 0 {
+		sb.WriteString(sep())
+		sb.WriteString("c.regurl")
+	}
 }
 
 // Scan reads columns corresponding to the specified fields from the specified
@@ -67,6 +71,9 @@ func (c *Class) Scan(stmt *phys.Stmt, fields Fields) {
 		for _, ref := range AllReferrals {
 			c.referrals[ref] = uint((refmask >> (ref * 8)) & 0xFF)
 		}
+	}
+	if fields&FRegURL != 0 {
+		c.regURL = stmt.ColumnText()
 	}
 	c.fields |= fields
 }

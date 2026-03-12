@@ -68,3 +68,12 @@ func (c *Class) Referrals() []uint {
 	}
 	return c.referrals
 }
+
+// RegURL is the registration URL for the class, if registrations are handled on
+// a different website.  It is empty when this site handles registrations.
+func (c *Class) RegURL() string {
+	if c.fields&FRegURL == 0 {
+		panic("Class.RegURL called without having fetched FRegURL")
+	}
+	return c.regURL
+}
