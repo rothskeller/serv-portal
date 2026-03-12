@@ -112,6 +112,15 @@ func Handle(r *request.Request, idstr string) {
 			OnClick: func() bool { return deleteClass(r, user, c) },
 		})
 	}
+	if uc.ID != 0 {
+		f.Buttons = append(f.Buttons, &form.Button{
+			Name: "copy", Label: "Save Copy", Style: "secondary",
+			OnClick: func() bool {
+				uc.ID = 0
+				return saveClass(r, user, c, uc)
+			},
+		})
+	}
 	f.Handle(r)
 }
 
