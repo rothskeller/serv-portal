@@ -27,7 +27,7 @@ func getClassesCommon(r *request.Request, user *person.Person, main *htmlb.Eleme
 			classes.E("div").R(c.EnDesc())
 		}
 		if c.RegURL() != "" {
-			classes.E("div").E("a href=%s target=_blank", c.RegURL()).R(r.Loc("Sign Up"))
+			classes.E("div").E("a href=%s target=_blank class='sbtn sbtn-primary sbtn-small'", c.RegURL()).R(r.Loc("Sign Up"))
 		} else if user.HasPrivLevel(ctype.Org(), enum.PrivLeader) {
 			classes.E("div").E("a href=/classes/%d/reglist up-target=main class='sbtn sbtn-primary sbtn-small'>Registrations", c.ID())
 		} else if classreg.ClassHasWaitlist(r, c.ID()) || classreg.ClassIsFull(r, c.ID()) {
