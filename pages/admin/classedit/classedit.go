@@ -117,7 +117,7 @@ func Handle(r *request.Request, idstr string) {
 			Name: "copy", Label: "Save Copy", Style: "secondary",
 			OnClick: func() bool {
 				uc.ID = 0
-				return saveClass(r, user, c, uc)
+				return saveClass(r, user, nil, uc)
 			},
 		})
 	}
