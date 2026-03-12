@@ -17,7 +17,7 @@ func getClassesCommon(r *request.Request, user *person.Person, main *htmlb.Eleme
 	if r.Language == "es" {
 		langFlag = class.FEsDesc
 	}
-	class.AllFuture(r, ctype, class.FID|class.FLimit|class.FStart|langFlag, func(c *class.Class) {
+	class.AllFuture(r, ctype, class.FID|class.FLimit|class.FStart|class.FRegURL|langFlag, func(c *class.Class) {
 		if classes == nil {
 			classes = main.E("div class=classesRegisterGrid")
 		}
@@ -26,7 +26,9 @@ func getClassesCommon(r *request.Request, user *person.Person, main *htmlb.Eleme
 		} else {
 			classes.E("div").R(c.EnDesc())
 		}
-		if user.HasPrivLevel(ctype.Org(), enum.PrivLeader) {
+		if c.RegURL() != "" {
+			classes.E("div").E("a href=%s target=_blank", c.RegURL()).R(r.Loc("Sign Up"))
+		} else if user.HasPrivLevel(ctype.Org(), enum.PrivLeader) {
 			classes.E("div").E("a href=/classes/%d/reglist up-target=main class='sbtn sbtn-primary sbtn-small'>Registrations", c.ID())
 		} else if classreg.ClassHasWaitlist(r, c.ID()) || classreg.ClassIsFull(r, c.ID()) {
 			d := classes.E("div")

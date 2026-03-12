@@ -14,7 +14,7 @@ import (
 )
 
 func GetRegList(r *request.Request, cidstr string) {
-	const classFields = class.FStart | class.FLimit | class.FReferrals | class.FType
+	const classFields = class.FStart | class.FLimit | class.FReferrals | class.FType | class.FRegURL
 	const classregFields = classreg.FFirstName | classreg.FLastName | classreg.FEmail | classreg.FCellPhone | classreg.FRegisteredBy | classreg.FPerson | classreg.FWaitlist
 	var (
 		user     *person.Person
@@ -26,7 +26,7 @@ func GetRegList(r *request.Request, cidstr string) {
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
 	}
-	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), classFields); c == nil {
+	if c = class.WithID(r, class.ID(util.ParseID(cidstr)), classFields); c == nil || c.RegURL() != "" {
 		errpage.NotFound(r, user)
 	}
 	if !user.HasPrivLevel(c.Type().Org(), enum.PrivLeader) {

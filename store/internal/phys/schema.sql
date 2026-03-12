@@ -6,7 +6,8 @@ CREATE TABLE class (
   en_desc   text    NOT NULL,
   es_desc   text    NOT NULL,
   elimit    integer NOT NULL CHECK (elimit >= 0),
-  referrals integer NOT NULL
+  referrals integer NOT NULL,
+  regurl    text
 );
 CREATE UNIQUE INDEX class_start_idx ON class (start, type);
 
