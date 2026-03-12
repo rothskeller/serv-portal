@@ -3,6 +3,7 @@ package sendmail
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	aconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -37,6 +38,7 @@ func SendMessage(ctx context.Context, from string, to []string, body []byte) (er
 		conf   aws.Config
 		client *ses.Client
 	)
+	os.Setenv("AWS_CONFIG_FILE", `C:\serv\aws-config`)
 	conf, _ = aconfig.LoadDefaultConfig(ctx, aconfig.WithCredentialsProvider(aws.CredentialsProviderFunc(func(_ context.Context) (aws.Credentials, error) {
 		return aws.Credentials{
 			AccessKeyID:     config.Get("sendmailAccessKey"),
