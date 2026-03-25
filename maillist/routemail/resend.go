@@ -70,7 +70,7 @@ func sendListEmail(tf *os.File, messageID string, list *maillist.List, md *mailM
 	}
 	tstamp := time.Now().Format(time.RFC3339)
 	fmt.Fprintf(tf, "L %s %s\n", tstamp, list.Name)
-	tstamp = tstamp[:len(tstamp)-6] // remove time zone
+	tstamp = strings.ReplaceAll(tstamp[:len(tstamp)-6], ":", ".") // remove time zone and colons
 	dirname := filepath.Join("maillist", list.Name)
 	if err := os.MkdirAll(dirname, 0777); err != nil {
 		log.Fatalf("ERROR: creating %s: %s", dirname, err)
