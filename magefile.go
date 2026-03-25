@@ -54,20 +54,6 @@ func Install() error {
 			os.Remove("mailrecv.cgi")
 			return err
 		}
-		if err := sh.Run(mg.GoCmd(), "build", "-o", "received-text-hook", "./cmd/received-text-hook"); err != nil {
-			return err
-		}
-		if err := os.Rename("received-text-hook", "/home/snyserv/sunnyvaleserv.org/received-text-hook"); err != nil {
-			os.Remove("received-text-hook")
-			return err
-		}
-		if err := sh.Run(mg.GoCmd(), "build", "-o", "text-status-hook", "./cmd/text-status-hook"); err != nil {
-			return err
-		}
-		if err := os.Rename("text-status-hook", "/home/snyserv/sunnyvaleserv.org/text-status-hook"); err != nil {
-			os.Remove("text-status-hook")
-			return err
-		}
 		if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
 			return err
 		}
