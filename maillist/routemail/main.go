@@ -38,6 +38,7 @@ func main() {
 		conf aws.Config
 		err  error
 	)
+	os.Setenv("AWS_CONFIG_FILE", `C:\serv\aws-config`)
 	// Move to maillist directory.
 	if err = os.Chdir(`C:\serv`); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: chdir data: %s\n", err)
