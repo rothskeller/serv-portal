@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime/quotedprintable"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -44,7 +45,7 @@ func main() {
 		now := time.Now()
 		date = time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, time.Local).Format("2006-01-02")
 	}
-	filename = "log/" + date[0:7]
+	filename = filepath.Join("log", date[0:7])
 	if file, err = os.Open(filename); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)

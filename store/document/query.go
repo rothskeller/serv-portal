@@ -3,6 +3,7 @@ package document
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"sunnyvaleserv.org/portal/store/folder"
 	"sunnyvaleserv.org/portal/store/internal/phys"
@@ -42,7 +43,7 @@ func WithName(storer phys.Storer, fid folder.ID, name string) (d *Document) {
 // Open returns an open file handle to the specified document.  It must be
 // closed by the caller.
 func Open(did ID) (fh *os.File) {
-	var fname = fmt.Sprintf("documents/%02d/%02d", did/100, did%100)
+	var fname = filepath.Join("documents", fmt.Sprintf("%02d", did/100), fmt.Sprintf("%02d", did%100))
 	var err error
 	if fh, err = os.OpenFile(fname, os.O_RDONLY, 0); err != nil {
 		panic(fmt.Sprintf("document file %d not found in file system: %s", did, err))

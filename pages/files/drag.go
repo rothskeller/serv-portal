@@ -199,7 +199,7 @@ func handleDropFile(r *request.Request, f *folder.Folder, file *multipart.FileHe
 func cleanDocName(r *request.Request, ud *document.Updater) {
 	ud.Name = strings.TrimSpace(ud.Name)
 	if ud.URL == "" {
-		ud.Name = strings.NewReplacer("/", "", ":", "").Replace(ud.Name)
+		ud.Name = strings.NewReplacer("/", "", ":", "", `\`, "").Replace(ud.Name)
 		ud.Name = strings.TrimLeft(ud.Name, ". \t\f\r\n")
 	}
 	if ud.Name == "" {
@@ -214,7 +214,7 @@ func cleanDocName(r *request.Request, ud *document.Updater) {
 // no illegal characters, and unique within its parent folder.
 func cleanFolderName(r *request.Request, uf *folder.Updater) {
 	uf.Name = strings.TrimSpace(uf.Name)
-	uf.Name = strings.NewReplacer("/", "", ":", "").Replace(uf.Name)
+	uf.Name = strings.NewReplacer("/", "", ":", "", `\`, "").Replace(uf.Name)
 	uf.Name = strings.TrimLeft(uf.Name, ". \t\f\r\n")
 	if uf.Name == "" {
 		uf.Name = "Folder"

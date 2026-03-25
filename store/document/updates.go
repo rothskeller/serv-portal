@@ -3,6 +3,7 @@ package document
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"sunnyvaleserv.org/portal/store/folder"
 	"sunnyvaleserv.org/portal/store/internal/phys"
@@ -64,17 +65,17 @@ func Create(storer phys.Storer, u *Updater) (d *Document) {
 		if u.LinkTo != "" {
 			panic("specify exactly one of URL, Contents, or LinkTo")
 		}
-		if err := os.MkdirAll(fmt.Sprintf("documents/%02d", d.ID/100), 0777); err != nil {
+		if err := os.MkdirAll(filepath.Join("documents", fmt.Sprintf("%02d", d.ID/100)), 0777); err != nil {
 			panic(err)
 		}
-		if err := os.WriteFile(fmt.Sprintf("documents/%02d/%02d", d.ID/100, d.ID%100), u.Contents, 0666); err != nil {
+		if err := os.WriteFile(filepath.Join("documents", fmt.Sprintf("%02d", d.ID/100), fmt.Sprintf("%02d", d.ID%100)), u.Contents, 0666); err != nil {
 			panic(err)
 		}
 	case u.LinkTo != "":
-		if err := os.MkdirAll(fmt.Sprintf("documents/%02d", d.ID/100), 0777); err != nil {
+		if err := os.MkdirAll(filepath.Join("documents", fmt.Sprintf("%02d", d.ID/100)), 0777); err != nil {
 			panic(err)
 		}
-		if err := os.Link(u.LinkTo, fmt.Sprintf("documents/%02d/%02d", d.ID/100, d.ID%100)); err != nil {
+		if err := os.Link(u.LinkTo, filepath.Join("documents", fmt.Sprintf("%02d", d.ID/100), fmt.Sprintf("%02d", d.ID%100))); err != nil {
 			panic(err)
 		}
 	default:
