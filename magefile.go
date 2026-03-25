@@ -54,10 +54,10 @@ func Install() error {
 			os.Remove("mailrecv.cgi")
 			return err
 		}
-		if err := sh.Run(mg.GoCmd(), "install", "./cmd/volunteer-hours"); err != nil {
-			return err
-		}
 	*/
+	if err := sh.Run(mg.GoCmd(), "build", "-o", `C:\serv\bin\volunteer-hours.exe`, "./cmd/volunteer-hours"); err != nil {
+		return err
+	}
 	if err := sh.Run("sc.exe", "stop", "serv-portal"); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s (ignored)\n", err)
 	}

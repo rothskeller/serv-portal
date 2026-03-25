@@ -42,19 +42,11 @@ func main() {
 		loginID string
 		entry   *log.Entry
 	)
-	mflag = monthArg(time.Now().AddDate(0, -1, 0))
-	switch os.Getenv("HOME") {
-	case "/home/snyserv":
-		if err := os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
-		}
-	case "/Users/stever":
-		if err := os.Chdir("/Users/stever/src/serv-portal/data"); err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
-		}
+	if err := os.Chdir(`C:\SERV`); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
 	}
+	mflag = monthArg(time.Now().AddDate(0, -1, 0))
 	flag.Var(&mflag, "m", "target month (YYYY-MM, default last month)")
 	flag.Var(pflag, "p", "person IDs to include")
 	flag.Usage = func() {
