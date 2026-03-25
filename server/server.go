@@ -48,6 +48,7 @@ import (
 	clearrep "sunnyvaleserv.org/portal/pages/reports/clearance"
 	"sunnyvaleserv.org/portal/pages/search"
 	"sunnyvaleserv.org/portal/pages/static"
+	"sunnyvaleserv.org/portal/pages/texts/texthook"
 	"sunnyvaleserv.org/portal/pages/texts/textlist"
 	"sunnyvaleserv.org/portal/pages/texts/textnew"
 	"sunnyvaleserv.org/portal/pages/texts/textview"
@@ -297,6 +298,8 @@ func route(r *request.Request) {
 		classes.HandleNotify(r, "pep")
 	case c[0] == "privacy-policy" && c[1] == "":
 		static.PrivacyPage(r)
+	case c[0] == "received-text-hook" && c[1] == "":
+		texthook.ReceivedHook(r)
 	case c[0] == "reports" && c[1] == "attendance" && c[2] == "":
 		attrep.Get(r)
 	case c[0] == "reports" && c[1] == "clearance" && c[2] == "":
@@ -311,6 +314,8 @@ func route(r *request.Request) {
 		static.SNAPPage(r)
 	case c[0] == "subscribe-calendar" && c[1] == "":
 		static.SubscribeCalendarPage(r)
+	case c[0] == "text-status-hook" && c[1] == "":
+		texthook.StatusHook(r)
 	case c[0] == "texts" && c[1] == "":
 		textlist.Get(r)
 	case c[0] == "texts" && c[1] == "NEW" && c[2] == "":

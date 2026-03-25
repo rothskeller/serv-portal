@@ -162,7 +162,7 @@ func sendMessage(r *request.Request, utm *textmsg.Updater) (tm *textmsg.TextMess
 	})
 	params.Set("From", config.Get("twilioPhoneNumber"))
 	params.Set("Body", utm.Message)
-	params.Set("StatusCallback", "https://sunnyvaleserv.org/text-status-hook")
+	params.Set("StatusCallback", "https://oes.sunnyvale.ca.gov/text-status-hook")
 	href = fmt.Sprintf("https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json", config.Get("twilioAccountSID"))
 	for _, id := range ids {
 		var (
