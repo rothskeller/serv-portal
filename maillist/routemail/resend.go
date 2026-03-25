@@ -29,7 +29,7 @@ func sendListEmail(tf *os.File, messageID string, list *maillist.List, md *mailM
 		body  []byte
 	)
 	log.Printf("  Sending to %s:", list.Name)
-	fname = filepath.Join("maillist/QUEUE", messageID)
+	fname = filepath.Join(`maillist\QUEUE`, messageID)
 	if raw, err = os.ReadFile(fname); err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}

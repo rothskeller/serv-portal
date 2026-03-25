@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"syscall"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sunnyvaleserv.org/portal/osdep"
 )
 
 type mailMetadata struct {
@@ -23,7 +23,7 @@ type mailMetadata struct {
 func readTracking(tf *os.File) (mail *mailMetadata, err error) {
 	var scan *bufio.Scanner
 
-	if err = syscall.Flock(int(tf.Fd()), syscall.LOCK_EX); err != nil {
+	if err = osdep.WriteLock(tf); err != nil {
 		return nil, fmt.Errorf("lock: %w", err)
 	}
 	scan = bufio.NewScanner(tf)

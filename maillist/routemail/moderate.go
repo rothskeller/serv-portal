@@ -55,7 +55,7 @@ func messageNeedsModeration(messageID string, list *maillist.List, md *mailMetad
 		from  string
 		err   error
 	)
-	fname = filepath.Join("maillist/QUEUE", messageID)
+	fname = filepath.Join(`maillist\QUEUE`, messageID)
 	if fh, err = os.Open(fname); err != nil {
 		log.Fatalf("ERROR: open message: %s", err)
 	}
@@ -83,7 +83,7 @@ func requestModeration(tf *os.File, messageID string, list *maillist.List, probl
 		comment string
 	)
 	log.Printf("  Requesting moderation for %s", list.Name)
-	fname = filepath.Join("maillist/QUEUE", messageID)
+	fname = filepath.Join(`maillist\QUEUE`, messageID)
 	if raw, err = os.ReadFile(fname); err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}
@@ -117,7 +117,7 @@ func handleModerationResponse(messageID, listname string) (err error) {
 		modTF    *os.File
 		modMeta  *mailMetadata
 	)
-	fname = filepath.Join("maillist/QUEUE", messageID)
+	fname = filepath.Join(`maillist\QUEUE`, messageID)
 	if raw, err = os.ReadFile(fname); err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}
@@ -143,7 +143,7 @@ func handleModerationResponse(messageID, listname string) (err error) {
 			modMsgID = string(body[idx+12 : idx+12+idx2])
 		}
 	}
-	fname = filepath.Join("maillist/QUEUE", modMsgID+".data")
+	fname = filepath.Join(`maillist\QUEUE`, modMsgID+".data")
 	if modTF, err = os.OpenFile(fname, os.O_RDWR, 0666); os.IsNotExist(err) {
 		log.Printf("  WARNING: ignoring moderation response for nonexistent message %s", modMsgID)
 		return nil
@@ -180,8 +180,8 @@ func handleModerationResponse(messageID, listname string) (err error) {
 		return fmt.Errorf("chmod QUEUE/%s.data: %w", modMsgID, err)
 	}
 	toHandle.Insert(modMsgID)
-	os.Remove("maillist/QUEUE/" + messageID)
-	os.Remove("maillist/QUEUE/" + messageID + ".data")
+	os.Remove(`maillist\QUEUE\` + messageID)
+	os.Remove(`maillist\QUEUE\` + messageID + ".data")
 	log.Printf("  Moderation approval for %s.", listname)
 	return nil
 }

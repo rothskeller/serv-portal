@@ -17,7 +17,7 @@ import (
 	"sunnyvaleserv.org/portal/maillist/private"
 )
 
-const transferURL = "https://sunnyvaleserv.org/mailrecv.cgi"
+const transferURL = "https://oes.sunnyvale.ca.gov/received-mail-hook"
 
 func main() {
 	lambda.Start(transferMail)

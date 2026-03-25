@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"golang.org/x/text/language"
+	"sunnyvaleserv.org/portal/maillist"
 	"sunnyvaleserv.org/portal/pages/admin/classedit"
 	"sunnyvaleserv.org/portal/pages/admin/classlist"
 	"sunnyvaleserv.org/portal/pages/admin/listedit"
@@ -298,6 +299,8 @@ func route(r *request.Request) {
 		classes.HandleNotify(r, "pep")
 	case c[0] == "privacy-policy" && c[1] == "":
 		static.PrivacyPage(r)
+	case c[0] == "received-mail-hook" && c[1] == "":
+		maillist.ReceivedHook(r)
 	case c[0] == "received-text-hook" && c[1] == "":
 		texthook.ReceivedHook(r)
 	case c[0] == "reports" && c[1] == "attendance" && c[2] == "":

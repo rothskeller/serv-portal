@@ -12,10 +12,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"sunnyvaleserv.org/portal/maillist"
+	"sunnyvaleserv.org/portal/osdep"
 	"sunnyvaleserv.org/portal/util/config"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,6 +29,8 @@ var (
 	toHandle  sets.Set[string]
 	dbconn    *sqlite.Conn
 	sesClient *ses.Client
+	y2020     = time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+	old       = time.Date(2010, 1, 1, 0, 0, 0, 0, time.Local)
 )
 
 func main() {
@@ -37,20 +39,20 @@ func main() {
 		err  error
 	)
 	// Move to maillist directory.
-	if err = os.Chdir("/home/snyserv/sunnyvaleserv.org/data"); err != nil {
+	if err = os.Chdir(`C:\serv`); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: chdir data: %s\n", err)
 		os.Exit(1)
 	}
 	// Lock the lockfile to ensure only one instance running.
-	if lockf, err := os.OpenFile("maillist/LOCK", os.O_CREATE|os.O_WRONLY, 0666); err != nil {
+	if lockf, err := os.OpenFile(`maillist\LOCK`, os.O_CREATE|os.O_WRONLY, 0666); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
-	} else if err = syscall.Flock(int(lockf.Fd()), syscall.LOCK_EX); err != nil {
+	} else if err = osdep.WriteLock(lockf); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: LOCK: %s\n", err)
 		os.Exit(1)
 	}
 	// Open the logfile and prepare to log to it.
-	logname := "maillist/log/" + time.Now().Format("2006-01")
+	logname := `maillist\log\` + time.Now().Format("2006-01")
 	if logf, err := os.OpenFile(logname, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
@@ -93,11 +95,10 @@ func main() {
 
 // getMailsToHandle returns the initial set of mails that need to be handled.
 // (Additional ones could be added later during processing.)  This is
-// determined by looking for QUEUE/*.data files that have their other-read mode
-// bit set.
+// determined by looking for QUEUE/*.data files that are newer than 2020.
 //
-// As a side effect, it also removes outdated message files:  those without the
-// other-read mode bit that are over one month old.
+// As a side effect, it also removes outdated message files:  those whose data
+// file is older than 2020 and whose message file is over one month old.
 func getMailsToHandle() (toHandle sets.Set[string]) {
 	var (
 		ents        []os.DirEntry
@@ -105,7 +106,7 @@ func getMailsToHandle() (toHandle sets.Set[string]) {
 		oneMonthAgo = time.Now().AddDate(0, -1, 0)
 	)
 	toHandle = sets.New[string]()
-	if ents, err = os.ReadDir("maillist/QUEUE"); err != nil {
+	if ents, err = os.ReadDir(`maillist\QUEUE`); err != nil {
 		log.Fatalf("ERROR: QUEUE: %s", err)
 	}
 	for _, ent := range ents {
@@ -114,12 +115,12 @@ func getMailsToHandle() (toHandle sets.Set[string]) {
 		}
 		if stat, err := ent.Info(); err == nil {
 			messageID := strings.TrimSuffix(ent.Name(), ".data")
-			if stat.Mode()&04 == 04 {
+			if stat.ModTime().After(y2020) {
 				toHandle.Insert(messageID)
-			} else if stat.ModTime().Before(oneMonthAgo) {
+			} else if mstat, err := os.Stat(filepath.Join(`maillist\QUEUE`, messageID)); err != nil || mstat.ModTime().Before(oneMonthAgo) {
 				log.Printf("Removing outdated QUEUE/%s", messageID)
-				os.Remove("maillist/QUEUE/" + ent.Name())
-				os.Remove("maillist/QUEUE/" + messageID)
+				os.Remove(`maillist\QUEUE\` + ent.Name())
+				os.Remove(`maillist\QUEUE\` + messageID)
 			}
 		}
 	}
@@ -135,7 +136,7 @@ func handleMail(messageID string) {
 	)
 	log.Printf("Handling %s:", messageID)
 	// Open the data file, lock it, and read it.
-	if tf, err = os.OpenFile(fmt.Sprintf("maillist/QUEUE/%s.data", messageID), os.O_RDWR, 0666); err != nil {
+	if tf, err = os.OpenFile(fmt.Sprintf(`maillist\QUEUE\%s.data`, messageID), os.O_RDWR, 0666); err != nil {
 		log.Printf("ERROR: %s", err)
 		return
 	}
@@ -151,7 +152,7 @@ func handleMail(messageID string) {
 		}
 	}
 	if !hasError {
-		if err = tf.Chmod(0640); err != nil {
+		if err = os.Chtimes(tf.Name(), old, old); err != nil {
 			log.Printf("ERROR: QUEUE/%s.data: chmod: %s", messageID, err)
 		}
 		log.Printf("  Marked as handled.")
@@ -196,7 +197,7 @@ func handleUnknownList(tf *os.File, messageID, listname string) (err error) {
 		comment string
 	)
 	log.Printf("  Unknown recipient %s, forwarding to admin", listname)
-	fname = filepath.Join("maillist/QUEUE", messageID)
+	fname = filepath.Join(`maillist\QUEUE`, messageID)
 	if raw, err = os.ReadFile(fname); err != nil {
 		return fmt.Errorf("read message: %w", err)
 	}

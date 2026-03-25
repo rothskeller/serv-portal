@@ -10,29 +10,27 @@ mailxfer Lambda function.
 The mailxfer Lambda function is a Go executable whose source code is in the
 maillist/mailxfer subdirectory of this repository.  It extracts the mail from
 the S3 bucket and sends it, along with metadata, to
-https://SunnyvaleSERV.org/mailrecv.cgi.  Once the CGI successfully receives it,
-the mailxfer Lambda function removes the mail from S3.
+https://SunnyvaleSERV.org/received-mail-hook.  Once our server successfully
+receives it, the mailxfer Lambda function removes the mail from S3.
 
-mailrecv.cgi is a Go executable whose source code is in the
-maillist/mailrecv.cgi subdirectory of this repository.  It saves the mail in a
-file in data/maillist/QUEUE, named with the hashed message ID of the message.
-(An MD5 hash with base64 URL encoding is used to ensure that the result is a
-valid filename and has no characters that mailers might treat as a URL.)  The
-CGI saves the metadata in a sidecar file named with the hashed message ID and
-a ".data" extension.  If the sidecar file already exists (because we received
-multiple copies of the mail at different addresses), the new metadata are
-appended to it, and its user-read mode bit is turned on.  Before returning,
-mailrecv.cgi starts a background process running the bin/routemail command.
+The received-mail-hook saves the mail in a file in maillist/QUEUE, named with
+the hashed message ID of the message.  (An MD5 hash with base64 URL encoding is
+used to ensure that the result is a valid filename and has no characters that
+mailers might treat as a URL.)  The hook saves the metadata in a sidecar file
+named with the hashed message ID and a ".data" extension.  If the sidecar file
+already exists (because we received multiple copies of the mail at different
+addresses), the new metadata are appended to it.  Before returning, mailrecv.cgi
+starts a background process running the bin/routemail command.
 
 The bin/routemail command is a Go executable whose source code is in the
-maillist/routemail subdirectory of this repository.  It locks
-data/maillist/LOCK in order to ensure that only one instance is running at a
-time.  It then looks for any ".data" files in data/maillist/QUEUE that have
-the user-read mode bit set.  This bit is used to indicate a message that needs
-processing.  It processes each such message as described below, and if
-processed successfully, it clears the user-read mode bit.  Notations are added
-to the sidecar file to indicate what has happened with the message.  Log
-entries are added to data/maillist/log/YYYY-MM to describe actions as well.
+maillist/routemail subdirectory of this repository.  It locks maillist/LOCK in
+order to ensure that only one instance is running at a time.  It then looks for
+any ".data" files in maillist/QUEUE that have a recent modification time.  This
+indicates that the message needs processing.  It processes each such message as
+described below, and adds notations to the sidecar file to indicate what
+happened with the message.  If the message was processed successfully, it sets
+the sidecar modification time to a very old date.  Log entries are added to
+maillist/log/YYYY-MM to describe actions as well.
 
 Fundamentally, routemail handles three types of messages:
   - Mails sent to SERV mailing lists.  These are handled as described below.
@@ -78,8 +76,8 @@ The sidecar file is a line-based file with the following lines:
     Message has been sent to list
   S timestamp recipient
     Message has been sent to recipient (email address)
-As noted above, the user-read mode bit on the file indicates that it needs
-processing.
+As noted above, an old (pre-2020) modification date indicates that the message
+has been fully processed.
 
 ### List Definitions and Membership
 
@@ -104,7 +102,7 @@ role-#([-+]cardkey|bgcheck|dswCERT|dswComm|photoID|volreg)*
   These lists send to people holding the role with the specified ID,
   optionally filtered by the suffixed criteria:  having a card key,
   having valid DOJ and FBI background checks, being registered for
-  DSW for CERT or Communications, having a photo ID, and being 
+  DSW for CERT or Communications, having a photo ID, and being
   registered as a volunteer, respectively.  A criterion preceded by a
   "+" filters for people who satisfy that criterion; a criterion
   preceded by a "-" filters for people who do not satisfy it.  The
