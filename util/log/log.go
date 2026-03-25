@@ -57,7 +57,7 @@ func (e *Entry) Log() {
 	)
 	e.ToJSON(&out)
 	filename = filepath.Join("log", fmt.Sprintf("%04d-%02d", e.Timestamp.Year(), e.Timestamp.Month()))
-	if logfile, err = os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
+	if logfile, err = os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600); err != nil {
 		goto FAIL
 	}
 	defer logfile.Close()

@@ -93,9 +93,9 @@ func ReceivedHook(r *request.Request) {
 	// Add message information to the tracking file, creating it if needed.
 	qfn = filepath.Join("maillist", "QUEUE", mid)
 	tfn = qfn + ".data"
-	if tfh, err = os.OpenFile(tfn, os.O_CREATE|os.O_EXCL|os.O_APPEND|os.O_WRONLY, 0666); os.IsExist(err) {
+	if tfh, err = os.OpenFile(tfn, os.O_CREATE|os.O_EXCL|os.O_APPEND|os.O_RDWR, 0666); os.IsExist(err) {
 		existed = true
-		tfh, err = os.OpenFile(tfn, os.O_APPEND|os.O_WRONLY, 0666)
+		tfh, err = os.OpenFile(tfn, os.O_APPEND|os.O_RDWR, 0666)
 	}
 	if err != nil {
 		sendError(r, "500 open tracking file "+err.Error(), http.StatusInternalServerError)

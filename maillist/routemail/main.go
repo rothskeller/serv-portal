@@ -44,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 	// Lock the lockfile to ensure only one instance running.
-	if lockf, err := os.OpenFile(`maillist\LOCK`, os.O_CREATE|os.O_WRONLY, 0666); err != nil {
+	if lockf, err := os.OpenFile(`maillist\LOCK`, os.O_CREATE|os.O_RDWR, 0666); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	} else if err = osdep.WriteLock(lockf); err != nil {
@@ -53,7 +53,7 @@ func main() {
 	}
 	// Open the logfile and prepare to log to it.
 	logname := `maillist\log\` + time.Now().Format("2006-01")
-	if logf, err := os.OpenFile(logname, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666); err != nil {
+	if logf, err := os.OpenFile(logname, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	} else {

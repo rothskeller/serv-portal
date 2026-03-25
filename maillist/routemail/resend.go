@@ -79,7 +79,7 @@ func sendListEmail(tf *os.File, messageID string, list *maillist.List, md *mailM
 	fname = baseFName
 	seq := 1
 	for {
-		if fh, err := os.OpenFile(fname, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666); err != nil {
+		if fh, err := os.OpenFile(fname, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666); err != nil {
 			seq++
 			fname = fmt.Sprintf("%s-%d", baseFName, seq)
 		} else {
