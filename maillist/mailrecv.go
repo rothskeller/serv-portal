@@ -35,10 +35,6 @@ func ReceivedHook(r *request.Request) {
 	)
 	// Verify that we have a valid request:  SSL over POST with a correctly
 	// hashed SES ID.
-	if r.TLS == nil || !r.TLS.HandshakeComplete {
-		sendError(r, "403 TLS Required", http.StatusForbidden)
-		return
-	}
 	if r.Method != http.MethodPost {
 		sendError(r, "405 Method Not Allowed", http.StatusMethodNotAllowed)
 		return
