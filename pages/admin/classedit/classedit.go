@@ -28,7 +28,7 @@ func Handle(r *request.Request, idstr string) {
 		f            form.Form
 		canDelete    bool
 		roleID       role.ID
-		studentRoles []role.ID
+		studentRoles = []role.ID{0}
 		roleMap      = map[role.ID]string{0: "(none)"}
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil || !auth.CheckCSRF(r, user) {
