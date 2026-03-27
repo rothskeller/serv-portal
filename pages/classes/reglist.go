@@ -14,7 +14,7 @@ import (
 )
 
 func GetRegList(r *request.Request, cidstr string) {
-	const classFields = class.FStart | class.FLimit | class.FReferrals | class.FType | class.FRegURL
+	const classFields = class.FStart | class.FLimit | class.FReferrals | class.FType | class.FRegURL | class.FRole
 	const classregFields = classreg.FFirstName | classreg.FLastName | classreg.FEmail | classreg.FCellPhone | classreg.FRegisteredBy | classreg.FPerson | classreg.FWaitlist
 	var (
 		user     *person.Person
@@ -60,6 +60,7 @@ func GetRegList(r *request.Request, cidstr string) {
 			grid.E("div").E("b>Name")
 			grid.E("div").E("b>Email")
 			grid.E("div").E("b>Cell Phone")
+			grid.E("div")
 			for _, reg := range regs {
 				if reg.Waitlist() {
 					continue
@@ -75,6 +76,9 @@ func GetRegList(r *request.Request, cidstr string) {
 				}
 				grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
 				grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
+				buttons := grid.E("div class=reglistPButtons")
+				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
+				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-danger'>Cancel")
 			}
 		}
 		if waitlist != 0 {
@@ -99,6 +103,9 @@ func GetRegList(r *request.Request, cidstr string) {
 				}
 				grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
 				grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
+				buttons := grid.E("div class=reglistPButtons")
+				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
+				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-danger'>Cancel")
 			}
 		}
 		if len(regs) != 0 {

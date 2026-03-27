@@ -27,7 +27,7 @@
 .reglistGrid {
   margin-top: 0.75rem;
   display: grid;
-  grid: auto-flow / repeat(4, max-content);
+  grid: auto-flow / repeat(5, max-content);
   gap: 0.25rem 0.5rem;
 }
 .reglistGrid + .reglistStart {
@@ -38,6 +38,10 @@
 }
 .reglistCellPhone {
   font-variant-numeric: tabular-nums;
+}
+.reglistPButtons {
+  display: flex;
+  gap: 0.5rem;
 }
 .reglistButtons {
   margin-top: 0.75rem;
