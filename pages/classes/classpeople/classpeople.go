@@ -47,7 +47,7 @@ func handleGet(r *request.Request, c *class.Class) {
 	r.HTMLNoCache()
 	html := htmlb.HTML(r)
 	defer html.Close()
-	form := html.E("form class='form' method=POST up-main")
+	form := html.E("form class='form' method=POST action=/classes/%d/people up-submit up-main", c.ID())
 	form.E("div class='formTitle formTitle-primary'>Class Person Assignments")
 	main := form.E("div class=formRow-3col")
 	used := sets.New[person.ID]()
