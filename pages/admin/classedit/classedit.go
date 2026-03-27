@@ -131,8 +131,11 @@ func Handle(r *request.Request, idstr string) {
 		&referralsRow{form.LabeledRow{Label: "Referrals"}, uc},
 	}
 	f.Buttons = []*form.Button{{
-		Label:   "Save",
-		OnClick: func() bool { return saveClass(r, user, c, uc) },
+		Label: "Save",
+		OnClick: func() bool {
+			uc.Role = role.WithID(r, roleID, role.FID|role.FName)
+			return saveClass(r, user, c, uc)
+		},
 	}}
 	if canDelete {
 		f.Buttons = append(f.Buttons, &form.Button{
@@ -145,6 +148,7 @@ func Handle(r *request.Request, idstr string) {
 			Name: "copy", Label: "Save Copy", Style: "secondary",
 			OnClick: func() bool {
 				uc.ID = 0
+				uc.Role = role.WithID(r, roleID, role.FID|role.FName)
 				return saveClass(r, user, nil, uc)
 			},
 		})
