@@ -7,9 +7,11 @@ CREATE TABLE class (
   es_desc   text    NOT NULL,
   elimit    integer NOT NULL CHECK (elimit >= 0),
   referrals integer NOT NULL,
-  regurl    text
+  regurl    text,
+  role      integer REFERENCES role
 );
 CREATE UNIQUE INDEX class_start_idx ON class (start, type);
+CREATE INDEX class_role_index ON class (role);
 
 DROP TABLE IF EXISTS classreg;
 CREATE TABLE classreg (

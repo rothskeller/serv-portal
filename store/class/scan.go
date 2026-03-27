@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"sunnyvaleserv.org/portal/store/internal/phys"
+	"sunnyvaleserv.org/portal/store/role"
 )
 
 // ColumnList generates a comma-separated list of column names for the specified
@@ -42,6 +43,10 @@ func ColumnList(sb *strings.Builder, fields Fields) {
 		sb.WriteString(sep())
 		sb.WriteString("c.regurl")
 	}
+	if fields&FRole != 0 {
+		sb.WriteString(sep())
+		sb.WriteString("c.role")
+	}
 }
 
 // Scan reads columns corresponding to the specified fields from the specified
@@ -74,6 +79,9 @@ func (c *Class) Scan(stmt *phys.Stmt, fields Fields) {
 	}
 	if fields&FRegURL != 0 {
 		c.regURL = stmt.ColumnText()
+	}
+	if fields&FRole != 0 {
+		c.role = role.ID(stmt.ColumnInt())
 	}
 	c.fields |= fields
 }

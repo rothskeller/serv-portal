@@ -5,11 +5,12 @@ import (
 	"slices"
 
 	"sunnyvaleserv.org/portal/store/internal/phys"
+	"sunnyvaleserv.org/portal/store/role"
 )
 
 // UpdaterFields are the fields that must be fetched prior to creating an
 // Updater.
-const UpdaterFields = FID | FType | FStart | FEnDesc | FEsDesc | FLimit | FReferrals | FRegURL
+const UpdaterFields = FID | FType | FStart | FEnDesc | FEsDesc | FLimit | FReferrals | FRegURL | FRole
 
 // Updater is a structure that can be filled with data for a new or changed
 // class, and then later applied.  For creating new classes, it can simply be
@@ -25,13 +26,18 @@ type Updater struct {
 	Limit     uint
 	Referrals []uint
 	RegURL    string
+	Role      *role.Role
 }
 
 // Updater returns a new Updater for the specified class, with its data matching
 // the current data for the class.  The class must have fetched UpdaterFields.
-func (c *Class) Updater() *Updater {
+// The role pointer *may* be provided to avoid a lookup.
+func (c *Class) Updater(storer phys.Storer, rl *role.Role) *Updater {
 	if c.fields&UpdaterFields != UpdaterFields {
 		panic("Class.Updater called without fetching UpdaterFields")
+	}
+	if rl == nil {
+		rl = role.WithID(storer, c.role, role.FID|role.FName)
 	}
 	return &Updater{
 		ID:        c.id,
@@ -42,10 +48,11 @@ func (c *Class) Updater() *Updater {
 		Limit:     c.limit,
 		Referrals: slices.Clone(c.referrals),
 		RegURL:    c.regURL,
+		Role:      rl,
 	}
 }
 
-const createSQL = `INSERT INTO class (id, type, start, en_desc, es_desc, elimit, referrals, regurl) VALUES (?,?,?,?,?,?,?,?)`
+const createSQL = `INSERT INTO class (id, type, start, en_desc, es_desc, elimit, referrals, regurl, role) VALUES (?,?,?,?,?,?,?,?,?)`
 
 // Create creates a new class, with the data in the Updater.
 func Create(storer phys.Storer, u *Updater) (c *Class) {
@@ -65,7 +72,7 @@ func Create(storer phys.Storer, u *Updater) (c *Class) {
 	return c
 }
 
-const updateSQL = `UPDATE class SET type=?, start=?, en_desc=?, es_desc=?, elimit=?, referrals=?, regurl=? WHERE id=?`
+const updateSQL = `UPDATE class SET type=?, start=?, en_desc=?, es_desc=?, elimit=?, referrals=?, regurl=?, role=? WHERE id=?`
 
 // Update updates the existing class, with the data in the Updater.
 func (c *Class) Update(storer phys.Storer, u *Updater) {
@@ -94,6 +101,7 @@ func bindUpdater(stmt *phys.Stmt, u *Updater) {
 	}
 	stmt.BindInt(int(refmask))
 	stmt.BindText(u.RegURL)
+	stmt.BindNullInt(int(u.Role.ID()))
 }
 
 func (c *Class) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
@@ -139,6 +147,14 @@ func (c *Class) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
 	}
 	if u.RegURL != c.regURL {
 		phys.Audit(storer, "%s:: regURL = %q", context, u.RegURL)
+	}
+	if u.Role.ID() != c.role {
+		if u.Role != nil {
+			phys.Audit(storer, "%s:: role = %s [%d]", context, u.Role.Name(), u.Role.ID())
+		} else {
+			phys.Audit(storer, "%s:: role = nil", context)
+		}
+		c.role = u.Role.ID()
 	}
 }
 

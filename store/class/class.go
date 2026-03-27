@@ -2,7 +2,11 @@
 // that we offer.
 package class
 
-import "slices"
+import (
+	"slices"
+
+	"sunnyvaleserv.org/portal/store/role"
+)
 
 // ID uniquely identifies a class.
 type ID int
@@ -21,6 +25,7 @@ const (
 	FLimit
 	FReferrals
 	FRegURL
+	FRole
 )
 
 // Class describes an instance of a class that we offer.
@@ -37,6 +42,7 @@ type Class struct {
 	limit     uint
 	referrals []uint
 	regURL    string
+	role      role.ID
 }
 
 // Clone creates a clone of the class.

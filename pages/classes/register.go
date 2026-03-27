@@ -316,7 +316,7 @@ func saveRegistrations(
 			classreg.Create(r, add)
 		}
 		if referral.Valid() {
-			uc := c.Updater()
+			uc := c.Updater(r, nil)
 			uc.Referrals[referral]++
 			c.Update(r, uc)
 		}

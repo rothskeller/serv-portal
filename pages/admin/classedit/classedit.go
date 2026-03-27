@@ -1,12 +1,17 @@
 package classedit
 
 import (
+	"cmp"
+	"slices"
+
 	"sunnyvaleserv.org/portal/pages/admin/classlist"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/server/auth"
 	"sunnyvaleserv.org/portal/store/class"
 	"sunnyvaleserv.org/portal/store/classreg"
+	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/ui/form"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
@@ -16,11 +21,14 @@ import (
 // Handle handles /admin/classes/$id requests, where $id may be "NEW".
 func Handle(r *request.Request, idstr string) {
 	var (
-		user      *person.Person
-		c         *class.Class
-		uc        *class.Updater
-		f         form.Form
-		canDelete bool
+		user         *person.Person
+		c            *class.Class
+		uc           *class.Updater
+		f            form.Form
+		canDelete    bool
+		roleID       role.ID
+		studentRoles []role.ID
+		roleMap      = map[role.ID]string{0: "(none)"}
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil || !auth.CheckCSRF(r, user) {
 		return
@@ -32,9 +40,17 @@ func Handle(r *request.Request, idstr string) {
 			errpage.NotFound(r, user)
 			return
 		}
-		uc = c.Updater()
+		uc = c.Updater(r, nil)
 		canDelete = !classreg.ClassHasSignups(r, c.ID())
+		roleID = c.Role()
 	}
+	role.All(r, role.FID|role.FName|role.FPrivLevel|role.FFlags, func(rl *role.Role) {
+		if rl.PrivLevel() == enum.PrivStudent && rl.Flags()&(role.Archived|role.ImplicitOnly) == 0 {
+			studentRoles = append(studentRoles, rl.ID())
+			roleMap[rl.ID()] = rl.Name()
+		}
+	})
+	slices.SortFunc(studentRoles, func(a, b role.ID) int { return cmp.Compare(roleMap[a], roleMap[b]) })
 	f.Attrs = "method=POST up-target=main"
 	f.Dialog = true
 	if c == nil {
@@ -99,6 +115,16 @@ func Handle(r *request.Request, idstr string) {
 			},
 			Name:   "regURL",
 			ValueP: &uc.RegURL,
+		},
+		&form.SelectRow[role.ID]{
+			LabeledRow: form.LabeledRow{
+				RowID: "classeditRole",
+				Label: "Student Role",
+			},
+			Name:      "role",
+			ValueP:    &roleID,
+			Options:   studentRoles,
+			LabelFunc: func(r *request.Request, v role.ID) string { return roleMap[v] },
 		},
 		&referralsRow{form.LabeledRow{Label: "Referrals"}, uc},
 	}

@@ -1,5 +1,7 @@
 package class
 
+import "sunnyvaleserv.org/portal/store/role"
+
 // Fields returns the set of fields that have been retrieved for this venue.
 func (c *Class) Fields() Fields {
 	return c.fields
@@ -76,4 +78,13 @@ func (c *Class) RegURL() string {
 		panic("Class.RegURL called without having fetched FRegURL")
 	}
 	return c.regURL
+}
+
+// Role is the ID of the role granted to students who are accepted into the
+// class, if any.
+func (c *Class) Role() role.ID {
+	if c.fields&FRole == 0 {
+		panic("Class.Role called without having fetched FRole")
+	}
+	return c.role
 }
