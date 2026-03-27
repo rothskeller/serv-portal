@@ -136,6 +136,7 @@ var stylesheets = []string{
 	"pages/classes/register.css",
 	"pages/classes/reglist.css",
 	"pages/classes/classlists/classlists.css",
+	"pages/classes/classpeople/classpeople.css",
 	"pages/errpage/errpage.css",
 	"pages/events/eventattend/attendance.css",
 	"pages/events/eventcopy/eventcopy.css",

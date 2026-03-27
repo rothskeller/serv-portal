@@ -22,6 +22,7 @@ import (
 	"sunnyvaleserv.org/portal/pages/admin/venuelist"
 	"sunnyvaleserv.org/portal/pages/classes"
 	"sunnyvaleserv.org/portal/pages/classes/classlists"
+	"sunnyvaleserv.org/portal/pages/classes/classpeople"
 	"sunnyvaleserv.org/portal/pages/errpage"
 	"sunnyvaleserv.org/portal/pages/events/eventattend"
 	"sunnyvaleserv.org/portal/pages/events/eventcopy"
@@ -202,6 +203,8 @@ func route(r *request.Request) {
 		classes.GetPEP(r)
 	case c[0] == "classes" && c[1] != "" && c[2] == "lists" && c[3] == "":
 		classlists.Handle(r, c[1])
+	case c[0] == "classes" && c[1] != "" && c[2] == "people" && c[3] == "":
+		classpeople.Handle(r, c[1])
 	case c[0] == "classes" && c[1] != "" && c[2] == "register" && c[3] == "":
 		classes.HandleRegister(r, c[1])
 	case c[0] == "classes" && c[1] != "" && c[2] == "reglist" && c[3] == "":

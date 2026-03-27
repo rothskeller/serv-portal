@@ -102,8 +102,11 @@ func GetRegList(r *request.Request, cidstr string) {
 			}
 		}
 		if len(regs) != 0 {
-			main.E("div class=reglistButtons").
-				E("a href=/classes/%d/lists up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", c.ID())
+			buttons := main.E("div class=reglistButtons")
+			buttons.E("a href=/classes/%d/lists up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", c.ID())
+			if user.IsWebmaster() {
+				buttons.E("a href=/classes/%d/people up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Assign People", c.ID())
+			}
 			main.E("div class=reglistReferralsHeading>Referred by:")
 			grid := main.E("div class=reglistReferrals")
 			for _, ref := range class.AllReferrals {

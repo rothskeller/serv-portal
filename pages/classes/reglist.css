@@ -41,6 +41,8 @@
 }
 .reglistButtons {
   margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
 }
 .reglistReferralsHeading {
   margin-top: 0.75rem;
