@@ -18,7 +18,7 @@ import (
 
 // Handle handles /classes/$cid/people requests.
 func Handle(r *request.Request, cidstr string) {
-	const classFields = class.FType
+	const classFields = class.FType | class.FStart
 	var (
 		user *person.Person
 		c    *class.Class
