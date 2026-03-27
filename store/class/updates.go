@@ -132,7 +132,7 @@ func (c *Class) auditAndUpdate(storer phys.Storer, u *Updater, create bool) {
 		if ur != cr {
 			phys.Audit(storer, "%s:: referrals[%s] = %d", context, ref, ur)
 			if c.referrals == nil {
-				c.referrals = make([]uint, len(AllReferrals))
+				c.referrals = make([]uint, len(AllReferrals)+1)
 			}
 			c.referrals[ref] = ur
 		}
