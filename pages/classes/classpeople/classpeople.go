@@ -1,6 +1,7 @@
 package classpeople
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -56,7 +57,6 @@ func handleGet(r *request.Request, c *class.Class) {
 		}
 	})
 	classreg.AllForClass(r, c.ID(), classFields, func(cr *classreg.ClassReg) {
-		var registrarFound bool
 		if cr.Person() != 0 {
 			return
 		}
@@ -80,18 +80,75 @@ func handleGet(r *request.Request, c *class.Class) {
 			button := candidate.E("input type=radio name=r%d value=%d", cr.ID(), p.ID())
 			if p.ID() == cr.RegisteredBy() {
 				button.A("checked")
-				registrarFound = true
 			}
 			candidate.TF(" #%d %s %s %s %s %s %s", p.ID(), p.InformalName(), p.Email(), p.Email2(), p.CellPhone(), p.HomePhone(), p.WorkPhone())
 			if p.ID() == cr.RegisteredBy() {
 				candidate.R(" (registrar)")
 			}
 		})
-		if !registrarFound {
-			main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=NEW", cr.ID()).P().T(" Create new person")
-		}
+		main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=NEW", cr.ID()).P().T(" Create new person")
 		main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=0", cr.ID()).P().T(" Skip")
 	})
 	form.E("div class=formButtons").E("button type=submit class='sbtn sbtn-primary'>Save")
 }
-func handlePost(r *request.Request, c *class.Class) {}
+
+func handlePost(r *request.Request, c *class.Class) {
+	const personFields = person.FID | person.FInformalName
+	r.HTMLNoCache()
+	html := htmlb.HTML(r)
+	defer html.Close()
+	form := html.E("form class='form' method=POST up-main")
+	form.E("div class='formTitle formTitle-primary'>Class Person Assignments")
+	main := form.E("div class=formRow-3col")
+	classreg.AllForClass(r, c.ID(), classreg.UpdaterFields, func(cr *classreg.ClassReg) {
+		if cr.Person() != 0 {
+			return
+		}
+		registrant := main.E("div class=classpersonRegistrant>%s %s %s %s", cr.FirstName(), cr.LastName(), cr.Email(), cr.CellPhone())
+		if cr.Waitlist() {
+			registrant.R(" (waitlist)")
+		}
+		pidstr := r.FormValue(fmt.Sprintf("r%d", cr.ID()))
+		if pidstr == "NEW" {
+			p := new(person.Updater)
+			p.FormalName = cr.FirstName() + " " + cr.LastName()
+			p.InformalName = p.FormalName
+			p.SortName = cr.LastName() + ", " + cr.FirstName()
+			if p.DuplicateSortName(r) {
+				main.E("div class=classpersonError>duplicate sort name, failed")
+				return
+			}
+			p.Email = cr.Email()
+			if p.DuplicateEmail(r) {
+				p.Email = ""
+				p.Email2 = cr.Email()
+				main.E("div class=classpersonWarning>duplicate email, moved to email2")
+			}
+			p.CellPhone = cr.CellPhone()
+			if p.DuplicateCellPhone(r) {
+				p.CellPhone = ""
+				main.E("div class=classpersonWarning>duplicate cell phone, removed")
+			}
+			ucr := cr.Updater(r, c, nil, nil)
+			ucr.Person = person.Create(r, p)
+			cr.Update(r, ucr)
+			main.E("div class=classpersonConfirm>person %d created", ucr.Person.ID())
+			return
+		}
+		pid := person.ID(util.ParseID(pidstr))
+		if pid <= 0 {
+			main.E("div class=classpersonWarning>skipped")
+			return
+		}
+		p := person.WithID(r, pid, personFields)
+		if p == nil {
+			main.E("div class=classpersonError>no such person %d", pid)
+			return
+		}
+		ucr := cr.Updater(r, c, nil, nil)
+		ucr.Person = p
+		cr.Update(r, ucr)
+		main.E("div class=classpersonConfirm>person %d assigned", pid)
+	})
+	form.E("div class=formButtons").E("button type=submit class='sbtn sbtn-primary' up-dismiss>OK")
+}

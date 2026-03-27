@@ -2,6 +2,15 @@
   margin-top: 1rem;
   font-weight: bold;
 }
-.classpersonCandidate {
-  margin-left: 0.5rem;
+.classpersonCandidate,
+.classpersonConfirm {
+  margin-left: 2rem;
+}
+.classpersonError {
+  margin-left: 2rem;
+  color: red;
+}
+.classpersonWarning {
+  margin-left: 2rem;
+  color: magenta;
 }
