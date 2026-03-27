@@ -3,6 +3,7 @@ package classedit
 import (
 	"cmp"
 	"slices"
+	"strconv"
 
 	"sunnyvaleserv.org/portal/pages/admin/classlist"
 	"sunnyvaleserv.org/portal/pages/errpage"
@@ -124,6 +125,7 @@ func Handle(r *request.Request, idstr string) {
 			Name:      "role",
 			ValueP:    &roleID,
 			Options:   studentRoles,
+			ValueFunc: func(id role.ID) string { return strconv.Itoa(int(id)) },
 			LabelFunc: func(r *request.Request, v role.ID) string { return roleMap[v] },
 		},
 		&referralsRow{form.LabeledRow{Label: "Referrals"}, uc},
