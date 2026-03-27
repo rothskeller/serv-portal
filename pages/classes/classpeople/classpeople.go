@@ -88,9 +88,9 @@ func handleGet(r *request.Request, c *class.Class) {
 			}
 		})
 		if !registrarFound {
-			main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=NEW").P().T(" Create new person")
+			main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=NEW", cr.ID()).P().T(" Create new person")
 		}
-		main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=0").P().T(" Skip")
+		main.E("div class=classpersonCandidate").E("input type=radio name=r%d value=0", cr.ID()).P().T(" Skip")
 	})
 	form.E("div class=formButtons").E("button type=submit class='sbtn sbtn-primary'>Save")
 }
