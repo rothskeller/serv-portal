@@ -33,15 +33,8 @@
 .reglistGrid + .reglistStart {
   margin-top: 0.75rem;
 }
-.reglistName {
-  grid-column: 2;
-}
 .reglistCellPhone {
   font-variant-numeric: tabular-nums;
-}
-.reglistPButtons {
-  display: flex;
-  gap: 0.5rem;
 }
 .reglistButtons {
   margin-top: 0.75rem;

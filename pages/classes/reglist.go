@@ -7,6 +7,8 @@ import (
 	"sunnyvaleserv.org/portal/store/classreg"
 	"sunnyvaleserv.org/portal/store/enum"
 	"sunnyvaleserv.org/portal/store/person"
+	"sunnyvaleserv.org/portal/store/personrole"
+	"sunnyvaleserv.org/portal/store/role"
 	"sunnyvaleserv.org/portal/ui"
 	"sunnyvaleserv.org/portal/util"
 	"sunnyvaleserv.org/portal/util/htmlb"
@@ -54,59 +56,33 @@ func GetRegList(r *request.Request, cidstr string) {
 		} else {
 			size.TF("%d registered", len(regs)-waitlist)
 		}
-		if len(regs)-waitlist != 0 {
-			grid := main.E("div class=reglistGrid")
-			grid.E("div").E("b>Registered By")
-			grid.E("div").E("b>Name")
-			grid.E("div").E("b>Email")
-			grid.E("div").E("b>Cell Phone")
-			grid.E("div")
-			for _, reg := range regs {
-				if reg.Waitlist() {
-					continue
-				}
-				if reg.RegisteredBy() != lastRB {
-					lastRB = reg.RegisteredBy()
-					grid.E("div class=reglistPerson>%s", person.WithID(r, lastRB, person.FInformalName).InformalName())
-				}
-				if reg.Person() != 0 {
-					grid.E("div class=reglistName").E("a href=/people/%d up-target=.pageCanvas>%s %s", reg.Person(), reg.FirstName(), reg.LastName())
-				} else {
-					grid.E("div class=reglistName>%s %s", reg.FirstName(), reg.LastName())
-				}
-				grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
-				grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
-				buttons := grid.E("div class=reglistPButtons")
-				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
-				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-danger'>Cancel")
+		grid := main.E("div class=reglistGrid")
+		grid.E("div").E("b>Name")
+		grid.E("div").E("b>Email")
+		grid.E("div").E("b>Cell Phone")
+		grid.E("div").E("b>Status")
+		grid.E("div")
+		for _, reg := range regs {
+			var proxy string
+			if reg.RegisteredBy() == lastRB {
+				proxy = "+ "
 			}
-		}
-		if waitlist != 0 {
-			main.E("div class=reglistStart>Waiting List")
-			grid := main.E("div class=reglistGrid")
-			grid.E("div").E("b>Registered By")
-			grid.E("div").E("b>Name")
-			grid.E("div").E("b>Email")
-			grid.E("div").E("b>Cell Phone")
-			for _, reg := range regs {
-				if !reg.Waitlist() {
-					continue
-				}
-				if reg.RegisteredBy() != lastRB {
-					lastRB = reg.RegisteredBy()
-					grid.E("div class=reglistPerson>%s", person.WithID(r, lastRB, person.FInformalName).InformalName())
-				}
-				if reg.Person() != 0 {
-					grid.E("div class=reglistName").E("a href=/people/%d up-target=.pageCanvas>%s %s", reg.Person(), reg.FirstName(), reg.LastName())
-				} else {
-					grid.E("div class=reglistName>%s %s", reg.FirstName(), reg.LastName())
-				}
-				grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
-				grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
-				buttons := grid.E("div class=reglistPButtons")
-				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
-				buttons.E("button type=button class='sbtn sbtn-xsmall sbtn-danger'>Cancel")
+			lastRB = reg.RegisteredBy()
+			if reg.Person() != 0 {
+				grid.E("div class=reglistName").R(proxy).E("a href=/people/%d up-target=.pageCanvas>%s %s", reg.Person(), reg.FirstName(), reg.LastName())
+			} else {
+				grid.E("div class=reglistName>%s%s %s", proxy, reg.FirstName(), reg.LastName())
 			}
+			grid.E("div class=reglistEmail").E("a href=mailto:%s target=_blank>%s", reg.Email(), reg.Email())
+			grid.E("div class=reglistCellPhone>%s", reg.CellPhone())
+			if reg.Person() != 0 && c.Role() != 0 && hasRole(r, reg.Person(), c.Role()) {
+				grid.E("div>In Class")
+			} else if !reg.Waitlist() {
+				grid.E("div>Registered")
+			} else {
+				grid.E("div>Waitlist")
+			}
+			grid.E("div").E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
 		}
 		if len(regs) != 0 {
 			buttons := main.E("div class=reglistButtons")
@@ -122,4 +98,9 @@ func GetRegList(r *request.Request, cidstr string) {
 			}
 		}
 	})
+}
+
+func hasRole(r *request.Request, p person.ID, rl role.ID) bool {
+	held, _ := personrole.PersonHasRole(r, p, rl)
+	return held
 }
