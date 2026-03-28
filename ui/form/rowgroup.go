@@ -28,9 +28,9 @@ type RowGroup struct {
 	firstfail Row
 }
 
-func (rg *RowGroup) Get() {
+func (rg *RowGroup) Get(r *request.Request) {
 	for _, row := range rg.Rows {
-		row.Get()
+		row.Get(r)
 	}
 }
 

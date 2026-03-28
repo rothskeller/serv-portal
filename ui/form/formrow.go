@@ -16,7 +16,7 @@ type Row interface {
 
 	// Get performs any needed initialization of the row for GET requests.
 	// It is not called for POST requests.  It is usually a no-op.
-	Get()
+	Get(r *request.Request)
 
 	// ReadOrder determines the order in which rows of the form should be
 	// read.  It is normally zero, in which case rows are read in visual
@@ -43,7 +43,7 @@ type Row interface {
 // implementations for some (but not all) of the Row methods.
 type BaseRow struct{}
 
-func (br BaseRow) Get()                                     {}
+func (br BaseRow) Get(_ *request.Request)                   {}
 func (br BaseRow) ReadOrder() int                           { return 0 }
 func (br BaseRow) ShouldEmit(_ request.ValidationList) bool { return true }
 
@@ -365,6 +365,7 @@ type RadioGroupRow[T comparable] struct {
 	ValueFunc func(v T) string
 	LabelFunc func(r *request.Request, v T) string
 	Validate  string
+	Wide      bool
 }
 
 var _ Row = (*RadioGroupRow[string])(nil) // interface check
@@ -377,12 +378,16 @@ func (rgr *RadioGroupRow[T]) Emit(r *request.Request, parent *htmlb.Element, foc
 		rgr.FocusID = rgr.RowID + "-in"
 	}
 	row := rgr.EmitPrefix(r, parent, rgr.FocusID)
-	box := row.E("div class=formInput",
-		rgr.Validate == "", "s-validate",
-		rgr.Validate != "" && rgr.Validate != NoValidate, "s-validate=%s", rgr.Validate,
-	)
+	box := row.E("div")
+	if rgr.Wide {
+		box.A("class=formInput-2col")
+	} else {
+		box.A("class=formInput")
+	}
 	for i, opt := range rgr.Options {
 		box.E("s-radio name=%s value=%s label=%s", rgr.Name, optValue(opt, rgr.ValueFunc), optLabel(r, opt, rgr.LabelFunc),
+			rgr.Validate == "", "s-validate",
+			rgr.Validate != "" && rgr.Validate != NoValidate, "s-validate=%s", rgr.Validate,
 			i == 0 && rgr.FocusID != "", "id=%s", rgr.FocusID,
 			i == 0 && focus, "autofocus",
 			*rgr.ValueP == opt, "checked")

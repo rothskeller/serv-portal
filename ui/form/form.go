@@ -63,7 +63,7 @@ func (f *Form) Handle(r *request.Request) {
 		r.HTMLNoCache()
 		r.WriteHeader(http.StatusUnprocessableEntity)
 	} else {
-		rg.Get()
+		rg.Get(r)
 		r.HTMLNoCache()
 	}
 	if f.PageWrapper == nil {

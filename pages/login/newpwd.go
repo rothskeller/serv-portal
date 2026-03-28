@@ -32,7 +32,7 @@ type NewPasswordPairRow struct {
 	Messages []string
 }
 
-func (nppr *NewPasswordPairRow) Get() {
+func (nppr *NewPasswordPairRow) Get(_ *request.Request) {
 	nppr.Score = -1
 }
 

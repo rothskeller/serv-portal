@@ -17,13 +17,9 @@ import (
 
 func GetRegList(r *request.Request, cidstr string) {
 	const classFields = class.FStart | class.FLimit | class.FReferrals | class.FType | class.FRegURL | class.FRole
-	const classregFields = classreg.FFirstName | classreg.FLastName | classreg.FEmail | classreg.FCellPhone | classreg.FRegisteredBy | classreg.FPerson | classreg.FWaitlist
 	var (
-		user     *person.Person
-		c        *class.Class
-		regs     []*classreg.ClassReg
-		waitlist int
-		opts     ui.PageOpts
+		user *person.Person
+		c    *class.Class
 	)
 	if user = auth.SessionUser(r, 0, true); user == nil {
 		return
@@ -34,6 +30,16 @@ func GetRegList(r *request.Request, cidstr string) {
 	if !user.HasPrivLevel(c.Type().Org(), enum.PrivLeader) {
 		errpage.Forbidden(r, user)
 	}
+	RenderRegList(r, user, c)
+}
+
+func RenderRegList(r *request.Request, user *person.Person, c *class.Class) {
+	const classregFields = classreg.FID | classreg.FFirstName | classreg.FLastName | classreg.FEmail | classreg.FCellPhone | classreg.FRegisteredBy | classreg.FPerson | classreg.FWaitlist
+	var (
+		regs     []*classreg.ClassReg
+		waitlist int
+		opts     ui.PageOpts
+	)
 	classreg.AllForClass(r, c.ID(), classregFields, func(cr *classreg.ClassReg) {
 		regs = append(regs, cr.Clone())
 		if cr.Waitlist() {
@@ -82,14 +88,11 @@ func GetRegList(r *request.Request, cidstr string) {
 			} else {
 				grid.E("div>Waitlist")
 			}
-			grid.E("div").E("button type=button class='sbtn sbtn-xsmall sbtn-primary'>Edit")
+			grid.E("div").E("a href=/classes/regedit/%d up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Edit", reg.ID())
 		}
 		if len(regs) != 0 {
 			buttons := main.E("div class=reglistButtons")
 			buttons.E("a href=/classes/%d/lists up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Email Lists", c.ID())
-			if user.IsWebmaster() {
-				buttons.E("a href=/classes/%d/people up-layer=new up-size=grow up-history=false class='sbtn sbtn-xsmall sbtn-primary'>Assign People", c.ID())
-			}
 			main.E("div class=reglistReferralsHeading>Referred by:")
 			grid := main.E("div class=reglistReferrals")
 			for _, ref := range class.AllReferrals {

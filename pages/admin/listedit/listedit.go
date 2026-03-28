@@ -145,7 +145,7 @@ type moderatorsRow struct {
 	ul *list.Updater
 }
 
-func (mr *moderatorsRow) Get() {
+func (mr *moderatorsRow) Get(_ *request.Request) {
 	if mr.ul.Moderators.Len() == 0 {
 		*mr.TextAreaRow.ValueP = ""
 		return

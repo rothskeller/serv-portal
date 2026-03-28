@@ -64,6 +64,34 @@ func WithEmail(storer phys.Storer, email string, fields Fields) (p *Person) {
 	return p
 }
 
+var withCellPhoneSQLCache map[Fields]string
+
+// WithCellPhone returns the person with the cell phone number, or nil if it
+// does not exist.
+func WithCellPhone(storer phys.Storer, cellPhone string, fields Fields) (p *Person) {
+	if withCellPhoneSQLCache == nil {
+		withCellPhoneSQLCache = make(map[Fields]string)
+	}
+	if _, ok := withCellPhoneSQLCache[fields&^joinFields]; !ok {
+		var sb strings.Builder
+		sb.WriteString("SELECT ")
+		ColumnList(&sb, fields&^joinFields)
+		sb.WriteString(" FROM person p WHERE p.cell_phone=?")
+		withCellPhoneSQLCache[fields&^joinFields] = sb.String()
+	}
+	phys.SQL(storer, withCellPhoneSQLCache[fields&^joinFields], func(stmt *phys.Stmt) {
+		stmt.BindText(cellPhone)
+		if stmt.Step() {
+			p = new(Person)
+			p.Scan(stmt, fields&^joinFields)
+			p.cellPhone = cellPhone
+			p.fields |= FCellPhone
+			p.readJoins(storer, fields)
+		}
+	})
+	return p
+}
+
 var withHoursTokenSQLCache map[Fields]string
 
 // WithHoursToken returns the person with the specified password reset token,
