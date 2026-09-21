@@ -238,8 +238,8 @@ func GetFolder(r *request.Request, user *person.Person, flist []*folder.Folder, 
 			if doc.URL != "" {
 				ddiv.E("s-icon icon=link")
 				ddiv.E("a href=%s", doc.URL,
-					strings.HasPrefix(doc.URL, "/"), "up-target=.pageCanvas",
-					!strings.HasPrefix(doc.URL, "/"), "target=_blank",
+					isLocalPage(doc.URL), "up-target=.pageCanvas",
+					!isLocalPage(doc.URL), "target=_blank",
 					canEdit, "draggable=false").T(doc.Name)
 				return
 			}
@@ -290,4 +290,11 @@ func GetFolder(r *request.Request, user *person.Person, flist []*folder.Folder, 
 			form.E("input type=hidden id=folderTrashFolder name=delfolder")
 		}
 	})
+}
+
+func isLocalPage(url string) bool {
+	if !strings.HasPrefix(url, "/") {
+		return false
+	}
+	return !strings.Contains(path.Base(url), ".")
 }
