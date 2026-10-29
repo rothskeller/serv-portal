@@ -79,13 +79,13 @@ func Get(r *request.Request, month string) {
 			}
 			events = append(events, *e)
 		})
-		for lastDay.Weekday() != time.Sunday || len(events) != 0 {
-			if lastDay.Format("2006-01") == month {
-				emitDayCell(r, grid, lastDay, events)
-				events = events[:0]
-			} else {
-				grid.E("div class='eventscalDay eventscalDay-empty'")
-			}
+		for lastDay.Format("2006-01") == month {
+			emitDayCell(r, grid, lastDay, events)
+			events = events[:0]
+			lastDay = lastDay.AddDate(0, 0, 1)
+		}
+		for lastDay.Weekday() != time.Sunday {
+			grid.E("div class='eventscalDay eventscalDay-empty'")
 			lastDay = lastDay.AddDate(0, 0, 1)
 		}
 		main.E("div id=eventscalFooter")
